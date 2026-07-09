@@ -20,6 +20,7 @@ const specKeyMap: Record<SpecKey, TKey> = {
 
 export default function Product() {
   const { id } = useParams();
+  const products = useProducts();
   const p = products.find((x) => x.id === id);
   useEffect(() => { document.title = p ? `${p.name} — KA Tech` : "Produit introuvable — KA Tech"; }, [p]);
   if (!p) {
@@ -33,7 +34,11 @@ export default function Product() {
   return <ProductView p={p} />;
 }
 
-function ProductView({ p }: { p: (typeof products)[number] }) {
+import type { Product as ProductType } from "@/data/products";
+
+function ProductView({ p }: { p: ProductType }) {
+  const products = useProducts();
+
   const cat = categoryMeta[p.category];
   const [tab, setTab] = useState("specs");
   const { t } = useI18n();
