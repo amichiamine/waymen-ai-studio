@@ -1,15 +1,14 @@
 import { Star } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
 import { useAdminState } from "@/lib/admin-store";
 
 export function Reviews() {
-  const { t } = useI18n();
-  const { homeReviews, products } = useAdminState();
+  const { homeReviews, products, siteContent } = useAdminState();
   if (homeReviews.length === 0) return null;
+  const cfg = siteContent.reviews;
   return (
     <section className="container-page py-16">
-      <h2 className="text-3xl font-bold mb-2">{t("rev.title")}</h2>
-      <p className="text-muted-foreground mb-10">{t("rev.sub")}</p>
+      <h2 className="text-3xl font-bold mb-2">{cfg.title}</h2>
+      <p className="text-muted-foreground mb-10">{cfg.subtitle}</p>
       <div dir="ltr" className="relative overflow-hidden -mx-4 px-4 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
         <div className="flex w-max gap-5 animate-marquee-slow pause-on-hover motion-reduce:animate-none">
           {[0, 1].map((half) => (
