@@ -1,0 +1,27 @@
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth";
+
+// Layout : réserve les enfants aux utilisateurs connectés (frontend-only).
+// Redirige vers /auth si aucun utilisateur.
+export const Route = createFileRoute("/_authenticated")({
+  component: AuthenticatedLayout,
+});
+
+function AuthenticatedLayout() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/auth" });
+  }, [user, loading, navigate]);
+
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
+        Chargement…
+      </div>
+    );
+  }
+  return <Outlet />;
+}
