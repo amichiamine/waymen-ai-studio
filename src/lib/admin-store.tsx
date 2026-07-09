@@ -713,6 +713,15 @@ export function updateOrderStatus(id: string, status: OrderStatus, note?: string
     const ev: OrderStatusEvent = { status, at: new Date().toISOString(), note };
     return { ...o, status, statusHistory: [...(o.statusHistory ?? []), ev] };
   }));
+  logAudit(`commande ${id}`, "order.status.update", status);
+  if (status === "cancelled" || status === "delivered") {
+    addNotification({
+      title: status === "delivered" ? `Commande ${id} livrée` : `Commande ${id} annulée`,
+      body: note ?? "",
+      level: status === "delivered" ? "success" : "warning",
+      link: `/admin/orders/${id}`,
+    });
+  }
 }
 
 export function createOrder(input: {
