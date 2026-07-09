@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ export default function AdminProducts() {
   const { products, categories } = useAdminState();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"all" | Category>("all");
+  const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -32,11 +34,16 @@ export default function AdminProducts() {
     });
   }, [q, cat, products]);
 
-  function onDelete(id: string, name: string) {
-    if (!confirm(`Supprimer « ${name} » ?`)) return;
-    deleteProduct(id);
-    toast.success("Produit supprimé");
+  function confirmDelete() {
+    if (!toDelete) return;
+    try {
+      deleteProduct(toDelete.id);
+      toast.success(`« ${toDelete.name} » supprimé`);
+    } catch {
+      toast.error("Suppression échouée");
+    }
   }
+
 
   return (
     <AdminPageShell
