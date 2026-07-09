@@ -7,6 +7,7 @@ import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { PromoBanner } from "@/components/PromoBanner";
 import { MaintenanceScreen } from "@/components/MaintenanceGate";
+import { PageTransition } from "@/components/PageTransition";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/auth";
 import { useAdminState } from "@/lib/admin-store";
@@ -162,6 +163,7 @@ export default function App() {
       {!isAdmin && <Ticker />}
       {!isAdmin && <Header />}
       <main className="pb-16 md:pb-0">
+        <PageTransition>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/about" element={<About />} />
@@ -225,6 +227,7 @@ export default function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </PageTransition>
       </main>
       {!isAdmin && <Footer />}
       {!isAdmin && <FloatingWhatsApp />}
