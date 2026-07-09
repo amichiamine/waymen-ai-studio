@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function BlogArticle() {
   useEffect(() => { document.title = `Article — KA Tech`; }, []);
-  return null;
+  return <BlogNotFound />;
 }
 
 function BlogNotFound() {
