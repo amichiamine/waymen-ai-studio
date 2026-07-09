@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Flame, ArrowRight } from "lucide-react";
-import { products } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 import { useI18n } from "@/lib/i18n";
+import { useProducts } from "@/lib/useProducts";
+
 
 function useCountdown(targetMs: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -24,7 +25,9 @@ export function FlashSale() {
   const [target] = useState(() => Date.now() + 1000 * 60 * 60 * 71 + 1000 * 60 * 23);
   const t = useCountdown(target);
   const { t: tr } = useI18n();
-  const sale = products.filter((p) => p.sale).slice(0, 4);
+  const products = useProducts();
+  const sale = useMemo(() => products.filter((p) => p.sale).slice(0, 4), [products]);
+
   return (
     <section className="py-16" style={{ background: "#0f172a" }}>
       <div className="container-page text-white">
