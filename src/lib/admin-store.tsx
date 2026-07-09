@@ -141,10 +141,19 @@ export type SiteSettings = {
   address: string;
   hours: string;
   maintenance: boolean;
+  maintenanceMessage: string;
   emailNotifications: boolean;
   showPromoBanner: boolean;
+  promoBannerText: string;
+  promoBannerLabel: string;
+  promoBannerHref: string;
   lowStockThreshold: number;
   outOfStockThreshold: number;
+  currencySymbol: string;
+  currencyPosition: "prefix" | "suffix";
+  currencyThousandSeparator: " " | "," | "." | "'" | "";
+  languageSelectorEnabled: boolean;
+  hideRatingWhenNoReviews: boolean;
 };
 
 
