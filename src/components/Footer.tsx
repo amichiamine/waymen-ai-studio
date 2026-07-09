@@ -48,6 +48,29 @@ export function Footer() {
               })}
             </div>
           )}
+          <form onSubmit={subscribe} className="pt-3 max-w-sm">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">Newsletter</label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-background border border-border text-sm focus:outline-none focus:border-primary/60"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={busy}
+                className="h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50"
+              >
+                {busy ? "..." : "S'inscrire"}
+              </button>
+            </div>
+          </form>
         </div>
         {f.columns.map((col) => (
           <div key={col.id}>
