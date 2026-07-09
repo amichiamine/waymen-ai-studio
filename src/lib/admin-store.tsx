@@ -666,6 +666,7 @@ function loadState(): AdminState {
       auditLogs: parsed.auditLogs ?? seed.auditLogs,
       siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
       shippingSettings: { ...seed.shippingSettings, ...(parsed.shippingSettings ?? {}) },
+      siteContent: mergeSiteContent(seed.siteContent, parsed.siteContent as Partial<SiteContent> | undefined),
     };
   } catch {
     return seedAll();
