@@ -47,8 +47,8 @@ function ProductView({ p }: { p: (typeof products)[number] }) {
     { id: "rev", key: "pd.tab.rev" }, { id: "ship", key: "pd.tab.ship" },
   ];
 
-  useAdminState(); // subscribe to store for reviews reactivity
-  const stats = useMemo(() => productRatingStats(p.id), [p.id]);
+  const { reviews } = useAdminState();
+  const stats = useMemo(() => productRatingStats(p.id), [p.id, reviews]);
   const [rating, setRating] = useState(5);
   const [reviewTitle, setReviewTitle] = useState("");
   const [comment, setComment] = useState("");
