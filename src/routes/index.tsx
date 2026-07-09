@@ -1,24 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Hero } from "@/components/Hero";
+import { CategoryCards } from "@/components/CategoryCards";
+import { UseChips } from "@/components/UseChips";
+import { BestSellers } from "@/components/BestSellers";
+import { BrandsMarquee } from "@/components/BrandsMarquee";
+import { FlashSale } from "@/components/FlashSale";
+import { WhyUs } from "@/components/WhyUs";
+import { BuilderTeaser } from "@/components/BuilderTeaser";
+import { Reviews } from "@/components/Reviews";
+import { ContactCTA } from "@/components/ContactCTA";
+import { useI18n } from "@/lib/i18n";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const { t } = useI18n();
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <>
+      <Hero />
+      <FlashSale />
+      <CategoryCards />
+      <section className="container-page pb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4">{t("use.title")}</h2>
+        <UseChips />
+      </section>
+      <BestSellers />
+      <BrandsMarquee />
+      <WhyUs />
+      <BuilderTeaser />
+      <Reviews />
+      <ContactCTA />
+    </>
   );
 }
