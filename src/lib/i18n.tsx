@@ -133,6 +133,7 @@ const fr: Record<string, string> = {
   "pc.add": "Ajouter au panier",
   "pc.fav": "Ajouter aux favoris",
   "pc.added": "Produit ajouté au panier",
+  "pc.noReviews": "Pas encore d'avis",
   "cp.maxPrice": "Prix maximum",
   "cp.brand": "Marque",
   "cp.use": "Usage",
