@@ -1113,8 +1113,27 @@ export function canPerform(min: AdminUserRole, role: AdminUserRole = getActiveRo
 }
 
 
+// Site content (marketing blocks visible on the storefront)
+export function updateSiteContent<K extends keyof SiteContent>(section: K, patch: Partial<SiteContent[K]>) {
+  const next: SiteContent = { ...state.siteContent, [section]: { ...(state.siteContent[section] as object), ...(patch as object) } as SiteContent[K] };
+  state = { ...state, siteContent: next };
+  emit();
+  logAudit(`contenu ${String(section)}`, "content.update", Object.keys(patch).join(", "));
+}
+export function setSiteContentSection<K extends keyof SiteContent>(section: K, value: SiteContent[K]) {
+  state = { ...state, siteContent: { ...state.siteContent, [section]: value } };
+  emit();
+  logAudit(`contenu ${String(section)}`, "content.replace");
+}
+export function resetSiteContentSection<K extends keyof SiteContent>(section: K) {
+  const seed = seedSiteContent();
+  state = { ...state, siteContent: { ...state.siteContent, [section]: seed[section] } };
+  emit();
+  logAudit(`contenu ${String(section)}`, "content.reset");
+}
+
 // ---------- Reset ----------
-export type ResetKey = ArrayKey | "siteSettings" | "shippingSettings" | "all";
+export type ResetKey = ArrayKey | "siteSettings" | "shippingSettings" | "siteContent" | "all";
 export function resetData(key: ResetKey) {
   const seed = seedAll();
   if (key === "all") {
