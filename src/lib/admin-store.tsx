@@ -621,6 +621,7 @@ function seedAll(): AdminState {
     auditLogs: seedAuditLogs(),
     siteSettings: seedSiteSettings(),
     shippingSettings: seedShippingSettings(),
+    siteContent: seedSiteContent(),
   };
 }
 
