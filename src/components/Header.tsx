@@ -26,11 +26,11 @@ const NAV: { to: string; key: TKey }[] = [
   { to: "/contact", key: "nav.contact" },
 ];
 
-const SECONDARY: { to: string; params?: Record<string, string>; key: TKey; Icon: typeof Tag; accent?: boolean }[] = [
-  { to: "/category/$slug", params: { slug: "laptops" }, key: "nav.laptops", Icon: Laptop },
-  { to: "/category/$slug", params: { slug: "desktops" }, key: "nav.desktops", Icon: Monitor },
-  { to: "/category/$slug", params: { slug: "builds" }, key: "nav.builds", Icon: Cpu },
-  { to: "/category/$slug", params: { slug: "phones" }, key: "nav.phones", Icon: Smartphone },
+const SECONDARY: { to: string; key: TKey; Icon: typeof Tag; accent?: boolean }[] = [
+  { to: "/category/laptops", key: "nav.laptops", Icon: Laptop },
+  { to: "/category/desktops", key: "nav.desktops", Icon: Monitor },
+  { to: "/category/builds", key: "nav.builds", Icon: Cpu },
+  { to: "/category/phones", key: "nav.phones", Icon: Smartphone },
   { to: "/search", key: "nav.deals", Icon: Tag, accent: true },
 ];
 
