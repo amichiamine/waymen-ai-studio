@@ -1,10 +1,12 @@
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, RotateCcw, Trash2, Database } from "lucide-react";
-import { useAdminState, resetData, clearData, type AdminState } from "@/lib/admin-store";
+import { AlertTriangle, RotateCcw, Trash2, Database, Download, Upload } from "lucide-react";
+import { useAdminState, resetData, clearData, exportState, importState, type AdminState } from "@/lib/admin-store";
 
 type Row = { key: keyof AdminState; label: string; description: string };
 
@@ -19,18 +21,69 @@ const ROWS: Row[] = [
   { key: "users", label: "Utilisateurs admin", description: "Membres de l'équipe (sauf propriétaire)." },
 ];
 
+type PendingAction =
+  | { kind: "reset"; key: keyof AdminState | "all"; label: string }
+  | { kind: "clear"; key: keyof AdminState; label: string }
+  | { kind: "clearAll" }
+  | { kind: "import"; json: string; fileName: string };
+
 export default function AdminReset() {
   const state = useAdminState();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [pending, setPending] = useState<PendingAction | null>(null);
 
-  function doReset(key: keyof AdminState | "all", label: string) {
-    if (!confirm(`Réinitialiser ${label} aux données d'origine ?`)) return;
-    resetData(key);
-    toast.success(`${label} réinitialisées`);
+  function exec() {
+    if (!pending) return;
+    try {
+      if (pending.kind === "reset") {
+        resetData(pending.key);
+        toast.success(`${pending.label} réinitialisée${pending.key === "all" ? "s" : ""}`);
+      } else if (pending.kind === "clear") {
+        clearData(pending.key);
+        toast.success(`${pending.label} vidées`);
+      } else if (pending.kind === "clearAll") {
+        (Object.keys(totals) as (keyof AdminState)[]).forEach((k) => clearData(k));
+        toast.success("Toutes les données ont été vidées");
+      } else if (pending.kind === "import") {
+        const res = importState(pending.json);
+        if (!res.ok) { toast.error(`Import échoué : ${res.error}`); return; }
+        const total = Object.values(res.counts).reduce((s, n) => s + n, 0);
+        toast.success(`Import réussi (${total} enregistrements depuis ${pending.fileName})`);
+      }
+    } catch (e) {
+      toast.error(`Action échouée : ${e instanceof Error ? e.message : "erreur inconnue"}`);
+    }
   }
-  function doClear(key: keyof AdminState, label: string) {
-    if (!confirm(`Vider complètement ${label} ? Cette action est irréversible.`)) return;
-    clearData(key);
-    toast.success(`${label} vidées`);
+
+  function downloadJson() {
+    try {
+      const json = exportState();
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      a.href = url;
+      a.download = `katech-admin-${stamp}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Export téléchargé");
+    } catch {
+      toast.error("Échec de l'export");
+    }
+  }
+
+  function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 5_000_000) { toast.error("Fichier trop volumineux (>5 Mo)"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result ?? "");
+      setPending({ kind: "import", json: text, fileName: file.name });
+    };
+    reader.onerror = () => toast.error("Impossible de lire le fichier");
+    reader.readAsText(file);
   }
 
   const totals: Record<keyof AdminState, number> = {
@@ -44,10 +97,23 @@ export default function AdminReset() {
     users: state.users.length,
   };
 
+  const dialogTitle =
+    !pending ? "" :
+    pending.kind === "reset" ? `Réinitialiser ${pending.label} ?` :
+    pending.kind === "clear" ? `Vider ${pending.label} ?` :
+    pending.kind === "clearAll" ? "Vider TOUTES les données ?" :
+    `Importer « ${pending.fileName} » ?`;
+
+  const dialogDesc =
+    !pending ? null :
+    pending.kind === "import"
+      ? "Cela remplacera toutes les données locales par le contenu du fichier."
+      : "Cette action est irréversible sur les données locales du navigateur.";
+
   return (
     <AdminPageShell
       title="Réinitialisation des données"
-      description="Restaurer ou vider les données locales de la boutique (stockées dans le navigateur)."
+      description="Restaurer, vider, exporter ou importer les données locales de la boutique (localStorage)."
     >
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
@@ -58,19 +124,25 @@ export default function AdminReset() {
       </Alert>
 
       <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Download className="h-4 w-4" /> Sauvegarde & restauration</CardTitle></CardHeader>
+        <CardContent className="flex flex-wrap gap-3">
+          <Button variant="outline" onClick={downloadJson}>
+            <Download className="mr-2 h-4 w-4" /> Exporter en JSON
+          </Button>
+          <Button variant="outline" onClick={() => fileRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" /> Importer un JSON…
+          </Button>
+          <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={onFileChosen} />
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><Database className="h-4 w-4" /> Actions globales</CardTitle></CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Button onClick={() => doReset("all", "toutes les données")}>
+          <Button onClick={() => setPending({ kind: "reset", key: "all", label: "toutes les données" })}>
             <RotateCcw className="mr-2 h-4 w-4" /> Réinitialiser toute la boutique
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              if (!confirm("Vider TOUTES les données de la boutique ? Cette action est irréversible.")) return;
-              (Object.keys(totals) as (keyof AdminState)[]).forEach((k) => clearData(k));
-              toast.success("Toutes les données ont été vidées");
-            }}
-          >
+          <Button variant="destructive" onClick={() => setPending({ kind: "clearAll" })}>
             <Trash2 className="mr-2 h-4 w-4" /> Tout vider
           </Button>
         </CardContent>
@@ -86,10 +158,10 @@ export default function AdminReset() {
                 <p className="text-xs text-muted-foreground">{r.description}</p>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => doReset(r.key, r.label.toLowerCase())}>
+                <Button size="sm" variant="outline" onClick={() => setPending({ kind: "reset", key: r.key, label: r.label.toLowerCase() })}>
                   <RotateCcw className="mr-2 h-4 w-4" /> Réinitialiser
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => doClear(r.key, r.label.toLowerCase())}>
+                <Button size="sm" variant="ghost" onClick={() => setPending({ kind: "clear", key: r.key, label: r.label.toLowerCase() })}>
                   <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Vider
                 </Button>
               </div>
@@ -97,6 +169,16 @@ export default function AdminReset() {
           ))}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!pending}
+        onOpenChange={(o) => { if (!o) setPending(null); }}
+        title={dialogTitle}
+        description={dialogDesc}
+        confirmLabel={pending?.kind === "import" ? "Importer" : "Confirmer"}
+        destructive={pending?.kind === "clear" || pending?.kind === "clearAll"}
+        onConfirm={exec}
+      />
     </AdminPageShell>
   );
 }
