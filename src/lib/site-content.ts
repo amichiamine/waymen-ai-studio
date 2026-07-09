@@ -3,6 +3,7 @@ import {
   Cpu, MemoryStick, HardDrive, Zap, MessageCircle, Flame, CreditCard,
   Monitor, Laptop, Smartphone, Wrench, Grid3x3, Home as HomeIcon, User,
   ShoppingCart, Boxes, Gift, Tag,
+  Facebook, Instagram, Music2, Twitter, Youtube, Linkedin, Mail, Phone,
   type LucideIcon,
 } from "lucide-react";
 import type { Category } from "@/data/products";
