@@ -5,6 +5,7 @@ import { ProductCard } from "./ProductCard";
 import { useI18n } from "@/lib/i18n";
 import { useProducts } from "@/lib/useProducts";
 import { useAdminState } from "@/lib/admin-store";
+import { Reveal } from "@/components/Reveal";
 
 function useCountdown(targetMs: number) {
   const [now, setNow] = useState(() => Date.now());
