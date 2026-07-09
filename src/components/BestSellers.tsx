@@ -1,11 +1,13 @@
-import { products } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 import { SectionHead } from "./CategoryCards";
 import { useI18n } from "@/lib/i18n";
+import { useProducts } from "@/lib/useProducts";
+import { useMemo } from "react";
 
 export function BestSellers() {
   const { t } = useI18n();
-  const list = products.filter((p) => p.bestSeller).slice(0, 4);
+  const products = useProducts();
+  const list = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
   return (
     <section className="container-page py-16">
       <SectionHead title={t("best.title")} sub={t("best.sub")} />

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Trash2, Minus, Plus, ShoppingBag, Tag, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
-import { products } from "@/data/products";
+import { useProducts } from "@/lib/useProducts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ const COUPON_KEY = "ka-cart-coupon";
 export default function Cart() {
   useEffect(() => { document.title = `Mon panier — KA Tech`; }, []);
   const { cart, updateQty, removeFromCart } = useStore();
+  const products = useProducts();
+
   const [couponInput, setCouponInput] = useState("");
   const [applied, setApplied] = useState<{ coupon: Coupon; discount: number } | null>(null);
 

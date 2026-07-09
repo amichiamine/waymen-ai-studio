@@ -141,7 +141,10 @@ export type SiteSettings = {
   maintenance: boolean;
   emailNotifications: boolean;
   showPromoBanner: boolean;
+  lowStockThreshold: number;
+  outOfStockThreshold: number;
 };
+
 
 // A single shipping rate: either specific wilaya code, or "*" for default.
 export type ShippingRate = { wilayaCode: string; home: number; desk: number };
@@ -514,6 +517,8 @@ function seedSiteSettings(): SiteSettings {
     maintenance: false,
     emailNotifications: true,
     showPromoBanner: true,
+    lowStockThreshold: 5,
+    outOfStockThreshold: 0,
   };
 }
 
@@ -522,8 +527,10 @@ function emptySiteSettings(): SiteSettings {
     storeName: "", contactEmail: "", contactPhone: "", whatsapp: "",
     address: "", hours: "",
     maintenance: false, emailNotifications: false, showPromoBanner: false,
+    lowStockThreshold: 5, outOfStockThreshold: 0,
   };
 }
+
 
 // Shipping seeds: default rate + tier by wilaya (north / centre / hauts-plateaux / sud).
 const NORTH = new Set(["16", "09", "35", "42", "15", "06", "18", "21", "23", "25", "43", "36", "24", "31", "27", "22", "46", "13"]);
@@ -571,11 +578,25 @@ function seedNotifications(): AdminNotification[] {
   ];
 }
 
+function defaultQtyForLabel(stock: Product["stock"]): number {
+  return stock === "in" ? 50 : stock === "low" ? 3 : 0;
+}
+
+export function resolveStockLevel(qty: number, settings: Pick<SiteSettings, "lowStockThreshold" | "outOfStockThreshold">): Product["stock"] {
+  if (qty <= settings.outOfStockThreshold) return "out";
+  if (qty <= settings.lowStockThreshold) return "low";
+  return "in";
+}
+
 function seedAll(): AdminState {
   const customers = seedCustomers();
   const orders = seedOrders(customers);
   return {
-    products: seedProducts.map((p) => ({ ...p, specs: { ...p.specs } })),
+    products: seedProducts.map((p) => ({
+      ...p,
+      specs: { ...p.specs },
+      stockQty: p.stockQty ?? defaultQtyForLabel(p.stock),
+    })),
     categories: seedCategories(),
     brands: seedBrands(),
     orders,
@@ -600,6 +621,7 @@ function seedAll(): AdminState {
   };
 }
 
+
 // ---------- Store ----------
 const LS_KEY = "katech.admin.state.v1";
 
@@ -612,8 +634,11 @@ function loadState(): AdminState {
     const seed = seedAll();
     const products = (parsed.products ?? seed.products).map((p) => {
       const src = seed.products.find((sp) => sp.id === p.id);
-      return src ? { ...p, image: p.image?.startsWith("/") || p.image?.startsWith("http") || p.image?.startsWith("data:") ? p.image : src.image } : p;
+      const image = src ? (p.image?.startsWith("/") || p.image?.startsWith("http") || p.image?.startsWith("data:") ? p.image : src.image) : p.image;
+      const stockQty = typeof p.stockQty === "number" ? p.stockQty : defaultQtyForLabel(p.stock);
+      return { ...p, image, stockQty };
     });
+
     return {
       products,
       categories: parsed.categories ?? seed.categories,
@@ -785,14 +810,25 @@ export function createOrder(input: {
     if (!match) return c;
     return { ...c, ordersCount: c.ordersCount + 1, totalSpent: c.totalSpent + order.total };
   });
+  // Decrement product qty and refresh stock label from thresholds
+  const qtyMap = new Map<string, number>();
+  for (const it of input.items) qtyMap.set(it.productId, (qtyMap.get(it.productId) ?? 0) + it.qty);
+  const products = state.products.map((p) => {
+    const dec = qtyMap.get(p.id);
+    if (!dec) return p;
+    const nextQty = Math.max(0, (p.stockQty ?? defaultQtyForLabel(p.stock)) - dec);
+    return { ...p, stockQty: nextQty, stock: resolveStockLevel(nextQty, state.siteSettings) };
+  });
   state = {
     ...state,
     orders: [order, ...state.orders],
     stockMovements: [...movements, ...state.stockMovements],
     coupons,
     customers,
+    products,
   };
   emit();
+
   addNotification({
     title: `Nouvelle commande ${order.id}`,
     body: `${order.customerName} — ${order.total.toLocaleString("fr-FR")} DA`,
@@ -917,8 +953,18 @@ export function setBuilderSteps(list: BuilderStep[]) { set("builderSteps", list)
 
 // Site settings
 export function updateSiteSettings(patch: Partial<SiteSettings>) {
-  set("siteSettings", { ...state.siteSettings, ...patch });
+  const nextSettings = { ...state.siteSettings, ...patch };
+  const thresholdChanged = ("lowStockThreshold" in patch || "outOfStockThreshold" in patch);
+  const products = thresholdChanged
+    ? state.products.map((p) => {
+        const qty = p.stockQty ?? defaultQtyForLabel(p.stock);
+        return { ...p, stock: resolveStockLevel(qty, nextSettings) };
+      })
+    : state.products;
+  state = { ...state, siteSettings: nextSettings, products };
+  emit();
 }
+
 
 // Shipping
 export function upsertShippingRate(r: ShippingRate) {
@@ -967,13 +1013,26 @@ export function adjustStock(productId: string, delta: number, reason: string) {
     reason,
     createdAt: new Date().toISOString(),
   };
-  state = { ...state, stockMovements: [mov, ...state.stockMovements] };
+  const currentQty = p.stockQty ?? defaultQtyForLabel(p.stock);
+  const nextQty = Math.max(0, currentQty + delta);
+  const nextLevel = resolveStockLevel(nextQty, state.siteSettings);
+  const products = state.products.map((x) => x.id === productId ? { ...x, stockQty: nextQty, stock: nextLevel } : x);
+  state = { ...state, stockMovements: [mov, ...state.stockMovements], products };
   emit();
-  logAudit(`produit ${p.name}`, "stock.adjust", `${delta > 0 ? "+" : ""}${delta} — ${reason}`);
+  logAudit(`produit ${p.name}`, "stock.adjust", `${delta > 0 ? "+" : ""}${delta} — ${reason} (→ ${nextQty})`);
 }
 export function setProductStockLevel(productId: string, level: Product["stock"]) {
   set("products", state.products.map((p) => p.id === productId ? { ...p, stock: level } : p));
 }
+export function setProductStockQty(productId: string, qty: number, reason = "Ajustement manuel") {
+  const p = state.products.find((x) => x.id === productId);
+  if (!p) return;
+  const currentQty = p.stockQty ?? defaultQtyForLabel(p.stock);
+  const delta = qty - currentQty;
+  if (delta === 0) return;
+  adjustStock(productId, delta, reason);
+}
+
 
 // Media
 export function upsertMediaAsset(m: MediaAsset) {

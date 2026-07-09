@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
-import { products } from "@/data/products";
+import { useProducts } from "@/lib/useProducts";
 import { WILAYAS } from "@/data/wilayas";
 import { useAuth } from "@/lib/auth";
 import {
@@ -29,6 +29,8 @@ export default function Checkout() {
   const { user } = useAuth();
   const { cart, clearCart } = useStore();
   const { paymentMethods, shippingSettings } = useAdminState();
+  const products = useProducts();
+
   const { list: addresses, defaultAddress } = useAddresses(user?.id);
   const navigate = useNavigate();
 

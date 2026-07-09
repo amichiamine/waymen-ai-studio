@@ -28,6 +28,7 @@ const schema = z.object({
   price: z.coerce.number({ message: "Prix requis" }).int("Nombre entier requis").min(1, "Le prix doit être supérieur à 0").max(100_000_000, "Prix trop élevé"),
   oldPrice: z.union([z.literal(""), z.coerce.number().int().min(0).max(100_000_000)]).optional(),
   stock: z.enum(["in", "low", "out"]),
+  stockQty: z.coerce.number().int().min(0).max(1_000_000).optional(),
   image: imageField,
   bestSeller: z.boolean().optional(),
   sale: z.boolean().optional(),
@@ -45,13 +46,14 @@ const schema = z.object({
     ctx.addIssue({ code: "custom", path: ["oldPrice"], message: "Renseigner un ancien prix > prix pour activer la promotion" });
   }
 });
+
 type FormValues = z.infer<typeof schema>;
 
 
 function emptyForm(): FormValues {
   return {
     id: "", name: "", brand: "", category: "laptops", specLine: "",
-    price: 0, oldPrice: "" as unknown as number, stock: "in", image: "",
+    price: 0, oldPrice: "" as unknown as number, stock: "in", stockQty: 50, image: "",
     bestSeller: false, sale: false,
     cpu: "", ram: "", storage: "", gpu: "", screen: "", os: "",
   };
@@ -60,15 +62,17 @@ function emptyForm(): FormValues {
 function toForm(p: Product): FormValues {
   return {
     id: p.id, name: p.name, brand: p.brand, category: p.category, specLine: p.specLine,
-    price: p.price, oldPrice: (p.oldPrice ?? "") as number, stock: p.stock, image: p.image,
+    price: p.price, oldPrice: (p.oldPrice ?? "") as number, stock: p.stock, stockQty: p.stockQty ?? 0, image: p.image,
     bestSeller: !!p.bestSeller, sale: !!p.sale,
     cpu: p.specs.cpu ?? "", ram: p.specs.ram ?? "", storage: p.specs.storage ?? "",
     gpu: p.specs.gpu ?? "", screen: p.specs.screen ?? "", os: p.specs.os ?? "",
   };
 }
 
+
 export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
-  const { products, categories, brands } = useAdminState();
+  const { products, categories, brands, mediaAssets } = useAdminState();
+
   const nav = useNavigate();
   const { id } = useParams();
   const existing = mode === "edit" && id ? getProduct(id) : undefined;
@@ -127,10 +131,12 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         price: data.price,
         oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
         stock: data.stock,
+        stockQty: typeof data.stockQty === "number" ? data.stockQty : existing?.stockQty,
         image: data.image,
         bestSeller: data.bestSeller,
         sale: data.sale,
       };
+
       upsertProduct(product);
       toast.success(mode === "new" ? "Produit créé" : "Produit mis à jour");
       nav("/admin/products");
@@ -230,7 +236,12 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Input type="number" value={v.oldPrice as number | ""} onChange={(e) => update("oldPrice", e.target.value === "" ? ("" as unknown as number) : Number(e.target.value))} />
                 </div>
                 <div>
-                  <Label>État du stock</Label>
+                  <Label>Quantité (unités)</Label>
+                  <Input type="number" min={0} value={v.stockQty ?? 0} onChange={(e) => update("stockQty", Number(e.target.value))} />
+                  <p className="mt-1 text-xs text-muted-foreground">Le statut se recalcule selon les seuils définis dans /admin/settings.</p>
+                </div>
+                <div>
+                  <Label>État du stock (surcharge)</Label>
                   <Select value={v.stock} onValueChange={(x) => update("stock", x as "in" | "low" | "out")}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -240,6 +251,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="flex items-center justify-between rounded-md border p-2">
                   <Label htmlFor="bs" className="mb-0">Best-seller</Label>
                   <Switch id="bs" checked={!!v.bestSeller} onCheckedChange={(x) => update("bestSeller", x)} />
@@ -253,6 +265,20 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             <Card>
               <CardHeader><CardTitle>Image</CardTitle></CardHeader>
               <CardContent className="space-y-3">
+                {mediaAssets.length > 0 && (
+                  <div>
+                    <Label>Depuis la médiathèque</Label>
+                    <Select value="" onValueChange={(src) => update("image", src)}>
+                      <SelectTrigger><SelectValue placeholder="Choisir un média…" /></SelectTrigger>
+                      <SelectContent>
+                        {mediaAssets.map((m) => (
+                          <SelectItem key={m.id} value={m.src}>{m.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <Label>URL ou chemin</Label>
                 <Input value={v.image} onChange={(e) => update("image", e.target.value)} placeholder="URL ou chemin de l'image" />
                 {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
                 {v.image && (
@@ -262,6 +288,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 )}
               </CardContent>
             </Card>
+
           </div>
         </div>
         <div className="flex justify-end gap-2">

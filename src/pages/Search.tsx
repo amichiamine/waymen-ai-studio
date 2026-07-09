@@ -1,7 +1,9 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { products, categoryMeta, type Category } from "@/data/products";
+import { categoryMeta, type Category } from "@/data/products";
+import { useProducts } from "@/lib/useProducts";
+
 import { ProductCard } from "@/components/ProductCard";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
@@ -36,7 +38,9 @@ export default function Search() {
     setSearchParams(p, { replace: true });
   }, [q, cat, brand, maxPrice, sort, inStock, setSearchParams]);
 
-  const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), []);
+  const products = useProducts();
+  const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products]);
+
 
   const results = useMemo(() => {
     let r = products.filter((p) => {
@@ -56,7 +60,7 @@ export default function Search() {
     else if (sort === "high") r = [...r].sort((a, b) => b.price - a.price);
     else if (sort === "new") r = [...r].sort((a, b) => Number(!!b.sale) - Number(!!a.sale));
     return r;
-  }, [term, cat, brand, maxPrice, inStock, sort]);
+  }, [products, term, cat, brand, maxPrice, inStock, sort]);
 
   const PAGE = 12;
   const [visible, setVisible] = useState(PAGE);
@@ -67,7 +71,7 @@ export default function Search() {
     hasMore, loading: false, onLoadMore: () => setVisible((v) => v + PAGE),
   });
 
-  const suggestions = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), []);
+  const suggestions = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
   const active = cat || brand.length || maxPrice !== 500_000 || inStock || sort !== "relevance";
 
   return (
