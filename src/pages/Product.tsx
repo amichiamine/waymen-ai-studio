@@ -15,9 +15,17 @@ const specKeyMap: Record<SpecKey, TKey> = {
 };
 
 export default function Product() {
-  useEffect(() => { document.title = `${name} — KA Tech`; }, []);
   const { id } = useParams();
-  const p = products.find((x) => x.id === id)!;
+  const p = products.find((x) => x.id === id);
+  useEffect(() => { document.title = p ? `${p.name} — KA Tech` : "Produit introuvable — KA Tech"; }, [p]);
+  if (!p) {
+    return (
+      <div className="container mx-auto max-w-xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold">Produit introuvable</h1>
+        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">Voir le catalogue</Link>
+      </div>
+    );
+  }
   const cat = categoryMeta[p.category];
   const [tab, setTab] = useState("specs");
   const { t } = useI18n();
