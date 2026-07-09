@@ -1,11 +1,26 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Mail } from "lucide-react";
+import { toast } from "sonner";
 import { Logo } from "./Logo";
-import { useAdminState } from "@/lib/admin-store";
+import { useAdminState, addSubscriber } from "@/lib/admin-store";
 import { getIcon } from "@/lib/site-content";
 
 export function Footer() {
   const { siteContent } = useAdminState();
   const f = siteContent.footer;
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  function subscribe(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const r = addSubscriber(email, "footer");
+    setBusy(false);
+    if (!r.ok) { toast.error(r.error || "Inscription impossible"); return; }
+    toast.success("Merci pour votre inscription !");
+    setEmail("");
+  }
   return (
     <footer className="mt-24 border-t border-border bg-card/40 animate-fade-in-up">
       <div className="container-page py-14 grid gap-10 md:grid-cols-5">
