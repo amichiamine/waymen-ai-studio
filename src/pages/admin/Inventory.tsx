@@ -106,6 +106,7 @@ export default function AdminInventory() {
                   <TableHead>Produit</TableHead>
                   <TableHead>Marque</TableHead>
                   <TableHead>Catégorie</TableHead>
+                  <TableHead className="text-right">Qté</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
@@ -121,13 +122,15 @@ export default function AdminInventory() {
                     </TableCell>
                     <TableCell className="text-sm">{p.brand}</TableCell>
                     <TableCell className="text-sm capitalize">{p.category}</TableCell>
+                    <TableCell className="text-right font-mono text-sm">{p.stockQty ?? 0}</TableCell>
                     <TableCell><Badge variant={VARIANT[p.stock]}>{LABEL[p.stock]}</Badge></TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" onClick={() => openEdit(p)}>Ajuster</Button>
                     </TableCell>
                   </TableRow>
                 ))}
-                {rows.length === 0 && <TableRow><TableCell colSpan={5} className="h-24 text-center text-sm text-muted-foreground">Aucun produit.</TableCell></TableRow>}
+                {rows.length === 0 && <TableRow><TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">Aucun produit.</TableCell></TableRow>}
+
               </TableBody>
             </Table>
           </div>
@@ -167,7 +170,14 @@ export default function AdminInventory() {
           <DialogHeader><DialogTitle>Ajuster le stock — {edit?.name}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium">Statut de stock</label>
+              <label className="text-xs font-medium">Quantité en stock (nombre)</label>
+              <Input type="number" value={qty} onChange={(e) => setQty(e.target.value)} min={0} />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Seuils actuels : rupture ≤ {siteSettings.outOfStockThreshold}, faible ≤ {siteSettings.lowStockThreshold}. Le statut sera recalculé automatiquement.
+              </p>
+            </div>
+            <div>
+              <label className="text-xs font-medium">Statut de stock (surcharge manuelle)</label>
               <Select value={level} onValueChange={(v) => setLevel(v as Product["stock"])}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -178,19 +188,20 @@ export default function AdminInventory() {
               </Select>
             </div>
             <div>
-              <label className="text-xs font-medium">Mouvement (delta)</label>
+              <label className="text-xs font-medium">Mouvement (delta rapide)</label>
               <div className="flex gap-2">
                 <Button type="button" variant="outline" size="icon" onClick={() => setDelta((d) => String((parseInt(d, 10) || 0) - 1))}><PackageMinus className="h-4 w-4" /></Button>
                 <Input type="number" value={delta} onChange={(e) => setDelta(e.target.value)} className="text-center" />
                 <Button type="button" variant="outline" size="icon" onClick={() => setDelta((d) => String((parseInt(d, 10) || 0) + 1))}><PackagePlus className="h-4 w-4" /></Button>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Négatif = sortie de stock (vente, casse), positif = entrée (réappro).</p>
+              <p className="mt-1 text-xs text-muted-foreground">Négatif = sortie (vente, casse), positif = entrée (réappro). Prioritaire sur la quantité ci-dessus.</p>
             </div>
             <div>
               <label className="text-xs font-medium">Raison</label>
               <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Réapprovisionnement, inventaire, casse…" rows={2} />
             </div>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setEdit(null)}>Annuler</Button>
             <Button onClick={saveAdjust}>Enregistrer</Button>
