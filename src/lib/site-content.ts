@@ -24,6 +24,8 @@ export const ICONS: Record<IconName, LucideIcon> = {
   monitor: Monitor, laptop: Laptop, smartphone: Smartphone, wrench: Wrench,
   grid: Grid3x3, home: HomeIcon, user: User, "shopping-cart": ShoppingCart,
   boxes: Boxes, gift: Gift, tag: Tag,
+  facebook: Facebook, instagram: Instagram, music: Music2, twitter: Twitter,
+  youtube: Youtube, linkedin: Linkedin, mail: Mail, phone: Phone,
 };
 
 export const ICON_NAMES: IconName[] = Object.keys(ICONS) as IconName[];
