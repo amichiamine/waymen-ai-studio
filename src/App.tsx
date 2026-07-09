@@ -8,7 +8,7 @@ import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/auth";
 import { useAdminRoles } from "@/lib/admin-auth";
-import { AdminSidebar } from "@/components/admin/AdminLayout";
+import { AdminSidebar, AdminMobileNav, AdminBreadcrumbs } from "@/components/admin/AdminLayout";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Home } from "lucide-react";
