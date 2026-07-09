@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Search, Newspaper } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAdminState } from "@/lib/admin-store";
 
 export default function Blog() {
-  useEffect(() => { document.title = `Blog — KA Tech`; }, []);
   const [q, setQ] = useState("");
   const { blogPosts } = useAdminState();
 
