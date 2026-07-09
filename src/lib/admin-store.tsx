@@ -663,10 +663,28 @@ function seedAll(): AdminState {
     mediaAssets: seedMediaAssets(),
     notifications: seedNotifications(),
     auditLogs: seedAuditLogs(),
+    messages: seedMessages(),
+    subscribers: seedSubscribers(),
     siteSettings: seedSiteSettings(),
     shippingSettings: seedShippingSettings(),
     siteContent: seedSiteContent(),
   };
+}
+
+function seedMessages(): ContactMessage[] {
+  const now = Date.now();
+  return [
+    { id: "msg_1", name: "Amine Dahmani", email: "amine.d@example.dz", phone: "0555 12 34 56", subject: "Demande de devis", message: "Bonjour, avez-vous un stock de RTX 4070 Super ?", read: false, createdAt: new Date(now - 3600 * 1000).toISOString() },
+    { id: "msg_2", name: "Sabrina L.", email: "sabrina@example.com", subject: "Suivi commande", message: "Ma commande KA100237 est-elle expédiée ?", read: true, createdAt: new Date(now - 3 * 86400 * 1000).toISOString() },
+  ];
+}
+
+function seedSubscribers(): Subscriber[] {
+  const now = Date.now();
+  return [
+    { id: "sub_1", email: "fan@katech.dz", source: "footer", createdAt: new Date(now - 10 * 86400 * 1000).toISOString() },
+    { id: "sub_2", email: "hello@example.com", source: "footer", createdAt: new Date(now - 2 * 86400 * 1000).toISOString() },
+  ];
 }
 
 
