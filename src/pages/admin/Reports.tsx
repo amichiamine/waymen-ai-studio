@@ -59,8 +59,8 @@ export default function AdminReports() {
   };
 
   const exportInventory = () => {
-    const rows: (string | number)[][] = [["ID", "Nom", "Marque", "Catégorie", "Prix DA", "Stock", "Note", "Best-seller"]];
-    for (const p of products) rows.push([p.id, p.name, p.brand, p.category, p.price, p.stock, p.rating, p.bestSeller ? "oui" : "non"]);
+    const rows: (string | number)[][] = [["ID", "Nom", "Marque", "Catégorie", "Prix DA", "Stock", "Best-seller"]];
+    for (const p of products) rows.push([p.id, p.name, p.brand, p.category, p.price, p.stock, p.bestSeller ? "oui" : "non"]);
     download(`ka-stock-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(rows));
   };
 
