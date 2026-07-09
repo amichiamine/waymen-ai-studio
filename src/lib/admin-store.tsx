@@ -810,14 +810,25 @@ export function createOrder(input: {
     if (!match) return c;
     return { ...c, ordersCount: c.ordersCount + 1, totalSpent: c.totalSpent + order.total };
   });
+  // Decrement product qty and refresh stock label from thresholds
+  const qtyMap = new Map<string, number>();
+  for (const it of input.items) qtyMap.set(it.productId, (qtyMap.get(it.productId) ?? 0) + it.qty);
+  const products = state.products.map((p) => {
+    const dec = qtyMap.get(p.id);
+    if (!dec) return p;
+    const nextQty = Math.max(0, (p.stockQty ?? defaultQtyForLabel(p.stock)) - dec);
+    return { ...p, stockQty: nextQty, stock: resolveStockLevel(nextQty, state.siteSettings) };
+  });
   state = {
     ...state,
     orders: [order, ...state.orders],
     stockMovements: [...movements, ...state.stockMovements],
     coupons,
     customers,
+    products,
   };
   emit();
+
   addNotification({
     title: `Nouvelle commande ${order.id}`,
     body: `${order.customerName} — ${order.total.toLocaleString("fr-FR")} DA`,
