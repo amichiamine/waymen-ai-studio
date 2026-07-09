@@ -51,6 +51,7 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
   {
     title: "Contenu",
     items: [
+      { to: "/admin/content", label: "Contenu du site", Icon: Palette, minRole: "editor" },
       { to: "/admin/blog", label: "Blog", Icon: FileText, minRole: "editor" },
       { to: "/admin/reviews", label: "Avis", Icon: Star, minRole: "editor" },
     ],
