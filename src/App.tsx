@@ -76,7 +76,8 @@ function RequireAuth() {
 }
 
 function AdminLayout() {
-  const { isAdmin, loading } = useAdminRoles();
+  const { isAdmin, loading, user } = useAdminRoles();
+  const location = useLocation();
   useEffect(() => {
     document.title = "Admin — KA Tech";
   }, []);
