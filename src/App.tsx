@@ -76,13 +76,17 @@ function RequireAuth() {
 }
 
 function AdminLayout() {
-  const { isAdmin, loading } = useAdminRoles();
+  const { isAdmin, loading, user } = useAdminRoles();
+  const location = useLocation();
   useEffect(() => {
     document.title = "Admin — KA Tech";
   }, []);
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Chargement…</div>;
+  }
+  if (!user) {
+    return <Navigate to="/auth" replace state={{ from: location }} />;
   }
   if (!isAdmin) {
     return (
@@ -96,7 +100,6 @@ function AdminLayout() {
             Vous devez être connecté avec un compte administrateur pour accéder au back-office.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link to="/auth"><Button>Se connecter</Button></Link>
             <Link to="/"><Button variant="outline"><Home className="mr-2 h-4 w-4" /> Accueil</Button></Link>
           </div>
         </div>
