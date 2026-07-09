@@ -120,7 +120,9 @@ function AdminLayout() {
         <header className="flex h-14 items-center gap-3 border-b border-border/60 bg-card/50 px-3 lg:px-8">
           <AdminMobileNav />
           <AdminBreadcrumbs />
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2">
+            <AdminRoleSwitcher />
+            <AdminNotificationBell />
             <Link to="/" className="text-sm text-primary hover:underline">← Boutique</Link>
           </div>
         </header>
