@@ -106,6 +106,69 @@ export type SiteContent = {
 
 export function seedSiteContent(): SiteContent {
   return {
+    header: {
+      showSearch: true,
+      searchPlaceholder: "Rechercher un produit, une marque…",
+      builderCta: { label: "Configurez votre PC", href: "/builder" },
+      primaryNav: [
+        { id: "hn_blog", label: "Blog", href: "/blog" },
+        { id: "hn_about", label: "À propos", href: "/about" },
+        { id: "hn_contact", label: "Contact", href: "/contact" },
+      ],
+      categoryMenu: {
+        label: "Catégories",
+        title: "Nos catégories",
+        browseLabel: "Voir toutes les catégories",
+        browseHref: "/category",
+        items: [
+          { id: "hc_1", label: "Ordinateurs portables", href: "/category/laptops", icon: "laptop" },
+          { id: "hc_2", label: "Ordinateurs de bureau", href: "/category/desktops", icon: "monitor" },
+          { id: "hc_3", label: "Configurations", href: "/category/builds", icon: "cpu" },
+          { id: "hc_4", label: "Téléphones", href: "/category/phones", icon: "smartphone" },
+          { id: "hc_5", label: "Offres", href: "/search", icon: "tag", accent: true },
+        ],
+      },
+    },
+    footer: {
+      tagline:
+        "Boutique en ligne spécialisée dans la vente d'ordinateurs, de téléphones et d'accessoires — livraison dans toute l'Algérie avec garantie officielle.",
+      copyright: "© 2026 KA Tech — Tous droits réservés",
+      madeIn: "Fait avec passion en Algérie",
+      socials: [
+        { id: "s_fb", icon: "facebook", label: "Facebook", href: "#" },
+        { id: "s_ig", icon: "instagram", label: "Instagram", href: "#" },
+        { id: "s_wa", icon: "message-circle", label: "WhatsApp", href: "#" },
+        { id: "s_tt", icon: "music", label: "TikTok", href: "#" },
+      ],
+      columns: [
+        {
+          id: "fc_quick", title: "Liens rapides",
+          links: [
+            { id: "fl_1", label: "Accueil", href: "/" },
+            { id: "fl_2", label: "Configurez votre PC", href: "/builder" },
+            { id: "fl_3", label: "Offres", href: "/category/laptops" },
+          ],
+        },
+        {
+          id: "fc_cats", title: "Catégories",
+          links: [
+            { id: "fl_4", label: "Ordinateurs portables", href: "/category/laptops" },
+            { id: "fl_5", label: "Ordinateurs de bureau", href: "/category/desktops" },
+            { id: "fl_6", label: "Configurations", href: "/category/builds" },
+            { id: "fl_7", label: "Téléphones", href: "/category/phones" },
+          ],
+        },
+        {
+          id: "fc_sup", title: "Support",
+          links: [
+            { id: "fl_8", label: "Contactez-nous", href: "/contact" },
+            { id: "fl_9", label: "Garantie", href: "/about" },
+            { id: "fl_10", label: "Livraison", href: "/about" },
+            { id: "fl_11", label: "FAQ", href: "/about" },
+          ],
+        },
+      ],
+    },
     hero: {
       badge: "Collection 2026 disponible",
       title1: "La puissance tech,",
