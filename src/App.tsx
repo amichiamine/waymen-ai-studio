@@ -62,7 +62,11 @@ import AdminShipping from "@/pages/admin/Shipping";
 import AdminUsers from "@/pages/admin/Users";
 import AdminCategoryForm from "@/pages/admin/CategoryForm";
 import AdminBrandForm from "@/pages/admin/BrandForm";
+import AdminProductDetail from "@/pages/admin/ProductDetail";
+import AdminCategoryDetail from "@/pages/admin/CategoryDetail";
+import AdminBrandDetail from "@/pages/admin/BrandDetail";
 import AdminReset from "@/pages/admin/Reset";
+
 
 function RequireAuth() {
   const { user, loading } = useAuth();
