@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, Tags, Star, FileText,
   Settings as SettingsIcon, BarChart3, Image as ImageIcon, Bell, ShieldCheck,
   ScrollText, Warehouse, Truck, CreditCard, PieChart, Ticket, Boxes,
-  Menu, ChevronRight, Home,
+  Menu, ChevronRight, Home, RotateCcw,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
