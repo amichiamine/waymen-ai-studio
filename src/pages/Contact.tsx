@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminState } from "@/lib/admin-store";
 
 export default function Contact() {
-  useEffect(() => { document.title = `Contact — KA Tech`; }, []);
   const [sending, setSending] = useState(false);
   const { siteSettings: s } = useAdminState();
 
