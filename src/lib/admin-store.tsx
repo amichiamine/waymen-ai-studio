@@ -1003,13 +1003,26 @@ export function adjustStock(productId: string, delta: number, reason: string) {
     reason,
     createdAt: new Date().toISOString(),
   };
-  state = { ...state, stockMovements: [mov, ...state.stockMovements] };
+  const currentQty = p.stockQty ?? defaultQtyForLabel(p.stock);
+  const nextQty = Math.max(0, currentQty + delta);
+  const nextLevel = resolveStockLevel(nextQty, state.siteSettings);
+  const products = state.products.map((x) => x.id === productId ? { ...x, stockQty: nextQty, stock: nextLevel } : x);
+  state = { ...state, stockMovements: [mov, ...state.stockMovements], products };
   emit();
-  logAudit(`produit ${p.name}`, "stock.adjust", `${delta > 0 ? "+" : ""}${delta} — ${reason}`);
+  logAudit(`produit ${p.name}`, "stock.adjust", `${delta > 0 ? "+" : ""}${delta} — ${reason} (→ ${nextQty})`);
 }
 export function setProductStockLevel(productId: string, level: Product["stock"]) {
   set("products", state.products.map((p) => p.id === productId ? { ...p, stock: level } : p));
 }
+export function setProductStockQty(productId: string, qty: number, reason = "Ajustement manuel") {
+  const p = state.products.find((x) => x.id === productId);
+  if (!p) return;
+  const currentQty = p.stockQty ?? defaultQtyForLabel(p.stock);
+  const delta = qty - currentQty;
+  if (delta === 0) return;
+  adjustStock(productId, delta, reason);
+}
+
 
 // Media
 export function upsertMediaAsset(m: MediaAsset) {
