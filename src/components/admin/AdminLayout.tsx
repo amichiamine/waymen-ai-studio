@@ -74,32 +74,37 @@ function canSee(item: Item, role: AdminUserRole): boolean {
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useLocation().pathname;
+  const role = useActiveRole();
   return (
     <nav className="space-y-6 p-4 text-sm">
-      {ADMIN_SECTIONS.map((s) => (
-        <div key={s.title}>
-          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.title}</p>
-          <ul className="space-y-1">
-            {s.items.map((it) => {
-              const active = pathname === it.to || (it.to !== "/admin" && pathname.startsWith(it.to));
-              return (
-                <li key={it.to}>
-                  <Link
-                    to={it.to}
-                    onClick={onNavigate}
-                    className={`flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${
-                      active ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent"
-                    }`}
-                  >
-                    <it.Icon className="h-4 w-4" />
-                    {it.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+      {ADMIN_SECTIONS.map((s) => {
+        const items = s.items.filter((it) => canSee(it, role));
+        if (items.length === 0) return null;
+        return (
+          <div key={s.title}>
+            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.title}</p>
+            <ul className="space-y-1">
+              {items.map((it) => {
+                const active = pathname === it.to || (it.to !== "/admin" && pathname.startsWith(it.to));
+                return (
+                  <li key={it.to}>
+                    <Link
+                      to={it.to}
+                      onClick={onNavigate}
+                      className={`flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${
+                        active ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      <it.Icon className="h-4 w-4" />
+                      {it.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
     </nav>
   );
 }
