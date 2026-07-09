@@ -100,11 +100,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       lastLogin: new Date().toISOString(),
     };
     upsertUser(created);
-    persist(toMock({ ...created, user_metadata: {} } as unknown as AdminUser));
-    // persist directly with meta.phone if provided
-    if (meta?.phone) {
-      persist({ id: created.id, email: created.email, user_metadata: { name: created.name, phone: meta.phone } });
-    }
+    persist({
+      id: created.id,
+      email: created.email,
+      user_metadata: { name: created.name, phone: meta?.phone },
+    });
     return { error: null };
   };
 
