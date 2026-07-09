@@ -17,11 +17,19 @@ const SORTS: { id: string; key: TKey }[] = [
 ];
 
 export default function CategoryDetail() {
-  useEffect(() => { document.title = `KA Tech — ${params.slug}`; }, []);
   const { slug } = useParams();
   const cat = slug as Category;
   const meta = categoryMeta[cat];
   const { t } = useI18n();
+  useEffect(() => { document.title = `KA Tech — ${slug ?? ""}`; }, [slug]);
+  if (!VALID.includes(cat)) {
+    return (
+      <div className="container mx-auto max-w-xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold">Catégorie introuvable</h1>
+        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">Voir toutes les catégories</Link>
+      </div>
+    );
+  }
 
   const [brand, setBrand] = useState<string[]>([]);
   const [use, setUse] = useState<string | null>(null);
