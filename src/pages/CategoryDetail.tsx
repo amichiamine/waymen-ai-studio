@@ -1,7 +1,9 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { products, categoryMeta, type Category } from "@/data/products";
+import { categoryMeta, type Category } from "@/data/products";
+import { useProducts } from "@/lib/useProducts";
+
 import { ProductCard } from "@/components/ProductCard";
 import { UseChips } from "@/components/UseChips";
 import { ChevronRight } from "lucide-react";
@@ -43,8 +45,10 @@ function CategoryView({ cat }: { cat: Category }) {
   const PAGE = 12;
   const [visible, setVisible] = useState(PAGE);
 
-  const all = products.filter((p) => p.category === cat);
-  const brands = Array.from(new Set(all.map((p) => p.brand)));
+  const products = useProducts();
+  const all = useMemo(() => products.filter((p) => p.category === cat), [products, cat]);
+  const brands = useMemo(() => Array.from(new Set(all.map((p) => p.brand))), [all]);
+
 
   const list = useMemo(() => {
     let r = all.filter((p) => p.price <= maxPrice);
