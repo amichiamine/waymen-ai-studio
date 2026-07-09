@@ -66,6 +66,7 @@ import AdminProductDetail from "@/pages/admin/ProductDetail";
 import AdminCategoryDetail from "@/pages/admin/CategoryDetail";
 import AdminBrandDetail from "@/pages/admin/BrandDetail";
 import AdminReset from "@/pages/admin/Reset";
+import AdminContent from "@/pages/admin/Content";
 
 
 function RequireAuth() {
@@ -197,6 +198,7 @@ export default function App() {
             <Route path="reports" element={<AdminReports />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="content" element={<AdminContent />} />
             <Route path="shipping" element={<AdminShipping />} />
             <Route path="users" element={<AdminUsers />} />
           </Route>

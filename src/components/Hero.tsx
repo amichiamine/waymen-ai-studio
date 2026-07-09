@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Flame, Users, Package, MapPin } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
 import heroImg from "@/assets/hero-laptop.jpg";
-import { useI18n } from "@/lib/i18n";
+import { useAdminState } from "@/lib/admin-store";
+import { getIcon, type IconName } from "@/lib/site-content";
 
 export function Hero() {
-  const { t } = useI18n();
+  const { siteContent } = useAdminState();
+  const h = siteContent.hero;
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} aria-hidden />
@@ -27,68 +29,82 @@ export function Hero() {
       />
       <div className="container-page flex flex-col items-center py-16 lg:py-24">
         <div className="space-y-6 text-center max-w-3xl mx-auto">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium animate-fade-in-up">
-            <Flame className="size-3.5" /> {t("hero.badge")}
-          </span>
+          {h.badge && (
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium animate-fade-in-up">
+              <Flame className="size-3.5" /> {h.badge}
+            </span>
+          )}
           <h1
             className="font-bold leading-[1.05] animate-fade-in-up delay-100"
             style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}
           >
-            {t("hero.title.1")}
+            {h.title1}
             <br />
             <span
               className="inline-block bg-clip-text text-transparent text-glow"
               style={{ backgroundImage: "var(--gradient-glow)" }}
             >
-              {t("hero.title.2")}
+              {h.title2}
             </span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto animate-fade-in-up delay-200">
-            {t("hero.subtitle")}
-          </p>
+          {h.subtitle && (
+            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto animate-fade-in-up delay-200">
+              {h.subtitle}
+            </p>
+          )}
           <div className="flex flex-wrap justify-center gap-3 animate-fade-in-up delay-300">
-            <Link
-              to={`/category/${"laptops"}`}
-              className="inline-flex items-center gap-2 h-12 px-6 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors shadow-[var(--shadow-glow)]"
-            >
-              {t("hero.cta.shop")} <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              to={`/category/${"laptops"}`}
-              className="inline-flex items-center gap-2 h-12 px-6 rounded-md border border-border text-foreground hover:border-primary/60 hover:bg-card transition-colors"
-            >
-              {t("hero.cta.deals")}
-            </Link>
+            {h.primaryCta.label && (
+              <Link
+                to={h.primaryCta.href}
+                className="inline-flex items-center gap-2 h-12 px-6 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors shadow-[var(--shadow-glow)]"
+              >
+                {h.primaryCta.label} <ArrowRight className="size-4" />
+              </Link>
+            )}
+            {h.secondaryCta.label && (
+              <Link
+                to={h.secondaryCta.href}
+                className="inline-flex items-center gap-2 h-12 px-6 rounded-md border border-border text-foreground hover:border-primary/60 hover:bg-card transition-colors"
+              >
+                {h.secondaryCta.label}
+              </Link>
+            )}
           </div>
         </div>
-        <div className="w-full max-w-2xl mx-auto grid grid-cols-3 gap-3 pt-8 animate-fade-in-up delay-300">
-          <Kpi Icon={Users} n="+5 000" l={t("hero.stat.customers")} />
-          <Kpi Icon={Package} n="+1 200" l={t("hero.stat.products")} />
-          <Kpi Icon={MapPin} n={t("hero.stat.wilayas")} l={t("hero.stat.delivery")} />
-        </div>
-        <div className="relative w-full max-w-[700px] mx-auto aspect-[16/9] mt-10 animate-fade-in-up delay-300">
+        {h.kpis.length > 0 && (
           <div
-            className="absolute inset-0 blur-3xl animate-glow-strong"
-            style={{ background: "var(--gradient-glow)" }}
-            aria-hidden
-          />
-          <div className="relative w-full h-full overflow-hidden rounded-2xl border border-border shadow-2xl shadow-[var(--shadow-card)]">
-            <img
-              src={heroImg}
-              alt="KA Tech"
-              width={1600}
-              height={900}
-              className="w-full h-full object-cover animate-hero-zoom"
-            />
-            <div className="pointer-events-none absolute inset-y-0 -inset-x-1/3 w-1/3 animate-hero-shine" aria-hidden />
+            className="w-full max-w-2xl mx-auto grid gap-3 pt-8 animate-fade-in-up delay-300"
+            style={{ gridTemplateColumns: `repeat(${Math.min(h.kpis.length, 4)}, minmax(0,1fr))` }}
+          >
+            {h.kpis.map((k) => <Kpi key={k.id} icon={k.icon} n={k.value} l={k.label} />)}
           </div>
-        </div>
+        )}
+        {h.showImage && (
+          <div className="relative w-full max-w-[700px] mx-auto aspect-[16/9] mt-10 animate-fade-in-up delay-300">
+            <div
+              className="absolute inset-0 blur-3xl animate-glow-strong"
+              style={{ background: "var(--gradient-glow)" }}
+              aria-hidden
+            />
+            <div className="relative w-full h-full overflow-hidden rounded-2xl border border-border shadow-2xl shadow-[var(--shadow-card)]">
+              <img
+                src={heroImg}
+                alt="KA Tech"
+                width={1600}
+                height={900}
+                className="w-full h-full object-cover animate-hero-zoom"
+              />
+              <div className="pointer-events-none absolute inset-y-0 -inset-x-1/3 w-1/3 animate-hero-shine" aria-hidden />
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-function Kpi({ Icon, n, l }: { Icon: typeof Users; n: string; l: string }) {
+function Kpi({ icon, n, l }: { icon: IconName; n: string; l: string }) {
+  const Icon = getIcon(icon);
   return (
     <div className="rounded-xl border border-border bg-card/60 backdrop-blur p-3 sm:p-4 text-start hover:border-primary/40 hover:-translate-y-0.5 transition-all">
       <Icon className="size-5 text-primary mb-2" />

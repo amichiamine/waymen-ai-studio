@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from "react";
 import { products as seedProducts, categoryMeta, type Product, type Category } from "@/data/products";
 import { WILAYAS } from "@/data/wilayas";
+import { seedSiteContent, mergeSiteContent, type SiteContent } from "./site-content";
+export type { SiteContent } from "./site-content";
 
 // ---------- Types ----------
 export type AdminCategory = {
@@ -219,6 +221,7 @@ export type AdminState = {
   auditLogs: AuditLog[];
   siteSettings: SiteSettings;
   shippingSettings: ShippingSettings;
+  siteContent: SiteContent;
 };
 
 export const ARRAY_KEYS = [
@@ -618,6 +621,7 @@ function seedAll(): AdminState {
     auditLogs: seedAuditLogs(),
     siteSettings: seedSiteSettings(),
     shippingSettings: seedShippingSettings(),
+    siteContent: seedSiteContent(),
   };
 }
 
@@ -662,6 +666,7 @@ function loadState(): AdminState {
       auditLogs: parsed.auditLogs ?? seed.auditLogs,
       siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
       shippingSettings: { ...seed.shippingSettings, ...(parsed.shippingSettings ?? {}) },
+      siteContent: mergeSiteContent(seed.siteContent, parsed.siteContent as Partial<SiteContent> | undefined),
     };
   } catch {
     return seedAll();
@@ -1108,8 +1113,27 @@ export function canPerform(min: AdminUserRole, role: AdminUserRole = getActiveRo
 }
 
 
+// Site content (marketing blocks visible on the storefront)
+export function updateSiteContent<K extends keyof SiteContent>(section: K, patch: Partial<SiteContent[K]>) {
+  const next: SiteContent = { ...state.siteContent, [section]: { ...(state.siteContent[section] as object), ...(patch as object) } as SiteContent[K] };
+  state = { ...state, siteContent: next };
+  emit();
+  logAudit(`contenu ${String(section)}`, "content.update", Object.keys(patch).join(", "));
+}
+export function setSiteContentSection<K extends keyof SiteContent>(section: K, value: SiteContent[K]) {
+  state = { ...state, siteContent: { ...state.siteContent, [section]: value } };
+  emit();
+  logAudit(`contenu ${String(section)}`, "content.replace");
+}
+export function resetSiteContentSection<K extends keyof SiteContent>(section: K) {
+  const seed = seedSiteContent();
+  state = { ...state, siteContent: { ...state.siteContent, [section]: seed[section] } };
+  emit();
+  logAudit(`contenu ${String(section)}`, "content.reset");
+}
+
 // ---------- Reset ----------
-export type ResetKey = ArrayKey | "siteSettings" | "shippingSettings" | "all";
+export type ResetKey = ArrayKey | "siteSettings" | "shippingSettings" | "siteContent" | "all";
 export function resetData(key: ResetKey) {
   const seed = seedAll();
   if (key === "all") {
@@ -1171,6 +1195,7 @@ export function importState(json: string): { ok: true; counts: Record<string, nu
     auditLogs: obj.auditLogs ?? seed.auditLogs,
     siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
     shippingSettings: { ...seed.shippingSettings, ...(obj.shippingSettings ?? {}) },
+    siteContent: mergeSiteContent(seed.siteContent, obj.siteContent as Partial<SiteContent> | undefined),
   };
   state = next;
   emit();

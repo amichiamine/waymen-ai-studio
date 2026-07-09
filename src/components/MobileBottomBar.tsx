@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import { Home, Grid3x3, Wrench, ShoppingCart, User } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
+import { useAdminState } from "@/lib/admin-store";
+import { getIcon, type IconName } from "@/lib/site-content";
 
 export function MobileBottomBar() {
-  const { t } = useI18n();
   const { user } = useAuth();
   const { cartCount } = useStore();
+  const { siteContent } = useAdminState();
+  const items = siteContent.mobileBottomBar.items;
 
   return (
     <nav
@@ -15,31 +16,33 @@ export function MobileBottomBar() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Navigation mobile"
     >
-      <ul className="grid grid-cols-5 h-16">
-        <Item to="/" Icon={Home} label={t("nav.home")} />
-        <Item to="/category" Icon={Grid3x3} label={t("nav.category")} />
-        <li className="flex items-center justify-center">
-          <Link
-            to="/builder"
-            className="-mt-6 inline-flex flex-col items-center justify-center size-14 rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] active:scale-95 transition-transform"
-            aria-label={t("nav.builder")}
-          >
-            <Wrench className="size-6" />
-          </Link>
-        </li>
-        <Item
-          to={user ? "/cart" : "/auth"}
-          Icon={ShoppingCart}
-          label={t("header.cart")}
-          badge={user && cartCount > 0 ? cartCount : undefined}
-        />
-        <Item to={user ? "/account" : "/auth"} Icon={User} label={t("header.account")} />
+      <ul className="grid h-16" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}>
+        {items.map((it) => {
+          const to = it.requiresAuth && !user ? "/auth" : it.href;
+          const badge = it.href === "/cart" && user && cartCount > 0 ? cartCount : undefined;
+          if (it.primary) {
+            const Icon = getIcon(it.icon);
+            return (
+              <li key={it.id} className="flex items-center justify-center">
+                <Link
+                  to={to}
+                  aria-label={it.label}
+                  className="-mt-6 inline-flex flex-col items-center justify-center size-14 rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] active:scale-95 transition-transform"
+                >
+                  <Icon className="size-6" />
+                </Link>
+              </li>
+            );
+          }
+          return <Item key={it.id} to={to} icon={it.icon} label={it.label} badge={badge} />;
+        })}
       </ul>
     </nav>
   );
 }
 
-function Item({ to, Icon, label, badge }: { to: string; Icon: typeof Home; label: string; badge?: number }) {
+function Item({ to, icon, label, badge }: { to: string; icon: IconName; label: string; badge?: number }) {
+  const Icon = getIcon(icon);
   return (
     <li>
       <Link

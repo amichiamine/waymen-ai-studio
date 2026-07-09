@@ -4,7 +4,7 @@ import { Flame, ArrowRight } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { useI18n } from "@/lib/i18n";
 import { useProducts } from "@/lib/useProducts";
-
+import { useAdminState } from "@/lib/admin-store";
 
 function useCountdown(targetMs: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -22,7 +22,9 @@ function useCountdown(targetMs: number) {
 }
 
 export function FlashSale() {
-  const [target] = useState(() => Date.now() + 1000 * 60 * 60 * 71 + 1000 * 60 * 23);
+  const { siteContent } = useAdminState();
+  const cfg = siteContent.flashSale;
+  const [target] = useState(() => Date.now() + Math.max(1, cfg.countdownHours) * 3_600_000);
   const t = useCountdown(target);
   const { t: tr } = useI18n();
   const products = useProducts();
@@ -34,9 +36,9 @@ export function FlashSale() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between items-center text-center lg:text-start gap-6 mb-8">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 text-destructive text-xs font-semibold">
-              <Flame className="size-3.5" /> {tr("flash.badge")}
+              <Flame className="size-3.5" /> {cfg.badge}
             </span>
-            <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">{tr("flash.title")}</h2>
+            <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">{cfg.title}</h2>
           </div>
           <div className="flex items-center justify-center gap-1.5 md:gap-2 mx-auto lg:mx-0" dir="ltr">
             <TimeBox v={t.d} l={tr("flash.days")} /><Sep />
@@ -49,8 +51,8 @@ export function FlashSale() {
           {sale.map((p) => <ProductCard key={p.id} p={p} />)}
         </div>
         <div className="mt-8 flex justify-center">
-          <Link to={`/category/${"laptops"}`} className="inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white hover:bg-white/10 transition-colors">
-            {tr("flash.viewAll")} <ArrowRight className="size-4" />
+          <Link to={cfg.viewAllHref} className="inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white hover:bg-white/10 transition-colors">
+            {cfg.viewAllLabel} <ArrowRight className="size-4" />
           </Link>
         </div>
       </div>

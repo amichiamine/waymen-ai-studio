@@ -1,14 +1,12 @@
-import { useI18n } from "@/lib/i18n";
 import { useAdminState } from "@/lib/admin-store";
 
 export function BrandsMarquee() {
-  const { t } = useI18n();
-  const { marqueeBrands } = useAdminState();
+  const { marqueeBrands, siteContent } = useAdminState();
   if (marqueeBrands.length === 0) return null;
   return (
     <section className="border-y border-border bg-card/30 overflow-hidden py-8">
       <div className="container-page mb-6">
-        <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("brands.title")}</p>
+        <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">{siteContent.brandsMarquee.title}</p>
       </div>
       <div dir="ltr" className="group relative flex w-max animate-marquee-fast whitespace-nowrap pause-on-hover motion-reduce:animate-none">
         {[0, 1].map((half) => (
