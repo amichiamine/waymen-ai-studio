@@ -921,6 +921,80 @@ export function setProductStockLevel(productId: string, level: Product["stock"])
   set("products", state.products.map((p) => p.id === productId ? { ...p, stock: level } : p));
 }
 
+// Media
+export function upsertMediaAsset(m: MediaAsset) {
+  const list = state.mediaAssets.slice();
+  const idx = list.findIndex((x) => x.id === m.id);
+  if (idx >= 0) list[idx] = m; else list.unshift(m);
+  set("mediaAssets", list);
+  logAudit("média", m.id === list[idx]?.id ? "media.update" : "media.upload", m.name);
+}
+export function deleteMediaAsset(id: string) {
+  const m = state.mediaAssets.find((x) => x.id === id);
+  set("mediaAssets", state.mediaAssets.filter((x) => x.id !== id));
+  if (m) logAudit("média", "media.delete", m.name);
+}
+export function renameMediaAsset(id: string, name: string, tag?: string) {
+  set("mediaAssets", state.mediaAssets.map((x) => x.id === id ? { ...x, name, tag } : x));
+}
+
+// Notifications
+export function addNotification(n: Omit<AdminNotification, "id" | "createdAt" | "read"> & { read?: boolean }) {
+  const notif: AdminNotification = {
+    id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    createdAt: new Date().toISOString(),
+    read: n.read ?? false,
+    title: n.title, body: n.body, level: n.level, link: n.link,
+  };
+  set("notifications", [notif, ...state.notifications]);
+}
+export function updateNotification(id: string, patch: Partial<AdminNotification>) {
+  set("notifications", state.notifications.map((n) => n.id === id ? { ...n, ...patch } : n));
+}
+export function deleteNotification(id: string) {
+  set("notifications", state.notifications.filter((n) => n.id !== id));
+}
+export function markAllNotificationsRead() {
+  set("notifications", state.notifications.map((n) => ({ ...n, read: true })));
+}
+
+// Audit
+export function logAudit(entity: string, action: string, detail?: string, actor?: string) {
+  const log: AuditLog = {
+    id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    actor: actor ?? getActiveActor(),
+    action,
+    entity,
+    detail,
+    createdAt: new Date().toISOString(),
+  };
+  state = { ...state, auditLogs: [log, ...state.auditLogs].slice(0, 500) };
+  emit();
+}
+
+// ---------- Active admin role (demo) ----------
+const ROLE_KEY = "katech.admin.activeRole.v1";
+export function getActiveRole(): AdminUserRole {
+  if (typeof window === "undefined") return "owner";
+  const v = window.localStorage.getItem(ROLE_KEY) as AdminUserRole | null;
+  return v ?? "owner";
+}
+export function setActiveRole(role: AdminUserRole) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(ROLE_KEY, role);
+  window.dispatchEvent(new Event("katech:role-changed"));
+}
+export function getActiveActor(): string {
+  const role = getActiveRole();
+  const u = state.users.find((x) => x.role === role) ?? state.users[0];
+  return u?.email ?? "système";
+}
+const ROLE_RANK: Record<AdminUserRole, number> = { owner: 4, admin: 3, editor: 2, viewer: 1 };
+export function canPerform(min: AdminUserRole, role: AdminUserRole = getActiveRole()): boolean {
+  return ROLE_RANK[role] >= ROLE_RANK[min];
+}
+
+
 // ---------- Reset ----------
 export type ResetKey = ArrayKey | "siteSettings" | "shippingSettings" | "all";
 export function resetData(key: ResetKey) {
