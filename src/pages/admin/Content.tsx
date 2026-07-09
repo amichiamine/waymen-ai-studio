@@ -95,6 +95,8 @@ function renderForm<K extends keyof SiteContent>(
   key: K, draft: SiteContent[K], onChange: (v: SiteContent[K]) => void,
 ): React.ReactNode {
   switch (key) {
+    case "header": return <HeaderForm value={draft as SiteContent["header"]} onChange={onChange as (v: SiteContent["header"]) => void} />;
+    case "footer": return <FooterForm value={draft as SiteContent["footer"]} onChange={onChange as (v: SiteContent["footer"]) => void} />;
     case "hero": return <HeroForm value={draft as SiteContent["hero"]} onChange={onChange as (v: SiteContent["hero"]) => void} />;
     case "flashSale": return <FlashSaleForm value={draft as SiteContent["flashSale"]} onChange={onChange as (v: SiteContent["flashSale"]) => void} />;
     case "categories": return <CategoriesForm value={draft as SiteContent["categories"]} onChange={onChange as (v: SiteContent["categories"]) => void} />;
