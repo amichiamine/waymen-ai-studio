@@ -24,6 +24,11 @@ export default function Blog() {
 
   return (
     <div className="container mx-auto px-4 py-10">
+      <Helmet>
+        <title>Blog — KA Tech</title>
+        <meta name="description" content="Actualités, guides d'achat et conseils tech pour bien choisir votre matériel." />
+        <link rel="canonical" href="/blog" />
+      </Helmet>
       <div className="mx-auto max-w-3xl text-center">
         <h1 className="text-4xl font-extrabold tracking-tight">Le blog KA Tech</h1>
         <p className="mt-3 text-muted-foreground">
