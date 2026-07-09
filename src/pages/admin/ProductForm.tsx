@@ -75,6 +75,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
 
   const [v, setV] = useState<FormValues>(existing ? toForm(existing) : emptyForm());
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (mode === "edit" && id) {
@@ -97,7 +98,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       const errs: Partial<Record<keyof FormValues, string>> = {};
       for (const issue of parsed.error.issues) errs[issue.path[0] as keyof FormValues] = issue.message;
       setErrors(errs);
-      toast.error("Certains champs sont invalides.");
+      toast.error("Certains champs sont invalides — corrigez les erreurs en rouge.");
       return;
     }
     const data = parsed.data;
@@ -106,36 +107,49 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       toast.error("ID déjà utilisé");
       return;
     }
-    const product: Product = {
-      id: data.id,
-      name: data.name,
-      brand: data.brand,
-      category: data.category as Category,
-      use: existing?.use ?? [],
-      specLine: data.specLine,
-      specs: {
-        cpu: data.cpu || undefined, ram: data.ram || undefined, storage: data.storage || undefined,
-        gpu: data.gpu || undefined, screen: data.screen || undefined, os: data.os || undefined,
-      },
-      price: data.price,
-      oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
-      stock: data.stock,
-      image: data.image,
-      bestSeller: data.bestSeller,
-      sale: data.sale,
-    };
-    upsertProduct(product);
-    toast.success(mode === "new" ? "Produit créé" : "Produit mis à jour");
-    nav("/admin/products");
+    if (!categories.some((c) => c.slug === data.category)) {
+      setErrors({ category: "Catégorie inconnue" });
+      toast.error("Catégorie inconnue");
+      return;
+    }
+    try {
+      const product: Product = {
+        id: data.id,
+        name: data.name,
+        brand: data.brand,
+        category: data.category as Category,
+        use: existing?.use ?? [],
+        specLine: data.specLine,
+        specs: {
+          cpu: data.cpu || undefined, ram: data.ram || undefined, storage: data.storage || undefined,
+          gpu: data.gpu || undefined, screen: data.screen || undefined, os: data.os || undefined,
+        },
+        price: data.price,
+        oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
+        stock: data.stock,
+        image: data.image,
+        bestSeller: data.bestSeller,
+        sale: data.sale,
+      };
+      upsertProduct(product);
+      toast.success(mode === "new" ? "Produit créé" : "Produit mis à jour");
+      nav("/admin/products");
+    } catch {
+      toast.error("Enregistrement échoué");
+    }
   }
 
-  function onDelete() {
+  function doDelete() {
     if (!existing) return;
-    if (!confirm(`Supprimer définitivement « ${existing.name} » ?`)) return;
-    deleteProduct(existing.id);
-    toast.success("Produit supprimé");
-    nav("/admin/products");
+    try {
+      deleteProduct(existing.id);
+      toast.success(`« ${existing.name} » supprimé`);
+      nav("/admin/products");
+    } catch {
+      toast.error("Suppression échouée");
+    }
   }
+
 
   return (
     <AdminPageShell
