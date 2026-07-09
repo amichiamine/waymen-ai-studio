@@ -28,6 +28,7 @@ const schema = z.object({
   price: z.coerce.number({ message: "Prix requis" }).int("Nombre entier requis").min(1, "Le prix doit être supérieur à 0").max(100_000_000, "Prix trop élevé"),
   oldPrice: z.union([z.literal(""), z.coerce.number().int().min(0).max(100_000_000)]).optional(),
   stock: z.enum(["in", "low", "out"]),
+  stockQty: z.coerce.number().int().min(0).max(1_000_000).optional(),
   image: imageField,
   bestSeller: z.boolean().optional(),
   sale: z.boolean().optional(),
@@ -45,13 +46,14 @@ const schema = z.object({
     ctx.addIssue({ code: "custom", path: ["oldPrice"], message: "Renseigner un ancien prix > prix pour activer la promotion" });
   }
 });
+
 type FormValues = z.infer<typeof schema>;
 
 
 function emptyForm(): FormValues {
   return {
     id: "", name: "", brand: "", category: "laptops", specLine: "",
-    price: 0, oldPrice: "" as unknown as number, stock: "in", image: "",
+    price: 0, oldPrice: "" as unknown as number, stock: "in", stockQty: 50, image: "",
     bestSeller: false, sale: false,
     cpu: "", ram: "", storage: "", gpu: "", screen: "", os: "",
   };
@@ -60,12 +62,13 @@ function emptyForm(): FormValues {
 function toForm(p: Product): FormValues {
   return {
     id: p.id, name: p.name, brand: p.brand, category: p.category, specLine: p.specLine,
-    price: p.price, oldPrice: (p.oldPrice ?? "") as number, stock: p.stock, image: p.image,
+    price: p.price, oldPrice: (p.oldPrice ?? "") as number, stock: p.stock, stockQty: p.stockQty ?? 0, image: p.image,
     bestSeller: !!p.bestSeller, sale: !!p.sale,
     cpu: p.specs.cpu ?? "", ram: p.specs.ram ?? "", storage: p.specs.storage ?? "",
     gpu: p.specs.gpu ?? "", screen: p.specs.screen ?? "", os: p.specs.os ?? "",
   };
 }
+
 
 export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const { products, categories, brands } = useAdminState();
