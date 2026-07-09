@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Package, ShoppingBag, Users, DollarSign, Tag, Layers, AlertTriangle, Star, MessageSquare, Ticket } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 export default function AdminDashboard() {
   const { products, categories, brands, orders, customers, coupons, reviews } = useAdminState();
