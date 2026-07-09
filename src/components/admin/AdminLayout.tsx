@@ -94,12 +94,14 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AdminSidebar() {
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-border/60 bg-card/50 lg:block">
-      <div className="flex h-14 items-center gap-2 border-b border-border/60 px-4">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-card/50 lg:flex">
+      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 px-4">
         <Logo />
         <span className="text-sm font-semibold text-muted-foreground">Admin</span>
       </div>
-      <SidebarNav />
+      <div className="flex-1 overflow-y-auto">
+        <SidebarNav />
+      </div>
     </aside>
   );
 }
@@ -113,16 +115,19 @@ export function AdminMobileNav() {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 p-0">
-        <SheetHeader className="h-14 flex-row items-center gap-2 border-b border-border/60 px-4 space-y-0">
+      <SheetContent side="left" className="flex w-72 flex-col p-0">
+        <SheetHeader className="h-14 shrink-0 flex-row items-center gap-2 border-b border-border/60 px-4 space-y-0">
           <Logo />
           <SheetTitle className="text-sm font-semibold text-muted-foreground">Admin</SheetTitle>
         </SheetHeader>
-        <SidebarNav onNavigate={() => setOpen(false)} />
+        <div className="flex-1 overflow-y-auto">
+          <SidebarNav onNavigate={() => setOpen(false)} />
+        </div>
       </SheetContent>
     </Sheet>
   );
 }
+
 
 export function AdminBreadcrumbs() {
   const { pathname } = useLocation();
