@@ -269,6 +269,16 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
           <Button type="submit">{mode === "new" ? "Créer" : "Enregistrer"}</Button>
         </div>
       </form>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Supprimer ce produit ?"
+        description={existing ? <>Le produit « <strong>{existing.name}</strong> » sera supprimé du catalogue local. Cette action est irréversible.</> : null}
+        confirmLabel="Supprimer"
+        destructive
+        onConfirm={doDelete}
+      />
     </AdminPageShell>
   );
+
 }
