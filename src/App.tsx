@@ -66,6 +66,7 @@ import AdminProductDetail from "@/pages/admin/ProductDetail";
 import AdminCategoryDetail from "@/pages/admin/CategoryDetail";
 import AdminBrandDetail from "@/pages/admin/BrandDetail";
 import AdminReset from "@/pages/admin/Reset";
+import AdminContent from "@/pages/admin/Content";
 
 
 function RequireAuth() {
