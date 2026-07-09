@@ -141,9 +141,22 @@ function AdminLayout() {
 export default function App() {
   const pathname = useLocation().pathname;
   const isAdmin = pathname.startsWith("/admin");
+  const isAuthRoute = pathname === "/auth" || pathname === "/reset-password";
+  const { siteSettings } = useAdminState();
+
+  // Maintenance gate: full-screen for public visitors; admins & auth routes stay accessible.
+  if (siteSettings.maintenance && !isAdmin && !isAuthRoute) {
+    return (
+      <>
+        <MaintenanceScreen />
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <>
+      {!isAdmin && <PromoBanner />}
       {!isAdmin && <Ticker />}
       {!isAdmin && <Header />}
       <main className="pb-16 md:pb-0">
