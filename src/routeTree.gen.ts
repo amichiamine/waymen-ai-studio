@@ -15,10 +15,12 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoryIndexRouteImport } from './routes/category.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -58,6 +60,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -76,6 +83,11 @@ const CategoryIndexRoute = CategoryIndexRouteImport.update({
   id: '/category/',
   path: '/category/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
@@ -122,6 +134,7 @@ const AuthenticatedCheckoutSuccessRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
   '/builder': typeof BuilderRoute
@@ -135,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/category/$slug': typeof CategorySlugRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/category/': typeof CategoryIndexRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
 }
@@ -154,6 +168,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/category/$slug': typeof CategorySlugRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin': typeof AdminIndexRoute
   '/category': typeof CategoryIndexRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
 }
@@ -162,6 +177,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
   '/builder': typeof BuilderRoute
@@ -175,6 +191,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/category/$slug': typeof CategorySlugRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/category/': typeof CategoryIndexRoute
   '/_authenticated/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
 }
@@ -183,6 +200,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
     | '/auth'
     | '/blog'
     | '/builder'
@@ -196,6 +214,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/category/$slug'
     | '/product/$id'
+    | '/admin/'
     | '/category/'
     | '/checkout/success'
   fileRoutesByTo: FileRoutesByTo
@@ -215,6 +234,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/category/$slug'
     | '/product/$id'
+    | '/admin'
     | '/category'
     | '/checkout/success'
   id:
@@ -222,6 +242,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/about'
+    | '/admin'
     | '/auth'
     | '/blog'
     | '/builder'
@@ -235,6 +256,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/category/$slug'
     | '/product/$id'
+    | '/admin/'
     | '/category/'
     | '/_authenticated/checkout/success'
   fileRoutesById: FileRoutesById
@@ -243,6 +265,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   BlogRoute: typeof BlogRouteWithChildren
   BuilderRoute: typeof BuilderRoute
@@ -298,6 +321,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -325,6 +355,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/category/'
       preLoaderRoute: typeof CategoryIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/product/$id': {
       id: '/product/$id'
@@ -416,6 +453,16 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface BlogRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
 }
@@ -430,6 +477,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   BlogRoute: BlogRouteWithChildren,
   BuilderRoute: BuilderRoute,
