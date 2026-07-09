@@ -953,8 +953,18 @@ export function setBuilderSteps(list: BuilderStep[]) { set("builderSteps", list)
 
 // Site settings
 export function updateSiteSettings(patch: Partial<SiteSettings>) {
-  set("siteSettings", { ...state.siteSettings, ...patch });
+  const nextSettings = { ...state.siteSettings, ...patch };
+  const thresholdChanged = ("lowStockThreshold" in patch || "outOfStockThreshold" in patch);
+  const products = thresholdChanged
+    ? state.products.map((p) => {
+        const qty = p.stockQty ?? defaultQtyForLabel(p.stock);
+        return { ...p, stock: resolveStockLevel(qty, nextSettings) };
+      })
+    : state.products;
+  state = { ...state, siteSettings: nextSettings, products };
+  emit();
 }
+
 
 // Shipping
 export function upsertShippingRate(r: ShippingRate) {
