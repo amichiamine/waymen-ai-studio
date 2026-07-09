@@ -12,7 +12,8 @@ export type IconName =
   | "users" | "package" | "map-pin" | "cpu" | "memory" | "hard-drive"
   | "zap" | "message-circle" | "flame" | "credit-card" | "monitor"
   | "laptop" | "smartphone" | "wrench" | "grid" | "home" | "user"
-  | "shopping-cart" | "boxes" | "gift" | "tag";
+  | "shopping-cart" | "boxes" | "gift" | "tag"
+  | "facebook" | "instagram" | "music" | "twitter" | "youtube" | "linkedin" | "mail" | "phone";
 
 export const ICONS: Record<IconName, LucideIcon> = {
   shield: Shield, truck: Truck, headphones: Headphones, award: Award,
