@@ -44,6 +44,22 @@ export default function AdminDashboard() {
 
   const recentOrders = useMemo(() => orders.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5), [orders]);
 
+  const trend = useMemo(() => {
+    const map = new Map<string, { date: string; revenue: number }>();
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today.getTime() - i * 86400000);
+      const key = d.toISOString().slice(0, 10);
+      map.set(key, { date: key.slice(5), revenue: 0 });
+    }
+    for (const o of orders) {
+      if (o.status === "cancelled") continue;
+      const row = map.get(o.createdAt.slice(0, 10));
+      if (row) row.revenue += o.total;
+    }
+    return Array.from(map.values());
+  }, [orders]);
+
   return (
     <AdminPageShell title="Tableau de bord" description="Vue d'ensemble de la boutique KA Tech (données locales).">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
