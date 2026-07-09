@@ -26,6 +26,10 @@ export default function Product() {
       </div>
     );
   }
+  return <ProductView p={p} />;
+}
+
+function ProductView({ p }: { p: (typeof products)[number] }) {
   const cat = categoryMeta[p.category];
   const [tab, setTab] = useState("specs");
   const { t } = useI18n();
