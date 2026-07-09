@@ -74,7 +74,7 @@ export function Header() {
               </DropdownMenuLabel>
               {SECONDARY.map((n) => (
                 <DropdownMenuItem
-                  key={String(n.params?.slug ?? n.to) + n.key}
+                  key={n.to + n.key}
                   onSelect={() => navigate(n.to)}
                   className="group/item gap-3 px-2 py-2.5 rounded-md cursor-pointer text-sm font-medium text-foreground/80 focus:bg-primary/10 focus:text-foreground data-[highlighted]:bg-primary/10 data-[highlighted]:text-foreground transition-colors"
                 >
@@ -208,7 +208,7 @@ export function Header() {
                 <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">{t("nav.category")}</div>
                 {SECONDARY.map((n) => (
                   <Link
-                    key={String(n.params?.slug ?? n.to) + n.key}
+                    key={n.to + n.key}
                     to={n.to}
                     onClick={() => setOpen(false)}
                     className="px-4 py-2.5 rounded-md text-foreground hover:bg-card text-sm inline-flex items-center gap-2"
