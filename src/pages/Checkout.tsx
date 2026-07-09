@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { products } from "@/data/products";
@@ -8,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import {
   useAdminState, validateCoupon, computeShipping, createOrder,
 } from "@/lib/admin-store";
+import { useAddresses } from "@/lib/addresses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,24 +20,25 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { AlertTriangle, Tag } from "lucide-react";
+import { AlertTriangle, Tag, MapPin } from "lucide-react";
 
 const fmt = (n: number) => n.toLocaleString("fr-FR") + " DA";
 const COUPON_KEY = "ka-cart-coupon";
 
 export default function Checkout() {
-  useEffect(() => { document.title = `Commande — KA Tech`; }, []);
   const { user } = useAuth();
   const { cart, clearCart } = useStore();
   const { paymentMethods, shippingSettings } = useAdminState();
+  const { list: addresses, defaultAddress } = useAddresses(user?.id);
   const navigate = useNavigate();
 
   const activePayments = useMemo(() => paymentMethods.filter((p) => p.active), [paymentMethods]);
 
-  const [name, setName] = useState(user?.user_metadata?.name ?? "");
-  const [phone, setPhone] = useState(user?.user_metadata?.phone ?? "");
-  const [wilaya, setWilaya] = useState("");
-  const [address, setAddress] = useState("");
+  const [addressId, setAddressId] = useState<string>(defaultAddress?.id ?? "new");
+  const [name, setName] = useState(defaultAddress?.fullName ?? user?.user_metadata?.name ?? "");
+  const [phone, setPhone] = useState(defaultAddress?.phone ?? user?.user_metadata?.phone ?? "");
+  const [wilaya, setWilaya] = useState(defaultAddress?.wilaya ?? "");
+  const [address, setAddress] = useState(defaultAddress?.address ?? "");
   const [delivery, setDelivery] = useState<"home" | "desk">(shippingSettings.homeEnabled ? "home" : "desk");
   const [paymentId, setPaymentId] = useState("");
   const [notes, setNotes] = useState("");
@@ -44,6 +47,12 @@ export default function Checkout() {
   useEffect(() => {
     if (!paymentId && activePayments.length) setPaymentId(activePayments[0].id);
   }, [activePayments, paymentId]);
+
+  useEffect(() => {
+    if (addressId === "new") return;
+    const a = addresses.find((x) => x.id === addressId);
+    if (a) { setName(a.fullName); setPhone(a.phone); setWilaya(a.wilaya); setAddress(a.address); }
+  }, [addressId, addresses]);
 
   const lines = cart
     .map((c) => {
@@ -117,9 +126,35 @@ export default function Checkout() {
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-10">
+      <Helmet>
+        <title>Finaliser la commande — KA Tech</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <h1 className="mb-6 text-2xl font-bold">Finaliser ma commande</h1>
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
+          {addresses.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Adresse enregistrée</CardTitle></CardHeader>
+              <CardContent>
+                <RadioGroup value={addressId} onValueChange={setAddressId}>
+                  {addresses.map((a) => (
+                    <label key={a.id} className="flex cursor-pointer items-start gap-3 rounded border p-3">
+                      <RadioGroupItem value={a.id} id={`a-${a.id}`} className="mt-1" />
+                      <div className="text-sm">
+                        <p className="font-medium">{a.label} · {a.fullName}</p>
+                        <p className="text-xs text-muted-foreground">{a.phone} — {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr}, {a.address}</p>
+                      </div>
+                    </label>
+                  ))}
+                  <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed p-3">
+                    <RadioGroupItem value="new" id="a-new" />
+                    <span className="text-sm">Utiliser une nouvelle adresse</span>
+                  </label>
+                </RadioGroup>
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader><CardTitle>Coordonnées</CardTitle></CardHeader>
             <CardContent className="space-y-4">

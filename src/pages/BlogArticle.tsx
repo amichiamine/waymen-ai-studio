@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminState } from "@/lib/admin-store";
@@ -9,14 +9,31 @@ export default function BlogArticle() {
   const { blogPosts } = useAdminState();
   const post = blogPosts.find((p) => p.slug === slug && p.status === "published");
 
-  useEffect(() => {
-    document.title = post ? `${post.title} — KA Tech` : `Article — KA Tech`;
-  }, [post]);
-
   if (!post) return <BlogNotFound />;
+
+  const canonical = `/blog/${post.slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    author: { "@type": "Person", name: post.author },
+    datePublished: post.publishedAt ?? post.createdAt,
+    image: post.cover,
+  };
 
   return (
     <article className="container mx-auto max-w-3xl px-4 py-10">
+      <Helmet>
+        <title>{`${post.title} — KA Tech`}</title>
+        <meta name="description" content={post.excerpt} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.excerpt} />
+        <meta property="og:url" content={canonical} />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       <Link to="/blog" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="mr-1.5 h-4 w-4" /> Retour au blog
       </Link>

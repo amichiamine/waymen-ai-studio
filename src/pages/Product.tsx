@@ -1,5 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { products, formatDZD, categoryMeta, type SpecKey } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
 import { Heart, ShoppingCart, Check, AlertTriangle, ChevronRight, Shield, Truck, Star } from "lucide-react";
@@ -7,6 +8,7 @@ import { toast } from "sonner";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
+import { useAdminState, createProductReview, productRatingStats } from "@/lib/admin-store";
 
 const specKeyMap: Record<SpecKey, TKey> = {
   cpu: "spec.cpu", ram: "spec.ram", storage: "spec.storage", gpu: "spec.gpu",
@@ -45,14 +47,12 @@ function ProductView({ p }: { p: (typeof products)[number] }) {
     { id: "rev", key: "pd.tab.rev" }, { id: "ship", key: "pd.tab.ship" },
   ];
 
-  type LocalReview = { id: string; name: string; rating: number; comment: string; date: string };
-  const reviewsKey = `kt-reviews-${p.id}`;
-  const [reviews, setReviews] = useState<LocalReview[]>([]);
+  const { reviews } = useAdminState();
+  const stats = useMemo(() => productRatingStats(p.id), [p.id, reviews]);
   const [rating, setRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState("");
   const [comment, setComment] = useState("");
-  useEffect(() => {
-    try { setReviews(JSON.parse(localStorage.getItem(reviewsKey) ?? "[]")); } catch { /* */ }
-  }, [reviewsKey]);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleAddCart = async () => {
     if (!user) { navigate("/auth"); return; }
@@ -68,21 +68,58 @@ function ProductView({ p }: { p: (typeof products)[number] }) {
     e.preventDefault();
     if (!user) { navigate("/auth"); return; }
     if (!comment.trim()) { toast.error("Écrivez un commentaire"); return; }
-    const r: LocalReview = {
-      id: crypto.randomUUID(),
-      name: user.user_metadata?.name ?? user.email ?? "Client",
-      rating, comment: comment.trim(),
-      date: new Date().toISOString(),
-    };
-    const next = [r, ...reviews];
-    setReviews(next);
-    localStorage.setItem(reviewsKey, JSON.stringify(next));
-    setComment(""); setRating(5);
-    toast.success("Merci, votre avis a été enregistré");
+    createProductReview({
+      productId: p.id,
+      productName: p.name,
+      customerName: user.user_metadata?.name ?? user.email ?? "Client",
+      rating,
+      title: reviewTitle.trim() || "Avis client",
+      body: comment.trim(),
+    });
+    setComment(""); setReviewTitle(""); setRating(5); setSubmitted(true);
+    toast.success("Merci ! Votre avis sera publié après modération.");
+  };
+
+  const distribution = useMemo(() => {
+    const dist = [0, 0, 0, 0, 0];
+    stats.approved.forEach((r) => { dist[Math.min(4, Math.max(0, r.rating - 1))]++; });
+    return dist;
+  }, [stats.approved]);
+
+  const canonical = `/product/${p.id}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: p.name,
+    brand: p.brand,
+    category: t(cat.labelKey),
+    image: p.image,
+    description: p.specLine,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "DZD",
+      price: p.price,
+      availability: p.stock === "out" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+    },
+    aggregateRating: stats.count > 0 ? {
+      "@type": "AggregateRating",
+      ratingValue: stats.avg.toFixed(1),
+      reviewCount: stats.count,
+    } : undefined,
   };
 
   return (
     <div className="container-page py-8 lg:py-12">
+      <Helmet>
+        <title>{`${p.name} — KA Tech`}</title>
+        <meta name="description" content={`${p.name} — ${p.specLine}. ${formatDZD(p.price)}. Garantie officielle KA Tech.`} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={p.name} />
+        <meta property="og:description" content={p.specLine} />
+        <meta property="og:url" content={canonical} />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       <nav className="text-xs text-muted-foreground flex items-center gap-1.5 mb-6">
         <Link to="/" className="hover:text-foreground">{t("common.home")}</Link>
         <ChevronRight className="size-3" />
@@ -106,6 +143,16 @@ function ProductView({ p }: { p: (typeof products)[number] }) {
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold leading-tight">{name}</h1>
           <p className="text-muted-foreground">{p.specLine}</p>
+          {stats.count > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <div className="flex">{Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className={`size-4 ${i < Math.round(stats.avg) ? "fill-warning text-warning" : "text-muted-foreground/40"}`} />
+              ))}</div>
+              <span className="font-semibold">{stats.avg.toFixed(1)}</span>
+              <span className="text-muted-foreground">· {stats.count} avis</span>
+            </div>
+          )}
+
 
           <div className="flex items-baseline gap-3 pt-2">
             <span className="text-4xl font-bold">{formatDZD(p.price)}</span>
@@ -159,23 +206,54 @@ function ProductView({ p }: { p: (typeof products)[number] }) {
           {tab === "desc" && <p className="text-muted-foreground leading-relaxed max-w-3xl">{name} — {t("pd.desc")}</p>}
           {tab === "rev" && (
             <div className="max-w-3xl space-y-6">
-              {reviews.length === 0 && <p className="text-muted-foreground">{t("pd.noRev")}</p>}
+              {stats.count > 0 && (
+                <div className="rounded-xl border border-border bg-card p-5 grid gap-5 sm:grid-cols-[auto_1fr] items-center">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold">{stats.avg.toFixed(1)}</div>
+                    <div className="flex justify-center mt-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={`size-4 ${i < Math.round(stats.avg) ? "fill-warning text-warning" : "text-muted-foreground/40"}`} />
+                      ))}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">{stats.count} avis</div>
+                  </div>
+                  <div className="space-y-1.5">
+                    {[5,4,3,2,1].map((n) => {
+                      const c = distribution[n-1];
+                      const pct = stats.count ? (c / stats.count) * 100 : 0;
+                      return (
+                        <div key={n} className="flex items-center gap-2 text-xs">
+                          <span className="w-4 text-muted-foreground">{n}★</span>
+                          <div className="flex-1 h-1.5 rounded bg-muted overflow-hidden">
+                            <div className="h-full bg-warning" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="w-6 text-right text-muted-foreground">{c}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {stats.approved.length === 0 && <p className="text-muted-foreground">{t("pd.noRev")}</p>}
               <ul className="space-y-3">
-                {reviews.map((r) => (
+                {stats.approved.map((r) => (
                   <li key={r.id} className="rounded-lg border border-border bg-card p-4">
                     <div className="flex items-center justify-between gap-3 mb-1">
-                      <span className="font-semibold text-sm">{r.name}</span>
+                      <span className="font-semibold text-sm">{r.customerName}</span>
                       <div className="flex">{Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-warning text-warning" : "text-muted-foreground/40"}`} />
                       ))}</div>
                     </div>
-                    <p className="text-sm text-muted-foreground">{r.comment}</p>
+                    {r.title && <p className="text-sm font-medium">{r.title}</p>}
+                    <p className="text-sm text-muted-foreground">{r.body}</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{new Date(r.createdAt).toLocaleDateString("fr-FR")}</p>
                   </li>
                 ))}
               </ul>
               {user ? (
                 <form onSubmit={submitReview} className="rounded-xl border border-border bg-card p-5 space-y-3">
                   <h3 className="font-semibold text-sm">Ajouter votre avis</h3>
+                  {submitted && <p className="text-xs text-primary">Votre précédent avis est en attente de modération.</p>}
                   <div className="flex items-center gap-1">
                     {[1,2,3,4,5].map((n) => (
                       <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} étoiles`}>
@@ -183,6 +261,7 @@ function ProductView({ p }: { p: (typeof products)[number] }) {
                       </button>
                     ))}
                   </div>
+                  <input value={reviewTitle} onChange={(e) => setReviewTitle(e.target.value)} maxLength={80} placeholder="Titre de votre avis (optionnel)" className="w-full h-10 rounded-md bg-background border border-border focus:border-primary outline-none px-3 text-sm" />
                   <textarea value={comment} onChange={(e) => setComment(e.target.value)} maxLength={500} rows={3} placeholder="Partagez votre avis sur ce produit..." className="w-full rounded-md bg-background border border-border focus:border-primary outline-none p-3 text-sm" />
                   <button type="submit" className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90">Envoyer l'avis</button>
                 </form>

@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { products, categoryMeta, type Category } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
 import { UseChips } from "@/components/UseChips";
@@ -68,7 +69,14 @@ function CategoryView({ cat }: { cat: Category }) {
 
   return (
     <div className="container-page py-8 lg:py-12">
+      <Helmet>
+        <title>{`${label} — KA Tech`}</title>
+        <meta name="description" content={`${desc} ${list.length} produits disponibles chez KA Tech.`} />
+        <link rel="canonical" href={`/category/${cat}`} />
+        <meta property="og:url" content={`/category/${cat}`} />
+      </Helmet>
       <nav className="text-xs text-muted-foreground flex items-center gap-1.5 mb-6">
+
         <Link to="/" className="hover:text-foreground">{t("common.home")}</Link>
         <ChevronRight className="size-3" />
         <span className="text-foreground">{label}</span>
