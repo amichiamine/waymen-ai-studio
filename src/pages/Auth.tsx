@@ -19,7 +19,7 @@ export default function Auth() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/account" });
+    if (!loading && user) navigate("/account");
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,7 +41,7 @@ export default function Auth() {
       toast.success("Bienvenue");
     }
     setBusy(false);
-    navigate({ to: "/account" });
+    navigate("/account");
   };
 
   const handleForgotPassword = () => {

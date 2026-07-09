@@ -45,8 +45,6 @@ function Item({ to, Icon, label, badge }: { to: string; Icon: typeof Home; label
       <Link
         to={to}
         className="relative flex flex-col items-center justify-center gap-0.5 h-full min-h-[44px] text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-        activeProps={{ className: "relative flex flex-col items-center justify-center gap-0.5 h-full text-[10px] text-primary" }}
-        activeOptions={{ exact: to === "/" }}
       >
         <span className="relative">
           <Icon className="size-5" />

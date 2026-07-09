@@ -17,7 +17,7 @@ export default function ResetPassword() {
     setTimeout(() => {
       setBusy(false);
       toast.success("Mot de passe mis à jour. Connectez-vous.");
-      navigate({ to: "/auth" });
+      navigate("/auth");
     }, 600);
   };
 

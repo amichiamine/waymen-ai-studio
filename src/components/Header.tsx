@@ -75,7 +75,7 @@ export function Header() {
               {SECONDARY.map((n) => (
                 <DropdownMenuItem
                   key={String(n.params?.slug ?? n.to) + n.key}
-                  onSelect={() => navigate({ to: n.to, params: n.params as never })}
+                  onSelect={() => navigate(n.to)}
                   className="group/item gap-3 px-2 py-2.5 rounded-md cursor-pointer text-sm font-medium text-foreground/80 focus:bg-primary/10 focus:text-foreground data-[highlighted]:bg-primary/10 data-[highlighted]:text-foreground transition-colors"
                 >
                   <span className={`inline-flex items-center justify-center size-8 rounded-md border border-border bg-card text-muted-foreground transition-colors group-hover/item:border-primary/40 group-hover/item:text-primary group-focus/item:border-primary/40 group-focus/item:text-primary ${n.accent ? "border-primary/40 text-primary bg-primary/10" : ""}`}>
@@ -87,7 +87,7 @@ export function Header() {
               ))}
               <DropdownMenuSeparator className="my-1.5" />
               <DropdownMenuItem
-                onSelect={() => navigate({ to: "/category" })}
+                onSelect={() => navigate("/category")}
                 className="justify-center px-2 py-2 rounded-md cursor-pointer text-xs font-semibold text-primary focus:bg-primary/10 focus:text-primary data-[highlighted]:bg-primary/10"
               >
                 {t("cat.browse")}
@@ -99,7 +99,6 @@ export function Header() {
               key={n.to}
               to={n.to}
               className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
-              activeProps={{ className: "px-3 py-2 rounded-md text-foreground bg-card" }}
             >
               {t(n.key)}
             </Link>
@@ -107,7 +106,7 @@ export function Header() {
         </nav>
 
         <form
-          onSubmit={(e) => { e.preventDefault(); const q = query.trim(); if (q) navigate({ to: "/search", search: { q } }); }}
+          onSubmit={(e) => { e.preventDefault(); const q = query.trim(); if (q) navigate(`/search?q=${encodeURIComponent(q)}`); }}
           className="hidden md:flex flex-1 max-w-md mx-auto relative"
         >
           <button type="submit" aria-label="Rechercher" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -158,12 +157,12 @@ export function Header() {
                   {user.email}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => navigate({ to: "/account" })}>
+                <DropdownMenuItem onSelect={() => navigate("/account")}>
                   <Settings className="size-4 me-2" />
                   {t("header.account_settings")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onSelect={() => navigate({ to: "/admin" })}
+                  onSelect={() => navigate("/admin")}
                   className="text-primary focus:text-primary"
                 >
                   <Shield className="size-4 me-2" />
@@ -173,7 +172,7 @@ export function Header() {
                 <DropdownMenuItem
                   onSelect={async () => {
                     await signOut();
-                    navigate({ to: "/" });
+                    navigate("/");
                   }}
                 >
                   <LogOut className="size-4 me-2" />
@@ -211,7 +210,6 @@ export function Header() {
                   <Link
                     key={String(n.params?.slug ?? n.to) + n.key}
                     to={n.to}
-                    params={n.params as never}
                     onClick={() => setOpen(false)}
                     className="px-4 py-2.5 rounded-md text-foreground hover:bg-card text-sm inline-flex items-center gap-2"
                   >

@@ -22,7 +22,7 @@ export default function Account() {
 
   const handleLogout = async () => {
     await signOut();
-    navigate({ to: "/" });
+    navigate("/");
   };
 
   return (

@@ -46,7 +46,7 @@ export default function Checkout() {
     setBusy(true);
     // Frontend-only : pas d'appel backend. On enregistre localement et on redirige.
     await clearCart();
-    navigate({ to: "/checkout/success" });
+    navigate("/checkout/success");
   };
 
   if (lines.length === 0) {

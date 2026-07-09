@@ -43,18 +43,18 @@ export default function Product() {
   }, [reviewsKey]);
 
   const handleAddCart = async () => {
-    if (!user) { navigate({ to: "/auth" }); return; }
+    if (!user) { navigate("/auth"); return; }
     await addToCart(p.id);
     toast.success(t("pd.added"), { description: name });
   };
   const handleToggleFav = async () => {
-    if (!user) { navigate({ to: "/auth" }); return; }
+    if (!user) { navigate("/auth"); return; }
     await toggleFavorite(p.id);
     toast.success(liked ? "Retiré des favoris" : "Ajouté aux favoris");
   };
   const submitReview = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) { navigate({ to: "/auth" }); return; }
+    if (!user) { navigate("/auth"); return; }
     if (!comment.trim()) { toast.error("Écrivez un commentaire"); return; }
     const r: LocalReview = {
       id: crypto.randomUUID(),
