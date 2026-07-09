@@ -995,6 +995,11 @@ export function updateSiteSettings(patch: Partial<SiteSettings>) {
       })
     : state.products;
   state = { ...state, siteSettings: nextSettings, products };
+  setCurrencyConfig({
+    symbol: nextSettings.currencySymbol,
+    position: nextSettings.currencyPosition,
+    thousandSeparator: nextSettings.currencyThousandSeparator,
+  });
   emit();
 }
 
