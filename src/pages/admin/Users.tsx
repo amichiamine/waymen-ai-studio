@@ -28,11 +28,11 @@ type V = z.infer<typeof schema> & { id?: string };
 export default function AdminUsers() {
   const { users } = useAdminState();
   const [open, setOpen] = useState(false);
-  const [v, setV] = useState<V>({ name: "", email: "", role: "editor", active: true });
+  const [v, setV] = useState<V>({ name: "", email: "", role: "editor", active: true, password: "" });
   const [err, setErr] = useState<Record<string, string>>({});
 
-  function openNew() { setV({ name: "", email: "", role: "editor", active: true }); setErr({}); setOpen(true); }
-  function openEdit(u: AdminUser) { setV({ id: u.id, name: u.name, email: u.email, role: u.role, active: u.active }); setErr({}); setOpen(true); }
+  function openNew() { setV({ name: "", email: "", role: "editor", active: true, password: "" }); setErr({}); setOpen(true); }
+  function openEdit(u: AdminUser) { setV({ id: u.id, name: u.name, email: u.email, role: u.role, active: u.active, password: "" }); setErr({}); setOpen(true); }
 
   function save() {
     const p = schema.safeParse(v);
@@ -44,11 +44,19 @@ export default function AdminUsers() {
     if (!v.id && users.some((u) => u.email.toLowerCase() === p.data.email.toLowerCase())) {
       setErr({ email: "Email déjà utilisé" }); return;
     }
+    if (!v.id && (!p.data.password || p.data.password.length < 6)) {
+      setErr({ password: "Mot de passe (6 caractères min.) requis pour un nouveau compte" }); return;
+    }
+    if (v.id && p.data.password && p.data.password.length < 6) {
+      setErr({ password: "6 caractères minimum" }); return;
+    }
+    const existing = users.find((u) => u.id === v.id);
     const user: AdminUser = {
       id: v.id ?? `usr_${Date.now()}`,
       name: p.data.name, email: p.data.email, role: p.data.role, active: p.data.active,
-      createdAt: users.find((u) => u.id === v.id)?.createdAt ?? new Date().toISOString(),
-      lastLogin: users.find((u) => u.id === v.id)?.lastLogin,
+      password: p.data.password ? p.data.password : existing?.password,
+      createdAt: existing?.createdAt ?? new Date().toISOString(),
+      lastLogin: existing?.lastLogin,
     };
     upsertUser(user);
     toast.success(v.id ? "Utilisateur mis à jour" : "Utilisateur invité");
