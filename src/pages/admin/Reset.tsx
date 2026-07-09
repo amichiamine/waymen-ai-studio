@@ -6,9 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, RotateCcw, Trash2, Database, Download, Upload } from "lucide-react";
-import { useAdminState, resetData, clearData, exportState, importState, type AdminState } from "@/lib/admin-store";
+import {
+  useAdminState, resetData, clearData, exportState, importState,
+  ARRAY_KEYS, type ArrayKey,
+} from "@/lib/admin-store";
 
-type Row = { key: keyof AdminState; label: string; description: string };
+type ResetTarget = ArrayKey | "siteSettings";
+type Row = { key: ResetTarget; label: string; description: string };
 
 const ROWS: Row[] = [
   { key: "products", label: "Produits", description: "Catalogue local des produits." },
@@ -17,13 +21,20 @@ const ROWS: Row[] = [
   { key: "orders", label: "Commandes", description: "Commandes clients mockées." },
   { key: "customers", label: "Clients", description: "Base clients." },
   { key: "coupons", label: "Coupons", description: "Codes promo." },
-  { key: "reviews", label: "Avis", description: "Avis clients à modérer." },
-  { key: "users", label: "Utilisateurs admin", description: "Membres de l'équipe (sauf propriétaire)." },
+  { key: "reviews", label: "Avis produits", description: "Avis clients à modérer." },
+  { key: "users", label: "Utilisateurs admin", description: "Membres de l'équipe (données mockées)." },
+  { key: "blogPosts", label: "Articles de blog", description: "Publications du blog." },
+  { key: "homeReviews", label: "Avis d'accueil", description: "Témoignages affichés en page d'accueil." },
+  { key: "tickerMessages", label: "Bandeau défilant", description: "Messages du ruban en haut de page." },
+  { key: "marqueeBrands", label: "Marques défilantes", description: "Logos textuels du carrousel de marques." },
+  { key: "aboutValues", label: "Valeurs (page À propos)", description: "Cartes d'engagements de la page À propos." },
+  { key: "builderSteps", label: "Étapes du configurateur", description: "Composants et options du builder PC." },
+  { key: "siteSettings", label: "Paramètres du site", description: "Nom, contact, WhatsApp, adresse, horaires." },
 ];
 
 type PendingAction =
-  | { kind: "reset"; key: keyof AdminState | "all"; label: string }
-  | { kind: "clear"; key: keyof AdminState; label: string }
+  | { kind: "reset"; key: ResetTarget | "all"; label: string }
+  | { kind: "clear"; key: ResetTarget; label: string }
   | { kind: "clearAll" }
   | { kind: "import"; json: string; fileName: string };
 
@@ -32,17 +43,35 @@ export default function AdminReset() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<PendingAction | null>(null);
 
+  const totals: Record<ResetTarget, number> = {
+    products: state.products.length,
+    categories: state.categories.length,
+    brands: state.brands.length,
+    orders: state.orders.length,
+    customers: state.customers.length,
+    coupons: state.coupons.length,
+    reviews: state.reviews.length,
+    users: state.users.length,
+    blogPosts: state.blogPosts.length,
+    homeReviews: state.homeReviews.length,
+    tickerMessages: state.tickerMessages.length,
+    marqueeBrands: state.marqueeBrands.length,
+    aboutValues: state.aboutValues.length,
+    builderSteps: state.builderSteps.length,
+    siteSettings: 1,
+  };
+
   function exec() {
     if (!pending) return;
     try {
       if (pending.kind === "reset") {
         resetData(pending.key);
-        toast.success(`${pending.label} réinitialisée${pending.key === "all" ? "s" : ""}`);
+        toast.success(`${pending.label} réinitialisé${pending.key === "all" ? "es" : ""}`);
       } else if (pending.kind === "clear") {
         clearData(pending.key);
-        toast.success(`${pending.label} vidées`);
+        toast.success(`${pending.label} vidé${pending.key === "siteSettings" ? "s" : "es"}`);
       } else if (pending.kind === "clearAll") {
-        (Object.keys(totals) as (keyof AdminState)[]).forEach((k) => clearData(k));
+        [...ARRAY_KEYS, "siteSettings" as const].forEach((k) => clearData(k));
         toast.success("Toutes les données ont été vidées");
       } else if (pending.kind === "import") {
         const res = importState(pending.json);
@@ -86,17 +115,6 @@ export default function AdminReset() {
     reader.readAsText(file);
   }
 
-  const totals: Record<keyof AdminState, number> = {
-    products: state.products.length,
-    categories: state.categories.length,
-    brands: state.brands.length,
-    orders: state.orders.length,
-    customers: state.customers.length,
-    coupons: state.coupons.length,
-    reviews: state.reviews.length,
-    users: state.users.length,
-  };
-
   const dialogTitle =
     !pending ? "" :
     pending.kind === "reset" ? `Réinitialiser ${pending.label} ?` :
@@ -119,7 +137,7 @@ export default function AdminReset() {
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Attention</AlertTitle>
         <AlertDescription>
-          Ces actions modifient uniquement les données locales (localStorage) de ce navigateur. En phase 2, la même interface pilotera l'API Bun + SQLite.
+          Ces actions modifient uniquement les données locales (localStorage) de ce navigateur. En phase 2, la même interface pilotera l'API réelle.
         </AlertDescription>
       </Alert>
 
@@ -154,7 +172,14 @@ export default function AdminReset() {
           {ROWS.map((r) => (
             <div key={r.key} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <p className="font-medium">{r.label} <span className="ml-2 text-xs text-muted-foreground">{totals[r.key]} enregistrement{totals[r.key] > 1 ? "s" : ""}</span></p>
+                <p className="font-medium">
+                  {r.label}
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {r.key === "siteSettings"
+                      ? "objet unique"
+                      : `${totals[r.key]} enregistrement${totals[r.key] > 1 ? "s" : ""}`}
+                  </span>
+                </p>
                 <p className="text-xs text-muted-foreground">{r.description}</p>
               </div>
               <div className="flex gap-2">

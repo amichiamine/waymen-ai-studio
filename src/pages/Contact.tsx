@@ -1,11 +1,12 @@
-
 import { useState, useEffect } from "react";
-import { Mail, Phone, MapPin, MessageCircle, Send } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { useAdminState } from "@/lib/admin-store";
 
 export default function Contact() {
   useEffect(() => { document.title = `Contact — KA Tech`; }, []);
   const [sending, setSending] = useState(false);
+  const { siteSettings: s } = useAdminState();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,6 +18,8 @@ export default function Contact() {
     }, 700);
   };
 
+  const phoneDigits = s.contactPhone.replace(/\s+/g, "");
+
   return (
     <div className="container-page py-12 lg:py-16">
       <header className="max-w-3xl mb-10">
@@ -27,10 +30,11 @@ export default function Contact() {
 
       <div className="grid gap-8 lg:grid-cols-3">
         <aside className="lg:col-span-1 space-y-4">
-          <ContactCard Icon={Phone} title="Téléphone" value="+213 555 00 00 00" href="tel:+213555000000" />
-          <ContactCard Icon={MessageCircle} title="WhatsApp" value="+213 555 00 00 00" href="https://wa.me/213555000000" />
-          <ContactCard Icon={Mail} title="E-mail" value="contact@katech.dz" href="mailto:contact@katech.dz" />
-          <ContactCard Icon={MapPin} title="Adresse" value="Alger, Algérie" />
+          {s.contactPhone && <ContactCard Icon={Phone} title="Téléphone" value={s.contactPhone} href={`tel:${phoneDigits}`} />}
+          {s.whatsapp && <ContactCard Icon={MessageCircle} title="WhatsApp" value={`+${s.whatsapp}`} href={`https://wa.me/${s.whatsapp}`} />}
+          {s.contactEmail && <ContactCard Icon={Mail} title="E-mail" value={s.contactEmail} href={`mailto:${s.contactEmail}`} />}
+          {s.address && <ContactCard Icon={MapPin} title="Adresse" value={s.address} />}
+          {s.hours && <ContactCard Icon={Clock} title="Horaires" value={s.hours} />}
         </aside>
 
         <form onSubmit={onSubmit} className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 lg:p-8 space-y-4">

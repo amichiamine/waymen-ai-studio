@@ -1,16 +1,16 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShieldCheck, Truck, Headphones, Award } from "lucide-react";
+import { ShieldCheck, Truck, Headphones, Award, Star, Heart } from "lucide-react";
+import { useAdminState, type AboutValue } from "@/lib/admin-store";
 
-const VALUES = [
-  { Icon: ShieldCheck, title: "Garantie officielle", desc: "Tous nos produits sont authentiques et sous garantie des revendeurs agréés." },
-  { Icon: Truck, title: "Livraison en Algérie", desc: "Livraison rapide et sécurisée dans les 58 wilayas." },
-  { Icon: Headphones, title: "Support dédié", desc: "Notre équipe est disponible avant et après votre achat." },
-  { Icon: Award, title: "Expérience et confiance", desc: "Des années au service de milliers de clients satisfaits." },
-];
+const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
+  shield: ShieldCheck, truck: Truck, headphones: Headphones,
+  award: Award, star: Star, heart: Heart,
+};
 
 export default function About() {
   useEffect(() => { document.title = `À propos — KA Tech`; }, []);
+  const { aboutValues } = useAdminState();
   return (
     <div className="container-page py-12 lg:py-16">
       <header className="max-w-3xl mb-12">
@@ -41,15 +41,20 @@ export default function About() {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12">
-        {VALUES.map((v) => (
-          <div key={v.title} className="rounded-xl border border-border bg-card p-6">
-            <v.Icon className="size-8 text-primary mb-3" />
-            <h3 className="font-bold text-lg mb-1">{v.title}</h3>
-            <p className="text-sm text-muted-foreground">{v.desc}</p>
-          </div>
-        ))}
-      </section>
+      {aboutValues.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12">
+          {aboutValues.map((v) => {
+            const Icon = ICONS[v.icon] ?? Award;
+            return (
+              <div key={v.id} className="rounded-xl border border-border bg-card p-6">
+                <Icon className="size-8 text-primary mb-3" />
+                <h3 className="font-bold text-lg mb-1">{v.title}</h3>
+                <p className="text-sm text-muted-foreground">{v.description}</p>
+              </div>
+            );
+          })}
+        </section>
+      )}
 
       <section className="rounded-2xl border border-border bg-card p-8 lg:p-12 text-center">
         <h2 className="text-2xl lg:text-3xl font-bold mb-3">Prêt à faire votre choix ?</h2>
