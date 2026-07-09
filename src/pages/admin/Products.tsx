@@ -87,9 +87,15 @@ export default function AdminProducts() {
           <TableBody>
             {rows.map((p) => (
               <TableRow key={p.id}>
-                <TableCell><img src={p.image} alt="" className="h-10 w-10 rounded object-cover" /></TableCell>
                 <TableCell>
-                  <div className="font-medium">{p.name}</div>
+                  <Link to={`/admin/products/${p.id}/view`}>
+                    <img src={p.image} alt="" className="h-10 w-10 rounded object-cover" />
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link to={`/admin/products/${p.id}/view`} className="font-medium hover:text-primary hover:underline">
+                    {p.name}
+                  </Link>
                   <div className="text-xs text-muted-foreground line-clamp-1">{p.specLine}</div>
                 </TableCell>
                 <TableCell className="text-sm">{p.brand}</TableCell>
@@ -103,7 +109,7 @@ export default function AdminProducts() {
                   <Link to={`/admin/products/${p.id}`}>
                     <Button variant="ghost" size="icon" title="Modifier"><Pencil className="h-4 w-4" /></Button>
                   </Link>
-                  <Button variant="ghost" size="icon" title="Supprimer" onClick={() => onDelete(p.id, p.name)}>
+                  <Button variant="ghost" size="icon" title="Supprimer" onClick={() => setToDelete({ id: p.id, name: p.name })}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </TableCell>
@@ -119,6 +125,17 @@ export default function AdminProducts() {
           </TableBody>
         </Table>
       </div>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => { if (!o) setToDelete(null); }}
+        title="Supprimer ce produit ?"
+        description={toDelete ? <>Le produit « <strong>{toDelete.name}</strong> » sera supprimé du catalogue local. Cette action est irréversible.</> : null}
+        confirmLabel="Supprimer"
+        destructive
+        onConfirm={confirmDelete}
+      />
     </AdminPageShell>
   );
 }
+
