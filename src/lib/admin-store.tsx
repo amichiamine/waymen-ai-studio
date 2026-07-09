@@ -1151,6 +1151,82 @@ export function markAllNotificationsRead() {
   set("notifications", state.notifications.map((n) => ({ ...n, read: true })));
 }
 
+// ---------- Contact messages ----------
+export function addContactMessage(input: Omit<ContactMessage, "id" | "createdAt" | "read"> & { read?: boolean }): ContactMessage {
+  const msg: ContactMessage = {
+    id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    createdAt: new Date().toISOString(),
+    read: input.read ?? false,
+    name: input.name, email: input.email, phone: input.phone,
+    subject: input.subject, message: input.message,
+  };
+  state = { ...state, messages: [msg, ...state.messages] };
+  emit();
+  addNotification({
+    title: "Nouveau message de contact",
+    body: `${msg.name} · ${msg.subject}`,
+    level: "info",
+    link: "/admin/messages",
+  });
+  logAudit(`message ${msg.id}`, "message.create", msg.subject, msg.email);
+  return msg;
+}
+export function markMessageRead(id: string, read = true) {
+  set("messages", state.messages.map((m) => m.id === id ? { ...m, read } : m));
+}
+export function deleteContactMessage(id: string) {
+  set("messages", state.messages.filter((m) => m.id !== id));
+}
+
+// ---------- Newsletter subscribers ----------
+export function addSubscriber(email: string, source = "footer"): { ok: boolean; error?: string } {
+  const clean = email.trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(clean)) return { ok: false, error: "Adresse invalide" };
+  if (state.subscribers.some((s) => s.email.toLowerCase() === clean)) {
+    return { ok: false, error: "Déjà inscrit" };
+  }
+  const sub: Subscriber = {
+    id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    email: clean, source, createdAt: new Date().toISOString(),
+  };
+  state = { ...state, subscribers: [sub, ...state.subscribers] };
+  emit();
+  logAudit(`abonné ${clean}`, "subscriber.create", source);
+  return { ok: true };
+}
+export function deleteSubscriber(id: string) {
+  set("subscribers", state.subscribers.filter((s) => s.id !== id));
+}
+
+// ---------- Mock auth against admin users ----------
+/** Verify email/password against the users table. Case-insensitive email. */
+export function verifyUserCredentials(email: string, password: string): AdminUser | null {
+  const u = state.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+  if (!u || !u.active) return null;
+  if (!u.password || u.password !== password) return null;
+  return u;
+}
+export function findUserByEmail(email: string): AdminUser | undefined {
+  return state.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+}
+export function setUserPassword(email: string, password: string): boolean {
+  const idx = state.users.findIndex((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+  if (idx < 0) return false;
+  const users = state.users.slice();
+  users[idx] = { ...users[idx], password };
+  set("users", users);
+  logAudit(`utilisateur ${users[idx].email}`, "user.password.reset");
+  return true;
+}
+export function touchUserLogin(email: string) {
+  const idx = state.users.findIndex((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+  if (idx < 0) return;
+  const users = state.users.slice();
+  users[idx] = { ...users[idx], lastLogin: new Date().toISOString() };
+  set("users", users);
+}
+
+
 // Audit
 export function logAudit(entity: string, action: string, detail?: string, actor?: string) {
   const log: AuditLog = {
