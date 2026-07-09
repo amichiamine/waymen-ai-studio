@@ -2,15 +2,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Heart, ShoppingCart, User, Search, Menu, X, Settings, Shield, LogOut,
-  Wrench, Tag, ChevronDown, Laptop, Monitor, Cpu, Smartphone, ArrowRight,
+  Wrench, ChevronDown, ArrowRight,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
-import { useI18n, type TKey } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { ThemeToggle } from "./ThemeLanguageToggles";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { useAdminRoles } from "@/lib/admin-auth";
+import { useAdminState } from "@/lib/admin-store";
+import { getIcon } from "@/lib/site-content";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,20 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const NAV: { to: string; key: TKey }[] = [
-  { to: "/blog", key: "nav.blog" },
-  { to: "/about", key: "nav.about" },
-  { to: "/contact", key: "nav.contact" },
-];
-
-const SECONDARY: { to: string; key: TKey; Icon: typeof Tag; accent?: boolean }[] = [
-  { to: "/category/laptops", key: "nav.laptops", Icon: Laptop },
-  { to: "/category/desktops", key: "nav.desktops", Icon: Monitor },
-  { to: "/category/builds", key: "nav.builds", Icon: Cpu },
-  { to: "/category/phones", key: "nav.phones", Icon: Smartphone },
-  { to: "/search", key: "nav.deals", Icon: Tag, accent: true },
-];
-
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -42,6 +30,8 @@ export function Header() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRoles();
   const { cartCount, favorites } = useStore();
+  const { siteContent } = useAdminState();
+  const H = siteContent.header;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,6 +40,7 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
 
   return (
     <header
