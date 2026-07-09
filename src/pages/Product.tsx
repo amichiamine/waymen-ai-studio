@@ -1,7 +1,9 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { products, formatDZD, categoryMeta, type SpecKey } from "@/data/products";
+import { formatDZD, categoryMeta, type SpecKey } from "@/data/products";
+import { useProducts } from "@/lib/useProducts";
+
 import { ProductCard } from "@/components/ProductCard";
 import { Heart, ShoppingCart, Check, AlertTriangle, ChevronRight, Shield, Truck, Star } from "lucide-react";
 import { toast } from "sonner";
