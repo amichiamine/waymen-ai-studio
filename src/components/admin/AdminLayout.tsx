@@ -55,6 +55,7 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
       { to: "/admin/notifications", label: "Notifications", Icon: Bell },
       { to: "/admin/audit", label: "Journal d'audit", Icon: ScrollText },
       { to: "/admin/settings", label: "Paramètres", Icon: SettingsIcon },
+      { to: "/admin/reset", label: "Réinitialiser", Icon: RotateCcw },
     ],
   },
 ];
