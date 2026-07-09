@@ -70,6 +70,8 @@ import AdminCategoryDetail from "@/pages/admin/CategoryDetail";
 import AdminBrandDetail from "@/pages/admin/BrandDetail";
 import AdminReset from "@/pages/admin/Reset";
 import AdminContent from "@/pages/admin/Content";
+import AdminMessages from "@/pages/admin/Messages";
+import AdminSubscribers from "@/pages/admin/Subscribers";
 
 
 function RequireAuth() {
