@@ -20,6 +20,7 @@ const schema = z.object({
   email: z.string().trim().email("Email invalide").max(120),
   role: z.enum(["owner", "admin", "editor", "viewer"]),
   active: z.boolean(),
+  password: z.string().max(72).optional(),
 });
 
 type V = z.infer<typeof schema> & { id?: string };
