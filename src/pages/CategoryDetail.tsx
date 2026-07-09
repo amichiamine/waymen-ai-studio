@@ -19,8 +19,6 @@ const SORTS: { id: string; key: TKey }[] = [
 export default function CategoryDetail() {
   const { slug } = useParams();
   const cat = slug as Category;
-  const meta = categoryMeta[cat];
-  const { t } = useI18n();
   useEffect(() => { document.title = `KA Tech — ${slug ?? ""}`; }, [slug]);
   if (!VALID.includes(cat)) {
     return (
@@ -30,6 +28,12 @@ export default function CategoryDetail() {
       </div>
     );
   }
+  return <CategoryView cat={cat} />;
+}
+
+function CategoryView({ cat }: { cat: Category }) {
+  const meta = categoryMeta[cat];
+  const { t } = useI18n();
 
   const [brand, setBrand] = useState<string[]>([]);
   const [use, setUse] = useState<string | null>(null);
