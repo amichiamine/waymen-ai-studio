@@ -49,6 +49,13 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
     ],
   },
   {
+    title: "Relation client",
+    items: [
+      { to: "/admin/messages", label: "Messages de contact", Icon: Mail, minRole: "editor" },
+      { to: "/admin/subscribers", label: "Newsletter", Icon: Send, minRole: "editor" },
+    ],
+  },
+  {
     title: "Contenu",
     items: [
       { to: "/admin/content", label: "Contenu du site", Icon: Palette, minRole: "editor" },
