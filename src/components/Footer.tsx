@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Facebook, Instagram, MessageCircle, Music2 } from "lucide-react";
 import { Logo } from "./Logo";
 import { useI18n, type TKey } from "@/lib/i18n";

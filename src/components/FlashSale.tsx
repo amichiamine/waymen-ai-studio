@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Flame, ArrowRight } from "lucide-react";
 import { products } from "@/data/products";
 import { ProductCard } from "./ProductCard";
@@ -46,7 +46,7 @@ export function FlashSale() {
           {sale.map((p) => <ProductCard key={p.id} p={p} />)}
         </div>
         <div className="mt-8 flex justify-center">
-          <Link to="/category/$slug" params={{ slug: "laptops" }} className="inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white hover:bg-white/10 transition-colors">
+          <Link to={`/category/${"laptops"}`} className="inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white hover:bg-white/10 transition-colors">
             {tr("flash.viewAll")} <ArrowRight className="size-4" />
           </Link>
         </div>
