@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { products, categoryMeta, type Category } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
 import { UseChips } from "@/components/UseChips";
