@@ -68,6 +68,9 @@ export default function AdminReset() {
     shippingRates: state.shippingRates.length,
     paymentMethods: state.paymentMethods.length,
     stockMovements: state.stockMovements.length,
+    mediaAssets: state.mediaAssets.length,
+    notifications: state.notifications.length,
+    auditLogs: state.auditLogs.length,
     siteSettings: 1,
     shippingSettings: 1,
   };
