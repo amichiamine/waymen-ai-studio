@@ -126,6 +126,11 @@ export default function AdminUsers() {
               <Label htmlFor="u-active" className="mb-0">Actif</Label>
               <Switch id="u-active" checked={v.active} onCheckedChange={(x) => setV({ ...v, active: x })} />
             </div>
+            <div>
+              <Label>{v.id ? "Nouveau mot de passe (laisser vide pour conserver)" : "Mot de passe"}</Label>
+              <Input type="password" value={v.password ?? ""} onChange={(e) => setV({ ...v, password: e.target.value })} placeholder={v.id ? "••••••" : "6 caractères minimum"} />
+              {err.password && <p className="text-xs text-destructive mt-1">{err.password}</p>}
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button><Button onClick={save}>Enregistrer</Button></DialogFooter>
         </DialogContent>
