@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { products as seedProducts, categoryMeta, type Product, type Category } from "@/data/products";
+import { products as seedProducts, categoryMeta, setCurrencyConfig, type Product, type Category } from "@/data/products";
 import { WILAYAS } from "@/data/wilayas";
 import { seedSiteContent, mergeSiteContent, type SiteContent } from "./site-content";
 export type { SiteContent } from "./site-content";
