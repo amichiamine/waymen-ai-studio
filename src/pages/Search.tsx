@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search as SearchIcon } from "lucide-react";
 import { products } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
@@ -7,7 +7,8 @@ import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 
 export default function Search() {
   useEffect(() => { document.title = `Recherche — KA Tech`; }, []);
-  const { q } = Route.useSearch();
+  const [searchParams] = useSearchParams();
+  const q = searchParams.get("q") ?? "";
   const term = q.trim().toLowerCase();
   const results = term
     ? products.filter((p) => {
