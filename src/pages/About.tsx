@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ShieldCheck, Truck, Headphones, Award, Star, Heart } from "lucide-react";
 import { useAdminState, type AboutValue } from "@/lib/admin-store";
 
@@ -9,10 +9,14 @@ const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
 };
 
 export default function About() {
-  useEffect(() => { document.title = `À propos — KA Tech`; }, []);
   const { aboutValues } = useAdminState();
   return (
     <div className="container-page py-12 lg:py-16">
+      <Helmet>
+        <title>À propos — KA Tech</title>
+        <meta name="description" content="KA Tech, boutique tech spécialisée en Algérie : garantie officielle, service client réactif, livraison partout." />
+        <link rel="canonical" href="/about" />
+      </Helmet>
       <header className="max-w-3xl mb-12">
         <p className="text-sm font-medium text-primary mb-2">À propos</p>
         <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">KA Tech — La puissance tech entre vos mains</h1>
