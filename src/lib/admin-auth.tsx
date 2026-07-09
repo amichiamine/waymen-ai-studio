@@ -1,18 +1,30 @@
 import { useAuth } from "@/lib/auth";
+import { useAdminState, type AdminUserRole } from "@/lib/admin-store";
 
-// Frontend-only : tout utilisateur connecté est considéré admin
-// pour permettre la navigation dans le back-office UI sans backend.
+export type AdminRole = AdminUserRole;
 
-export type AdminRole = "super_admin" | "product_manager" | "order_manager" | "analyst";
-
+/**
+ * Rôle admin dérivé de l'entrée correspondante dans /admin/users (par email).
+ * - owner / admin / editor  → accès au back-office (isAdmin = true)
+ * - viewer                  → connecté, mais pas d'accès admin
+ * - pas d'entrée            → utilisateur client standard (pas admin)
+ */
 export function useAdminRoles() {
   const { user, loading } = useAuth();
-  const isAdmin = !!user;
-  const roles: AdminRole[] = isAdmin ? ["super_admin"] : [];
+  const { users } = useAdminState();
+
+  const match = user
+    ? users.find((u) => u.email.toLowerCase() === user.email.toLowerCase() && u.active)
+    : undefined;
+
+  const role = match?.role;
+  const isAdmin = role === "owner" || role === "admin" || role === "editor";
+
   return {
-    roles,
+    roles: role ? [role] : [],
+    role,
     isAdmin,
-    isSuperAdmin: isAdmin,
+    isSuperAdmin: role === "owner" || role === "admin",
     loading,
     user,
   };
