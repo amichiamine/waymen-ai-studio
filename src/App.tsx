@@ -172,9 +172,11 @@ export default function App() {
             <Route path="blog/:id" element={<AdminBlogEdit />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="categories/new" element={<AdminCategoryForm mode="new" />} />
+            <Route path="categories/:slug/view" element={<AdminCategoryDetail />} />
             <Route path="categories/:slug" element={<AdminCategoryForm mode="edit" />} />
             <Route path="brands" element={<AdminBrands />} />
             <Route path="brands/new" element={<AdminBrandForm mode="new" />} />
+            <Route path="brands/:id/view" element={<AdminBrandDetail />} />
             <Route path="brands/:id" element={<AdminBrandForm mode="edit" />} />
             <Route path="reset" element={<AdminReset />} />
             <Route path="coupons" element={<AdminCoupons />} />
@@ -187,7 +189,9 @@ export default function App() {
             <Route path="payments" element={<AdminPayments />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="products/new" element={<AdminProductNew />} />
+            <Route path="products/:id/view" element={<AdminProductDetail />} />
             <Route path="products/:id" element={<AdminProductEdit />} />
+
             <Route path="reports" element={<AdminReports />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="settings" element={<AdminSettings />} />
