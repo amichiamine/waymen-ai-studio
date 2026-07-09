@@ -979,6 +979,9 @@ export function importState(json: string): { ok: true; counts: Record<string, nu
     shippingRates: obj.shippingRates ?? seed.shippingRates,
     paymentMethods: obj.paymentMethods ?? seed.paymentMethods,
     stockMovements: obj.stockMovements ?? seed.stockMovements,
+    mediaAssets: obj.mediaAssets ?? seed.mediaAssets,
+    notifications: obj.notifications ?? seed.notifications,
+    auditLogs: obj.auditLogs ?? seed.auditLogs,
     siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
     shippingSettings: { ...seed.shippingSettings, ...(obj.shippingSettings ?? {}) },
   };
