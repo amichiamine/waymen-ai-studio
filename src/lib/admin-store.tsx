@@ -141,7 +141,10 @@ export type SiteSettings = {
   maintenance: boolean;
   emailNotifications: boolean;
   showPromoBanner: boolean;
+  lowStockThreshold: number;
+  outOfStockThreshold: number;
 };
+
 
 // A single shipping rate: either specific wilaya code, or "*" for default.
 export type ShippingRate = { wilayaCode: string; home: number; desk: number };
@@ -514,6 +517,8 @@ function seedSiteSettings(): SiteSettings {
     maintenance: false,
     emailNotifications: true,
     showPromoBanner: true,
+    lowStockThreshold: 5,
+    outOfStockThreshold: 0,
   };
 }
 
@@ -522,8 +527,10 @@ function emptySiteSettings(): SiteSettings {
     storeName: "", contactEmail: "", contactPhone: "", whatsapp: "",
     address: "", hours: "",
     maintenance: false, emailNotifications: false, showPromoBanner: false,
+    lowStockThreshold: 5, outOfStockThreshold: 0,
   };
 }
+
 
 // Shipping seeds: default rate + tier by wilaya (north / centre / hauts-plateaux / sud).
 const NORTH = new Set(["16", "09", "35", "42", "15", "06", "18", "21", "23", "25", "43", "36", "24", "31", "27", "22", "46", "13"]);
