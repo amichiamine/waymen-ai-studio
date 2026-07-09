@@ -5,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Circle, CheckCircle2, XCircle } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState, updateOrderStatus, type OrderStatus } from "@/lib/admin-store";
 
-const PAYMENT: Record<string, string> = { cod: "Paiement à la livraison", card: "Carte bancaire", bank: "Virement bancaire" };
+const STATUS_LABEL: Record<OrderStatus, string> = {
+  pending: "En attente", processing: "En traitement", shipped: "Expédiée", delivered: "Livrée", cancelled: "Annulée",
+};
 
 export default function AdminOrderDetail() {
   const { id } = useParams();
@@ -26,6 +28,7 @@ export default function AdminOrderDetail() {
   }
 
   const customer = customers.find((c) => c.id === order.customerId);
+  const history = order.statusHistory ?? [{ status: order.status, at: order.createdAt }];
 
   return (
     <AdminPageShell
@@ -50,20 +53,49 @@ export default function AdminOrderDetail() {
               ))}
               <div className="space-y-1 border-t pt-3 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Sous-total</span><span>{formatDZD(order.subtotal)}</span></div>
+                {order.discount > 0 && (
+                  <div className="flex justify-between text-primary">
+                    <span>Remise {order.couponCode ? `(${order.couponCode})` : ""}</span>
+                    <span>− {formatDZD(order.discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between"><span className="text-muted-foreground">Livraison</span><span>{order.shipping === 0 ? "Gratuite" : formatDZD(order.shipping)}</span></div>
                 <div className="flex justify-between text-base font-semibold"><span>Total</span><span>{formatDZD(order.total)}</span></div>
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Suivi du statut</CardTitle></CardHeader>
+            <CardContent>
+              <ol className="relative space-y-3 border-l pl-5">
+                {history.map((ev, i) => {
+                  const Icon = ev.status === "cancelled" ? XCircle : ev.status === "delivered" ? CheckCircle2 : Circle;
+                  const color = ev.status === "cancelled" ? "text-destructive" : ev.status === "delivered" ? "text-green-600" : "text-primary";
+                  return (
+                    <li key={i} className="relative">
+                      <span className={`absolute -left-[26px] top-0 rounded-full bg-background ${color}`}>
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <p className="text-sm font-medium">{STATUS_LABEL[ev.status]}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(ev.at).toLocaleString("fr-FR")}</p>
+                      {ev.note && <p className="text-xs text-muted-foreground italic">« {ev.note} »</p>}
+                    </li>
+                  );
+                })}
+              </ol>
+            </CardContent>
+          </Card>
+
           {order.note && (
             <Card><CardContent className="p-5 text-sm"><p className="mb-1 text-xs font-semibold uppercase text-muted-foreground">Note client</p>{order.note}</CardContent></Card>
           )}
         </div>
         <div className="space-y-4">
           <Card>
-            <CardHeader><CardTitle>Statut</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Changer le statut</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary">{order.status}</Badge>
+              <Badge variant="secondary">{STATUS_LABEL[order.status]}</Badge>
               <Select value={order.status} onValueChange={(v) => { updateOrderStatus(order.id, v as OrderStatus); toast.success("Statut mis à jour"); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -80,8 +112,9 @@ export default function AdminOrderDetail() {
             <CardHeader><CardTitle>Client</CardTitle></CardHeader>
             <CardContent className="space-y-1 text-sm">
               <p className="font-medium">{order.customerName}</p>
+              {order.customerEmail && <p className="text-muted-foreground">{order.customerEmail}</p>}
               {customer && <>
-                <p className="text-muted-foreground">{customer.email}</p>
+                {!order.customerEmail && <p className="text-muted-foreground">{customer.email}</p>}
                 <p className="text-muted-foreground">{customer.phone}</p>
               </>}
               <Button variant="link" className="h-auto p-0" onClick={() => nav("/admin/customers")}>Voir le client</Button>
@@ -92,8 +125,9 @@ export default function AdminOrderDetail() {
             <CardContent className="space-y-1 text-sm">
               <p><span className="text-muted-foreground">Adresse : </span>{order.address}</p>
               <p><span className="text-muted-foreground">Wilaya : </span>{order.wilaya}</p>
+              <p><span className="text-muted-foreground">Type : </span>{order.deliveryKind === "home" ? "Domicile" : "Bureau"}</p>
               <p><span className="text-muted-foreground">Téléphone : </span>{order.phone}</p>
-              <p><span className="text-muted-foreground">Paiement : </span>{PAYMENT[order.paymentMethod]}</p>
+              <p><span className="text-muted-foreground">Paiement : </span>{order.paymentLabel ?? order.paymentMethod}</p>
             </CardContent>
           </Card>
         </div>

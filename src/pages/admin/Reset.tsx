@@ -11,25 +11,29 @@ import {
   ARRAY_KEYS, type ArrayKey,
 } from "@/lib/admin-store";
 
-type ResetTarget = ArrayKey | "siteSettings";
+type ResetTarget = ArrayKey | "siteSettings" | "shippingSettings";
 type Row = { key: ResetTarget; label: string; description: string };
 
 const ROWS: Row[] = [
   { key: "products", label: "Produits", description: "Catalogue local des produits." },
   { key: "categories", label: "Catégories", description: "Rubriques du catalogue." },
   { key: "brands", label: "Marques", description: "Marques référencées." },
-  { key: "orders", label: "Commandes", description: "Commandes clients mockées." },
+  { key: "orders", label: "Commandes", description: "Commandes clients." },
   { key: "customers", label: "Clients", description: "Base clients." },
   { key: "coupons", label: "Coupons", description: "Codes promo." },
   { key: "reviews", label: "Avis produits", description: "Avis clients à modérer." },
-  { key: "users", label: "Utilisateurs admin", description: "Membres de l'équipe (données mockées)." },
+  { key: "users", label: "Utilisateurs admin", description: "Membres de l'équipe." },
   { key: "blogPosts", label: "Articles de blog", description: "Publications du blog." },
-  { key: "homeReviews", label: "Avis d'accueil", description: "Témoignages affichés en page d'accueil." },
+  { key: "homeReviews", label: "Avis d'accueil", description: "Témoignages en page d'accueil." },
   { key: "tickerMessages", label: "Bandeau défilant", description: "Messages du ruban en haut de page." },
   { key: "marqueeBrands", label: "Marques défilantes", description: "Logos textuels du carrousel de marques." },
-  { key: "aboutValues", label: "Valeurs (page À propos)", description: "Cartes d'engagements de la page À propos." },
+  { key: "aboutValues", label: "Valeurs (À propos)", description: "Cartes d'engagements de la page À propos." },
   { key: "builderSteps", label: "Étapes du configurateur", description: "Composants et options du builder PC." },
+  { key: "shippingRates", label: "Tarifs de livraison", description: "Tarifs par wilaya (domicile / bureau)." },
+  { key: "paymentMethods", label: "Moyens de paiement", description: "Modes de paiement proposés au checkout." },
+  { key: "stockMovements", label: "Mouvements de stock", description: "Journal des ajustements de stock." },
   { key: "siteSettings", label: "Paramètres du site", description: "Nom, contact, WhatsApp, adresse, horaires." },
+  { key: "shippingSettings", label: "Réglages livraison", description: "Franco de port, activation des modes de livraison." },
 ];
 
 type PendingAction =
@@ -58,7 +62,11 @@ export default function AdminReset() {
     marqueeBrands: state.marqueeBrands.length,
     aboutValues: state.aboutValues.length,
     builderSteps: state.builderSteps.length,
+    shippingRates: state.shippingRates.length,
+    paymentMethods: state.paymentMethods.length,
+    stockMovements: state.stockMovements.length,
     siteSettings: 1,
+    shippingSettings: 1,
   };
 
   function exec() {
@@ -69,9 +77,9 @@ export default function AdminReset() {
         toast.success(`${pending.label} réinitialisé${pending.key === "all" ? "es" : ""}`);
       } else if (pending.kind === "clear") {
         clearData(pending.key);
-        toast.success(`${pending.label} vidé${pending.key === "siteSettings" ? "s" : "es"}`);
+        toast.success(`${pending.label} vidé`);
       } else if (pending.kind === "clearAll") {
-        [...ARRAY_KEYS, "siteSettings" as const].forEach((k) => clearData(k));
+        [...ARRAY_KEYS, "siteSettings" as const, "shippingSettings" as const].forEach((k) => clearData(k));
         toast.success("Toutes les données ont été vidées");
       } else if (pending.kind === "import") {
         const res = importState(pending.json);
@@ -131,13 +139,13 @@ export default function AdminReset() {
   return (
     <AdminPageShell
       title="Réinitialisation des données"
-      description="Restaurer, vider, exporter ou importer les données locales de la boutique (localStorage)."
+      description="Restaurer, vider, exporter ou importer les données locales de la boutique."
     >
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Attention</AlertTitle>
         <AlertDescription>
-          Ces actions modifient uniquement les données locales (localStorage) de ce navigateur. En phase 2, la même interface pilotera l'API réelle.
+          Ces actions modifient uniquement les données locales (localStorage) de ce navigateur.
         </AlertDescription>
       </Alert>
 
@@ -175,7 +183,7 @@ export default function AdminReset() {
                 <p className="font-medium">
                   {r.label}
                   <span className="ml-2 text-xs text-muted-foreground">
-                    {r.key === "siteSettings"
+                    {r.key === "siteSettings" || r.key === "shippingSettings"
                       ? "objet unique"
                       : `${totals[r.key]} enregistrement${totals[r.key] > 1 ? "s" : ""}`}
                   </span>
