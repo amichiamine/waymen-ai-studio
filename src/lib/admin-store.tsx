@@ -632,6 +632,9 @@ function loadState(): AdminState {
       shippingRates: parsed.shippingRates ?? seed.shippingRates,
       paymentMethods: parsed.paymentMethods ?? seed.paymentMethods,
       stockMovements: parsed.stockMovements ?? seed.stockMovements,
+      mediaAssets: parsed.mediaAssets ?? seed.mediaAssets,
+      notifications: parsed.notifications ?? seed.notifications,
+      auditLogs: parsed.auditLogs ?? seed.auditLogs,
       siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
       shippingSettings: { ...seed.shippingSettings, ...(parsed.shippingSettings ?? {}) },
     };
