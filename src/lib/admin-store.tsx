@@ -527,10 +527,19 @@ function seedSiteSettings(): SiteSettings {
     address: "Alger, Algérie",
     hours: "Dimanche → Jeudi, 9h – 19h",
     maintenance: false,
+    maintenanceMessage: "Nous revenons très vite ! Le site est en cours de mise à jour.",
     emailNotifications: true,
     showPromoBanner: true,
+    promoBannerText: "Livraison offerte dès 60 000 DA — jusqu'à dimanche.",
+    promoBannerLabel: "Découvrir",
+    promoBannerHref: "/category/laptops",
     lowStockThreshold: 5,
     outOfStockThreshold: 0,
+    currencySymbol: "DA",
+    currencyPosition: "suffix",
+    currencyThousandSeparator: " ",
+    languageSelectorEnabled: false,
+    hideRatingWhenNoReviews: true,
   };
 }
 
@@ -538,8 +547,12 @@ function emptySiteSettings(): SiteSettings {
   return {
     storeName: "", contactEmail: "", contactPhone: "", whatsapp: "",
     address: "", hours: "",
-    maintenance: false, emailNotifications: false, showPromoBanner: false,
+    maintenance: false, maintenanceMessage: "",
+    emailNotifications: false, showPromoBanner: false,
+    promoBannerText: "", promoBannerLabel: "", promoBannerHref: "",
     lowStockThreshold: 5, outOfStockThreshold: 0,
+    currencySymbol: "DA", currencyPosition: "suffix", currencyThousandSeparator: " ",
+    languageSelectorEnabled: false, hideRatingWhenNoReviews: true,
   };
 }
 
