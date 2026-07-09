@@ -1176,6 +1176,7 @@ export function importState(json: string): { ok: true; counts: Record<string, nu
     auditLogs: obj.auditLogs ?? seed.auditLogs,
     siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
     shippingSettings: { ...seed.shippingSettings, ...(obj.shippingSettings ?? {}) },
+    siteContent: mergeSiteContent(seed.siteContent, obj.siteContent as Partial<SiteContent> | undefined),
   };
   state = next;
   emit();
