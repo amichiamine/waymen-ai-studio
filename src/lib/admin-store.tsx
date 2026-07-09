@@ -1268,6 +1268,8 @@ export function importState(json: string): { ok: true; counts: Record<string, nu
     mediaAssets: obj.mediaAssets ?? seed.mediaAssets,
     notifications: obj.notifications ?? seed.notifications,
     auditLogs: obj.auditLogs ?? seed.auditLogs,
+    messages: obj.messages ?? seed.messages,
+    subscribers: obj.subscribers ?? seed.subscribers,
     siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
     shippingSettings: { ...seed.shippingSettings, ...(obj.shippingSettings ?? {}) },
     siteContent: mergeSiteContent(seed.siteContent, obj.siteContent as Partial<SiteContent> | undefined),
