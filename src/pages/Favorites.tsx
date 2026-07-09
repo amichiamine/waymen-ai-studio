@@ -2,13 +2,15 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { products } from "@/data/products";
+import { useProducts } from "@/lib/useProducts";
 import { ProductCard } from "@/components/ProductCard";
 
 export default function Favorites() {
   useEffect(() => { document.title = `Mes favoris — KA Tech`; }, []);
   const { favorites } = useStore();
+  const products = useProducts();
   const items = products.filter((p) => favorites.has(p.id));
+
 
   return (
     <div className="container mx-auto px-4 py-10">
