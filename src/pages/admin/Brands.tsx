@@ -28,15 +28,16 @@ export default function AdminBrands() {
           <Card key={b.id} className="transition hover:border-primary/50">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
+                <Link to={`/admin/brands/${b.id}/view`} className="group flex items-center gap-2">
                   <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary"><Tag className="h-4 w-4" /></div>
                   <div>
-                    <p className="font-semibold">{b.name}</p>
+                    <p className="font-semibold group-hover:text-primary group-hover:underline">{b.name}</p>
                     <p className="text-xs text-muted-foreground">{b.count} produit{b.count > 1 ? "s" : ""}{b.country ? ` · ${b.country}` : ""}</p>
                   </div>
-                </div>
-                <Link to={`/admin/brands/${b.id}`}><Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button></Link>
+                </Link>
+                <Link to={`/admin/brands/${b.id}`}><Button variant="ghost" size="icon" title="Modifier"><Pencil className="h-4 w-4" /></Button></Link>
               </div>
+
               <div className="mt-4 border-t pt-3 text-xs text-muted-foreground">
                 Prix moyen · <span className="font-medium text-foreground">{b.avg ? formatDZD(b.avg) : "—"}</span>
               </div>
