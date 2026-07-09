@@ -10,21 +10,24 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useAdminState, adjustStock, setProductStockLevel } from "@/lib/admin-store";
+import { useAdminState, adjustStock, setProductStockLevel, setProductStockQty } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
+
 import { toast } from "sonner";
 
 const LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
 const VARIANT: Record<string, "default" | "secondary" | "destructive"> = { in: "default", low: "secondary", out: "destructive" };
 
 export default function AdminInventory() {
-  const { products, stockMovements } = useAdminState();
+  const { products, stockMovements, siteSettings } = useAdminState();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "in" | "low" | "out">("all");
   const [edit, setEdit] = useState<Product | null>(null);
   const [delta, setDelta] = useState<string>("0");
+  const [qty, setQty] = useState<string>("");
   const [reason, setReason] = useState<string>("");
   const [level, setLevel] = useState<Product["stock"]>("in");
+
 
   const kpi = useMemo(() => ({
     total: products.length,
@@ -50,19 +53,24 @@ export default function AdminInventory() {
 
   const openEdit = (p: Product) => {
     setEdit(p); setDelta("0"); setReason(""); setLevel(p.stock);
+    setQty(String(p.stockQty ?? 0));
   };
 
   const saveAdjust = () => {
     if (!edit) return;
     const d = parseInt(delta, 10) || 0;
+    const targetQty = qty === "" ? undefined : Math.max(0, parseInt(qty, 10) || 0);
     if (d !== 0) {
       if (!reason.trim()) { toast.error("Indiquez une raison"); return; }
       adjustStock(edit.id, d, reason.trim());
+    } else if (targetQty !== undefined && targetQty !== (edit.stockQty ?? 0)) {
+      setProductStockQty(edit.id, targetQty, reason.trim() || "Ajustement manuel");
     }
     if (level !== edit.stock) setProductStockLevel(edit.id, level);
     toast.success(`Stock mis à jour — ${edit.name}`);
     setEdit(null);
   };
+
 
   return (
     <AdminPageShell title="Stock" description="Ajustez les niveaux de stock, journalisez les mouvements et suivez les alertes.">
