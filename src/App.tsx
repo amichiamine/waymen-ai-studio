@@ -166,7 +166,6 @@ export default function App() {
             <Route path="blog" element={<AdminBlogList />} />
             <Route path="blog/new" element={<AdminBlogNew />} />
             <Route path="blog/:id" element={<AdminBlogEdit />} />
-            <Route path="brands" element={<AdminBrands />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="categories/new" element={<AdminCategoryForm mode="new" />} />
             <Route path="categories/:slug" element={<AdminCategoryForm mode="edit" />} />
