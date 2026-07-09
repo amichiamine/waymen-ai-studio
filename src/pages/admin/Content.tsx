@@ -37,7 +37,7 @@ const SECTIONS: { key: keyof SiteContent; label: string }[] = [
 
 export default function AdminContent() {
   const { siteContent } = useAdminState();
-  const [tab, setTab] = useState<keyof SiteContent>("hero");
+  const [tab, setTab] = useState<keyof SiteContent>("header");
 
   return (
     <AdminPageShell title="Contenu du site" description="Chaque bloc de la page d'accueil est éditable ici.">
