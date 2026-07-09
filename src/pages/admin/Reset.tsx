@@ -35,6 +35,8 @@ const ROWS: Row[] = [
   { key: "mediaAssets", label: "Médiathèque", description: "Images téléversées disponibles pour le contenu." },
   { key: "notifications", label: "Notifications", description: "Notifications internes de l'admin." },
   { key: "auditLogs", label: "Journal d'audit", description: "Actions effectuées dans l'admin." },
+  { key: "messages", label: "Messages de contact", description: "Messages reçus via /contact." },
+  { key: "subscribers", label: "Inscrits newsletter", description: "E-mails collectés via le pied de page." },
   { key: "siteSettings", label: "Paramètres du site", description: "Nom, contact, WhatsApp, adresse, horaires." },
   { key: "shippingSettings", label: "Réglages livraison", description: "Franco de port, activation des modes de livraison." },
 ];
@@ -71,6 +73,8 @@ export default function AdminReset() {
     mediaAssets: state.mediaAssets.length,
     notifications: state.notifications.length,
     auditLogs: state.auditLogs.length,
+    messages: state.messages.length,
+    subscribers: state.subscribers.length,
     siteSettings: 1,
     shippingSettings: 1,
   };

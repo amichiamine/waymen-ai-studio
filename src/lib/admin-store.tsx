@@ -87,7 +87,26 @@ export type AdminUser = {
   email: string;
   role: AdminUserRole;
   active: boolean;
+  password?: string; // mock only: local demo credentials
   lastLogin?: string;
+  createdAt: string;
+};
+
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+};
+
+export type Subscriber = {
+  id: string;
+  email: string;
+  source?: string; // "footer" | "checkout" | etc.
   createdAt: string;
 };
 
@@ -228,6 +247,8 @@ export type AdminState = {
   mediaAssets: MediaAsset[];
   notifications: AdminNotification[];
   auditLogs: AuditLog[];
+  messages: ContactMessage[];
+  subscribers: Subscriber[];
   siteSettings: SiteSettings;
   shippingSettings: ShippingSettings;
   siteContent: SiteContent;
@@ -239,6 +260,7 @@ export const ARRAY_KEYS = [
   "marqueeBrands", "aboutValues", "builderSteps",
   "shippingRates", "paymentMethods", "stockMovements",
   "mediaAssets", "notifications", "auditLogs",
+  "messages", "subscribers",
 ] as const;
 export type ArrayKey = typeof ARRAY_KEYS[number];
 
@@ -412,11 +434,11 @@ function seedReviews(): Review[] {
 function seedUsers(): AdminUser[] {
   const now = Date.now();
   return [
-    { id: "usr_1", name: "Yacine Admin", email: "admin@katech.dz", role: "owner", active: true, lastLogin: new Date(now - 3600000).toISOString(), createdAt: new Date(now - 365 * 86400000).toISOString() },
-    { id: "usr_2", name: "Sarah Boudjemaa", email: "sarah@katech.dz", role: "admin", active: true, lastLogin: new Date(now - 86400000).toISOString(), createdAt: new Date(now - 200 * 86400000).toISOString() },
-    { id: "usr_3", name: "Karim Cherif", email: "karim@katech.dz", role: "editor", active: true, lastLogin: new Date(now - 4 * 86400000).toISOString(), createdAt: new Date(now - 120 * 86400000).toISOString() },
-    { id: "usr_4", name: "Lina Meziane", email: "lina@katech.dz", role: "editor", active: false, lastLogin: new Date(now - 30 * 86400000).toISOString(), createdAt: new Date(now - 90 * 86400000).toISOString() },
-    { id: "usr_5", name: "Omar Sahraoui", email: "omar@katech.dz", role: "viewer", active: true, lastLogin: new Date(now - 2 * 86400000).toISOString(), createdAt: new Date(now - 45 * 86400000).toISOString() },
+    { id: "usr_1", name: "Yacine Admin", email: "admin@katech.dz", role: "owner", active: true, password: "admin123", lastLogin: new Date(now - 3600000).toISOString(), createdAt: new Date(now - 365 * 86400000).toISOString() },
+    { id: "usr_2", name: "Sarah Boudjemaa", email: "sarah@katech.dz", role: "admin", active: true, password: "sarah123", lastLogin: new Date(now - 86400000).toISOString(), createdAt: new Date(now - 200 * 86400000).toISOString() },
+    { id: "usr_3", name: "Karim Cherif", email: "karim@katech.dz", role: "editor", active: true, password: "karim123", lastLogin: new Date(now - 4 * 86400000).toISOString(), createdAt: new Date(now - 120 * 86400000).toISOString() },
+    { id: "usr_4", name: "Lina Meziane", email: "lina@katech.dz", role: "editor", active: false, password: "lina123", lastLogin: new Date(now - 30 * 86400000).toISOString(), createdAt: new Date(now - 90 * 86400000).toISOString() },
+    { id: "usr_5", name: "Omar Sahraoui", email: "omar@katech.dz", role: "viewer", active: true, password: "omar123", lastLogin: new Date(now - 2 * 86400000).toISOString(), createdAt: new Date(now - 45 * 86400000).toISOString() },
   ];
 }
 
@@ -641,10 +663,28 @@ function seedAll(): AdminState {
     mediaAssets: seedMediaAssets(),
     notifications: seedNotifications(),
     auditLogs: seedAuditLogs(),
+    messages: seedMessages(),
+    subscribers: seedSubscribers(),
     siteSettings: seedSiteSettings(),
     shippingSettings: seedShippingSettings(),
     siteContent: seedSiteContent(),
   };
+}
+
+function seedMessages(): ContactMessage[] {
+  const now = Date.now();
+  return [
+    { id: "msg_1", name: "Amine Dahmani", email: "amine.d@example.dz", phone: "0555 12 34 56", subject: "Demande de devis", message: "Bonjour, avez-vous un stock de RTX 4070 Super ?", read: false, createdAt: new Date(now - 3600 * 1000).toISOString() },
+    { id: "msg_2", name: "Sabrina L.", email: "sabrina@example.com", subject: "Suivi commande", message: "Ma commande KA100237 est-elle expédiée ?", read: true, createdAt: new Date(now - 3 * 86400 * 1000).toISOString() },
+  ];
+}
+
+function seedSubscribers(): Subscriber[] {
+  const now = Date.now();
+  return [
+    { id: "sub_1", email: "fan@katech.dz", source: "footer", createdAt: new Date(now - 10 * 86400 * 1000).toISOString() },
+    { id: "sub_2", email: "hello@example.com", source: "footer", createdAt: new Date(now - 2 * 86400 * 1000).toISOString() },
+  ];
 }
 
 
@@ -686,6 +726,8 @@ function loadState(): AdminState {
       mediaAssets: parsed.mediaAssets ?? seed.mediaAssets,
       notifications: parsed.notifications ?? seed.notifications,
       auditLogs: parsed.auditLogs ?? seed.auditLogs,
+      messages: parsed.messages ?? seed.messages,
+      subscribers: parsed.subscribers ?? seed.subscribers,
       siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
       shippingSettings: { ...seed.shippingSettings, ...(parsed.shippingSettings ?? {}) },
       siteContent: mergeSiteContent(seed.siteContent, parsed.siteContent as Partial<SiteContent> | undefined),
@@ -1109,6 +1151,82 @@ export function markAllNotificationsRead() {
   set("notifications", state.notifications.map((n) => ({ ...n, read: true })));
 }
 
+// ---------- Contact messages ----------
+export function addContactMessage(input: Omit<ContactMessage, "id" | "createdAt" | "read"> & { read?: boolean }): ContactMessage {
+  const msg: ContactMessage = {
+    id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    createdAt: new Date().toISOString(),
+    read: input.read ?? false,
+    name: input.name, email: input.email, phone: input.phone,
+    subject: input.subject, message: input.message,
+  };
+  state = { ...state, messages: [msg, ...state.messages] };
+  emit();
+  addNotification({
+    title: "Nouveau message de contact",
+    body: `${msg.name} · ${msg.subject}`,
+    level: "info",
+    link: "/admin/messages",
+  });
+  logAudit(`message ${msg.id}`, "message.create", msg.subject, msg.email);
+  return msg;
+}
+export function markMessageRead(id: string, read = true) {
+  set("messages", state.messages.map((m) => m.id === id ? { ...m, read } : m));
+}
+export function deleteContactMessage(id: string) {
+  set("messages", state.messages.filter((m) => m.id !== id));
+}
+
+// ---------- Newsletter subscribers ----------
+export function addSubscriber(email: string, source = "footer"): { ok: boolean; error?: string } {
+  const clean = email.trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(clean)) return { ok: false, error: "Adresse invalide" };
+  if (state.subscribers.some((s) => s.email.toLowerCase() === clean)) {
+    return { ok: false, error: "Déjà inscrit" };
+  }
+  const sub: Subscriber = {
+    id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    email: clean, source, createdAt: new Date().toISOString(),
+  };
+  state = { ...state, subscribers: [sub, ...state.subscribers] };
+  emit();
+  logAudit(`abonné ${clean}`, "subscriber.create", source);
+  return { ok: true };
+}
+export function deleteSubscriber(id: string) {
+  set("subscribers", state.subscribers.filter((s) => s.id !== id));
+}
+
+// ---------- Mock auth against admin users ----------
+/** Verify email/password against the users table. Case-insensitive email. */
+export function verifyUserCredentials(email: string, password: string): AdminUser | null {
+  const u = state.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+  if (!u || !u.active) return null;
+  if (!u.password || u.password !== password) return null;
+  return u;
+}
+export function findUserByEmail(email: string): AdminUser | undefined {
+  return state.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+}
+export function setUserPassword(email: string, password: string): boolean {
+  const idx = state.users.findIndex((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+  if (idx < 0) return false;
+  const users = state.users.slice();
+  users[idx] = { ...users[idx], password };
+  set("users", users);
+  logAudit(`utilisateur ${users[idx].email}`, "user.password.reset");
+  return true;
+}
+export function touchUserLogin(email: string) {
+  const idx = state.users.findIndex((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+  if (idx < 0) return;
+  const users = state.users.slice();
+  users[idx] = { ...users[idx], lastLogin: new Date().toISOString() };
+  set("users", users);
+}
+
+
 // Audit
 export function logAudit(entity: string, action: string, detail?: string, actor?: string) {
   const log: AuditLog = {
@@ -1226,6 +1344,8 @@ export function importState(json: string): { ok: true; counts: Record<string, nu
     mediaAssets: obj.mediaAssets ?? seed.mediaAssets,
     notifications: obj.notifications ?? seed.notifications,
     auditLogs: obj.auditLogs ?? seed.auditLogs,
+    messages: obj.messages ?? seed.messages,
+    subscribers: obj.subscribers ?? seed.subscribers,
     siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
     shippingSettings: { ...seed.shippingSettings, ...(obj.shippingSettings ?? {}) },
     siteContent: mergeSiteContent(seed.siteContent, obj.siteContent as Partial<SiteContent> | undefined),

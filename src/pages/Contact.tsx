@@ -2,7 +2,16 @@ import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { useAdminState } from "@/lib/admin-store";
+import { z } from "zod";
+import { useAdminState, addContactMessage } from "@/lib/admin-store";
+
+const contactSchema = z.object({
+  name: z.string().trim().min(2, "Nom requis").max(100),
+  email: z.string().trim().email("E-mail invalide").max(255),
+  phone: z.string().trim().max(30).optional(),
+  subject: z.string().trim().min(2, "Sujet requis").max(150),
+  message: z.string().trim().min(5, "Message trop court").max(2000),
+});
 
 export default function Contact() {
   const [sending, setSending] = useState(false);
@@ -10,12 +19,27 @@ export default function Contact() {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const fd = new FormData(form);
+    const parsed = contactSchema.safeParse({
+      name: String(fd.get("name") || ""),
+      email: String(fd.get("email") || ""),
+      phone: String(fd.get("phone") || "") || undefined,
+      subject: String(fd.get("subject") || ""),
+      message: String(fd.get("message") || ""),
+    });
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Formulaire invalide");
+      return;
+    }
     setSending(true);
-    setTimeout(() => {
-      setSending(false);
-      (e.target as HTMLFormElement).reset();
+    try {
+      addContactMessage(parsed.data);
+      form.reset();
       toast.success("Message reçu ! Nous vous répondrons rapidement.");
-    }, 700);
+    } finally {
+      setSending(false);
+    }
   };
 
   const phoneDigits = s.contactPhone.replace(/\s+/g, "");

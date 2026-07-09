@@ -1,8 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  verifyUserCredentials, findUserByEmail, touchUserLogin,
+  upsertUser, type AdminUser,
+} from "@/lib/admin-store";
 
-// Auth mockée : pas de backend. On simule un utilisateur stocké en localStorage.
-// L'objet `user` reproduit une forme minimale compatible avec le code d'origine
-// (id / email / user_metadata) pour éviter de casser les composants.
+// Auth mockée : pas de backend. Les identifiants sont validés contre la
+// table `admin-store.users` (comptes créés/édités depuis /admin/users).
+// La session est persistée en localStorage.
 
 export type MockUser = {
   id: string;
@@ -43,6 +47,10 @@ function readStored(): MockUser | null {
   }
 }
 
+function toMock(u: AdminUser): MockUser {
+  return { id: u.id, email: u.email, user_metadata: { name: u.name } };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<MockUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,23 +68,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
   };
 
-  const signIn: AuthCtx["signIn"] = async (email) => {
-    const u: MockUser = {
-      id: "demo-user",
-      email,
-      user_metadata: { name: email.split("@")[0] },
-    };
-    persist(u);
+  const signIn: AuthCtx["signIn"] = async (email, password) => {
+    const found = verifyUserCredentials(email, password);
+    if (!found) {
+      // Fallback : compte client (hors table admin) — on autorise l'accès si
+      // un compte de même email existe sans mot de passe, sinon on refuse.
+      const known = findUserByEmail(email);
+      if (known && !known.password) {
+        touchUserLogin(known.email);
+        persist(toMock(known));
+        return { error: null };
+      }
+      return { error: { message: "Identifiants invalides." } };
+    }
+    touchUserLogin(found.email);
+    persist(toMock(found));
     return { error: null };
   };
 
-  const signUp: AuthCtx["signUp"] = async (email, _password, meta) => {
-    const u: MockUser = {
-      id: "demo-user",
-      email,
-      user_metadata: { name: meta?.name, phone: meta?.phone },
+  const signUp: AuthCtx["signUp"] = async (email, password, meta) => {
+    const existing = findUserByEmail(email);
+    if (existing) return { error: { message: "Un compte existe déjà avec cet email." } };
+    const created: AdminUser = {
+      id: `usr_${Date.now()}`,
+      name: meta?.name || email.split("@")[0],
+      email: email.trim(),
+      role: "viewer",
+      active: true,
+      password,
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
     };
-    persist(u);
+    upsertUser(created);
+    persist({
+      id: created.id,
+      email: created.email,
+      user_metadata: { name: created.name, phone: meta?.phone },
+    });
     return { error: null };
   };
 

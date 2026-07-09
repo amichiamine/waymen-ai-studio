@@ -20,6 +20,7 @@ const schema = z.object({
   email: z.string().trim().email("Email invalide").max(120),
   role: z.enum(["owner", "admin", "editor", "viewer"]),
   active: z.boolean(),
+  password: z.string().max(72).optional(),
 });
 
 type V = z.infer<typeof schema> & { id?: string };
@@ -27,11 +28,11 @@ type V = z.infer<typeof schema> & { id?: string };
 export default function AdminUsers() {
   const { users } = useAdminState();
   const [open, setOpen] = useState(false);
-  const [v, setV] = useState<V>({ name: "", email: "", role: "editor", active: true });
+  const [v, setV] = useState<V>({ name: "", email: "", role: "editor", active: true, password: "" });
   const [err, setErr] = useState<Record<string, string>>({});
 
-  function openNew() { setV({ name: "", email: "", role: "editor", active: true }); setErr({}); setOpen(true); }
-  function openEdit(u: AdminUser) { setV({ id: u.id, name: u.name, email: u.email, role: u.role, active: u.active }); setErr({}); setOpen(true); }
+  function openNew() { setV({ name: "", email: "", role: "editor", active: true, password: "" }); setErr({}); setOpen(true); }
+  function openEdit(u: AdminUser) { setV({ id: u.id, name: u.name, email: u.email, role: u.role, active: u.active, password: "" }); setErr({}); setOpen(true); }
 
   function save() {
     const p = schema.safeParse(v);
@@ -43,11 +44,19 @@ export default function AdminUsers() {
     if (!v.id && users.some((u) => u.email.toLowerCase() === p.data.email.toLowerCase())) {
       setErr({ email: "Email déjà utilisé" }); return;
     }
+    if (!v.id && (!p.data.password || p.data.password.length < 6)) {
+      setErr({ password: "Mot de passe (6 caractères min.) requis pour un nouveau compte" }); return;
+    }
+    if (v.id && p.data.password && p.data.password.length < 6) {
+      setErr({ password: "6 caractères minimum" }); return;
+    }
+    const existing = users.find((u) => u.id === v.id);
     const user: AdminUser = {
       id: v.id ?? `usr_${Date.now()}`,
       name: p.data.name, email: p.data.email, role: p.data.role, active: p.data.active,
-      createdAt: users.find((u) => u.id === v.id)?.createdAt ?? new Date().toISOString(),
-      lastLogin: users.find((u) => u.id === v.id)?.lastLogin,
+      password: p.data.password ? p.data.password : existing?.password,
+      createdAt: existing?.createdAt ?? new Date().toISOString(),
+      lastLogin: existing?.lastLogin,
     };
     upsertUser(user);
     toast.success(v.id ? "Utilisateur mis à jour" : "Utilisateur invité");
@@ -116,6 +125,11 @@ export default function AdminUsers() {
             <div className="flex items-center justify-between rounded-md border p-2">
               <Label htmlFor="u-active" className="mb-0">Actif</Label>
               <Switch id="u-active" checked={v.active} onCheckedChange={(x) => setV({ ...v, active: x })} />
+            </div>
+            <div>
+              <Label>{v.id ? "Nouveau mot de passe (laisser vide pour conserver)" : "Mot de passe"}</Label>
+              <Input type="password" value={v.password ?? ""} onChange={(e) => setV({ ...v, password: e.target.value })} placeholder={v.id ? "••••••" : "6 caractères minimum"} />
+              {err.password && <p className="text-xs text-destructive mt-1">{err.password}</p>}
             </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button><Button onClick={save}>Enregistrer</Button></DialogFooter>

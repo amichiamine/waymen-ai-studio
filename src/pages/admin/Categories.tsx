@@ -1,13 +1,20 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRight, Pencil } from "lucide-react";
-import { useAdminState } from "@/lib/admin-store";
+import { Plus, ArrowRight, Pencil, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAdminState, deleteCategory, type AdminCategory } from "@/lib/admin-store";
 
 export default function AdminCategories() {
   const { categories, products } = useAdminState();
+  const [pending, setPending] = useState<AdminCategory | null>(null);
+
   const rows = useMemo(
     () => categories.map((c) => {
       const items = products.filter((p) => p.category === c.slug);
@@ -15,6 +22,16 @@ export default function AdminCategories() {
     }),
     [categories, products],
   );
+
+  const pendingCount = pending ? products.filter((p) => p.category === pending.slug).length : 0;
+
+  function confirmDelete() {
+    if (!pending) return;
+    if (pendingCount > 0) return; // safety
+    deleteCategory(pending.slug);
+    toast.success(`Catégorie « ${pending.label} » supprimée`);
+    setPending(null);
+  }
 
   return (
     <AdminPageShell
@@ -43,6 +60,14 @@ export default function AdminCategories() {
                   <Link to={`/admin/categories/${c.slug}`}>
                     <Button variant="ghost" size="icon" title="Modifier"><Pencil className="h-4 w-4" /></Button>
                   </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Supprimer"
+                    onClick={() => setPending(c)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                   <Link to={`/admin/categories/${c.slug}/view`} className="flex items-center gap-1 text-primary hover:underline text-xs">
                     Détails <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -56,6 +81,35 @@ export default function AdminCategories() {
           <p className="col-span-full rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Aucune catégorie.</p>
         )}
       </div>
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer « {pending?.label} » ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingCount > 0 ? (
+                <>
+                  Impossible : <strong>{pendingCount} produit{pendingCount > 1 ? "s" : ""}</strong> encore rattaché{pendingCount > 1 ? "s" : ""} à cette catégorie.
+                  <br />
+                  Réassignez-les à une autre catégorie depuis <Link to="/admin/products" className="text-primary underline">/admin/products</Link>, puis réessayez.
+                </>
+              ) : (
+                <>Cette action est irréversible. Les paramètres de la catégorie seront perdus.</>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={pendingCount > 0}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminPageShell>
   );
 }

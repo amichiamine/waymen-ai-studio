@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, Tags, Star, FileText,
   Settings as SettingsIcon, BarChart3, Image as ImageIcon, Bell, ShieldCheck,
   ScrollText, Warehouse, Truck, CreditCard, PieChart, Ticket, Boxes,
-  Menu, ChevronRight, Home, RotateCcw, Check, Palette,
+  Menu, ChevronRight, Home, RotateCcw, Check, Palette, Mail, Send,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
@@ -46,6 +46,13 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
       { to: "/admin/coupons", label: "Coupons", Icon: Ticket, minRole: "editor" },
       { to: "/admin/shipping", label: "Livraison", Icon: Truck, minRole: "admin" },
       { to: "/admin/payments", label: "Paiements", Icon: CreditCard, minRole: "admin" },
+    ],
+  },
+  {
+    title: "Relation client",
+    items: [
+      { to: "/admin/messages", label: "Messages de contact", Icon: Mail, minRole: "editor" },
+      { to: "/admin/subscribers", label: "Newsletter", Icon: Send, minRole: "editor" },
     ],
   },
   {

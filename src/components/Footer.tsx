@@ -1,11 +1,26 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Mail } from "lucide-react";
+import { toast } from "sonner";
 import { Logo } from "./Logo";
-import { useAdminState } from "@/lib/admin-store";
+import { useAdminState, addSubscriber } from "@/lib/admin-store";
 import { getIcon } from "@/lib/site-content";
 
 export function Footer() {
   const { siteContent } = useAdminState();
   const f = siteContent.footer;
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  function subscribe(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const r = addSubscriber(email, "footer");
+    setBusy(false);
+    if (!r.ok) { toast.error(r.error || "Inscription impossible"); return; }
+    toast.success("Merci pour votre inscription !");
+    setEmail("");
+  }
   return (
     <footer className="mt-24 border-t border-border bg-card/40 animate-fade-in-up">
       <div className="container-page py-14 grid gap-10 md:grid-cols-5">
@@ -33,6 +48,29 @@ export function Footer() {
               })}
             </div>
           )}
+          <form onSubmit={subscribe} className="pt-3 max-w-sm">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">Newsletter</label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-background border border-border text-sm focus:outline-none focus:border-primary/60"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={busy}
+                className="h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50"
+              >
+                {busy ? "..." : "S'inscrire"}
+              </button>
+            </div>
+          </form>
         </div>
         {f.columns.map((col) => (
           <div key={col.id}>

@@ -70,6 +70,8 @@ import AdminCategoryDetail from "@/pages/admin/CategoryDetail";
 import AdminBrandDetail from "@/pages/admin/BrandDetail";
 import AdminReset from "@/pages/admin/Reset";
 import AdminContent from "@/pages/admin/Content";
+import AdminMessages from "@/pages/admin/Messages";
+import AdminSubscribers from "@/pages/admin/Subscribers";
 
 
 function RequireAuth() {
@@ -215,6 +217,8 @@ export default function App() {
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="content" element={<AdminContent />} />
+            <Route path="messages" element={<AdminMessages />} />
+            <Route path="subscribers" element={<AdminSubscribers />} />
             <Route path="shipping" element={<AdminShipping />} />
             <Route path="users" element={<AdminUsers />} />
           </Route>
