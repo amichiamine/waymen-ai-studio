@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { useAdminState } from "@/lib/admin-store";
+import { Reveal } from "@/components/Reveal";
 
 export function Reviews() {
   const { homeReviews, products, siteContent } = useAdminState();
@@ -7,8 +8,10 @@ export function Reviews() {
   const cfg = siteContent.reviews;
   return (
     <section className="container-page py-16">
-      <h2 className="text-3xl font-bold mb-2">{cfg.title}</h2>
-      <p className="text-muted-foreground mb-10">{cfg.subtitle}</p>
+      <Reveal variant="up">
+        <h2 className="text-3xl font-bold mb-2">{cfg.title}</h2>
+        <p className="text-muted-foreground mb-10">{cfg.subtitle}</p>
+      </Reveal>
       <div dir="ltr" className="relative overflow-hidden -mx-4 px-4 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
         <div className="flex w-max gap-5 animate-marquee-slow pause-on-hover motion-reduce:animate-none">
           {[0, 1].map((half) => (

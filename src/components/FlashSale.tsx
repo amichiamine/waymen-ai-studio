@@ -5,6 +5,7 @@ import { ProductCard } from "./ProductCard";
 import { useI18n } from "@/lib/i18n";
 import { useProducts } from "@/lib/useProducts";
 import { useAdminState } from "@/lib/admin-store";
+import { Reveal } from "@/components/Reveal";
 
 function useCountdown(targetMs: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -48,11 +49,13 @@ export function FlashSale() {
           </div>
         </div>
         <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
-          {sale.map((p) => <ProductCard key={p.id} p={p} />)}
+          {sale.map((p, i) => (
+            <Reveal key={p.id} variant="up" delay={i * 80}><ProductCard p={p} /></Reveal>
+          ))}
         </div>
         <div className="mt-8 flex justify-center">
-          <Link to={cfg.viewAllHref} className="inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white hover:bg-white/10 transition-colors">
-            {cfg.viewAllLabel} <ArrowRight className="size-4" />
+          <Link to={cfg.viewAllHref} className="group inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white transition-all duration-300 hover:bg-white/10 hover:-translate-y-0.5 hover:border-white/40">
+            {cfg.viewAllLabel} <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
       </div>
