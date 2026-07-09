@@ -434,11 +434,11 @@ function seedReviews(): Review[] {
 function seedUsers(): AdminUser[] {
   const now = Date.now();
   return [
-    { id: "usr_1", name: "Yacine Admin", email: "admin@katech.dz", role: "owner", active: true, lastLogin: new Date(now - 3600000).toISOString(), createdAt: new Date(now - 365 * 86400000).toISOString() },
-    { id: "usr_2", name: "Sarah Boudjemaa", email: "sarah@katech.dz", role: "admin", active: true, lastLogin: new Date(now - 86400000).toISOString(), createdAt: new Date(now - 200 * 86400000).toISOString() },
-    { id: "usr_3", name: "Karim Cherif", email: "karim@katech.dz", role: "editor", active: true, lastLogin: new Date(now - 4 * 86400000).toISOString(), createdAt: new Date(now - 120 * 86400000).toISOString() },
-    { id: "usr_4", name: "Lina Meziane", email: "lina@katech.dz", role: "editor", active: false, lastLogin: new Date(now - 30 * 86400000).toISOString(), createdAt: new Date(now - 90 * 86400000).toISOString() },
-    { id: "usr_5", name: "Omar Sahraoui", email: "omar@katech.dz", role: "viewer", active: true, lastLogin: new Date(now - 2 * 86400000).toISOString(), createdAt: new Date(now - 45 * 86400000).toISOString() },
+    { id: "usr_1", name: "Yacine Admin", email: "admin@katech.dz", role: "owner", active: true, password: "admin123", lastLogin: new Date(now - 3600000).toISOString(), createdAt: new Date(now - 365 * 86400000).toISOString() },
+    { id: "usr_2", name: "Sarah Boudjemaa", email: "sarah@katech.dz", role: "admin", active: true, password: "sarah123", lastLogin: new Date(now - 86400000).toISOString(), createdAt: new Date(now - 200 * 86400000).toISOString() },
+    { id: "usr_3", name: "Karim Cherif", email: "karim@katech.dz", role: "editor", active: true, password: "karim123", lastLogin: new Date(now - 4 * 86400000).toISOString(), createdAt: new Date(now - 120 * 86400000).toISOString() },
+    { id: "usr_4", name: "Lina Meziane", email: "lina@katech.dz", role: "editor", active: false, password: "lina123", lastLogin: new Date(now - 30 * 86400000).toISOString(), createdAt: new Date(now - 90 * 86400000).toISOString() },
+    { id: "usr_5", name: "Omar Sahraoui", email: "omar@katech.dz", role: "viewer", active: true, password: "omar123", lastLogin: new Date(now - 2 * 86400000).toISOString(), createdAt: new Date(now - 45 * 86400000).toISOString() },
   ];
 }
 
