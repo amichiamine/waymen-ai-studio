@@ -726,6 +726,8 @@ function loadState(): AdminState {
       mediaAssets: parsed.mediaAssets ?? seed.mediaAssets,
       notifications: parsed.notifications ?? seed.notifications,
       auditLogs: parsed.auditLogs ?? seed.auditLogs,
+      messages: parsed.messages ?? seed.messages,
+      subscribers: parsed.subscribers ?? seed.subscribers,
       siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
       shippingSettings: { ...seed.shippingSettings, ...(parsed.shippingSettings ?? {}) },
       siteContent: mergeSiteContent(seed.siteContent, parsed.siteContent as Partial<SiteContent> | undefined),
