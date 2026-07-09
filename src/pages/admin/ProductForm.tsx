@@ -130,10 +130,12 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         price: data.price,
         oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
         stock: data.stock,
+        stockQty: typeof data.stockQty === "number" ? data.stockQty : existing?.stockQty,
         image: data.image,
         bestSeller: data.bestSeller,
         sale: data.sale,
       };
+
       upsertProduct(product);
       toast.success(mode === "new" ? "Produit créé" : "Produit mis à jour");
       nav("/admin/products");
@@ -233,7 +235,12 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Input type="number" value={v.oldPrice as number | ""} onChange={(e) => update("oldPrice", e.target.value === "" ? ("" as unknown as number) : Number(e.target.value))} />
                 </div>
                 <div>
-                  <Label>État du stock</Label>
+                  <Label>Quantité (unités)</Label>
+                  <Input type="number" min={0} value={v.stockQty ?? 0} onChange={(e) => update("stockQty", Number(e.target.value))} />
+                  <p className="mt-1 text-xs text-muted-foreground">Le statut se recalcule selon les seuils définis dans /admin/settings.</p>
+                </div>
+                <div>
+                  <Label>État du stock (surcharge)</Label>
                   <Select value={v.stock} onValueChange={(x) => update("stock", x as "in" | "low" | "out")}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -243,6 +250,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="flex items-center justify-between rounded-md border p-2">
                   <Label htmlFor="bs" className="mb-0">Best-seller</Label>
                   <Switch id="bs" checked={!!v.bestSeller} onCheckedChange={(x) => update("bestSeller", x)} />
