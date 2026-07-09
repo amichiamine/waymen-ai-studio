@@ -55,7 +55,7 @@ function CategoryView({ cat }: { cat: Category }) {
     return r;
   }, [all, brand, use, maxPrice, sort]);
 
-  useEffect(() => { setVisible(PAGE); }, [brand, use, maxPrice, sort, slug]);
+  useEffect(() => { setVisible(PAGE); }, [brand, use, maxPrice, sort, cat]);
 
   const shown = list.slice(0, visible);
   const hasMore = visible < list.length;
