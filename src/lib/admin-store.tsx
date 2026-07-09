@@ -87,7 +87,26 @@ export type AdminUser = {
   email: string;
   role: AdminUserRole;
   active: boolean;
+  password?: string; // mock only: local demo credentials
   lastLogin?: string;
+  createdAt: string;
+};
+
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+};
+
+export type Subscriber = {
+  id: string;
+  email: string;
+  source?: string; // "footer" | "checkout" | etc.
   createdAt: string;
 };
 
