@@ -163,6 +163,36 @@ export type StockMovement = {
   createdAt: string;
 };
 
+export type MediaAsset = {
+  id: string;
+  name: string;
+  src: string; // data:URL or absolute URL
+  mime: string;
+  size: number; // bytes
+  createdAt: string;
+  tag?: string;
+};
+
+export type NotificationLevel = "info" | "success" | "warning" | "error";
+export type AdminNotification = {
+  id: string;
+  title: string;
+  body: string;
+  level: NotificationLevel;
+  read: boolean;
+  createdAt: string;
+  link?: string;
+};
+
+export type AuditLog = {
+  id: string;
+  actor: string; // user email or "système"
+  action: string; // e.g. "order.status.update"
+  entity: string; // e.g. "order KA100234"
+  detail?: string;
+  createdAt: string;
+};
+
 export type AdminState = {
   products: Product[];
   categories: AdminCategory[];
