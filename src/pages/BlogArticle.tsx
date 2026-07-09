@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminState } from "@/lib/admin-store";
@@ -9,11 +9,18 @@ export default function BlogArticle() {
   const { blogPosts } = useAdminState();
   const post = blogPosts.find((p) => p.slug === slug && p.status === "published");
 
-  useEffect(() => {
-    document.title = post ? `${post.title} — KA Tech` : `Article — KA Tech`;
-  }, [post]);
-
   if (!post) return <BlogNotFound />;
+
+  const canonical = `/blog/${post.slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    author: { "@type": "Person", name: post.author },
+    datePublished: post.publishedAt ?? post.createdAt,
+    image: post.cover,
+  };
 
   return (
     <article className="container mx-auto max-w-3xl px-4 py-10">
