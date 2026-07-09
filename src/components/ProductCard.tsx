@@ -1,16 +1,21 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Check, AlertTriangle, Star, Zap } from "lucide-react";
 import { type Product, formatDZD } from "@/data/products";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
+import { productRatingStats, useAdminState } from "@/lib/admin-store";
 
 export function ProductCard({ p }: { p: Product }) {
   const { t } = useI18n();
   const { isFavorite, toggleFavorite, addToCart } = useStore();
+  const { reviews } = useAdminState();
   const liked = isFavorite(p.id);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
   const name = p.name;
+  const stats = useMemo(() => productRatingStats(p.id), [p.id, reviews]);
+  const avgRounded = Math.round(stats.avg * 2) / 2; // half-star precision
 
   return (
     <article className="group relative flex flex-col rounded-lg bg-card border border-border overflow-hidden transition-all duration-300 hover:border-primary/50 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card)] animate-fade-in-up">
