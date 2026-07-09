@@ -28,10 +28,12 @@ export type Product = {
   price: number;
   oldPrice?: number;
   stock: "in" | "low" | "out";
+  stockQty?: number; // quantité numérique optionnelle (dérive `stock` selon seuils)
   image: string;
   bestSeller?: boolean;
   sale?: boolean;
 };
+
 
 // Compatibilité avec l'appel `tr(value, lang)` de la version originale.
 export const tr = (v: string | undefined): string => v ?? "";
