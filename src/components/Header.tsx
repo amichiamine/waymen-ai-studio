@@ -120,11 +120,11 @@ export function Header() {
 
         <div className="flex items-center gap-0.5 md:gap-1 ms-auto lg:ms-0">
           <Link
-            to="/builder"
+            to={H.builderCta.href}
             className="hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 shadow-[var(--shadow-glow)] transition-all active:scale-95"
           >
             <Wrench className="size-4" />
-            <span>{t("nav.builder")}</span>
+            <span>{H.builderCta.label}</span>
           </Link>
           <ThemeToggle />
           <Link to={user ? "/favorites" : "/auth"} aria-label={t("header.wishlist")}
