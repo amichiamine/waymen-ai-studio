@@ -18,6 +18,8 @@ import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
 
 const SECTIONS: { key: keyof SiteContent; label: string }[] = [
+  { key: "header", label: "En-tête" },
+  { key: "footer", label: "Pied de page" },
   { key: "hero", label: "Hero" },
   { key: "flashSale", label: "Ventes flash" },
   { key: "categories", label: "Catégories" },
@@ -35,7 +37,7 @@ const SECTIONS: { key: keyof SiteContent; label: string }[] = [
 
 export default function AdminContent() {
   const { siteContent } = useAdminState();
-  const [tab, setTab] = useState<keyof SiteContent>("hero");
+  const [tab, setTab] = useState<keyof SiteContent>("header");
 
   return (
     <AdminPageShell title="Contenu du site" description="Chaque bloc de la page d'accueil est éditable ici.">
@@ -93,6 +95,8 @@ function renderForm<K extends keyof SiteContent>(
   key: K, draft: SiteContent[K], onChange: (v: SiteContent[K]) => void,
 ): React.ReactNode {
   switch (key) {
+    case "header": return <HeaderForm value={draft as SiteContent["header"]} onChange={onChange as (v: SiteContent["header"]) => void} />;
+    case "footer": return <FooterForm value={draft as SiteContent["footer"]} onChange={onChange as (v: SiteContent["footer"]) => void} />;
     case "hero": return <HeroForm value={draft as SiteContent["hero"]} onChange={onChange as (v: SiteContent["hero"]) => void} />;
     case "flashSale": return <FlashSaleForm value={draft as SiteContent["flashSale"]} onChange={onChange as (v: SiteContent["flashSale"]) => void} />;
     case "categories": return <CategoriesForm value={draft as SiteContent["categories"]} onChange={onChange as (v: SiteContent["categories"]) => void} />;
@@ -339,6 +343,125 @@ function MobileBarForm({ value, onChange }: { value: SiteContent["mobileBottomBa
           <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ---- Header form ----
+function HeaderForm({ value, onChange }: { value: SiteContent["header"]; onChange: (v: SiteContent["header"]) => void }) {
+  const v = value;
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-2">
+        <Field label="Placeholder du champ de recherche"><Input value={v.searchPlaceholder} onChange={(e) => onChange({ ...v, searchPlaceholder: e.target.value })} /></Field>
+        <div className="flex items-center justify-between rounded-md border p-3">
+          <div><p className="text-sm font-medium">Afficher la barre de recherche</p></div>
+          <Switch checked={v.showSearch} onCheckedChange={(c) => onChange({ ...v, showSearch: c })} />
+        </div>
+        <Field label="Bouton principal — libellé"><Input value={v.builderCta.label} onChange={(e) => onChange({ ...v, builderCta: { ...v.builderCta, label: e.target.value } })} /></Field>
+        <Field label="Bouton principal — lien"><Input value={v.builderCta.href} onChange={(e) => onChange({ ...v, builderCta: { ...v.builderCta, href: e.target.value } })} /></Field>
+      </div>
+
+      <div className="rounded-md border p-3 space-y-3">
+        <p className="text-sm font-semibold">Menu « Catégories »</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label="Libellé du menu"><Input value={v.categoryMenu.label} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, label: e.target.value } })} /></Field>
+          <Field label="Titre à l'intérieur du menu"><Input value={v.categoryMenu.title} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, title: e.target.value } })} /></Field>
+          <Field label="Libellé « voir toutes »"><Input value={v.categoryMenu.browseLabel} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseLabel: e.target.value } })} /></Field>
+          <Field label="Lien « voir toutes »"><Input value={v.categoryMenu.browseHref} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseHref: e.target.value } })} /></Field>
+        </div>
+        <div className="flex items-center justify-between">
+          <Label>Entrées du menu Catégories</Label>
+          <Button type="button" size="sm" variant="outline" onClick={() => onChange({ ...v, categoryMenu: { ...v.categoryMenu, items: [...v.categoryMenu.items, { id: `hc_${Date.now()}`, label: "Nouveau", href: "/", icon: "tag" }] } })}>
+            <Plus className="mr-2 h-4 w-4" /> Ajouter
+          </Button>
+        </div>
+        {v.categoryMenu.items.map((it, i) => (
+          <div key={it.id} className="grid gap-2 md:grid-cols-[140px_1fr_1fr_auto_auto] items-end rounded-md border p-3">
+            <Field label="Icône"><IconPicker value={(it.icon ?? "tag") as IconName} onChange={(n) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, icon: n }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></Field>
+            <Field label="Libellé"><Input value={it.label} onChange={(e) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, label: e.target.value }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></Field>
+            <Field label="Lien"><Input value={it.href} onChange={(e) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, href: e.target.value }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></Field>
+            <div className="flex flex-col items-center gap-1"><Label className="text-xs">Accent</Label><Switch checked={!!it.accent} onCheckedChange={(c) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, accent: c }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></div>
+            <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, categoryMenu: { ...v.categoryMenu, items: v.categoryMenu.items.filter((_, j) => j !== i) } })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-md border p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold">Liens de navigation principaux</p>
+          <Button type="button" size="sm" variant="outline" onClick={() => onChange({ ...v, primaryNav: [...v.primaryNav, { id: `hn_${Date.now()}`, label: "Nouveau", href: "/" }] })}>
+            <Plus className="mr-2 h-4 w-4" /> Ajouter
+          </Button>
+        </div>
+        {v.primaryNav.map((n, i) => (
+          <div key={n.id} className="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end rounded-md border p-3">
+            <Field label="Libellé"><Input value={n.label} onChange={(e) => { const arr = v.primaryNav.slice(); arr[i] = { ...n, label: e.target.value }; onChange({ ...v, primaryNav: arr }); }} /></Field>
+            <Field label="Lien"><Input value={n.href} onChange={(e) => { const arr = v.primaryNav.slice(); arr[i] = { ...n, href: e.target.value }; onChange({ ...v, primaryNav: arr }); }} /></Field>
+            <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, primaryNav: v.primaryNav.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---- Footer form ----
+function FooterForm({ value, onChange }: { value: SiteContent["footer"]; onChange: (v: SiteContent["footer"]) => void }) {
+  const v = value;
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3">
+        <Field label="Baseline (sous le logo)"><Textarea rows={2} value={v.tagline} onChange={(e) => onChange({ ...v, tagline: e.target.value })} /></Field>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label="Copyright"><Input value={v.copyright} onChange={(e) => onChange({ ...v, copyright: e.target.value })} /></Field>
+          <Field label="Mention « fait à… »"><Input value={v.madeIn} onChange={(e) => onChange({ ...v, madeIn: e.target.value })} /></Field>
+        </div>
+      </div>
+
+      <div className="rounded-md border p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold">Réseaux sociaux</p>
+          <Button type="button" size="sm" variant="outline" onClick={() => onChange({ ...v, socials: [...v.socials, { id: `s_${Date.now()}`, icon: "facebook", label: "Nouveau", href: "#" }] })}>
+            <Plus className="mr-2 h-4 w-4" /> Ajouter
+          </Button>
+        </div>
+        {v.socials.map((s, i) => (
+          <div key={s.id} className="grid gap-2 md:grid-cols-[160px_1fr_1fr_auto] items-end rounded-md border p-3">
+            <Field label="Icône"><IconPicker value={s.icon} onChange={(n) => { const arr = v.socials.slice(); arr[i] = { ...s, icon: n }; onChange({ ...v, socials: arr }); }} /></Field>
+            <Field label="Libellé (a11y)"><Input value={s.label} onChange={(e) => { const arr = v.socials.slice(); arr[i] = { ...s, label: e.target.value }; onChange({ ...v, socials: arr }); }} /></Field>
+            <Field label="Lien"><Input value={s.href} onChange={(e) => { const arr = v.socials.slice(); arr[i] = { ...s, href: e.target.value }; onChange({ ...v, socials: arr }); }} /></Field>
+            <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, socials: v.socials.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-md border p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold">Colonnes de liens</p>
+          <Button type="button" size="sm" variant="outline" onClick={() => onChange({ ...v, columns: [...v.columns, { id: `fc_${Date.now()}`, title: "Nouvelle colonne", links: [] }] })}>
+            <Plus className="mr-2 h-4 w-4" /> Ajouter une colonne
+          </Button>
+        </div>
+        {v.columns.map((col, ci) => (
+          <div key={col.id} className="rounded-md border p-3 space-y-2">
+            <div className="flex items-end gap-2">
+              <div className="flex-1"><Field label="Titre de la colonne"><Input value={col.title} onChange={(e) => { const arr = v.columns.slice(); arr[ci] = { ...col, title: e.target.value }; onChange({ ...v, columns: arr }); }} /></Field></div>
+              <Button type="button" size="sm" variant="outline" onClick={() => { const arr = v.columns.slice(); arr[ci] = { ...col, links: [...col.links, { id: `fl_${Date.now()}`, label: "Nouveau", href: "/" }] }; onChange({ ...v, columns: arr }); }}>
+                <Plus className="mr-2 h-4 w-4" /> Lien
+              </Button>
+              <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, columns: v.columns.filter((_, j) => j !== ci) })} aria-label="Supprimer la colonne"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </div>
+            {col.links.map((l, li) => (
+              <div key={l.id} className="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end rounded-md border p-2">
+                <Field label="Libellé"><Input value={l.label} onChange={(e) => { const arr = v.columns.slice(); const links = col.links.slice(); links[li] = { ...l, label: e.target.value }; arr[ci] = { ...col, links }; onChange({ ...v, columns: arr }); }} /></Field>
+                <Field label="Lien"><Input value={l.href} onChange={(e) => { const arr = v.columns.slice(); const links = col.links.slice(); links[li] = { ...l, href: e.target.value }; arr[ci] = { ...col, links }; onChange({ ...v, columns: arr }); }} /></Field>
+                <Button type="button" size="icon" variant="ghost" onClick={() => { const arr = v.columns.slice(); arr[ci] = { ...col, links: col.links.filter((_, j) => j !== li) }; onChange({ ...v, columns: arr }); }} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
