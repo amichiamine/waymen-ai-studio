@@ -113,7 +113,39 @@ export const products: Product[] = [
   },
 ];
 
-export const formatDZD = (n: number) => new Intl.NumberFormat("fr-FR").format(n) + " DA";
+// --- Currency formatter (paramétrable depuis /admin/settings) ---
+export type CurrencyConfig = {
+  symbol: string;
+  position: "prefix" | "suffix";
+  thousandSeparator: " " | "," | "." | "'" | "";
+};
+
+const _currency: CurrencyConfig = {
+  symbol: "DA",
+  position: "suffix",
+  thousandSeparator: " ",
+};
+
+export function setCurrencyConfig(cfg: Partial<CurrencyConfig>) {
+  Object.assign(_currency, cfg);
+}
+
+export function getCurrencyConfig(): CurrencyConfig {
+  return { ..._currency };
+}
+
+export const formatDZD = (n: number) => {
+  const abs = Math.round(Math.abs(n));
+  const raw = String(abs);
+  const sep = _currency.thousandSeparator;
+  const grouped = sep
+    ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, sep)
+    : raw;
+  const signed = (n < 0 ? "-" : "") + grouped;
+  return _currency.position === "prefix"
+    ? `${_currency.symbol} ${signed}`
+    : `${signed} ${_currency.symbol}`;
+};
 
 export const categoryMeta: Record<Category, { slug: Category; labelKey: "nav.laptops" | "nav.desktops" | "nav.builds" | "nav.phones"; descKey: "cat.laptops.desc" | "cat.desktops.desc" | "cat.builds.desc" | "cat.phones.desc" }> = {
   laptops:  { slug: "laptops",  labelKey: "nav.laptops",  descKey: "cat.laptops.desc" },
