@@ -559,6 +559,17 @@ function seedPaymentMethods(): PaymentMethod[] {
 }
 
 function seedStockMovements(): StockMovement[] { return []; }
+function seedMediaAssets(): MediaAsset[] { return []; }
+function seedAuditLogs(): AuditLog[] { return []; }
+function seedNotifications(): AdminNotification[] {
+  const now = Date.now();
+  const d = (h: number) => new Date(now - h * 3600000).toISOString();
+  return [
+    { id: "notif_1", title: "Bienvenue sur KA Tech Admin", body: "Explorez le tableau de bord pour un aperçu complet.", level: "info", read: false, createdAt: d(0.5) },
+    { id: "notif_2", title: "Stock faible", body: "Plusieurs produits ont un stock faible — pensez à réapprovisionner.", level: "warning", read: false, createdAt: d(6), link: "/admin/inventory" },
+    { id: "notif_3", title: "Nouveau coupon actif", body: "Le code BIENVENUE10 est actif jusqu'au mois prochain.", level: "success", read: true, createdAt: d(48), link: "/admin/coupons" },
+  ];
+}
 
 function seedAll(): AdminState {
   const customers = seedCustomers();
@@ -581,6 +592,9 @@ function seedAll(): AdminState {
     shippingRates: seedShippingRates(),
     paymentMethods: seedPaymentMethods(),
     stockMovements: seedStockMovements(),
+    mediaAssets: seedMediaAssets(),
+    notifications: seedNotifications(),
+    auditLogs: seedAuditLogs(),
     siteSettings: seedSiteSettings(),
     shippingSettings: seedShippingSettings(),
   };
