@@ -81,6 +81,63 @@ export type AdminUser = {
   createdAt: string;
 };
 
+export type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string; // markdown-ish plain text
+  cover?: string;
+  author: string;
+  tags: string[];
+  status: "draft" | "published";
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+};
+
+export type HomeReview = {
+  id: string;
+  name: string;
+  city: string;
+  productId: string;
+  text: string;
+  rating: number;
+  gradient: string;
+};
+
+export type TickerMessage = {
+  id: string;
+  text: string;
+};
+
+export type AboutValue = {
+  id: string;
+  icon: "shield" | "truck" | "headphones" | "award" | "star" | "heart";
+  title: string;
+  description: string;
+};
+
+export type BuilderPart = { id: string; name: string; price: number };
+export type BuilderStep = {
+  id: string;
+  label: string;
+  icon: "case" | "mb" | "cpu" | "ram" | "ssd" | "gpu" | "psu" | "cool";
+  options: BuilderPart[];
+};
+
+export type SiteSettings = {
+  storeName: string;
+  contactEmail: string;
+  contactPhone: string;
+  whatsapp: string; // digits only, e.g. "213555000000"
+  address: string;
+  hours: string;
+  maintenance: boolean;
+  emailNotifications: boolean;
+  showPromoBanner: boolean;
+};
+
 export type AdminState = {
   products: Product[];
   categories: AdminCategory[];
@@ -90,7 +147,22 @@ export type AdminState = {
   coupons: Coupon[];
   reviews: Review[];
   users: AdminUser[];
+  blogPosts: BlogPost[];
+  homeReviews: HomeReview[];
+  tickerMessages: TickerMessage[];
+  marqueeBrands: string[];
+  aboutValues: AboutValue[];
+  builderSteps: BuilderStep[];
+  siteSettings: SiteSettings;
 };
+
+// Keys that are arrays (used for reset/clear/import iteration).
+export const ARRAY_KEYS = [
+  "products", "categories", "brands", "orders", "customers", "coupons",
+  "reviews", "users", "blogPosts", "homeReviews", "tickerMessages",
+  "marqueeBrands", "aboutValues", "builderSteps",
+] as const;
+export type ArrayKey = typeof ARRAY_KEYS[number];
 
 // ---------- Seed helpers ----------
 const CAT_LABELS: Record<Category, string> = {
@@ -193,7 +265,6 @@ function seedOrders(customers: Customer[]): Order[] {
       note: i % 5 === 0 ? "Livraison rapide demandée" : undefined,
     });
   }
-  // aggregate stats
   const map = new Map(customers.map((c) => [c.id, c] as const));
   for (const o of orders) {
     const c = map.get(o.customerId);
@@ -260,6 +331,162 @@ function seedUsers(): AdminUser[] {
   ];
 }
 
+// ---------- New content seeds ----------
+function seedBlogPosts(): BlogPost[] {
+  const now = Date.now();
+  const d = (days: number) => new Date(now - days * 86400000).toISOString();
+  const base = [
+    {
+      slug: "guide-achat-laptop-2026",
+      title: "Guide d'achat : bien choisir son ordinateur portable en 2026",
+      excerpt: "CPU, GPU, RAM, écran — les critères qui comptent vraiment selon votre usage.",
+      content:
+        "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez KA Tech, tous nos laptops sont sous garantie officielle.",
+      tags: ["laptop", "guide"],
+    },
+    {
+      slug: "gaming-pc-vs-console",
+      title: "PC gaming vs console : le match 2026",
+      excerpt: "Prix, catalogue, mods, longévité — on compare les deux univers.",
+      content:
+        "Le débat PC vs console revient chaque génération. En 2026, le PC prend l'avantage sur la modularité, le catalogue Steam et la longévité — mais la console reste imbattable sur le plug-and-play.",
+      tags: ["gaming", "comparatif"],
+    },
+    {
+      slug: "smartphone-photo-2026",
+      title: "Top 3 smartphones photo début 2026",
+      excerpt: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro : notre verdict.",
+      content:
+        "Trois flagships, trois philosophies photo. L'iPhone mise sur la constance vidéo, le Samsung sur la polyvalence zoom, le Xiaomi sur la signature Leica. À vous de choisir.",
+      tags: ["smartphone", "photo", "top"],
+    },
+    {
+      slug: "monter-son-pc-configurateur",
+      title: "Monter son PC : nos conseils du configurateur KA Tech",
+      excerpt: "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.",
+      content:
+        "Notre configurateur PC vous guide étape par étape. Avant de valider votre config, vérifiez : la compatibilité socket CPU/carte-mère, le TDP de l'alim (+30 % de marge), et la ventilation du boîtier.",
+      tags: ["pc-sur-mesure", "conseil"],
+    },
+    {
+      slug: "livraison-58-wilayas",
+      title: "Livraison en Algérie : ce qu'il faut savoir",
+      excerpt: "Délais, tarifs, paiement à la livraison — on répond à vos questions.",
+      content:
+        "KA Tech livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
+      tags: ["livraison", "faq"],
+    },
+  ];
+  return base.map((b, i) => ({
+    id: `blog_${100 + i}`,
+    ...b,
+    cover: seedProducts[i % seedProducts.length]?.image,
+    author: i % 2 === 0 ? "Équipe KA Tech" : "Yacine B.",
+    status: "published",
+    createdAt: d(30 - i * 4),
+    updatedAt: d(30 - i * 4),
+    publishedAt: d(30 - i * 4),
+  }));
+}
+
+function seedHomeReviews(): HomeReview[] {
+  return [
+    { id: "hrev_1", name: "Amine Bensalah", city: "Alger", productId: "rog-strix-g16", text: "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.", rating: 5, gradient: "linear-gradient(135deg,#3b82f6,#1e40af)" },
+    { id: "hrev_2", name: "Yasmine A.", city: "Oran", productId: "macbook-air-m3", text: "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.", rating: 5, gradient: "linear-gradient(135deg,#a855f7,#6d28d9)" },
+    { id: "hrev_3", name: "Karim Haddad", city: "Constantine", productId: "build-mid-gaming", text: "Config puissante à un prix juste, fonctionnelle dès la première utilisation.", rating: 5, gradient: "linear-gradient(135deg,#10b981,#047857)" },
+  ];
+}
+
+function seedTickerMessages(): TickerMessage[] {
+  return [
+    { id: "tick_1", text: "🚚 Livraison rapide dans toutes les wilayas" },
+    { id: "tick_2", text: "✅ Garantie officielle sur tous les produits" },
+    { id: "tick_3", text: "🔧 Support technique 7j/7" },
+    { id: "tick_4", text: "💳 Paiement sécurisé à la livraison" },
+    { id: "tick_5", text: "🎁 Cadeau pour toute config au-dessus de 200 000 DA" },
+  ];
+}
+
+function seedMarqueeBrands(): string[] {
+  return ["HP", "Dell", "Lenovo", "ASUS", "Apple", "Samsung", "Xiaomi", "MSI", "Acer", "Intel", "AMD", "NVIDIA"];
+}
+
+function seedAboutValues(): AboutValue[] {
+  return [
+    { id: "val_1", icon: "shield", title: "Garantie officielle", description: "Tous nos produits sont authentiques et sous garantie des revendeurs agréés." },
+    { id: "val_2", icon: "truck", title: "Livraison en Algérie", description: "Livraison rapide et sécurisée dans les 58 wilayas." },
+    { id: "val_3", icon: "headphones", title: "Support dédié", description: "Notre équipe est disponible avant et après votre achat." },
+    { id: "val_4", icon: "award", title: "Expérience et confiance", description: "Des années au service de milliers de clients satisfaits." },
+  ];
+}
+
+function seedBuilderSteps(): BuilderStep[] {
+  return [
+    { id: "case", label: "Boîtier", icon: "case", options: [
+      { id: "case-a", name: "NZXT H5 Flow", price: 14000 },
+      { id: "case-b", name: "Lian Li Lancool 216", price: 18500 },
+      { id: "case-c", name: "Corsair 4000D Airflow", price: 16000 },
+    ]},
+    { id: "mb", label: "Carte mère", icon: "mb", options: [
+      { id: "mb-a", name: "MSI B650 Tomahawk", price: 28000 },
+      { id: "mb-b", name: "ASUS X670E-Plus", price: 52000 },
+      { id: "mb-c", name: "Gigabyte B760 Aorus", price: 24000 },
+    ]},
+    { id: "cpu", label: "Processeur", icon: "cpu", options: [
+      { id: "cpu-a", name: "AMD Ryzen 5 7600", price: 32000 },
+      { id: "cpu-b", name: "AMD Ryzen 7 7700X", price: 52000 },
+      { id: "cpu-c", name: "Intel Core i7-14700K", price: 65000 },
+    ]},
+    { id: "ram", label: "Mémoire RAM", icon: "ram", options: [
+      { id: "ram-a", name: "16GB DDR5 6000", price: 14000 },
+      { id: "ram-b", name: "32GB DDR5 6000", price: 26000 },
+      { id: "ram-c", name: "64GB DDR5 6000", price: 52000 },
+    ]},
+    { id: "ssd", label: "SSD", icon: "ssd", options: [
+      { id: "ssd-a", name: "500GB NVMe Gen4", price: 9000 },
+      { id: "ssd-b", name: "1TB NVMe Gen4", price: 16000 },
+      { id: "ssd-c", name: "2TB NVMe Gen4", price: 32000 },
+    ]},
+    { id: "gpu", label: "Carte graphique", icon: "gpu", options: [
+      { id: "gpu-a", name: "RTX 4060 8GB", price: 60000 },
+      { id: "gpu-b", name: "RTX 4070 Super 12GB", price: 110000 },
+      { id: "gpu-c", name: "RTX 4080 Super 16GB", price: 200000 },
+    ]},
+    { id: "psu", label: "Alimentation", icon: "psu", options: [
+      { id: "psu-a", name: "650W 80+ Bronze", price: 9500 },
+      { id: "psu-b", name: "750W 80+ Gold", price: 14500 },
+      { id: "psu-c", name: "850W 80+ Gold", price: 19000 },
+    ]},
+    { id: "cool", label: "Refroidissement", icon: "cool", options: [
+      { id: "cool-a", name: "DeepCool AK620", price: 9000 },
+      { id: "cool-b", name: "Arctic LF II 280", price: 18000 },
+      { id: "cool-c", name: "NZXT Kraken X73", price: 28000 },
+    ]},
+  ];
+}
+
+function seedSiteSettings(): SiteSettings {
+  return {
+    storeName: "KA Tech",
+    contactEmail: "contact@katech.dz",
+    contactPhone: "+213 555 00 00 00",
+    whatsapp: "213555000000",
+    address: "Alger, Algérie",
+    hours: "Dimanche → Jeudi, 9h – 19h",
+    maintenance: false,
+    emailNotifications: true,
+    showPromoBanner: true,
+  };
+}
+
+function emptySiteSettings(): SiteSettings {
+  return {
+    storeName: "", contactEmail: "", contactPhone: "", whatsapp: "",
+    address: "", hours: "",
+    maintenance: false, emailNotifications: false, showPromoBanner: false,
+  };
+}
+
 function seedAll(): AdminState {
   const customers = seedCustomers();
   const orders = seedOrders(customers);
@@ -272,6 +499,13 @@ function seedAll(): AdminState {
     coupons: seedCoupons(),
     reviews: seedReviews(),
     users: seedUsers(),
+    blogPosts: seedBlogPosts(),
+    homeReviews: seedHomeReviews(),
+    tickerMessages: seedTickerMessages(),
+    marqueeBrands: seedMarqueeBrands(),
+    aboutValues: seedAboutValues(),
+    builderSteps: seedBuilderSteps(),
+    siteSettings: seedSiteSettings(),
   };
 }
 
@@ -285,7 +519,6 @@ function loadState(): AdminState {
     if (!raw) return seedAll();
     const parsed = JSON.parse(raw) as Partial<AdminState>;
     const seed = seedAll();
-    // Ensure product images are the imported URLs — restore from seed if missing.
     const products = (parsed.products ?? seed.products).map((p) => {
       const src = seed.products.find((sp) => sp.id === p.id);
       return src ? { ...p, image: p.image?.startsWith("/") || p.image?.startsWith("http") || p.image?.startsWith("data:") ? p.image : src.image } : p;
@@ -299,6 +532,13 @@ function loadState(): AdminState {
       coupons: parsed.coupons ?? seed.coupons,
       reviews: parsed.reviews ?? seed.reviews,
       users: parsed.users ?? seed.users,
+      blogPosts: parsed.blogPosts ?? seed.blogPosts,
+      homeReviews: parsed.homeReviews ?? seed.homeReviews,
+      tickerMessages: parsed.tickerMessages ?? seed.tickerMessages,
+      marqueeBrands: parsed.marqueeBrands ?? seed.marqueeBrands,
+      aboutValues: parsed.aboutValues ?? seed.aboutValues,
+      builderSteps: parsed.builderSteps ?? seed.builderSteps,
+      siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
     };
   } catch {
     return seedAll();
@@ -401,37 +641,79 @@ export function deleteUser(id: string) {
   set("users", state.users.filter((u) => u.id !== id));
 }
 
+// Blog
+export function upsertBlogPost(p: BlogPost) {
+  const list = state.blogPosts.slice();
+  const idx = list.findIndex((x) => x.id === p.id);
+  if (idx >= 0) list[idx] = p; else list.unshift(p);
+  set("blogPosts", list);
+}
+export function deleteBlogPost(id: string) {
+  set("blogPosts", state.blogPosts.filter((p) => p.id !== id));
+}
+export function getBlogPost(id: string) { return state.blogPosts.find((p) => p.id === id); }
+export function getBlogPostBySlug(slug: string) { return state.blogPosts.find((p) => p.slug === slug); }
+
+// Home reviews
+export function upsertHomeReview(r: HomeReview) {
+  const list = state.homeReviews.slice();
+  const idx = list.findIndex((x) => x.id === r.id);
+  if (idx >= 0) list[idx] = r; else list.push(r);
+  set("homeReviews", list);
+}
+export function deleteHomeReview(id: string) {
+  set("homeReviews", state.homeReviews.filter((r) => r.id !== id));
+}
+
+// Ticker
+export function setTickerMessages(list: TickerMessage[]) { set("tickerMessages", list); }
+// Marquee brands
+export function setMarqueeBrands(list: string[]) { set("marqueeBrands", list); }
+// About values
+export function setAboutValues(list: AboutValue[]) { set("aboutValues", list); }
+// Builder steps
+export function setBuilderSteps(list: BuilderStep[]) { set("builderSteps", list); }
+// Site settings
+export function updateSiteSettings(patch: Partial<SiteSettings>) {
+  set("siteSettings", { ...state.siteSettings, ...patch });
+}
+
 // ---------- Reset ----------
-export type ResetKey = keyof AdminState | "all";
+export type ResetKey = ArrayKey | "siteSettings" | "all";
 export function resetData(key: ResetKey) {
   const seed = seedAll();
   if (key === "all") {
     state = seed;
   } else {
-    state = { ...state, [key]: seed[key] };
+    state = { ...state, [key]: seed[key] } as AdminState;
   }
   emit();
 }
-export function clearData(key: keyof AdminState) {
-  const empty: AdminState = { ...state, [key]: [] as unknown as AdminState[typeof key] };
-  state = empty;
+export function clearData(key: ArrayKey | "siteSettings") {
+  if (key === "siteSettings") {
+    state = { ...state, siteSettings: emptySiteSettings() };
+  } else {
+    state = { ...state, [key]: [] } as AdminState;
+  }
   emit();
 }
 
 // ---------- Export / Import JSON ----------
 export function exportState(): string {
-  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), state }, null, 2);
+  return JSON.stringify({ version: 2, exportedAt: new Date().toISOString(), state }, null, 2);
 }
 
-export function importState(json: string): { ok: true; counts: Record<keyof AdminState, number> } | { ok: false; error: string } {
+export function importState(json: string): { ok: true; counts: Record<string, number> } | { ok: false; error: string } {
   let parsed: unknown;
   try { parsed = JSON.parse(json); } catch { return { ok: false, error: "JSON invalide" }; }
   if (!parsed || typeof parsed !== "object") return { ok: false, error: "Format inattendu" };
   const raw = (parsed as { state?: unknown }).state ?? parsed;
-  const keys: (keyof AdminState)[] = ["products", "categories", "brands", "orders", "customers", "coupons", "reviews", "users"];
   const obj = raw as Partial<AdminState>;
-  for (const k of keys) {
+  for (const k of ARRAY_KEYS) {
     if (obj[k] !== undefined && !Array.isArray(obj[k])) return { ok: false, error: `Champ « ${k} » invalide (tableau attendu)` };
+  }
+  if (obj.siteSettings !== undefined && (typeof obj.siteSettings !== "object" || Array.isArray(obj.siteSettings))) {
+    return { ok: false, error: "Champ « siteSettings » invalide (objet attendu)" };
   }
   const seed = seedAll();
   const next: AdminState = {
@@ -443,16 +725,20 @@ export function importState(json: string): { ok: true; counts: Record<keyof Admi
     coupons: obj.coupons ?? seed.coupons,
     reviews: obj.reviews ?? seed.reviews,
     users: obj.users ?? seed.users,
+    blogPosts: obj.blogPosts ?? seed.blogPosts,
+    homeReviews: obj.homeReviews ?? seed.homeReviews,
+    tickerMessages: obj.tickerMessages ?? seed.tickerMessages,
+    marqueeBrands: obj.marqueeBrands ?? seed.marqueeBrands,
+    aboutValues: obj.aboutValues ?? seed.aboutValues,
+    builderSteps: obj.builderSteps ?? seed.builderSteps,
+    siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
   };
   state = next;
   emit();
-  const counts = {
-    products: next.products.length, categories: next.categories.length, brands: next.brands.length,
-    orders: next.orders.length, customers: next.customers.length, coupons: next.coupons.length,
-    reviews: next.reviews.length, users: next.users.length,
-  } as Record<keyof AdminState, number>;
+  const counts: Record<string, number> = {};
+  for (const k of ARRAY_KEYS) counts[k] = (next[k] as unknown[]).length;
+  counts.siteSettings = 1;
   return { ok: true, counts };
 }
 
 export { CAT_LABELS };
-

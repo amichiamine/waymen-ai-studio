@@ -1,9 +1,12 @@
 import { MessageCircle } from "lucide-react";
+import { useAdminState } from "@/lib/admin-store";
 
 export function FloatingWhatsApp() {
+  const { siteSettings } = useAdminState();
+  if (!siteSettings.whatsapp) return null;
   return (
     <a
-      href="https://wa.me/213000000000"
+      href={`https://wa.me/${siteSettings.whatsapp}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="WhatsApp"
