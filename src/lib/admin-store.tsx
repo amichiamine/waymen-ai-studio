@@ -932,6 +932,7 @@ export function adjustStock(productId: string, delta: number, reason: string) {
   };
   state = { ...state, stockMovements: [mov, ...state.stockMovements] };
   emit();
+  logAudit(`produit ${p.name}`, "stock.adjust", `${delta > 0 ? "+" : ""}${delta} — ${reason}`);
 }
 export function setProductStockLevel(productId: string, level: Product["stock"]) {
   set("products", state.products.map((p) => p.id === productId ? { ...p, stock: level } : p));
