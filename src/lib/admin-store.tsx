@@ -837,6 +837,43 @@ export function deleteReview(id: string) {
   set("reviews", state.reviews.filter((r) => r.id !== id));
 }
 
+export function createProductReview(input: {
+  productId: string;
+  productName: string;
+  customerName: string;
+  rating: number;
+  title: string;
+  body: string;
+}): Review {
+  const r: Review = {
+    id: `rev_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    productId: input.productId,
+    productName: input.productName,
+    customerName: input.customerName,
+    rating: Math.max(1, Math.min(5, Math.round(input.rating))),
+    title: input.title || "Avis client",
+    body: input.body,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+  set("reviews", [r, ...state.reviews]);
+  addNotification({
+    title: `Nouvel avis en attente`,
+    body: `${r.customerName} · ${r.productName} (${r.rating}/5)`,
+    level: "info",
+    link: "/admin/reviews",
+  });
+  logAudit(`avis ${r.id}`, "review.create", `${r.rating}/5 sur ${r.productName}`, r.customerName);
+  return r;
+}
+
+export function productRatingStats(productId: string): { avg: number; count: number; approved: Review[] } {
+  const approved = state.reviews.filter((r) => r.productId === productId && r.status === "approved");
+  const count = approved.length;
+  const avg = count ? approved.reduce((s, r) => s + r.rating, 0) / count : 0;
+  return { avg, count, approved };
+}
+
 // Users
 export function upsertUser(u: AdminUser) {
   const list = state.users.slice();

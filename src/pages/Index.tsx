@@ -1,4 +1,5 @@
 
+import { Helmet } from "react-helmet-async";
 import { Hero } from "@/components/Hero";
 import { CategoryCards } from "@/components/CategoryCards";
 import { UseChips } from "@/components/UseChips";
@@ -15,6 +16,12 @@ export default function Index() {
   const { t } = useI18n();
   return (
     <>
+      <Helmet>
+        <title>KA Tech — La puissance tech entre vos mains</title>
+        <meta name="description" content="Ordinateurs portables, ordinateurs de bureau, configurations sur mesure et smartphones avec garantie officielle et livraison partout en Algérie." />
+        <link rel="canonical" href="/" />
+        <meta property="og:url" content="/" />
+      </Helmet>
       <Hero />
       <FlashSale />
       <CategoryCards />
