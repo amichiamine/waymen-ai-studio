@@ -22,6 +22,11 @@ export default function Contact() {
 
   return (
     <div className="container-page py-12 lg:py-16">
+      <Helmet>
+        <title>Contact — KA Tech</title>
+        <meta name="description" content="Contactez KA Tech par email, téléphone ou WhatsApp — support commercial et service après-vente." />
+        <link rel="canonical" href="/contact" />
+      </Helmet>
       <header className="max-w-3xl mb-10">
         <p className="text-sm font-medium text-primary mb-2">Contact</p>
         <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">Nous sommes là pour vous aider</h1>
