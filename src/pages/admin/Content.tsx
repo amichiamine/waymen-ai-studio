@@ -18,6 +18,8 @@ import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
 
 const SECTIONS: { key: keyof SiteContent; label: string }[] = [
+  { key: "header", label: "En-tête" },
+  { key: "footer", label: "Pied de page" },
   { key: "hero", label: "Hero" },
   { key: "flashSale", label: "Ventes flash" },
   { key: "categories", label: "Catégories" },
