@@ -62,8 +62,20 @@ export default function AdminSettings() {
               <Switch checked={form.emailNotifications} onCheckedChange={(v) => set("emailNotifications", v)} /></div>
             <div className="flex items-center justify-between"><Label>Afficher le bandeau promo</Label>
               <Switch checked={form.showPromoBanner} onCheckedChange={(v) => set("showPromoBanner", v)} /></div>
+            <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+              <div>
+                <Label>Seuil « stock faible » (≤)</Label>
+                <Input type="number" min={0} value={form.lowStockThreshold} onChange={(e) => set("lowStockThreshold", Number(e.target.value) || 0)} />
+              </div>
+              <div>
+                <Label>Seuil « rupture » (≤)</Label>
+                <Input type="number" min={0} value={form.outOfStockThreshold} onChange={(e) => set("outOfStockThreshold", Number(e.target.value) || 0)} />
+              </div>
+              <p className="col-span-2 text-xs text-muted-foreground">Les statuts « en stock / faible / rupture » sont recalculés sur toute la vitrine à l'enregistrement.</p>
+            </div>
           </CardContent>
         </Card>
+
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={() => { resetData("siteSettings"); toast.success("Paramètres réinitialisés"); }}>
