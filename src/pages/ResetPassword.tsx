@@ -3,8 +3,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Frontend-only : pas de vérification de token, formulaire cosmétique.
-export const Route = createFileRoute("/reset-password")({ component: ResetPasswordPage });
-
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");

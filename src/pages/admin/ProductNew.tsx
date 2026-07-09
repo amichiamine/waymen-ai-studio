@@ -7,8 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export const Route = createFileRoute("/admin/products/new")({ component: Page });
-
 export default function AdminProductNew() {
   return (
     <AdminPageShell title="Nouveau produit" description="Créer une fiche produit.">

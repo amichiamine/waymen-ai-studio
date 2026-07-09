@@ -2,8 +2,6 @@
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const Route = createFileRoute("/admin/analytics")({ component: Page });
-
 export default function AdminAnalytics() {
   return (
     <AdminPageShell title="Analytique" description="Tendances de trafic et de ventes.">

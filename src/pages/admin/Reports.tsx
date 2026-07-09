@@ -2,8 +2,6 @@
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const Route = createFileRoute("/admin/reports")({ component: Page });
-
 export default function AdminReports() {
   return (
     <AdminPageShell title="Rapports" description="Exportez vos indicateurs de performance.">

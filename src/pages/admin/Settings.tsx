@@ -7,8 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
-export const Route = createFileRoute("/admin/settings")({ component: Page });
-
 export default function AdminSettings() {
   return (
     <AdminPageShell title="Paramètres" description="Configuration générale de la boutique.">

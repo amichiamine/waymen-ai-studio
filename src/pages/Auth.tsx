@@ -6,8 +6,6 @@ import { toast } from "sonner";
 
 // Version frontend-only : pas d'appel Supabase. Le formulaire crée un
 // utilisateur en localStorage pour permettre la navigation.
-export const Route = createFileRoute("/auth")({ component: AuthPage });
-
 const emailSchema = z.string().email("E-mail invalide").max(255);
 const passwordSchema = z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères").max(72);
 

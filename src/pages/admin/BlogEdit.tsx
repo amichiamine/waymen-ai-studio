@@ -2,8 +2,6 @@ import { useParams } from "react-router-dom";
 
 import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout";
 
-export const Route = createFileRoute("/admin/blog/$id")({ component: Page });
-
 export default function AdminBlogEdit() {
   const { id } = useParams();
   return (

@@ -2,8 +2,6 @@
 import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export const Route = createFileRoute("/admin/orders")({ component: Page });
-
 export default function AdminOrders() {
   return (
     <AdminPageShell title="Commandes" description="Suivez et gérez les commandes clients.">

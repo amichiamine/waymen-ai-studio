@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 
-export const Route = createFileRoute("/admin/products")({ component: Page });
-
 export default function AdminProducts() {
   return (
     <AdminPageShell

@@ -6,8 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/admin/blog/new")({ component: Page });
-
 export default function AdminBlogNew() {
   return (
     <AdminPageShell title="Nouvel article" description="Rédiger un article de blog.">

@@ -3,8 +3,6 @@ import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout"
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-export const Route = createFileRoute("/admin/users")({ component: Page });
-
 export default function AdminUsers() {
   return (
     <AdminPageShell

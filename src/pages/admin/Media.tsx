@@ -3,8 +3,6 @@ import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout"
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 
-export const Route = createFileRoute("/admin/media")({ component: Page });
-
 export default function AdminMedia() {
   return (
     <AdminPageShell
