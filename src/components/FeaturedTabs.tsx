@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { products, type Category } from "@/data/products";
+import { useMemo, useState } from "react";
+import { type Category } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 import { SectionHead } from "./CategoryCards";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { useProducts } from "@/lib/useProducts";
 
 const tabs: { id: Category; key: TKey }[] = [
   { id: "laptops", key: "feat.tab.laptops" },
@@ -14,7 +15,8 @@ const tabs: { id: Category; key: TKey }[] = [
 export function FeaturedTabs() {
   const [active, setActive] = useState<Category>("laptops");
   const { t } = useI18n();
-  const list = products.filter((p) => p.category === active).slice(0, 4);
+  const products = useProducts();
+  const list = useMemo(() => products.filter((p) => p.category === active).slice(0, 4), [products, active]);
   return (
     <section className="container-page py-16">
       <SectionHead title={t("feat.title")} sub={t("feat.sub")} />
