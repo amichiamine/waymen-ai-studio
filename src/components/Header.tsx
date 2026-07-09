@@ -202,27 +202,30 @@ export function Header() {
                 </button>
               </div>
               <nav className="flex flex-col gap-1">
-                <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">{t("nav.category")}</div>
-                {SECONDARY.map((n) => (
-                  <Link
-                    key={n.to + n.key}
-                    to={n.to}
-                    onClick={() => setOpen(false)}
-                    className="px-4 py-2.5 rounded-md text-foreground hover:bg-card text-sm inline-flex items-center gap-2"
-                  >
-                    {n.Icon && <n.Icon className="size-4" />}
-                    {t(n.key)}
-                  </Link>
-                ))}
+                <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">{H.categoryMenu.label}</div>
+                {H.categoryMenu.items.map((n) => {
+                  const Icon = getIcon(n.icon);
+                  return (
+                    <Link
+                      key={n.id}
+                      to={n.href}
+                      onClick={() => setOpen(false)}
+                      className="px-4 py-2.5 rounded-md text-foreground hover:bg-card text-sm inline-flex items-center gap-2"
+                    >
+                      <Icon className="size-4" />
+                      {n.label}
+                    </Link>
+                  );
+                })}
                 <div className="h-px bg-border my-2" />
-                {NAV.map((n) => (
+                {H.primaryNav.map((n) => (
                   <Link
-                    key={n.to}
-                    to={n.to}
+                    key={n.id}
+                    to={n.href}
                     onClick={() => setOpen(false)}
                     className="px-4 py-3 rounded-md text-foreground hover:bg-card text-base"
                   >
-                    {t(n.key)}
+                    {n.label}
                   </Link>
                 ))}
               </nav>
