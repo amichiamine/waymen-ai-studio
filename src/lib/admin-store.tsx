@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { products as seedProducts, categoryMeta, type Product, type Category } from "@/data/products";
+import { WILAYAS } from "@/data/wilayas";
 
 // ---------- Types ----------
 export type AdminCategory = {
@@ -17,18 +18,25 @@ export type AdminBrand = {
 };
 
 export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+export type OrderStatusEvent = { status: OrderStatus; at: string; note?: string };
 export type OrderItem = { productId: string; name: string; price: number; qty: number; image?: string };
 export type Order = {
   id: string;
   customerId: string;
   customerName: string;
+  customerEmail?: string;
   items: OrderItem[];
   subtotal: number;
+  discount: number;
+  couponCode?: string;
   shipping: number;
   total: number;
   status: OrderStatus;
-  paymentMethod: "cod" | "card" | "bank";
+  statusHistory: OrderStatusEvent[];
+  paymentMethod: string; // id of a PaymentMethod
+  paymentLabel?: string;
   wilaya: string;
+  deliveryKind: "home" | "desk";
   address: string;
   phone: string;
   createdAt: string; // ISO
@@ -86,7 +94,7 @@ export type BlogPost = {
   slug: string;
   title: string;
   excerpt: string;
-  content: string; // markdown-ish plain text
+  content: string;
   cover?: string;
   author: string;
   tags: string[];
@@ -106,10 +114,7 @@ export type HomeReview = {
   gradient: string;
 };
 
-export type TickerMessage = {
-  id: string;
-  text: string;
-};
+export type TickerMessage = { id: string; text: string };
 
 export type AboutValue = {
   id: string;
@@ -130,12 +135,32 @@ export type SiteSettings = {
   storeName: string;
   contactEmail: string;
   contactPhone: string;
-  whatsapp: string; // digits only, e.g. "213555000000"
+  whatsapp: string;
   address: string;
   hours: string;
   maintenance: boolean;
   emailNotifications: boolean;
   showPromoBanner: boolean;
+};
+
+// A single shipping rate: either specific wilaya code, or "*" for default.
+export type ShippingRate = { wilayaCode: string; home: number; desk: number };
+export type ShippingSettings = { freeShippingThreshold: number; homeEnabled: boolean; deskEnabled: boolean };
+
+export type PaymentMethod = {
+  id: string;
+  label: string;
+  instructions: string;
+  active: boolean;
+};
+
+export type StockMovement = {
+  id: string;
+  productId: string;
+  productName: string;
+  delta: number;
+  reason: string;
+  createdAt: string;
 };
 
 export type AdminState = {
@@ -153,14 +178,18 @@ export type AdminState = {
   marqueeBrands: string[];
   aboutValues: AboutValue[];
   builderSteps: BuilderStep[];
+  shippingRates: ShippingRate[];
+  paymentMethods: PaymentMethod[];
+  stockMovements: StockMovement[];
   siteSettings: SiteSettings;
+  shippingSettings: ShippingSettings;
 };
 
-// Keys that are arrays (used for reset/clear/import iteration).
 export const ARRAY_KEYS = [
   "products", "categories", "brands", "orders", "customers", "coupons",
   "reviews", "users", "blogPosts", "homeReviews", "tickerMessages",
   "marqueeBrands", "aboutValues", "builderSteps",
+  "shippingRates", "paymentMethods", "stockMovements",
 ] as const;
 export type ArrayKey = typeof ARRAY_KEYS[number];
 
@@ -209,7 +238,7 @@ function brandCountry(name: string): string {
   return map[name] ?? "International";
 }
 
-const WILAYAS = ["Alger", "Oran", "Constantine", "Annaba", "Sétif", "Blida", "Batna", "Tlemcen", "Béjaïa", "Tizi Ouzou"];
+const SEED_WILAYAS = ["Alger", "Oran", "Constantine", "Annaba", "Sétif", "Blida", "Batna", "Tlemcen", "Béjaïa", "Tizi Ouzou"];
 const FIRST_NAMES = ["Yacine", "Amine", "Sarah", "Nassim", "Lina", "Karim", "Sofia", "Omar", "Mehdi", "Rania", "Anis", "Nadia", "Riad", "Imane", "Hakim"];
 const LAST_NAMES = ["Benali", "Boudjemaa", "Cherif", "Khelifi", "Meziane", "Zerrouki", "Belkacem", "Hadj", "Sahraoui", "Amrani", "Ouarab", "Bouzid"];
 
@@ -225,7 +254,7 @@ function seedCustomers(): Customer[] {
       name: `${fn} ${ln}`,
       email: `${fn}.${ln}`.toLowerCase() + "@example.dz",
       phone: `05${(50000000 + i * 137891).toString().slice(0, 8)}`,
-      wilaya: pick(WILAYAS, i),
+      wilaya: pick(SEED_WILAYAS, i),
       createdAt: created,
       ordersCount: 0,
       totalSpent: 0,
@@ -234,7 +263,6 @@ function seedCustomers(): Customer[] {
   return list;
 }
 
-const ORDER_STATUSES: OrderStatus[] = ["pending", "processing", "shipped", "delivered", "cancelled"];
 function seedOrders(customers: Customer[]): Order[] {
   const orders: Order[] = [];
   for (let i = 0; i < 32; i++) {
@@ -248,20 +276,32 @@ function seedOrders(customers: Customer[]): Order[] {
     const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
     const shipping = subtotal > 100000 ? 0 : 800;
     const status: OrderStatus = i < 4 ? "pending" : i < 10 ? "processing" : i < 20 ? "shipped" : i < 28 ? "delivered" : "cancelled";
+    const createdAt = new Date(Date.now() - i * 43200000).toISOString();
+    const flow: OrderStatus[] = ["pending", "processing", "shipped", "delivered"];
+    const idx = flow.indexOf(status);
+    const statusHistory: OrderStatusEvent[] = status === "cancelled"
+      ? [{ status: "pending", at: createdAt }, { status: "cancelled", at: createdAt, note: "Annulée par le client" }]
+      : flow.slice(0, Math.max(1, idx + 1)).map((s, k) => ({ status: s, at: new Date(Date.parse(createdAt) + k * 6 * 3600000).toISOString() }));
+    const pm = i % 3 === 0 ? "card" : i % 3 === 1 ? "cod" : "bank";
     orders.push({
       id: `KA${(24001 + i).toString()}`,
       customerId: cust.id,
       customerName: cust.name,
+      customerEmail: cust.email,
       items,
       subtotal,
+      discount: 0,
       shipping,
       total: subtotal + shipping,
       status,
-      paymentMethod: i % 3 === 0 ? "card" : i % 3 === 1 ? "cod" : "bank",
+      statusHistory,
+      paymentMethod: pm,
+      paymentLabel: pm === "cod" ? "Paiement à la livraison" : pm === "card" ? "CIB / Edahabia" : "Virement bancaire",
       wilaya: cust.wilaya,
+      deliveryKind: i % 2 === 0 ? "home" : "desk",
       address: `Rue ${100 + i}, ${cust.wilaya}`,
       phone: cust.phone,
-      createdAt: new Date(Date.now() - i * 43200000).toISOString(),
+      createdAt,
       note: i % 5 === 0 ? "Livraison rapide demandée" : undefined,
     });
   }
@@ -331,51 +371,15 @@ function seedUsers(): AdminUser[] {
   ];
 }
 
-// ---------- New content seeds ----------
 function seedBlogPosts(): BlogPost[] {
   const now = Date.now();
   const d = (days: number) => new Date(now - days * 86400000).toISOString();
   const base = [
-    {
-      slug: "guide-achat-laptop-2026",
-      title: "Guide d'achat : bien choisir son ordinateur portable en 2026",
-      excerpt: "CPU, GPU, RAM, écran — les critères qui comptent vraiment selon votre usage.",
-      content:
-        "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez KA Tech, tous nos laptops sont sous garantie officielle.",
-      tags: ["laptop", "guide"],
-    },
-    {
-      slug: "gaming-pc-vs-console",
-      title: "PC gaming vs console : le match 2026",
-      excerpt: "Prix, catalogue, mods, longévité — on compare les deux univers.",
-      content:
-        "Le débat PC vs console revient chaque génération. En 2026, le PC prend l'avantage sur la modularité, le catalogue Steam et la longévité — mais la console reste imbattable sur le plug-and-play.",
-      tags: ["gaming", "comparatif"],
-    },
-    {
-      slug: "smartphone-photo-2026",
-      title: "Top 3 smartphones photo début 2026",
-      excerpt: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro : notre verdict.",
-      content:
-        "Trois flagships, trois philosophies photo. L'iPhone mise sur la constance vidéo, le Samsung sur la polyvalence zoom, le Xiaomi sur la signature Leica. À vous de choisir.",
-      tags: ["smartphone", "photo", "top"],
-    },
-    {
-      slug: "monter-son-pc-configurateur",
-      title: "Monter son PC : nos conseils du configurateur KA Tech",
-      excerpt: "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.",
-      content:
-        "Notre configurateur PC vous guide étape par étape. Avant de valider votre config, vérifiez : la compatibilité socket CPU/carte-mère, le TDP de l'alim (+30 % de marge), et la ventilation du boîtier.",
-      tags: ["pc-sur-mesure", "conseil"],
-    },
-    {
-      slug: "livraison-58-wilayas",
-      title: "Livraison en Algérie : ce qu'il faut savoir",
-      excerpt: "Délais, tarifs, paiement à la livraison — on répond à vos questions.",
-      content:
-        "KA Tech livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
-      tags: ["livraison", "faq"],
-    },
+    { slug: "guide-achat-laptop-2026", title: "Guide d'achat : bien choisir son ordinateur portable en 2026", excerpt: "CPU, GPU, RAM, écran — les critères qui comptent vraiment selon votre usage.", content: "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez KA Tech, tous nos laptops sont sous garantie officielle.", tags: ["laptop", "guide"] },
+    { slug: "gaming-pc-vs-console", title: "PC gaming vs console : le match 2026", excerpt: "Prix, catalogue, mods, longévité — on compare les deux univers.", content: "Le débat PC vs console revient chaque génération. En 2026, le PC prend l'avantage sur la modularité, le catalogue Steam et la longévité — mais la console reste imbattable sur le plug-and-play.", tags: ["gaming", "comparatif"] },
+    { slug: "smartphone-photo-2026", title: "Top 3 smartphones photo début 2026", excerpt: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro : notre verdict.", content: "Trois flagships, trois philosophies photo. L'iPhone mise sur la constance vidéo, le Samsung sur la polyvalence zoom, le Xiaomi sur la signature Leica. À vous de choisir.", tags: ["smartphone", "photo", "top"] },
+    { slug: "monter-son-pc-configurateur", title: "Monter son PC : nos conseils du configurateur KA Tech", excerpt: "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.", content: "Notre configurateur PC vous guide étape par étape. Avant de valider votre config, vérifiez : la compatibilité socket CPU/carte-mère, le TDP de l'alim (+30 % de marge), et la ventilation du boîtier.", tags: ["pc-sur-mesure", "conseil"] },
+    { slug: "livraison-58-wilayas", title: "Livraison en Algérie : ce qu'il faut savoir", excerpt: "Délais, tarifs, paiement à la livraison — on répond à vos questions.", content: "KA Tech livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.", tags: ["livraison", "faq"] },
   ];
   return base.map((b, i) => ({
     id: `blog_${100 + i}`,
@@ -487,6 +491,41 @@ function emptySiteSettings(): SiteSettings {
   };
 }
 
+// Shipping seeds: default rate + tier by wilaya (north / centre / hauts-plateaux / sud).
+const NORTH = new Set(["16", "09", "35", "42", "15", "06", "18", "21", "23", "25", "43", "36", "24", "31", "27", "22", "46", "13"]);
+const CENTRE_HP = new Set(["02", "10", "26", "44", "38", "14", "20", "29", "48", "05", "19", "34", "40", "41", "28", "03", "17"]);
+// remaining codes are considered Sud.
+
+function seedShippingRates(): ShippingRate[] {
+  const list: ShippingRate[] = [{ wilayaCode: "*", home: 800, desk: 400 }];
+  for (const w of WILAYAS) {
+    let home = 1500, desk = 800; // sud default
+    if (NORTH.has(w.code)) { home = 600; desk = 350; }
+    else if (CENTRE_HP.has(w.code)) { home = 900; desk = 500; }
+    list.push({ wilayaCode: w.code, home, desk });
+  }
+  return list;
+}
+
+function seedShippingSettings(): ShippingSettings {
+  return { freeShippingThreshold: 150000, homeEnabled: true, deskEnabled: true };
+}
+
+function emptyShippingSettings(): ShippingSettings {
+  return { freeShippingThreshold: 0, homeEnabled: false, deskEnabled: false };
+}
+
+function seedPaymentMethods(): PaymentMethod[] {
+  return [
+    { id: "cod", label: "Paiement à la livraison", instructions: "Réglez votre commande en espèces au livreur.", active: true },
+    { id: "bank", label: "Virement bancaire", instructions: "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.", active: true },
+    { id: "card", label: "CIB / Edahabia", instructions: "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).", active: true },
+    { id: "store", label: "Paiement en boutique", instructions: "Retirez et réglez votre commande à notre point de vente d'Alger.", active: false },
+  ];
+}
+
+function seedStockMovements(): StockMovement[] { return []; }
+
 function seedAll(): AdminState {
   const customers = seedCustomers();
   const orders = seedOrders(customers);
@@ -505,11 +544,15 @@ function seedAll(): AdminState {
     marqueeBrands: seedMarqueeBrands(),
     aboutValues: seedAboutValues(),
     builderSteps: seedBuilderSteps(),
+    shippingRates: seedShippingRates(),
+    paymentMethods: seedPaymentMethods(),
+    stockMovements: seedStockMovements(),
     siteSettings: seedSiteSettings(),
+    shippingSettings: seedShippingSettings(),
   };
 }
 
-// ---------- Store (localStorage + subscribers) ----------
+// ---------- Store ----------
 const LS_KEY = "katech.admin.state.v1";
 
 function loadState(): AdminState {
@@ -538,7 +581,11 @@ function loadState(): AdminState {
       marqueeBrands: parsed.marqueeBrands ?? seed.marqueeBrands,
       aboutValues: parsed.aboutValues ?? seed.aboutValues,
       builderSteps: parsed.builderSteps ?? seed.builderSteps,
+      shippingRates: parsed.shippingRates ?? seed.shippingRates,
+      paymentMethods: parsed.paymentMethods ?? seed.paymentMethods,
+      stockMovements: parsed.stockMovements ?? seed.stockMovements,
       siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
+      shippingSettings: { ...seed.shippingSettings, ...(parsed.shippingSettings ?? {}) },
     };
   } catch {
     return seedAll();
@@ -563,6 +610,8 @@ function getSnapshot() { return state; }
 export function useAdminState(): AdminState {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
+
+export function getAdminSnapshot(): AdminState { return state; }
 
 // ---------- Mutations ----------
 function set<T extends keyof AdminState>(key: T, value: AdminState[T]) {
@@ -607,8 +656,77 @@ export function deleteBrand(id: string) {
 export function getBrand(id: string) { return state.brands.find((b) => b.id === id); }
 
 // Orders
-export function updateOrderStatus(id: string, status: OrderStatus) {
-  set("orders", state.orders.map((o) => o.id === id ? { ...o, status } : o));
+export function updateOrderStatus(id: string, status: OrderStatus, note?: string) {
+  set("orders", state.orders.map((o) => {
+    if (o.id !== id) return o;
+    const ev: OrderStatusEvent = { status, at: new Date().toISOString(), note };
+    return { ...o, status, statusHistory: [...(o.statusHistory ?? []), ev] };
+  }));
+}
+
+export function createOrder(input: {
+  customerId?: string;
+  customerName: string;
+  customerEmail?: string;
+  items: OrderItem[];
+  subtotal: number;
+  discount: number;
+  couponCode?: string;
+  shipping: number;
+  total: number;
+  paymentMethod: string;
+  paymentLabel?: string;
+  wilaya: string;
+  deliveryKind: "home" | "desk";
+  address: string;
+  phone: string;
+  note?: string;
+}): Order {
+  const now = new Date().toISOString();
+  const id = `KA${Math.floor(100000 + Math.random() * 900000)}`;
+  const order: Order = {
+    id,
+    customerId: input.customerId ?? `guest_${Date.now()}`,
+    customerName: input.customerName,
+    customerEmail: input.customerEmail,
+    items: input.items,
+    subtotal: input.subtotal,
+    discount: input.discount,
+    couponCode: input.couponCode,
+    shipping: input.shipping,
+    total: input.total,
+    status: "pending",
+    statusHistory: [{ status: "pending", at: now, note: "Commande passée" }],
+    paymentMethod: input.paymentMethod,
+    paymentLabel: input.paymentLabel,
+    wilaya: input.wilaya,
+    deliveryKind: input.deliveryKind,
+    address: input.address,
+    phone: input.phone,
+    createdAt: now,
+    note: input.note,
+  };
+  // Log stock movements per item
+  const movements: StockMovement[] = input.items.map((it, i) => ({
+    id: `mov_${Date.now()}_${i}`,
+    productId: it.productId,
+    productName: it.name,
+    delta: -it.qty,
+    reason: `Commande ${id}`,
+    createdAt: now,
+  }));
+  // Increment coupon usage
+  const coupons = input.couponCode
+    ? state.coupons.map((c) => c.code === input.couponCode ? { ...c, usageCount: c.usageCount + 1 } : c)
+    : state.coupons;
+  state = {
+    ...state,
+    orders: [order, ...state.orders],
+    stockMovements: [...movements, ...state.stockMovements],
+    coupons,
+  };
+  emit();
+  return order;
 }
 
 // Coupons
@@ -620,6 +738,21 @@ export function upsertCoupon(c: Coupon) {
 }
 export function deleteCoupon(code: string) {
   set("coupons", state.coupons.filter((c) => c.code !== code));
+}
+
+export type CouponValidation =
+  | { ok: true; coupon: Coupon; discount: number }
+  | { ok: false; error: string };
+
+export function validateCoupon(code: string, subtotal: number): CouponValidation {
+  const c = state.coupons.find((x) => x.code.toUpperCase() === code.trim().toUpperCase());
+  if (!c) return { ok: false, error: "Code inconnu" };
+  if (!c.active) return { ok: false, error: "Ce code est désactivé" };
+  if (new Date(c.expiresAt).getTime() < Date.now()) return { ok: false, error: "Ce code a expiré" };
+  if (c.usageCount >= c.usageLimit) return { ok: false, error: "Ce code a atteint sa limite d'utilisation" };
+  if (subtotal < c.minPurchase) return { ok: false, error: `Achat minimum de ${c.minPurchase.toLocaleString("fr-FR")} DA requis` };
+  const discount = c.type === "percent" ? Math.round((subtotal * c.value) / 100) : c.value;
+  return { ok: true, coupon: c, discount: Math.min(discount, subtotal) };
 }
 
 // Reviews
@@ -665,21 +798,73 @@ export function deleteHomeReview(id: string) {
   set("homeReviews", state.homeReviews.filter((r) => r.id !== id));
 }
 
-// Ticker
+// Ticker / marquee / about / builder
 export function setTickerMessages(list: TickerMessage[]) { set("tickerMessages", list); }
-// Marquee brands
 export function setMarqueeBrands(list: string[]) { set("marqueeBrands", list); }
-// About values
 export function setAboutValues(list: AboutValue[]) { set("aboutValues", list); }
-// Builder steps
 export function setBuilderSteps(list: BuilderStep[]) { set("builderSteps", list); }
+
 // Site settings
 export function updateSiteSettings(patch: Partial<SiteSettings>) {
   set("siteSettings", { ...state.siteSettings, ...patch });
 }
 
+// Shipping
+export function upsertShippingRate(r: ShippingRate) {
+  const list = state.shippingRates.slice();
+  const idx = list.findIndex((x) => x.wilayaCode === r.wilayaCode);
+  if (idx >= 0) list[idx] = r; else list.push(r);
+  set("shippingRates", list);
+}
+export function deleteShippingRate(wilayaCode: string) {
+  if (wilayaCode === "*") return; // default rate cannot be removed
+  set("shippingRates", state.shippingRates.filter((r) => r.wilayaCode !== wilayaCode));
+}
+export function updateShippingSettings(patch: Partial<ShippingSettings>) {
+  set("shippingSettings", { ...state.shippingSettings, ...patch });
+}
+
+export function computeShipping(wilayaCode: string, kind: "home" | "desk", subtotal: number): number {
+  const s = state.shippingSettings;
+  if (s.freeShippingThreshold > 0 && subtotal >= s.freeShippingThreshold) return 0;
+  const rate = state.shippingRates.find((r) => r.wilayaCode === wilayaCode)
+    ?? state.shippingRates.find((r) => r.wilayaCode === "*");
+  if (!rate) return 0;
+  return kind === "home" ? rate.home : rate.desk;
+}
+
+// Payments
+export function upsertPaymentMethod(m: PaymentMethod) {
+  const list = state.paymentMethods.slice();
+  const idx = list.findIndex((x) => x.id === m.id);
+  if (idx >= 0) list[idx] = m; else list.push(m);
+  set("paymentMethods", list);
+}
+export function deletePaymentMethod(id: string) {
+  set("paymentMethods", state.paymentMethods.filter((m) => m.id !== id));
+}
+
+// Stock
+export function adjustStock(productId: string, delta: number, reason: string) {
+  const p = state.products.find((x) => x.id === productId);
+  if (!p) return;
+  const mov: StockMovement = {
+    id: `mov_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    productId,
+    productName: p.name,
+    delta,
+    reason,
+    createdAt: new Date().toISOString(),
+  };
+  state = { ...state, stockMovements: [mov, ...state.stockMovements] };
+  emit();
+}
+export function setProductStockLevel(productId: string, level: Product["stock"]) {
+  set("products", state.products.map((p) => p.id === productId ? { ...p, stock: level } : p));
+}
+
 // ---------- Reset ----------
-export type ResetKey = ArrayKey | "siteSettings" | "all";
+export type ResetKey = ArrayKey | "siteSettings" | "shippingSettings" | "all";
 export function resetData(key: ResetKey) {
   const seed = seedAll();
   if (key === "all") {
@@ -689,18 +874,20 @@ export function resetData(key: ResetKey) {
   }
   emit();
 }
-export function clearData(key: ArrayKey | "siteSettings") {
+export function clearData(key: ArrayKey | "siteSettings" | "shippingSettings") {
   if (key === "siteSettings") {
     state = { ...state, siteSettings: emptySiteSettings() };
+  } else if (key === "shippingSettings") {
+    state = { ...state, shippingSettings: emptyShippingSettings() };
   } else {
     state = { ...state, [key]: [] } as AdminState;
   }
   emit();
 }
 
-// ---------- Export / Import JSON ----------
+// ---------- Export / Import ----------
 export function exportState(): string {
-  return JSON.stringify({ version: 2, exportedAt: new Date().toISOString(), state }, null, 2);
+  return JSON.stringify({ version: 3, exportedAt: new Date().toISOString(), state }, null, 2);
 }
 
 export function importState(json: string): { ok: true; counts: Record<string, number> } | { ok: false; error: string } {
@@ -731,13 +918,18 @@ export function importState(json: string): { ok: true; counts: Record<string, nu
     marqueeBrands: obj.marqueeBrands ?? seed.marqueeBrands,
     aboutValues: obj.aboutValues ?? seed.aboutValues,
     builderSteps: obj.builderSteps ?? seed.builderSteps,
+    shippingRates: obj.shippingRates ?? seed.shippingRates,
+    paymentMethods: obj.paymentMethods ?? seed.paymentMethods,
+    stockMovements: obj.stockMovements ?? seed.stockMovements,
     siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
+    shippingSettings: { ...seed.shippingSettings, ...(obj.shippingSettings ?? {}) },
   };
   state = next;
   emit();
   const counts: Record<string, number> = {};
   for (const k of ARRAY_KEYS) counts[k] = (next[k] as unknown[]).length;
   counts.siteSettings = 1;
+  counts.shippingSettings = 1;
   return { ok: true, counts };
 }
 
