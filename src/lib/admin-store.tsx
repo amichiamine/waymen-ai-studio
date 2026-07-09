@@ -211,6 +211,9 @@ export type AdminState = {
   shippingRates: ShippingRate[];
   paymentMethods: PaymentMethod[];
   stockMovements: StockMovement[];
+  mediaAssets: MediaAsset[];
+  notifications: AdminNotification[];
+  auditLogs: AuditLog[];
   siteSettings: SiteSettings;
   shippingSettings: ShippingSettings;
 };
@@ -220,6 +223,7 @@ export const ARRAY_KEYS = [
   "reviews", "users", "blogPosts", "homeReviews", "tickerMessages",
   "marqueeBrands", "aboutValues", "builderSteps",
   "shippingRates", "paymentMethods", "stockMovements",
+  "mediaAssets", "notifications", "auditLogs",
 ] as const;
 export type ArrayKey = typeof ARRAY_KEYS[number];
 
