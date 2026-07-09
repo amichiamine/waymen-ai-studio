@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Check, AlertTriangle, Star, Zap } from "lucide-react";
 import { type Product, formatDZD } from "@/data/products";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ export function ProductCard({ p }: { p: Product }) {
 
   return (
     <article className="group relative flex flex-col rounded-lg bg-card border border-border overflow-hidden transition-all duration-300 hover:border-primary/50 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card)] animate-fade-in-up">
-      <Link to="/product/$id" params={{ id: p.id }} className="block relative aspect-square bg-gradient-to-br from-background to-card overflow-hidden">
+      <Link to={`/product/${p.id}`} className="block relative aspect-square bg-gradient-to-br from-background to-card overflow-hidden">
         <img src={p.image} alt={name} width={512} height={512} loading="lazy" className="size-full object-contain p-4 transition-transform duration-500 ease-out group-hover:scale-110" />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-background/80 backdrop-blur border border-border text-muted-foreground">{p.brand}</span>
@@ -27,7 +27,7 @@ export function ProductCard({ p }: { p: Product }) {
         </button>
       </Link>
       <div className="flex flex-col gap-2 p-4">
-        <Link to="/product/$id" params={{ id: p.id }} className="text-sm font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors min-h-[2.5em]">{name}</Link>
+        <Link to={`/product/${p.id}`} className="text-sm font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors min-h-[2.5em]">{name}</Link>
         <div className="flex items-center gap-1 text-warning">
           {[0,1,2,3].map((i) => <Star key={i} className="size-3 fill-current" />)}
           <Star className="size-3 fill-current opacity-50" />

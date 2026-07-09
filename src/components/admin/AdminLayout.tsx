@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tags, Star, FileText,
@@ -57,7 +57,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
 ];
 
 export function AdminSidebar() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = useLocation().pathname;
   return (
     <aside className="hidden w-64 shrink-0 border-r border-border/60 bg-card/50 lg:block">
       <div className="flex h-14 items-center gap-2 border-b border-border/60 px-4">

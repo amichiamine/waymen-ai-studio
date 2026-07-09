@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { ArrowRight, Laptop, Monitor, Cpu, Smartphone } from "lucide-react";
 import laptopsImg from "@/assets/cat-laptops.jpg";
 import desktopsImg from "@/assets/cat-desktops.jpg";
@@ -20,7 +20,7 @@ export function CategoryCards() {
       <SectionHead title={t("cat.title")} sub={t("cat.sub")} />
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mt-10">
         {cats.map((c) => (
-          <Link key={c.slug} to="/category/$slug" params={{ slug: c.slug }} className="group relative overflow-hidden rounded-xl border border-border bg-card aspect-[4/5] flex flex-col justify-end p-6 transition-all hover:border-primary/60 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]">
+          <Link key={c.slug} to={`/category/${c.slug}`} className="group relative overflow-hidden rounded-xl border border-border bg-card aspect-[4/5] flex flex-col justify-end p-6 transition-all hover:border-primary/60 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]">
             <img src={c.img} alt={t(c.labelKey)} width={800} height={600} loading="lazy" className="absolute inset-0 size-full object-cover opacity-90 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-card/30 to-transparent" />
             <div className="relative space-y-2">

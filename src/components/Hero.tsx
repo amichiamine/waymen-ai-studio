@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { ArrowRight, Flame, Users, Package, MapPin } from "lucide-react";
 import heroImg from "@/assets/hero-laptop.jpg";
 import { useI18n } from "@/lib/i18n";
@@ -48,15 +48,13 @@ export function Hero() {
           </p>
           <div className="flex flex-wrap justify-center gap-3 animate-fade-in-up delay-300">
             <Link
-              to="/category/$slug"
-              params={{ slug: "laptops" }}
+              to={`/category/${"laptops"}`}
               className="inline-flex items-center gap-2 h-12 px-6 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors shadow-[var(--shadow-glow)]"
             >
               {t("hero.cta.shop")} <ArrowRight className="size-4" />
             </Link>
             <Link
-              to="/category/$slug"
-              params={{ slug: "laptops" }}
+              to={`/category/${"laptops"}`}
               className="inline-flex items-center gap-2 h-12 px-6 rounded-md border border-border text-foreground hover:border-primary/60 hover:bg-card transition-colors"
             >
               {t("hero.cta.deals")}

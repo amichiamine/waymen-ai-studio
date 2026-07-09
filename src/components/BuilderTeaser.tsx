@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { ArrowRight, Cpu, MemoryStick, HardDrive, Zap } from "lucide-react";
 import banner from "@/assets/builder-banner.jpg";
 import { useI18n, type TKey } from "@/lib/i18n";
