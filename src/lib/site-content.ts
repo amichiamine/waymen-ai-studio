@@ -36,7 +36,32 @@ export function getIcon(name: IconName | string | undefined): LucideIcon {
 
 export type Cta = { label: string; href: string };
 
+export type NavItem = { id: string; label: string; href: string; icon?: IconName; accent?: boolean };
+export type SocialLink = { id: string; icon: IconName; label: string; href: string };
+export type FooterLink = { id: string; label: string; href: string };
+export type FooterColumn = { id: string; title: string; links: FooterLink[] };
+
 export type SiteContent = {
+  header: {
+    showSearch: boolean;
+    searchPlaceholder: string;
+    builderCta: Cta;
+    primaryNav: NavItem[];
+    categoryMenu: {
+      label: string;
+      title: string;
+      browseLabel: string;
+      browseHref: string;
+      items: NavItem[];
+    };
+  };
+  footer: {
+    tagline: string;
+    copyright: string;
+    madeIn: string;
+    socials: SocialLink[];
+    columns: FooterColumn[];
+  };
   hero: {
     badge: string;
     title1: string;
