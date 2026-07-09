@@ -1,14 +1,21 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tags, Star, FileText,
   Settings as SettingsIcon, BarChart3, Image as ImageIcon, Bell, ShieldCheck,
   ScrollText, Warehouse, Truck, CreditCard, PieChart, Ticket, Boxes,
-  Menu, ChevronRight, Home, RotateCcw,
+  Menu, ChevronRight, Home, RotateCcw, Check,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  useAdminState, getActiveRole, setActiveRole, markAllNotificationsRead, updateNotification,
+  type AdminUserRole,
+} from "@/lib/admin-store";
 
 type Item = { to: string; label: string; Icon: typeof LayoutDashboard };
 
