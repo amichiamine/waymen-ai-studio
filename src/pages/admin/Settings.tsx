@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, RotateCcw } from "lucide-react";
 import {
   useAdminState, updateSiteSettings, setTickerMessages, setMarqueeBrands,
   setAboutValues, setBuilderSteps, resetData,
   type SiteSettings, type TickerMessage, type AboutValue, type BuilderStep,
 } from "@/lib/admin-store";
+import { formatDZD } from "@/data/products";
 
 export default function AdminSettings() {
   const state = useAdminState();
@@ -56,12 +58,12 @@ export default function AdminSettings() {
         <Card>
           <CardHeader><CardTitle>Options</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between"><Label>Mode maintenance</Label>
-              <Switch checked={form.maintenance} onCheckedChange={(v) => set("maintenance", v)} /></div>
             <div className="flex items-center justify-between"><Label>Notifications e-mail</Label>
               <Switch checked={form.emailNotifications} onCheckedChange={(v) => set("emailNotifications", v)} /></div>
-            <div className="flex items-center justify-between"><Label>Afficher le bandeau promo</Label>
-              <Switch checked={form.showPromoBanner} onCheckedChange={(v) => set("showPromoBanner", v)} /></div>
+            <div className="flex items-center justify-between"><Label>Sélecteur de langue (FR / AR / EN)</Label>
+              <Switch checked={form.languageSelectorEnabled} onCheckedChange={(v) => set("languageSelectorEnabled", v)} /></div>
+            <div className="flex items-center justify-between"><Label>Masquer la note produit sans avis</Label>
+              <Switch checked={form.hideRatingWhenNoReviews} onCheckedChange={(v) => set("hideRatingWhenNoReviews", v)} /></div>
             <div className="grid grid-cols-2 gap-3 pt-3 border-t">
               <div>
                 <Label>Seuil « stock faible » (≤)</Label>
@@ -72,6 +74,78 @@ export default function AdminSettings() {
                 <Input type="number" min={0} value={form.outOfStockThreshold} onChange={(e) => set("outOfStockThreshold", Number(e.target.value) || 0)} />
               </div>
               <p className="col-span-2 text-xs text-muted-foreground">Les statuts « en stock / faible / rupture » sont recalculés sur toute la vitrine à l'enregistrement.</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Mode maintenance</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Activer le mode maintenance</Label>
+                <p className="text-xs text-muted-foreground">Bloque l'accès public au site. L'admin et /auth restent accessibles.</p>
+              </div>
+              <Switch checked={form.maintenance} onCheckedChange={(v) => set("maintenance", v)} />
+            </div>
+            <div>
+              <Label>Message affiché</Label>
+              <Textarea rows={3} value={form.maintenanceMessage} onChange={(e) => set("maintenanceMessage", e.target.value)} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Bandeau promotionnel</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label>Afficher le bandeau promo</Label>
+              <Switch checked={form.showPromoBanner} onCheckedChange={(v) => set("showPromoBanner", v)} />
+            </div>
+            <div><Label>Message du bandeau</Label><Input value={form.promoBannerText} onChange={(e) => set("promoBannerText", e.target.value)} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Libellé du bouton</Label><Input value={form.promoBannerLabel} onChange={(e) => set("promoBannerLabel", e.target.value)} /></div>
+              <div><Label>Lien du bouton</Label><Input value={form.promoBannerHref} onChange={(e) => set("promoBannerHref", e.target.value)} placeholder="/category/laptops" /></div>
+            </div>
+            <p className="text-xs text-muted-foreground">Le bandeau réapparaît automatiquement dès qu'on modifie son texte, son libellé ou son lien.</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Devise & format des prix</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Symbole</Label>
+                <Input value={form.currencySymbol} onChange={(e) => set("currencySymbol", e.target.value)} placeholder="DA" />
+              </div>
+              <div>
+                <Label>Position</Label>
+                <Select value={form.currencyPosition} onValueChange={(v) => set("currencyPosition", v as SiteSettings["currencyPosition"])}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="suffix">Suffixe (12 000 DA)</SelectItem>
+                    <SelectItem value="prefix">Préfixe (DA 12 000)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2">
+                <Label>Séparateur de milliers</Label>
+                <Select value={form.currencyThousandSeparator || "none"} onValueChange={(v) => set("currencyThousandSeparator", (v === "none" ? "" : v) as SiteSettings["currencyThousandSeparator"])}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value=" ">Espace (12 000)</SelectItem>
+                    <SelectItem value=",">Virgule (12,000)</SelectItem>
+                    <SelectItem value=".">Point (12.000)</SelectItem>
+                    <SelectItem value="'">Apostrophe (12'000)</SelectItem>
+                    <SelectItem value="none">Aucun (12000)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="rounded-md border border-dashed p-3 text-sm">
+              Aperçu : <strong>{formatDZD(123456)}</strong> · <strong>{formatDZD(7500)}</strong>
+              <p className="mt-1 text-xs text-muted-foreground">Enregistrez pour appliquer les changements à tout le site.</p>
             </div>
           </CardContent>
         </Card>

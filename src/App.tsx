@@ -5,8 +5,11 @@ import { Footer } from "@/components/Footer";
 import { Ticker } from "@/components/Ticker";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
+import { PromoBanner } from "@/components/PromoBanner";
+import { MaintenanceScreen } from "@/components/MaintenanceGate";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/auth";
+import { useAdminState } from "@/lib/admin-store";
 import { useAdminRoles } from "@/lib/admin-auth";
 import { AdminSidebar, AdminMobileNav, AdminBreadcrumbs, AdminRoleSwitcher, AdminNotificationBell } from "@/components/admin/AdminLayout";
 import { Link } from "react-router-dom";
@@ -138,9 +141,22 @@ function AdminLayout() {
 export default function App() {
   const pathname = useLocation().pathname;
   const isAdmin = pathname.startsWith("/admin");
+  const isAuthRoute = pathname === "/auth" || pathname === "/reset-password";
+  const { siteSettings } = useAdminState();
+
+  // Maintenance gate: full-screen for public visitors; admins & auth routes stay accessible.
+  if (siteSettings.maintenance && !isAdmin && !isAuthRoute) {
+    return (
+      <>
+        <MaintenanceScreen />
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <>
+      {!isAdmin && <PromoBanner />}
       {!isAdmin && <Ticker />}
       {!isAdmin && <Header />}
       <main className="pb-16 md:pb-0">

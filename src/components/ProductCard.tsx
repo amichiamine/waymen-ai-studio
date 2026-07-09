@@ -10,12 +10,13 @@ import { productRatingStats, useAdminState } from "@/lib/admin-store";
 export function ProductCard({ p }: { p: Product }) {
   const { t } = useI18n();
   const { isFavorite, toggleFavorite, addToCart } = useStore();
-  const { reviews } = useAdminState();
+  const { reviews, siteSettings } = useAdminState();
   const liked = isFavorite(p.id);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
   const name = p.name;
   const stats = useMemo(() => productRatingStats(p.id), [p.id, reviews]);
   const avgRounded = Math.round(stats.avg * 2) / 2; // half-star precision
+  const showRating = stats.count > 0 || !siteSettings.hideRatingWhenNoReviews;
 
   return (
     <article className="group relative flex flex-col rounded-lg bg-card border border-border overflow-hidden transition-all duration-300 hover:border-primary/50 hover:-translate-y-1.5 hover:shadow-[var(--shadow-card)] animate-fade-in-up">
@@ -33,6 +34,7 @@ export function ProductCard({ p }: { p: Product }) {
       </Link>
       <div className="flex flex-col gap-2 p-4">
         <Link to={`/product/${p.id}`} className="text-sm font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors min-h-[2.5em]">{name}</Link>
+        {showRating && (
         <div className="flex items-center gap-1" aria-label={stats.count ? `${stats.avg.toFixed(1)} sur 5 (${stats.count} avis)` : "Aucun avis"}>
           {[1, 2, 3, 4, 5].map((n) => {
             const filled = n <= Math.floor(avgRounded);
@@ -48,6 +50,7 @@ export function ProductCard({ p }: { p: Product }) {
             {stats.count > 0 ? `${stats.avg.toFixed(1)} (${stats.count})` : t("pc.noReviews")}
           </span>
         </div>
+        )}
         <p className="text-xs text-muted-foreground line-clamp-1">{p.specLine}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-base font-bold text-foreground">{formatDZD(p.price)}</span>
