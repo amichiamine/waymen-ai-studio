@@ -33,10 +33,20 @@ export function ProductCard({ p }: { p: Product }) {
       </Link>
       <div className="flex flex-col gap-2 p-4">
         <Link to={`/product/${p.id}`} className="text-sm font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors min-h-[2.5em]">{name}</Link>
-        <div className="flex items-center gap-1 text-warning">
-          {[0,1,2,3].map((i) => <Star key={i} className="size-3 fill-current" />)}
-          <Star className="size-3 fill-current opacity-50" />
-          <span className="text-[11px] text-muted-foreground ms-1">(128)</span>
+        <div className="flex items-center gap-1" aria-label={stats.count ? `${stats.avg.toFixed(1)} sur 5 (${stats.count} avis)` : "Aucun avis"}>
+          {[1, 2, 3, 4, 5].map((n) => {
+            const filled = n <= Math.floor(avgRounded);
+            const half = !filled && n - 0.5 === avgRounded;
+            return (
+              <Star
+                key={n}
+                className={`size-3 ${stats.count === 0 ? "text-muted-foreground/30" : "text-warning"} ${filled ? "fill-current" : half ? "fill-current opacity-60" : "opacity-30"}`}
+              />
+            );
+          })}
+          <span className="text-[11px] text-muted-foreground ms-1">
+            {stats.count > 0 ? `${stats.avg.toFixed(1)} (${stats.count})` : t("pc.noReviews")}
+          </span>
         </div>
         <p className="text-xs text-muted-foreground line-clamp-1">{p.specLine}</p>
         <div className="flex items-center gap-2 mt-1">
