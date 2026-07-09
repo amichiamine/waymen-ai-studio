@@ -221,6 +221,7 @@ export type AdminState = {
   auditLogs: AuditLog[];
   siteSettings: SiteSettings;
   shippingSettings: ShippingSettings;
+  siteContent: SiteContent;
 };
 
 export const ARRAY_KEYS = [
