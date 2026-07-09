@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, PackageCheck, PackageX, AlertTriangle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { products } from "@/data/products";
+import { useAdminState } from "@/lib/admin-store";
 
 const LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
 const VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
@@ -13,6 +13,7 @@ const VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
 };
 
 export default function AdminInventory() {
+  const { products } = useAdminState();
   const [q, setQ] = useState("");
 
   const kpi = useMemo(() => ({
@@ -20,12 +21,12 @@ export default function AdminInventory() {
     inStock: products.filter((p) => p.stock === "in").length,
     low: products.filter((p) => p.stock === "low").length,
     out: products.filter((p) => p.stock === "out").length,
-  }), []);
+  }), [products]);
 
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase();
     return products.filter((p) => !n || p.name.toLowerCase().includes(n) || p.brand.toLowerCase().includes(n));
-  }, [q]);
+  }, [q, products]);
 
   const cards = [
     { label: "Total produits", value: kpi.total, Icon: PackageCheck, tone: "text-primary bg-primary/10" },

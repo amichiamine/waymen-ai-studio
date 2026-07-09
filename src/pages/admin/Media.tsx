@@ -1,10 +1,10 @@
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
-import { products } from "@/data/products";
+import { useAdminState } from "@/lib/admin-store";
 
 export default function AdminMedia() {
-  // Bibliothèque déduite des images produits (phase 1, sans backend upload).
+  const { products } = useAdminState();
   const media = products.map((p) => ({ src: p.image, name: p.name, id: p.id }));
 
   return (

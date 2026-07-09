@@ -60,6 +60,9 @@ import AdminReviews from "@/pages/admin/Reviews";
 import AdminSettings from "@/pages/admin/Settings";
 import AdminShipping from "@/pages/admin/Shipping";
 import AdminUsers from "@/pages/admin/Users";
+import AdminCategoryForm from "@/pages/admin/CategoryForm";
+import AdminBrandForm from "@/pages/admin/BrandForm";
+import AdminReset from "@/pages/admin/Reset";
 
 function RequireAuth() {
   const { user, loading } = useAuth();
@@ -163,8 +166,13 @@ export default function App() {
             <Route path="blog" element={<AdminBlogList />} />
             <Route path="blog/new" element={<AdminBlogNew />} />
             <Route path="blog/:id" element={<AdminBlogEdit />} />
-            <Route path="brands" element={<AdminBrands />} />
             <Route path="categories" element={<AdminCategories />} />
+            <Route path="categories/new" element={<AdminCategoryForm mode="new" />} />
+            <Route path="categories/:slug" element={<AdminCategoryForm mode="edit" />} />
+            <Route path="brands" element={<AdminBrands />} />
+            <Route path="brands/new" element={<AdminBrandForm mode="new" />} />
+            <Route path="brands/:id" element={<AdminBrandForm mode="edit" />} />
+            <Route path="reset" element={<AdminReset />} />
             <Route path="coupons" element={<AdminCoupons />} />
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="inventory" element={<AdminInventory />} />

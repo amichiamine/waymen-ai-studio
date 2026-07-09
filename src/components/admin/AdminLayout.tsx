@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, Tags, Star, FileText,
   Settings as SettingsIcon, BarChart3, Image as ImageIcon, Bell, ShieldCheck,
   ScrollText, Warehouse, Truck, CreditCard, PieChart, Ticket, Boxes,
-  Menu, ChevronRight, Home,
+  Menu, ChevronRight, Home, RotateCcw,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
@@ -55,6 +55,7 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
       { to: "/admin/notifications", label: "Notifications", Icon: Bell },
       { to: "/admin/audit", label: "Journal d'audit", Icon: ScrollText },
       { to: "/admin/settings", label: "Paramètres", Icon: SettingsIcon },
+      { to: "/admin/reset", label: "Réinitialiser", Icon: RotateCcw },
     ],
   },
 ];
