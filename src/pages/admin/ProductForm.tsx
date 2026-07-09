@@ -3,9 +3,9 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,16 +14,21 @@ import { Trash2, ArrowLeft } from "lucide-react";
 import { useAdminState, upsertProduct, deleteProduct, getProduct } from "@/lib/admin-store";
 import type { Product, Category } from "@/data/products";
 
+const imageField = z.string().trim().min(1, "Image requise").max(2048).refine(
+  (v) => v.startsWith("/") || v.startsWith("http://") || v.startsWith("https://") || v.startsWith("data:") || /^[\w./-]+\.(png|jpe?g|webp|svg|gif|avif)$/i.test(v),
+  { message: "URL ou chemin d'image invalide" },
+);
+
 const schema = z.object({
-  id: z.string().trim().min(2, "ID trop court").max(60).regex(/^[a-z0-9-]+$/i, "Utilisez lettres, chiffres et tirets"),
-  name: z.string().trim().min(2, "Nom requis").max(120),
+  id: z.string().trim().min(2, "ID trop court (min 2 caractères)").max(60, "ID trop long (max 60)").regex(/^[a-z0-9-]+$/, "Lettres minuscules, chiffres et tirets uniquement"),
+  name: z.string().trim().min(2, "Nom requis (min 2 caractères)").max(120, "Nom trop long"),
   brand: z.string().trim().min(1, "Marque requise").max(60),
-  category: z.enum(["laptops", "desktops", "builds", "phones"]),
-  specLine: z.string().trim().min(3, "Ligne de specs requise").max(200),
-  price: z.coerce.number().int().min(0, "Prix invalide").max(100_000_000),
-  oldPrice: z.coerce.number().int().min(0).max(100_000_000).optional().or(z.literal("")),
+  category: z.enum(["laptops", "desktops", "builds", "phones"], { message: "Catégorie invalide" }),
+  specLine: z.string().trim().min(3, "Ligne de specs requise (min 3 caractères)").max(200),
+  price: z.coerce.number({ message: "Prix requis" }).int("Nombre entier requis").min(1, "Le prix doit être supérieur à 0").max(100_000_000, "Prix trop élevé"),
+  oldPrice: z.union([z.literal(""), z.coerce.number().int().min(0).max(100_000_000)]).optional(),
   stock: z.enum(["in", "low", "out"]),
-  image: z.string().trim().min(1, "Image requise").max(2048),
+  image: imageField,
   bestSeller: z.boolean().optional(),
   sale: z.boolean().optional(),
   cpu: z.string().max(120).optional(),
@@ -32,8 +37,16 @@ const schema = z.object({
   gpu: z.string().max(120).optional(),
   screen: z.string().max(80).optional(),
   os: z.string().max(80).optional(),
+}).superRefine((v, ctx) => {
+  if (v.oldPrice !== "" && v.oldPrice !== undefined && Number(v.oldPrice) > 0 && Number(v.oldPrice) <= v.price) {
+    ctx.addIssue({ code: "custom", path: ["oldPrice"], message: "L'ancien prix doit être supérieur au prix actuel" });
+  }
+  if (v.sale && (v.oldPrice === "" || v.oldPrice === undefined || Number(v.oldPrice) <= v.price)) {
+    ctx.addIssue({ code: "custom", path: ["oldPrice"], message: "Renseigner un ancien prix > prix pour activer la promotion" });
+  }
 });
 type FormValues = z.infer<typeof schema>;
+
 
 function emptyForm(): FormValues {
   return {
