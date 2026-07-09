@@ -418,4 +418,41 @@ export function clearData(key: keyof AdminState) {
   emit();
 }
 
+// ---------- Export / Import JSON ----------
+export function exportState(): string {
+  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), state }, null, 2);
+}
+
+export function importState(json: string): { ok: true; counts: Record<keyof AdminState, number> } | { ok: false; error: string } {
+  let parsed: unknown;
+  try { parsed = JSON.parse(json); } catch { return { ok: false, error: "JSON invalide" }; }
+  if (!parsed || typeof parsed !== "object") return { ok: false, error: "Format inattendu" };
+  const raw = (parsed as { state?: unknown }).state ?? parsed;
+  const keys: (keyof AdminState)[] = ["products", "categories", "brands", "orders", "customers", "coupons", "reviews", "users"];
+  const obj = raw as Partial<AdminState>;
+  for (const k of keys) {
+    if (obj[k] !== undefined && !Array.isArray(obj[k])) return { ok: false, error: `Champ « ${k} » invalide (tableau attendu)` };
+  }
+  const seed = seedAll();
+  const next: AdminState = {
+    products: obj.products ?? seed.products,
+    categories: obj.categories ?? seed.categories,
+    brands: obj.brands ?? seed.brands,
+    orders: obj.orders ?? seed.orders,
+    customers: obj.customers ?? seed.customers,
+    coupons: obj.coupons ?? seed.coupons,
+    reviews: obj.reviews ?? seed.reviews,
+    users: obj.users ?? seed.users,
+  };
+  state = next;
+  emit();
+  const counts = {
+    products: next.products.length, categories: next.categories.length, brands: next.brands.length,
+    orders: next.orders.length, customers: next.customers.length, coupons: next.coupons.length,
+    reviews: next.reviews.length, users: next.users.length,
+  } as Record<keyof AdminState, number>;
+  return { ok: true, counts };
+}
+
 export { CAT_LABELS };
+
