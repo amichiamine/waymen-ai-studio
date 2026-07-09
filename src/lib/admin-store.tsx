@@ -578,11 +578,25 @@ function seedNotifications(): AdminNotification[] {
   ];
 }
 
+function defaultQtyForLabel(stock: Product["stock"]): number {
+  return stock === "in" ? 50 : stock === "low" ? 3 : 0;
+}
+
+export function resolveStockLevel(qty: number, settings: Pick<SiteSettings, "lowStockThreshold" | "outOfStockThreshold">): Product["stock"] {
+  if (qty <= settings.outOfStockThreshold) return "out";
+  if (qty <= settings.lowStockThreshold) return "low";
+  return "in";
+}
+
 function seedAll(): AdminState {
   const customers = seedCustomers();
   const orders = seedOrders(customers);
   return {
-    products: seedProducts.map((p) => ({ ...p, specs: { ...p.specs } })),
+    products: seedProducts.map((p) => ({
+      ...p,
+      specs: { ...p.specs },
+      stockQty: p.stockQty ?? defaultQtyForLabel(p.stock),
+    })),
     categories: seedCategories(),
     brands: seedBrands(),
     orders,
@@ -606,6 +620,7 @@ function seedAll(): AdminState {
     shippingSettings: seedShippingSettings(),
   };
 }
+
 
 // ---------- Store ----------
 const LS_KEY = "katech.admin.state.v1";
