@@ -217,6 +217,8 @@ export default function App() {
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="content" element={<AdminContent />} />
+            <Route path="messages" element={<AdminMessages />} />
+            <Route path="subscribers" element={<AdminSubscribers />} />
             <Route path="shipping" element={<AdminShipping />} />
             <Route path="users" element={<AdminUsers />} />
           </Route>
