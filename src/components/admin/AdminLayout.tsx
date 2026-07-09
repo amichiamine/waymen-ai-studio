@@ -17,7 +17,7 @@ import {
   type AdminUserRole,
 } from "@/lib/admin-store";
 
-type Item = { to: string; label: string; Icon: typeof LayoutDashboard };
+type Item = { to: string; label: string; Icon: typeof LayoutDashboard; minRole?: AdminUserRole };
 
 export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
   {
@@ -25,7 +25,7 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { to: "/admin", label: "Tableau de bord", Icon: LayoutDashboard },
       { to: "/admin/analytics", label: "Analytique", Icon: BarChart3 },
-      { to: "/admin/reports", label: "Rapports", Icon: PieChart },
+      { to: "/admin/reports", label: "Rapports", Icon: PieChart, minRole: "editor" },
     ],
   },
   {
@@ -34,8 +34,8 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
       { to: "/admin/products", label: "Produits", Icon: Package },
       { to: "/admin/categories", label: "Catégories", Icon: Boxes },
       { to: "/admin/brands", label: "Marques", Icon: Tags },
-      { to: "/admin/inventory", label: "Stock", Icon: Warehouse },
-      { to: "/admin/media", label: "Médias", Icon: ImageIcon },
+      { to: "/admin/inventory", label: "Stock", Icon: Warehouse, minRole: "editor" },
+      { to: "/admin/media", label: "Médias", Icon: ImageIcon, minRole: "editor" },
     ],
   },
   {
@@ -43,29 +43,34 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { to: "/admin/orders", label: "Commandes", Icon: ShoppingBag },
       { to: "/admin/customers", label: "Clients", Icon: Users },
-      { to: "/admin/coupons", label: "Coupons", Icon: Ticket },
-      { to: "/admin/shipping", label: "Livraison", Icon: Truck },
-      { to: "/admin/payments", label: "Paiements", Icon: CreditCard },
+      { to: "/admin/coupons", label: "Coupons", Icon: Ticket, minRole: "editor" },
+      { to: "/admin/shipping", label: "Livraison", Icon: Truck, minRole: "admin" },
+      { to: "/admin/payments", label: "Paiements", Icon: CreditCard, minRole: "admin" },
     ],
   },
   {
     title: "Contenu",
     items: [
-      { to: "/admin/blog", label: "Blog", Icon: FileText },
-      { to: "/admin/reviews", label: "Avis", Icon: Star },
+      { to: "/admin/blog", label: "Blog", Icon: FileText, minRole: "editor" },
+      { to: "/admin/reviews", label: "Avis", Icon: Star, minRole: "editor" },
     ],
   },
   {
     title: "Système",
     items: [
-      { to: "/admin/users", label: "Utilisateurs & rôles", Icon: ShieldCheck },
+      { to: "/admin/users", label: "Utilisateurs & rôles", Icon: ShieldCheck, minRole: "admin" },
       { to: "/admin/notifications", label: "Notifications", Icon: Bell },
-      { to: "/admin/audit", label: "Journal d'audit", Icon: ScrollText },
-      { to: "/admin/settings", label: "Paramètres", Icon: SettingsIcon },
-      { to: "/admin/reset", label: "Réinitialiser", Icon: RotateCcw },
+      { to: "/admin/audit", label: "Journal d'audit", Icon: ScrollText, minRole: "admin" },
+      { to: "/admin/settings", label: "Paramètres", Icon: SettingsIcon, minRole: "admin" },
+      { to: "/admin/reset", label: "Réinitialiser", Icon: RotateCcw, minRole: "owner" },
     ],
   },
 ];
+
+const ROLE_RANK: Record<AdminUserRole, number> = { owner: 4, admin: 3, editor: 2, viewer: 1 };
+function canSee(item: Item, role: AdminUserRole): boolean {
+  return !item.minRole || ROLE_RANK[role] >= ROLE_RANK[item.minRole];
+}
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useLocation().pathname;
