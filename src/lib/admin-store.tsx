@@ -793,6 +793,13 @@ export function createOrder(input: {
     customers,
   };
   emit();
+  addNotification({
+    title: `Nouvelle commande ${order.id}`,
+    body: `${order.customerName} — ${order.total.toLocaleString("fr-FR")} DA`,
+    level: "success",
+    link: `/admin/orders/${order.id}`,
+  });
+  logAudit(`commande ${order.id}`, "order.create", `${order.items.length} article(s) · ${order.total} DA`, order.customerEmail);
   return order;
 }
 
