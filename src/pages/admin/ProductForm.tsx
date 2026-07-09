@@ -71,7 +71,8 @@ function toForm(p: Product): FormValues {
 
 
 export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
-  const { products, categories, brands } = useAdminState();
+  const { products, categories, brands, mediaAssets } = useAdminState();
+
   const nav = useNavigate();
   const { id } = useParams();
   const existing = mode === "edit" && id ? getProduct(id) : undefined;
@@ -264,6 +265,20 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             <Card>
               <CardHeader><CardTitle>Image</CardTitle></CardHeader>
               <CardContent className="space-y-3">
+                {mediaAssets.length > 0 && (
+                  <div>
+                    <Label>Depuis la médiathèque</Label>
+                    <Select value="" onValueChange={(src) => update("image", src)}>
+                      <SelectTrigger><SelectValue placeholder="Choisir un média…" /></SelectTrigger>
+                      <SelectContent>
+                        {mediaAssets.map((m) => (
+                          <SelectItem key={m.id} value={m.src}>{m.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <Label>URL ou chemin</Label>
                 <Input value={v.image} onChange={(e) => update("image", e.target.value)} placeholder="URL ou chemin de l'image" />
                 {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
                 {v.image && (
@@ -273,6 +288,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 )}
               </CardContent>
             </Card>
+
           </div>
         </div>
         <div className="flex justify-end gap-2">
