@@ -700,6 +700,12 @@ function saveState(s: AdminState) {
 }
 
 let state: AdminState = loadState();
+// Sync currency formatter with persisted settings so `formatDZD` reflects admin config app-wide.
+setCurrencyConfig({
+  symbol: state.siteSettings.currencySymbol,
+  position: state.siteSettings.currencyPosition,
+  thousandSeparator: state.siteSettings.currencyThousandSeparator,
+});
 const listeners = new Set<() => void>();
 
 function emit() {
