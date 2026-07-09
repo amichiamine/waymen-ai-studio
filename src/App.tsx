@@ -8,7 +8,7 @@ import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/auth";
 import { useAdminRoles } from "@/lib/admin-auth";
-import { AdminSidebar, AdminMobileNav, AdminBreadcrumbs } from "@/components/admin/AdminLayout";
+import { AdminSidebar, AdminMobileNav, AdminBreadcrumbs, AdminRoleSwitcher, AdminNotificationBell } from "@/components/admin/AdminLayout";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Home } from "lucide-react";
@@ -120,7 +120,9 @@ function AdminLayout() {
         <header className="flex h-14 items-center gap-3 border-b border-border/60 bg-card/50 px-3 lg:px-8">
           <AdminMobileNav />
           <AdminBreadcrumbs />
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2">
+            <AdminRoleSwitcher />
+            <AdminNotificationBell />
             <Link to="/" className="text-sm text-primary hover:underline">← Boutique</Link>
           </div>
         </header>

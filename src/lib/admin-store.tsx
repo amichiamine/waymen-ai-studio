@@ -163,6 +163,36 @@ export type StockMovement = {
   createdAt: string;
 };
 
+export type MediaAsset = {
+  id: string;
+  name: string;
+  src: string; // data:URL or absolute URL
+  mime: string;
+  size: number; // bytes
+  createdAt: string;
+  tag?: string;
+};
+
+export type NotificationLevel = "info" | "success" | "warning" | "error";
+export type AdminNotification = {
+  id: string;
+  title: string;
+  body: string;
+  level: NotificationLevel;
+  read: boolean;
+  createdAt: string;
+  link?: string;
+};
+
+export type AuditLog = {
+  id: string;
+  actor: string; // user email or "système"
+  action: string; // e.g. "order.status.update"
+  entity: string; // e.g. "order KA100234"
+  detail?: string;
+  createdAt: string;
+};
+
 export type AdminState = {
   products: Product[];
   categories: AdminCategory[];
@@ -181,6 +211,9 @@ export type AdminState = {
   shippingRates: ShippingRate[];
   paymentMethods: PaymentMethod[];
   stockMovements: StockMovement[];
+  mediaAssets: MediaAsset[];
+  notifications: AdminNotification[];
+  auditLogs: AuditLog[];
   siteSettings: SiteSettings;
   shippingSettings: ShippingSettings;
 };
@@ -190,6 +223,7 @@ export const ARRAY_KEYS = [
   "reviews", "users", "blogPosts", "homeReviews", "tickerMessages",
   "marqueeBrands", "aboutValues", "builderSteps",
   "shippingRates", "paymentMethods", "stockMovements",
+  "mediaAssets", "notifications", "auditLogs",
 ] as const;
 export type ArrayKey = typeof ARRAY_KEYS[number];
 
@@ -525,6 +559,17 @@ function seedPaymentMethods(): PaymentMethod[] {
 }
 
 function seedStockMovements(): StockMovement[] { return []; }
+function seedMediaAssets(): MediaAsset[] { return []; }
+function seedAuditLogs(): AuditLog[] { return []; }
+function seedNotifications(): AdminNotification[] {
+  const now = Date.now();
+  const d = (h: number) => new Date(now - h * 3600000).toISOString();
+  return [
+    { id: "notif_1", title: "Bienvenue sur KA Tech Admin", body: "Explorez le tableau de bord pour un aperçu complet.", level: "info", read: false, createdAt: d(0.5) },
+    { id: "notif_2", title: "Stock faible", body: "Plusieurs produits ont un stock faible — pensez à réapprovisionner.", level: "warning", read: false, createdAt: d(6), link: "/admin/inventory" },
+    { id: "notif_3", title: "Nouveau coupon actif", body: "Le code BIENVENUE10 est actif jusqu'au mois prochain.", level: "success", read: true, createdAt: d(48), link: "/admin/coupons" },
+  ];
+}
 
 function seedAll(): AdminState {
   const customers = seedCustomers();
@@ -547,6 +592,9 @@ function seedAll(): AdminState {
     shippingRates: seedShippingRates(),
     paymentMethods: seedPaymentMethods(),
     stockMovements: seedStockMovements(),
+    mediaAssets: seedMediaAssets(),
+    notifications: seedNotifications(),
+    auditLogs: seedAuditLogs(),
     siteSettings: seedSiteSettings(),
     shippingSettings: seedShippingSettings(),
   };
@@ -584,6 +632,9 @@ function loadState(): AdminState {
       shippingRates: parsed.shippingRates ?? seed.shippingRates,
       paymentMethods: parsed.paymentMethods ?? seed.paymentMethods,
       stockMovements: parsed.stockMovements ?? seed.stockMovements,
+      mediaAssets: parsed.mediaAssets ?? seed.mediaAssets,
+      notifications: parsed.notifications ?? seed.notifications,
+      auditLogs: parsed.auditLogs ?? seed.auditLogs,
       siteSettings: { ...seed.siteSettings, ...(parsed.siteSettings ?? {}) },
       shippingSettings: { ...seed.shippingSettings, ...(parsed.shippingSettings ?? {}) },
     };
@@ -662,6 +713,15 @@ export function updateOrderStatus(id: string, status: OrderStatus, note?: string
     const ev: OrderStatusEvent = { status, at: new Date().toISOString(), note };
     return { ...o, status, statusHistory: [...(o.statusHistory ?? []), ev] };
   }));
+  logAudit(`commande ${id}`, "order.status.update", status);
+  if (status === "cancelled" || status === "delivered") {
+    addNotification({
+      title: status === "delivered" ? `Commande ${id} livrée` : `Commande ${id} annulée`,
+      body: note ?? "",
+      level: status === "delivered" ? "success" : "warning",
+      link: `/admin/orders/${id}`,
+    });
+  }
 }
 
 export function createOrder(input: {
@@ -733,6 +793,13 @@ export function createOrder(input: {
     customers,
   };
   emit();
+  addNotification({
+    title: `Nouvelle commande ${order.id}`,
+    body: `${order.customerName} — ${order.total.toLocaleString("fr-FR")} DA`,
+    level: "success",
+    link: `/admin/orders/${order.id}`,
+  });
+  logAudit(`commande ${order.id}`, "order.create", `${order.items.length} article(s) · ${order.total} DA`, order.customerEmail);
   return order;
 }
 
@@ -865,10 +932,85 @@ export function adjustStock(productId: string, delta: number, reason: string) {
   };
   state = { ...state, stockMovements: [mov, ...state.stockMovements] };
   emit();
+  logAudit(`produit ${p.name}`, "stock.adjust", `${delta > 0 ? "+" : ""}${delta} — ${reason}`);
 }
 export function setProductStockLevel(productId: string, level: Product["stock"]) {
   set("products", state.products.map((p) => p.id === productId ? { ...p, stock: level } : p));
 }
+
+// Media
+export function upsertMediaAsset(m: MediaAsset) {
+  const list = state.mediaAssets.slice();
+  const idx = list.findIndex((x) => x.id === m.id);
+  if (idx >= 0) list[idx] = m; else list.unshift(m);
+  set("mediaAssets", list);
+  logAudit("média", m.id === list[idx]?.id ? "media.update" : "media.upload", m.name);
+}
+export function deleteMediaAsset(id: string) {
+  const m = state.mediaAssets.find((x) => x.id === id);
+  set("mediaAssets", state.mediaAssets.filter((x) => x.id !== id));
+  if (m) logAudit("média", "media.delete", m.name);
+}
+export function renameMediaAsset(id: string, name: string, tag?: string) {
+  set("mediaAssets", state.mediaAssets.map((x) => x.id === id ? { ...x, name, tag } : x));
+}
+
+// Notifications
+export function addNotification(n: Omit<AdminNotification, "id" | "createdAt" | "read"> & { read?: boolean }) {
+  const notif: AdminNotification = {
+    id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    createdAt: new Date().toISOString(),
+    read: n.read ?? false,
+    title: n.title, body: n.body, level: n.level, link: n.link,
+  };
+  set("notifications", [notif, ...state.notifications]);
+}
+export function updateNotification(id: string, patch: Partial<AdminNotification>) {
+  set("notifications", state.notifications.map((n) => n.id === id ? { ...n, ...patch } : n));
+}
+export function deleteNotification(id: string) {
+  set("notifications", state.notifications.filter((n) => n.id !== id));
+}
+export function markAllNotificationsRead() {
+  set("notifications", state.notifications.map((n) => ({ ...n, read: true })));
+}
+
+// Audit
+export function logAudit(entity: string, action: string, detail?: string, actor?: string) {
+  const log: AuditLog = {
+    id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    actor: actor ?? getActiveActor(),
+    action,
+    entity,
+    detail,
+    createdAt: new Date().toISOString(),
+  };
+  state = { ...state, auditLogs: [log, ...state.auditLogs].slice(0, 500) };
+  emit();
+}
+
+// ---------- Active admin role (demo) ----------
+const ROLE_KEY = "katech.admin.activeRole.v1";
+export function getActiveRole(): AdminUserRole {
+  if (typeof window === "undefined") return "owner";
+  const v = window.localStorage.getItem(ROLE_KEY) as AdminUserRole | null;
+  return v ?? "owner";
+}
+export function setActiveRole(role: AdminUserRole) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(ROLE_KEY, role);
+  window.dispatchEvent(new Event("katech:role-changed"));
+}
+export function getActiveActor(): string {
+  const role = getActiveRole();
+  const u = state.users.find((x) => x.role === role) ?? state.users[0];
+  return u?.email ?? "système";
+}
+const ROLE_RANK: Record<AdminUserRole, number> = { owner: 4, admin: 3, editor: 2, viewer: 1 };
+export function canPerform(min: AdminUserRole, role: AdminUserRole = getActiveRole()): boolean {
+  return ROLE_RANK[role] >= ROLE_RANK[min];
+}
+
 
 // ---------- Reset ----------
 export type ResetKey = ArrayKey | "siteSettings" | "shippingSettings" | "all";
@@ -928,6 +1070,9 @@ export function importState(json: string): { ok: true; counts: Record<string, nu
     shippingRates: obj.shippingRates ?? seed.shippingRates,
     paymentMethods: obj.paymentMethods ?? seed.paymentMethods,
     stockMovements: obj.stockMovements ?? seed.stockMovements,
+    mediaAssets: obj.mediaAssets ?? seed.mediaAssets,
+    notifications: obj.notifications ?? seed.notifications,
+    auditLogs: obj.auditLogs ?? seed.auditLogs,
     siteSettings: { ...seed.siteSettings, ...(obj.siteSettings ?? {}) },
     shippingSettings: { ...seed.shippingSettings, ...(obj.shippingSettings ?? {}) },
   };

@@ -32,6 +32,9 @@ const ROWS: Row[] = [
   { key: "shippingRates", label: "Tarifs de livraison", description: "Tarifs par wilaya (domicile / bureau)." },
   { key: "paymentMethods", label: "Moyens de paiement", description: "Modes de paiement proposés au checkout." },
   { key: "stockMovements", label: "Mouvements de stock", description: "Journal des ajustements de stock." },
+  { key: "mediaAssets", label: "Médiathèque", description: "Images téléversées disponibles pour le contenu." },
+  { key: "notifications", label: "Notifications", description: "Notifications internes de l'admin." },
+  { key: "auditLogs", label: "Journal d'audit", description: "Actions effectuées dans l'admin." },
   { key: "siteSettings", label: "Paramètres du site", description: "Nom, contact, WhatsApp, adresse, horaires." },
   { key: "shippingSettings", label: "Réglages livraison", description: "Franco de port, activation des modes de livraison." },
 ];
@@ -65,6 +68,9 @@ export default function AdminReset() {
     shippingRates: state.shippingRates.length,
     paymentMethods: state.paymentMethods.length,
     stockMovements: state.stockMovements.length,
+    mediaAssets: state.mediaAssets.length,
+    notifications: state.notifications.length,
+    auditLogs: state.auditLogs.length,
     siteSettings: 1,
     shippingSettings: 1,
   };
