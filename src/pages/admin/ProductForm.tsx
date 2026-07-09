@@ -159,7 +159,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         <div className="flex gap-2">
           <Link to="/admin/products"><Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" />Retour</Button></Link>
           {mode === "edit" && existing && (
-            <Button variant="destructive" onClick={onDelete}><Trash2 className="mr-2 h-4 w-4" />Supprimer</Button>
+            <Button variant="destructive" onClick={() => setConfirmOpen(true)}><Trash2 className="mr-2 h-4 w-4" />Supprimer</Button>
           )}
         </div>
       }
