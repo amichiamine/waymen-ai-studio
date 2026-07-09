@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Package, ShoppingBag, Users, DollarSign, Tag, Layers, AlertTriangle, Star, MessageSquare, Ticket } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 export default function AdminDashboard() {
   const { products, categories, brands, orders, customers, coupons, reviews } = useAdminState();
@@ -43,6 +44,22 @@ export default function AdminDashboard() {
 
   const recentOrders = useMemo(() => orders.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5), [orders]);
 
+  const trend = useMemo(() => {
+    const map = new Map<string, { date: string; revenue: number }>();
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today.getTime() - i * 86400000);
+      const key = d.toISOString().slice(0, 10);
+      map.set(key, { date: key.slice(5), revenue: 0 });
+    }
+    for (const o of orders) {
+      if (o.status === "cancelled") continue;
+      const row = map.get(o.createdAt.slice(0, 10));
+      if (row) row.revenue += o.total;
+    }
+    return Array.from(map.values());
+  }, [orders]);
+
   return (
     <AdminPageShell title="Tableau de bord" description="Vue d'ensemble de la boutique KA Tech (données locales).">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -60,6 +77,30 @@ export default function AdminDashboard() {
           </Link>
         ))}
       </div>
+
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="mb-4 text-sm font-semibold">Chiffre d'affaires — 30 derniers jours</h2>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trend}>
+                <defs>
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(v: number) => formatDZD(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#revGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
