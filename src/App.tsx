@@ -168,6 +168,12 @@ export default function App() {
             <Route path="blog/:id" element={<AdminBlogEdit />} />
             <Route path="brands" element={<AdminBrands />} />
             <Route path="categories" element={<AdminCategories />} />
+            <Route path="categories/new" element={<AdminCategoryForm mode="new" />} />
+            <Route path="categories/:slug" element={<AdminCategoryForm mode="edit" />} />
+            <Route path="brands" element={<AdminBrands />} />
+            <Route path="brands/new" element={<AdminBrandForm mode="new" />} />
+            <Route path="brands/:id" element={<AdminBrandForm mode="edit" />} />
+            <Route path="reset" element={<AdminReset />} />
             <Route path="coupons" element={<AdminCoupons />} />
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="inventory" element={<AdminInventory />} />
