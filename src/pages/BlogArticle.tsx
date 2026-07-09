@@ -24,6 +24,16 @@ export default function BlogArticle() {
 
   return (
     <article className="container mx-auto max-w-3xl px-4 py-10">
+      <Helmet>
+        <title>{`${post.title} — KA Tech`}</title>
+        <meta name="description" content={post.excerpt} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.excerpt} />
+        <meta property="og:url" content={canonical} />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       <Link to="/blog" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="mr-1.5 h-4 w-4" /> Retour au blog
       </Link>
