@@ -634,8 +634,11 @@ function loadState(): AdminState {
     const seed = seedAll();
     const products = (parsed.products ?? seed.products).map((p) => {
       const src = seed.products.find((sp) => sp.id === p.id);
-      return src ? { ...p, image: p.image?.startsWith("/") || p.image?.startsWith("http") || p.image?.startsWith("data:") ? p.image : src.image } : p;
+      const image = src ? (p.image?.startsWith("/") || p.image?.startsWith("http") || p.image?.startsWith("data:") ? p.image : src.image) : p.image;
+      const stockQty = typeof p.stockQty === "number" ? p.stockQty : defaultQtyForLabel(p.stock);
+      return { ...p, image, stockQty };
     });
+
     return {
       products,
       categories: parsed.categories ?? seed.categories,
