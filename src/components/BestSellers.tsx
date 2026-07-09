@@ -3,6 +3,7 @@ import { SectionHead } from "./CategoryCards";
 import { useProducts } from "@/lib/useProducts";
 import { useAdminState } from "@/lib/admin-store";
 import { useMemo } from "react";
+import { Reveal } from "@/components/Reveal";
 
 export function BestSellers() {
   const products = useProducts();
@@ -11,10 +12,13 @@ export function BestSellers() {
   const list = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
   return (
     <section className="container-page py-16">
-      <SectionHead title={cfg.title} sub={cfg.subtitle} />
+      <Reveal variant="up"><SectionHead title={cfg.title} sub={cfg.subtitle} /></Reveal>
       <div className="mt-8 grid gap-5 grid-cols-2 lg:grid-cols-4">
-        {list.map((p) => <ProductCard key={p.id} p={p} />)}
+        {list.map((p, i) => (
+          <Reveal key={p.id} variant="up" delay={i * 80}><ProductCard p={p} /></Reveal>
+        ))}
       </div>
     </section>
   );
 }
+
