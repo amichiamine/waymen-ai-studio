@@ -73,6 +73,8 @@ export default function AdminReset() {
     mediaAssets: state.mediaAssets.length,
     notifications: state.notifications.length,
     auditLogs: state.auditLogs.length,
+    messages: state.messages.length,
+    subscribers: state.subscribers.length,
     siteSettings: 1,
     shippingSettings: 1,
   };
