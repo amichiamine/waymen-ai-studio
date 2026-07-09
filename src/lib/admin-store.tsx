@@ -719,11 +719,18 @@ export function createOrder(input: {
   const coupons = input.couponCode
     ? state.coupons.map((c) => c.code === input.couponCode ? { ...c, usageCount: c.usageCount + 1 } : c)
     : state.coupons;
+  // Update customer aggregates if matched by id or email
+  const customers = state.customers.map((c) => {
+    const match = (input.customerId && c.id === input.customerId) || (input.customerEmail && c.email.toLowerCase() === input.customerEmail.toLowerCase());
+    if (!match) return c;
+    return { ...c, ordersCount: c.ordersCount + 1, totalSpent: c.totalSpent + order.total };
+  });
   state = {
     ...state,
     orders: [order, ...state.orders],
     stockMovements: [...movements, ...state.stockMovements],
     coupons,
+    customers,
   };
   emit();
   return order;
