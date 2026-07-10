@@ -49,19 +49,23 @@ function LangTabs({ lang, onChange }: { lang: LangCode; onChange: (l: LangCode) 
 }
 
 function LInput({
-  value, onChange, placeholder,
+  value, onChange, placeholder, label,
 }: {
   value: Localized<string> | undefined;
   onChange: (next: Localized<string>) => void;
   placeholder?: string;
+  label?: string;
 }) {
   const [lang, setLang] = useState<LangCode>("fr");
   const map = toMap(value);
+  const isAr = lang === "ar";
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5" dir={isAr ? "rtl" : "ltr"}>
+      {label && <Label className={cn(isAr && "text-right block")}>{label}</Label>}
       <LangTabs lang={lang} onChange={setLang} />
       <Input
-        dir={lang === "ar" ? "rtl" : "ltr"}
+        dir={isAr ? "rtl" : "ltr"}
+        className={cn(isAr && "text-right")}
         value={map[lang]}
         placeholder={placeholder}
         onChange={(e) => onChange({ ...map, [lang]: e.target.value })}
@@ -71,26 +75,31 @@ function LInput({
 }
 
 function LTextarea({
-  value, onChange, rows,
+  value, onChange, rows, label,
 }: {
   value: Localized<string> | undefined;
   onChange: (next: Localized<string>) => void;
   rows?: number;
+  label?: string;
 }) {
   const [lang, setLang] = useState<LangCode>("fr");
   const map = toMap(value);
+  const isAr = lang === "ar";
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5" dir={isAr ? "rtl" : "ltr"}>
+      {label && <Label className={cn(isAr && "text-right block")}>{label}</Label>}
       <LangTabs lang={lang} onChange={setLang} />
       <Textarea
         rows={rows}
-        dir={lang === "ar" ? "rtl" : "ltr"}
+        dir={isAr ? "rtl" : "ltr"}
+        className={cn(isAr && "text-right")}
         value={map[lang]}
         onChange={(e) => onChange({ ...map, [lang]: e.target.value })}
       />
     </div>
   );
 }
+
 
 
 const SECTIONS: { key: keyof SiteContent; label: string }[] = [
