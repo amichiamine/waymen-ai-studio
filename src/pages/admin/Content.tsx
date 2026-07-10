@@ -163,9 +163,9 @@ function HeroForm({ value, onChange }: { value: SiteContent["hero"]; onChange: (
       <Field label="Titre ligne 1"><LInput value={v.title1} onChange={(next) => onChange({ ...v, title1: next })} /></Field>
       <Field label="Titre ligne 2 (accent)"><LInput value={v.title2} onChange={(next) => onChange({ ...v, title2: next })} /></Field>
       <div className="md:col-span-2"><Field label="Sous-titre"><LTextarea rows={2} value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field></div>
-      <Field label="CTA principal — libellé"><Input value={S(v.primaryCta.label)} onChange={(e) => onChange({ ...v, primaryCta: { ...v.primaryCta, label: e.target.value } })} /></Field>
+      <Field label="CTA principal — libellé"><LInput value={v.primaryCta.label} onChange={(next) => onChange({ ...v, primaryCta: { ...v.primaryCta, label: next } })} /></Field>
       <Field label="CTA principal — lien"><Input value={v.primaryCta.href} onChange={(e) => onChange({ ...v, primaryCta: { ...v.primaryCta, href: e.target.value } })} /></Field>
-      <Field label="CTA secondaire — libellé"><Input value={S(v.secondaryCta.label)} onChange={(e) => onChange({ ...v, secondaryCta: { ...v.secondaryCta, label: e.target.value } })} /></Field>
+      <Field label="CTA secondaire — libellé"><LInput value={v.secondaryCta.label} onChange={(next) => onChange({ ...v, secondaryCta: { ...v.secondaryCta, label: next } })} /></Field>
       <Field label="CTA secondaire — lien"><Input value={v.secondaryCta.href} onChange={(e) => onChange({ ...v, secondaryCta: { ...v.secondaryCta, href: e.target.value } })} /></Field>
       <div className="md:col-span-2 space-y-2">
         <div className="flex items-center justify-between"><Label>Indicateurs (KPI)</Label>
@@ -176,8 +176,8 @@ function HeroForm({ value, onChange }: { value: SiteContent["hero"]; onChange: (
         {v.kpis.map((k, i) => (
           <div key={k.id} className="grid gap-2 md:grid-cols-[160px_1fr_1fr_auto] items-end rounded-md border p-3">
             <Field label="Icône"><IconPicker value={k.icon} onChange={(n) => { const kpis = v.kpis.slice(); kpis[i] = { ...k, icon: n }; onChange({ ...v, kpis }); }} /></Field>
-            <Field label="Valeur"><Input value={S(k.value)} onChange={(e) => { const kpis = v.kpis.slice(); kpis[i] = { ...k, value: e.target.value }; onChange({ ...v, kpis }); }} /></Field>
-            <Field label="Libellé"><Input value={S(k.label)} onChange={(e) => { const kpis = v.kpis.slice(); kpis[i] = { ...k, label: e.target.value }; onChange({ ...v, kpis }); }} /></Field>
+            <Field label="Valeur"><LInput value={k.value} onChange={(next) => { const kpis = v.kpis.slice(); kpis[i] = { ...k, value: next }; onChange({ ...v, kpis }); }} /></Field>
+            <Field label="Libellé"><LInput value={k.label} onChange={(next) => { const kpis = v.kpis.slice(); kpis[i] = { ...k, label: next }; onChange({ ...v, kpis }); }} /></Field>
             <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, kpis: v.kpis.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
           </div>
         ))}
@@ -236,7 +236,7 @@ function FeaturedTabsForm({ value, onChange }: { value: SiteContent["featuredTab
               <SelectContent>{cats.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
-          <Field label="Libellé"><Input value={S(tb.label)} onChange={(e) => { const tabs = v.tabs.slice(); tabs[i] = { ...tb, label: e.target.value }; onChange({ ...v, tabs }); }} /></Field>
+          <Field label="Libellé"><LInput value={tb.label} onChange={(next) => { const tabs = v.tabs.slice(); tabs[i] = { ...tb, label: next }; onChange({ ...v, tabs }); }} /></Field>
           <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, tabs: v.tabs.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       ))}
@@ -263,8 +263,8 @@ function WhyUsForm({ value, onChange }: { value: SiteContent["whyUs"]; onChange:
       {v.items.map((it, i) => (
         <div key={it.id} className="grid gap-2 md:grid-cols-[160px_1fr_2fr_auto] items-end rounded-md border p-3">
           <Field label="Icône"><IconPicker value={it.icon} onChange={(n) => { const items = v.items.slice(); items[i] = { ...it, icon: n }; onChange({ ...v, items }); }} /></Field>
-          <Field label="Titre"><Input value={S(it.title)} onChange={(e) => { const items = v.items.slice(); items[i] = { ...it, title: e.target.value }; onChange({ ...v, items }); }} /></Field>
-          <Field label="Description"><Input value={S(it.description)} onChange={(e) => { const items = v.items.slice(); items[i] = { ...it, description: e.target.value }; onChange({ ...v, items }); }} /></Field>
+          <Field label="Titre"><LInput value={it.title} onChange={(next) => { const items = v.items.slice(); items[i] = { ...it, title: next }; onChange({ ...v, items }); }} /></Field>
+          <Field label="Description"><LInput value={it.description} onChange={(next) => { const items = v.items.slice(); items[i] = { ...it, description: next }; onChange({ ...v, items }); }} /></Field>
           <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       ))}
@@ -280,7 +280,7 @@ function BuilderTeaserForm({ value, onChange }: { value: SiteContent["builderTea
         <Field label="Badge"><LInput value={v.badge} onChange={(next) => onChange({ ...v, badge: next })} /></Field>
         <Field label="Titre"><LInput value={v.title} onChange={(next) => onChange({ ...v, title: next })} /></Field>
         <div className="md:col-span-2"><Field label="Sous-titre"><LTextarea rows={2} value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field></div>
-        <Field label="CTA — libellé"><Input value={S(v.cta.label)} onChange={(e) => onChange({ ...v, cta: { ...v.cta, label: e.target.value } })} /></Field>
+        <Field label="CTA — libellé"><LInput value={v.cta.label} onChange={(next) => onChange({ ...v, cta: { ...v.cta, label: next } })} /></Field>
         <Field label="CTA — lien"><Input value={v.cta.href} onChange={(e) => onChange({ ...v, cta: { ...v.cta, href: e.target.value } })} /></Field>
       </div>
       <div className="flex items-center justify-between">
@@ -292,8 +292,8 @@ function BuilderTeaserForm({ value, onChange }: { value: SiteContent["builderTea
       {v.items.map((it, i) => (
         <div key={it.id} className="grid gap-2 md:grid-cols-[160px_1fr_1fr_auto] items-end rounded-md border p-3">
           <Field label="Icône"><IconPicker value={it.icon} onChange={(n) => { const items = v.items.slice(); items[i] = { ...it, icon: n }; onChange({ ...v, items }); }} /></Field>
-          <Field label="Titre"><Input value={S(it.title)} onChange={(e) => { const items = v.items.slice(); items[i] = { ...it, title: e.target.value }; onChange({ ...v, items }); }} /></Field>
-          <Field label="Sous-titre"><Input value={S(it.subtitle)} onChange={(e) => { const items = v.items.slice(); items[i] = { ...it, subtitle: e.target.value }; onChange({ ...v, items }); }} /></Field>
+          <Field label="Titre"><LInput value={it.title} onChange={(next) => { const items = v.items.slice(); items[i] = { ...it, title: next }; onChange({ ...v, items }); }} /></Field>
+          <Field label="Sous-titre"><LInput value={it.subtitle} onChange={(next) => { const items = v.items.slice(); items[i] = { ...it, subtitle: next }; onChange({ ...v, items }); }} /></Field>
           <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       ))}
@@ -339,7 +339,7 @@ function MobileBarForm({ value, onChange }: { value: SiteContent["mobileBottomBa
       {v.items.map((it, i) => (
         <div key={it.id} className="grid gap-2 md:grid-cols-[140px_1fr_1fr_auto_auto_auto] items-end rounded-md border p-3">
           <Field label="Icône"><IconPicker value={it.icon} onChange={(n) => { const items = v.items.slice(); items[i] = { ...it, icon: n }; onChange({ ...v, items }); }} /></Field>
-          <Field label="Libellé"><Input value={S(it.label)} onChange={(e) => { const items = v.items.slice(); items[i] = { ...it, label: e.target.value }; onChange({ ...v, items }); }} /></Field>
+          <Field label="Libellé"><LInput value={it.label} onChange={(next) => { const items = v.items.slice(); items[i] = { ...it, label: next }; onChange({ ...v, items }); }} /></Field>
           <Field label="Lien"><Input value={it.href} onChange={(e) => { const items = v.items.slice(); items[i] = { ...it, href: e.target.value }; onChange({ ...v, items }); }} /></Field>
           <div className="flex flex-col items-center gap-1"><Label className="text-xs">Primaire</Label><Switch checked={!!it.primary} onCheckedChange={(c) => { const items = v.items.slice(); items[i] = { ...it, primary: c }; onChange({ ...v, items }); }} /></div>
           <div className="flex flex-col items-center gap-1"><Label className="text-xs">Auth</Label><Switch checked={!!it.requiresAuth} onCheckedChange={(c) => { const items = v.items.slice(); items[i] = { ...it, requiresAuth: c }; onChange({ ...v, items }); }} /></div>
@@ -361,16 +361,16 @@ function HeaderForm({ value, onChange }: { value: SiteContent["header"]; onChang
           <div><p className="text-sm font-medium">Afficher la barre de recherche</p></div>
           <Switch checked={v.showSearch} onCheckedChange={(c) => onChange({ ...v, showSearch: c })} />
         </div>
-        <Field label="Bouton principal — libellé"><Input value={S(v.builderCta.label)} onChange={(e) => onChange({ ...v, builderCta: { ...v.builderCta, label: e.target.value } })} /></Field>
+        <Field label="Bouton principal — libellé"><LInput value={v.builderCta.label} onChange={(next) => onChange({ ...v, builderCta: { ...v.builderCta, label: next } })} /></Field>
         <Field label="Bouton principal — lien"><Input value={v.builderCta.href} onChange={(e) => onChange({ ...v, builderCta: { ...v.builderCta, href: e.target.value } })} /></Field>
       </div>
 
       <div className="rounded-md border p-3 space-y-3">
         <p className="text-sm font-semibold">Menu « Catégories »</p>
         <div className="grid gap-3 md:grid-cols-2">
-          <Field label="Libellé du menu"><Input value={S(v.categoryMenu.label)} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, label: e.target.value } })} /></Field>
-          <Field label="Titre à l'intérieur du menu"><Input value={S(v.categoryMenu.title)} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, title: e.target.value } })} /></Field>
-          <Field label="Libellé « voir toutes »"><Input value={S(v.categoryMenu.browseLabel)} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseLabel: e.target.value } })} /></Field>
+          <Field label="Libellé du menu"><LInput value={v.categoryMenu.label} onChange={(next) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, label: next } })} /></Field>
+          <Field label="Titre à l'intérieur du menu"><LInput value={v.categoryMenu.title} onChange={(next) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, title: next } })} /></Field>
+          <Field label="Libellé « voir toutes »"><LInput value={v.categoryMenu.browseLabel} onChange={(next) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseLabel: next } })} /></Field>
           <Field label="Lien « voir toutes »"><Input value={v.categoryMenu.browseHref} onChange={(e) => onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseHref: e.target.value } })} /></Field>
         </div>
         <div className="flex items-center justify-between">
@@ -382,7 +382,7 @@ function HeaderForm({ value, onChange }: { value: SiteContent["header"]; onChang
         {v.categoryMenu.items.map((it, i) => (
           <div key={it.id} className="grid gap-2 md:grid-cols-[140px_1fr_1fr_auto_auto] items-end rounded-md border p-3">
             <Field label="Icône"><IconPicker value={(it.icon ?? "tag") as IconName} onChange={(n) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, icon: n }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></Field>
-            <Field label="Libellé"><Input value={S(it.label)} onChange={(e) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, label: e.target.value }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></Field>
+            <Field label="Libellé"><LInput value={it.label} onChange={(next) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, label: next }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></Field>
             <Field label="Lien"><Input value={it.href} onChange={(e) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, href: e.target.value }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></Field>
             <div className="flex flex-col items-center gap-1"><Label className="text-xs">Accent</Label><Switch checked={!!it.accent} onCheckedChange={(c) => { const items = v.categoryMenu.items.slice(); items[i] = { ...it, accent: c }; onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } }); }} /></div>
             <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, categoryMenu: { ...v.categoryMenu, items: v.categoryMenu.items.filter((_, j) => j !== i) } })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -399,7 +399,7 @@ function HeaderForm({ value, onChange }: { value: SiteContent["header"]; onChang
         </div>
         {v.primaryNav.map((n, i) => (
           <div key={n.id} className="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end rounded-md border p-3">
-            <Field label="Libellé"><Input value={S(n.label)} onChange={(e) => { const arr = v.primaryNav.slice(); arr[i] = { ...n, label: e.target.value }; onChange({ ...v, primaryNav: arr }); }} /></Field>
+            <Field label="Libellé"><LInput value={n.label} onChange={(next) => { const arr = v.primaryNav.slice(); arr[i] = { ...n, label: next }; onChange({ ...v, primaryNav: arr }); }} /></Field>
             <Field label="Lien"><Input value={n.href} onChange={(e) => { const arr = v.primaryNav.slice(); arr[i] = { ...n, href: e.target.value }; onChange({ ...v, primaryNav: arr }); }} /></Field>
             <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, primaryNav: v.primaryNav.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
           </div>
@@ -432,7 +432,7 @@ function FooterForm({ value, onChange }: { value: SiteContent["footer"]; onChang
         {v.socials.map((s, i) => (
           <div key={s.id} className="grid gap-2 md:grid-cols-[160px_1fr_1fr_auto] items-end rounded-md border p-3">
             <Field label="Icône"><IconPicker value={s.icon} onChange={(n) => { const arr = v.socials.slice(); arr[i] = { ...s, icon: n }; onChange({ ...v, socials: arr }); }} /></Field>
-            <Field label="Libellé (a11y)"><Input value={S(s.label)} onChange={(e) => { const arr = v.socials.slice(); arr[i] = { ...s, label: e.target.value }; onChange({ ...v, socials: arr }); }} /></Field>
+            <Field label="Libellé (a11y)"><LInput value={s.label} onChange={(next) => { const arr = v.socials.slice(); arr[i] = { ...s, label: next }; onChange({ ...v, socials: arr }); }} /></Field>
             <Field label="Lien"><Input value={s.href} onChange={(e) => { const arr = v.socials.slice(); arr[i] = { ...s, href: e.target.value }; onChange({ ...v, socials: arr }); }} /></Field>
             <Button type="button" size="icon" variant="ghost" onClick={() => onChange({ ...v, socials: v.socials.filter((_, j) => j !== i) })} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
           </div>
@@ -449,7 +449,7 @@ function FooterForm({ value, onChange }: { value: SiteContent["footer"]; onChang
         {v.columns.map((col, ci) => (
           <div key={col.id} className="rounded-md border p-3 space-y-2">
             <div className="flex items-end gap-2">
-              <div className="flex-1"><Field label="Titre de la colonne"><Input value={S(col.title)} onChange={(e) => { const arr = v.columns.slice(); arr[ci] = { ...col, title: e.target.value }; onChange({ ...v, columns: arr }); }} /></Field></div>
+              <div className="flex-1"><Field label="Titre de la colonne"><LInput value={col.title} onChange={(next) => { const arr = v.columns.slice(); arr[ci] = { ...col, title: next }; onChange({ ...v, columns: arr }); }} /></Field></div>
               <Button type="button" size="sm" variant="outline" onClick={() => { const arr = v.columns.slice(); arr[ci] = { ...col, links: [...col.links, { id: `fl_${Date.now()}`, label: "Nouveau", href: "/" }] }; onChange({ ...v, columns: arr }); }}>
                 <Plus className="mr-2 h-4 w-4" /> Lien
               </Button>
@@ -457,7 +457,7 @@ function FooterForm({ value, onChange }: { value: SiteContent["footer"]; onChang
             </div>
             {col.links.map((l, li) => (
               <div key={l.id} className="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end rounded-md border p-2">
-                <Field label="Libellé"><Input value={S(l.label)} onChange={(e) => { const arr = v.columns.slice(); const links = col.links.slice(); links[li] = { ...l, label: e.target.value }; arr[ci] = { ...col, links }; onChange({ ...v, columns: arr }); }} /></Field>
+                <Field label="Libellé"><LInput value={l.label} onChange={(next) => { const arr = v.columns.slice(); const links = col.links.slice(); links[li] = { ...l, label: next }; arr[ci] = { ...col, links }; onChange({ ...v, columns: arr }); }} /></Field>
                 <Field label="Lien"><Input value={l.href} onChange={(e) => { const arr = v.columns.slice(); const links = col.links.slice(); links[li] = { ...l, href: e.target.value }; arr[ci] = { ...col, links }; onChange({ ...v, columns: arr }); }} /></Field>
                 <Button type="button" size="icon" variant="ghost" onClick={() => { const arr = v.columns.slice(); arr[ci] = { ...col, links: col.links.filter((_, j) => j !== li) }; onChange({ ...v, columns: arr }); }} aria-label="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
               </div>
