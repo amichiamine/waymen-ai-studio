@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 import { ThemeToggle, LanguageToggle } from "./ThemeLanguageToggles";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
@@ -27,6 +27,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const { t } = useI18n();
+  const L = useLocalize();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRoles();
   const { cartCount, favorites } = useStore();
