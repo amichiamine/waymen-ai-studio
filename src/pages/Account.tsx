@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LogOut, User, Package, MapPin, Plus, Trash2, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const fmt = (n: number) => n.toLocaleString("fr-FR") + " DA";
+const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
 
 const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary", processing: "outline", shipped: "outline", delivered: "default", cancelled: "destructive",

@@ -23,7 +23,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertTriangle, Tag, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const fmt = (n: number) => n.toLocaleString("fr-FR") + " DA";
+const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
 const COUPON_KEY = "ka-cart-coupon";
 
 export default function Checkout() {

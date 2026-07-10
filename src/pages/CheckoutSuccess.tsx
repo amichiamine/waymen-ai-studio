@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAdminState } from "@/lib/admin-store";
 import { useI18n } from "@/lib/i18n";
 
-const fmt = (n: number) => n.toLocaleString("fr-FR") + " DA";
+const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
 
 export default function CheckoutSuccess() {
   const { t } = useI18n();

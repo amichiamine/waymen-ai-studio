@@ -17,7 +17,7 @@ import {
   type ShippingRate,
 } from "@/lib/admin-store";
 
-const fmt = (n: number) => n.toLocaleString("fr-FR") + " DA";
+const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
 
 export default function AdminShipping() {
   const { shippingRates, shippingSettings } = useAdminState();
