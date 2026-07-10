@@ -57,12 +57,12 @@ export function Header() {
         <nav className="hidden lg:flex items-center gap-1 text-sm">
           <DropdownMenu>
             <DropdownMenuTrigger className="group px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-card data-[state=open]:text-foreground data-[state=open]:bg-card transition-colors inline-flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-              {H.categoryMenu.label}
+              {L(H.categoryMenu.label)}
               <ChevronDown className="size-3.5 transition-transform group-data-[state=open]:rotate-180" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" sideOffset={8} className="w-64 p-1.5">
               <DropdownMenuLabel className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-                {H.categoryMenu.title}
+                {L(H.categoryMenu.title)}
               </DropdownMenuLabel>
               {H.categoryMenu.items.map((n) => {
                 const Icon = getIcon(n.icon);
@@ -75,7 +75,7 @@ export function Header() {
                     <span className={`inline-flex items-center justify-center size-8 rounded-md border border-border bg-card text-muted-foreground transition-colors group-hover/item:border-primary/40 group-hover/item:text-primary group-focus/item:border-primary/40 group-focus/item:text-primary ${n.accent ? "border-primary/40 text-primary bg-primary/10" : ""}`}>
                       <Icon className="size-4" />
                     </span>
-                    <span className="flex-1">{n.label}</span>
+                    <span className="flex-1">{L(n.label)}</span>
                     <ArrowRight className="size-3.5 opacity-0 -translate-x-1 transition-all group-hover/item:opacity-100 group-hover/item:translate-x-0 group-focus/item:opacity-100 group-focus/item:translate-x-0 text-primary" />
                   </DropdownMenuItem>
                 );
@@ -85,7 +85,7 @@ export function Header() {
                 onSelect={() => navigate(H.categoryMenu.browseHref)}
                 className="justify-center px-2 py-2 rounded-md cursor-pointer text-xs font-semibold text-primary focus:bg-primary/10 focus:text-primary data-[highlighted]:bg-primary/10"
               >
-                {H.categoryMenu.browseLabel}
+                {L(H.categoryMenu.browseLabel)}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -95,7 +95,7 @@ export function Header() {
               to={n.href}
               className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
             >
-              {n.label}
+              {L(n.label)}
             </Link>
           ))}
         </nav>
@@ -112,7 +112,7 @@ export function Header() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={H.searchPlaceholder}
+            placeholder={L(H.searchPlaceholder) ?? ""}
             className="w-full bg-card border border-border rounded-lg pl-10 pr-4 h-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
           />
         </form>
@@ -125,7 +125,7 @@ export function Header() {
             className="hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 shadow-[var(--shadow-glow)] transition-all active:scale-95"
           >
             <Wrench className="size-4" />
-            <span>{H.builderCta.label}</span>
+            <span>{L(H.builderCta.label)}</span>
           </Link>
           <LanguageToggle />
           <ThemeToggle />
@@ -204,7 +204,7 @@ export function Header() {
                 </button>
               </div>
               <nav className="flex flex-col gap-1">
-                <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">{H.categoryMenu.label}</div>
+                <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">{L(H.categoryMenu.label)}</div>
                 {H.categoryMenu.items.map((n) => {
                   const Icon = getIcon(n.icon);
                   return (
@@ -215,7 +215,7 @@ export function Header() {
                       className="px-4 py-2.5 rounded-md text-foreground hover:bg-card text-sm inline-flex items-center gap-2"
                     >
                       <Icon className="size-4" />
-                      {n.label}
+                      {L(n.label)}
                     </Link>
                   );
                 })}
@@ -227,7 +227,7 @@ export function Header() {
                     onClick={() => setOpen(false)}
                     className="px-4 py-3 rounded-md text-foreground hover:bg-card text-base"
                   >
-                    {n.label}
+                    {L(n.label)}
                   </Link>
                 ))}
               </nav>
