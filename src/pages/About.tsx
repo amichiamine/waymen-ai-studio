@@ -44,8 +44,8 @@ export default function About() {
             return (
               <div key={v.id} className="rounded-xl border border-border bg-card p-6">
                 <Icon className="size-8 text-primary mb-3" />
-                <h3 className="font-bold text-lg mb-1">{(L(v.title as never) as string) ?? ""}</h3>
-                <p className="text-sm text-muted-foreground">{(L(v.description as never) as string) ?? ""}</p>
+                <h3 className="font-bold text-lg mb-1">{(L(v.title as never) as unknown as string) ?? ""}</h3>
+                <p className="text-sm text-muted-foreground">{(L(v.description as never) as unknown as string) ?? ""}</p>
               </div>
             );
           })}
