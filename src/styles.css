@@ -184,25 +184,43 @@ html, body { overflow-x: hidden; max-width: 100%; }
   text-shadow: 0 0 24px oklch(0.62 0.19 255 / 0.6);
 }
 
+/* Marquee: GPU-friendly, minimize repaints.
+   - Animate only `transform` (compositor-only, no layout/paint).
+   - `contain: content` isolates the subtree so repaints don't leak.
+   - Drop permanent `will-change` (keeps a layer alive and costs memory);
+     translateZ hint promotes to its own layer without the memory cost. */
 @keyframes marquee {
   from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+.marquee-viewport {
+  overflow: hidden;
+  contain: content;
+  isolation: isolate;
+  transform: translateZ(0);
 }
 .animate-marquee,
 .animate-marquee-fast,
 .animate-marquee-slow {
-  will-change: transform;
+  transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  transform: translateZ(0);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-name: marquee;
 }
-.animate-marquee { animation: marquee 60s linear infinite; }
-.animate-marquee-fast { animation: marquee 36s linear infinite; }
-.animate-marquee-slow { animation: marquee 90s linear infinite; }
+.animate-marquee      { animation-duration: 60s; }
+.animate-marquee-fast { animation-duration: 36s; }
+.animate-marquee-slow { animation-duration: 90s; }
 .pause-on-hover:hover { animation-play-state: paused; }
 @media (min-width: 768px) {
-  .animate-marquee { animation-duration: 30s; }
-  .animate-marquee-fast { animation-duration: 18s; }
-  .animate-marquee-slow { animation-duration: 40s; }
+  .animate-marquee      { animation-duration: 40s; }
+  .animate-marquee-fast { animation-duration: 22s; }
+  .animate-marquee-slow { animation-duration: 55s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-fast,
+  .animate-marquee-slow { animation: none !important; }
 }
 
 @keyframes shake {
@@ -257,9 +275,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 /* Android/mobile perf: avoid GPU-heavy animations/filters that can flicker in WebView */
 @media (max-width: 767px) {
-  .animate-marquee,
-  .animate-marquee-fast,
-  .animate-marquee-slow,
   .animate-fade-in-up,
   .animate-page-in,
   .animate-bounce-in,
@@ -274,12 +289,10 @@ html, body { overflow-x: hidden; max-width: 100%; }
     animation: none !important;
   }
 
+  /* keep marquee running on mobile but ensure no stale will-change layer */
   .animate-marquee,
   .animate-marquee-fast,
-  .animate-marquee-slow {
-    transform: none !important;
-    will-change: auto !important;
-  }
+  .animate-marquee-slow { will-change: auto !important; }
 
   .reveal,
   .reveal-up,
