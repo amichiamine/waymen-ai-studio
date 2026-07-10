@@ -65,7 +65,7 @@ export function FlashSale() {
 
 function TimeBox({ v, l }: { v: number; l: string }) {
   return (
-    <div className="min-w-[56px] sm:min-w-[72px] md:min-w-[88px] rounded-xl bg-white/5 border border-white/10 p-2 sm:p-3 text-center backdrop-blur">
+    <div className="min-w-[56px] sm:min-w-[72px] md:min-w-[88px] rounded-xl bg-white/5 border border-white/10 p-2 sm:p-3 text-center">
       <div className="text-2xl sm:text-4xl md:text-6xl font-bold tabular-nums text-white leading-none">{String(v).padStart(2, "0")}</div>
       <div className="text-[9px] sm:text-[10px] md:text-xs mt-1 sm:mt-2 tracking-widest text-white/60 uppercase">{l}</div>
     </div>
