@@ -1,16 +1,18 @@
 import { Star } from "lucide-react";
 import { useAdminState } from "@/lib/admin-store";
 import { Reveal } from "@/components/Reveal";
+import { useLocalize } from "@/lib/i18n";
 
 export function Reviews() {
   const { homeReviews, products, siteContent } = useAdminState();
+  const L = useLocalize();
   if (homeReviews.length === 0) return null;
   const cfg = siteContent.reviews;
   return (
     <section className="container-page py-16">
       <Reveal variant="up">
-        <h2 className="text-3xl font-bold mb-2">{cfg.title}</h2>
-        <p className="text-muted-foreground mb-10">{cfg.subtitle}</p>
+        <h2 className="text-3xl font-bold mb-2">{L(cfg.title)}</h2>
+        <p className="text-muted-foreground mb-10">{L(cfg.subtitle)}</p>
       </Reveal>
       <div dir="ltr" className="relative overflow-hidden -mx-4 px-4 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
         <div className="flex w-max gap-5 animate-marquee-slow pause-on-hover motion-reduce:animate-none">

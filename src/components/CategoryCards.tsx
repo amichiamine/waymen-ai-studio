@@ -7,6 +7,7 @@ import phonesImg from "@/assets/cat-phones.jpg";
 import { useAdminState } from "@/lib/admin-store";
 import type { Category } from "@/data/products";
 import { Reveal } from "@/components/Reveal";
+import { useLocalize } from "@/lib/i18n";
 
 const DEFAULT_IMG: Record<string, string> = {
   laptops: laptopsImg, desktops: desktopsImg, builds: buildsImg, phones: phonesImg,
@@ -18,10 +19,11 @@ const DEFAULT_ICON: Record<string, LucideIcon> = {
 export function CategoryCards() {
   const { siteContent, categories } = useAdminState();
   const cfg = siteContent.categories;
+  const L = useLocalize();
   const cats = categories.filter((c) => (["laptops","desktops","builds","phones"] as Category[]).includes(c.slug as Category));
   return (
     <section className="container-page py-16 lg:py-20">
-      <Reveal variant="up"><SectionHead title={cfg.title} sub={cfg.subtitle} /></Reveal>
+      <Reveal variant="up"><SectionHead title={L(cfg.title) ?? ""} sub={L(cfg.subtitle) ?? ""} /></Reveal>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mt-10">
         {cats.map((c, i) => {
           const Icon = DEFAULT_ICON[c.slug] ?? Laptop;
@@ -36,7 +38,7 @@ export function CategoryCards() {
                   <h3 className="text-xl font-bold text-foreground">{c.label}</h3>
                   <p className="text-sm text-muted-foreground">{c.description}</p>
                   <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary mt-2">
-                    {cfg.browseLabel} <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1.5" />
+                    {L(cfg.browseLabel)} <ArrowRight className="size-4 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1.5 rtl:group-hover:-translate-x-1.5" />
                   </span>
                 </div>
               </Link>

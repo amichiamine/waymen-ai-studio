@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Flame, ArrowRight } from "lucide-react";
 import { ProductCard } from "./ProductCard";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 import { useProducts } from "@/lib/useProducts";
 import { useAdminState } from "@/lib/admin-store";
 import { Reveal } from "@/components/Reveal";
@@ -28,6 +28,7 @@ export function FlashSale() {
   const [target] = useState(() => Date.now() + Math.max(1, cfg.countdownHours) * 3_600_000);
   const t = useCountdown(target);
   const { t: tr } = useI18n();
+  const L = useLocalize();
   const products = useProducts();
   const sale = useMemo(() => products.filter((p) => p.sale).slice(0, 4), [products]);
 
@@ -37,9 +38,9 @@ export function FlashSale() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between items-center text-center lg:text-start gap-6 mb-8">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-destructive/20 text-destructive text-xs font-semibold">
-              <Flame className="size-3.5" /> {cfg.badge}
+              <Flame className="size-3.5" /> {L(cfg.badge)}
             </span>
-            <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">{cfg.title}</h2>
+            <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">{L(cfg.title)}</h2>
           </div>
           <div className="flex items-center justify-center gap-1.5 md:gap-2 mx-auto lg:mx-0" dir="ltr">
             <TimeBox v={t.d} l={tr("flash.days")} /><Sep />
@@ -55,7 +56,7 @@ export function FlashSale() {
         </div>
         <div className="mt-8 flex justify-center">
           <Link to={cfg.viewAllHref} className="group inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white transition-all duration-300 hover:bg-white/10 hover:-translate-y-0.5 hover:border-white/40">
-            {cfg.viewAllLabel} <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+            {L(cfg.viewAllLabel)} <ArrowRight className="size-4 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
           </Link>
         </div>
       </div>

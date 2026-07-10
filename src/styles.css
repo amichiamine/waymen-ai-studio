@@ -180,6 +180,85 @@
 
 html, body { overflow-x: hidden; max-width: 100%; }
 
+/* ================================================================
+ * RTL / bidirectional overrides
+ * Tailwind's `ml-*`, `mr-*`, `pl-*`, `pr-*`, `left-*`, `right-*`,
+ * `text-left`, `text-right` and `space-x-*` are physical (not logical),
+ * so they don't auto-flip in `dir="rtl"`. Prefer `ms-*`/`me-*`,
+ * `ps-*`/`pe-*`, `start-*`/`end-*`, `text-start`/`text-end`, and
+ * `space-x-reverse` in new code. The overrides below flip the most
+ * common physical utilities so existing markup stays visually correct
+ * in Arabic without a full component-by-component audit.
+ * ================================================================ */
+[dir="rtl"] .text-left  { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
+
+/* Horizontal spacing: flip space-x-* between children. */
+[dir="rtl"] :is(.space-x-1,.space-x-1\.5,.space-x-2,.space-x-2\.5,.space-x-3,.space-x-4,.space-x-5,.space-x-6,.space-x-8,.space-x-10,.space-x-12) > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+/* Absolute positioning: swap left/right when only one is set. */
+[dir="rtl"] .left-0  { left: auto;  right: 0; }
+[dir="rtl"] .right-0 { right: auto; left: 0; }
+[dir="rtl"] .left-1  { left: auto;  right: 0.25rem; }
+[dir="rtl"] .right-1 { right: auto; left: 0.25rem; }
+[dir="rtl"] .left-2  { left: auto;  right: 0.5rem; }
+[dir="rtl"] .right-2 { right: auto; left: 0.5rem; }
+[dir="rtl"] .left-3  { left: auto;  right: 0.75rem; }
+[dir="rtl"] .right-3 { right: auto; left: 0.75rem; }
+[dir="rtl"] .left-4  { left: auto;  right: 1rem; }
+[dir="rtl"] .right-4 { right: auto; left: 1rem; }
+[dir="rtl"] .left-6  { left: auto;  right: 1.5rem; }
+[dir="rtl"] .right-6 { right: auto; left: 1.5rem; }
+[dir="rtl"] .-left-1  { left: auto;  right: -0.25rem; }
+[dir="rtl"] .-right-1 { right: auto; left: -0.25rem; }
+[dir="rtl"] .-left-2  { left: auto;  right: -0.5rem; }
+[dir="rtl"] .-right-2 { right: auto; left: -0.5rem; }
+
+/* Physical margins → flip. */
+[dir="rtl"] .ml-1  { margin-left: 0; margin-right: 0.25rem; }
+[dir="rtl"] .mr-1  { margin-right: 0; margin-left: 0.25rem; }
+[dir="rtl"] .ml-2  { margin-left: 0; margin-right: 0.5rem; }
+[dir="rtl"] .mr-2  { margin-right: 0; margin-left: 0.5rem; }
+[dir="rtl"] .ml-3  { margin-left: 0; margin-right: 0.75rem; }
+[dir="rtl"] .mr-3  { margin-right: 0; margin-left: 0.75rem; }
+[dir="rtl"] .ml-4  { margin-left: 0; margin-right: 1rem; }
+[dir="rtl"] .mr-4  { margin-right: 0; margin-left: 1rem; }
+[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }
+
+/* Physical padding → flip. */
+[dir="rtl"] .pl-1  { padding-left: 0; padding-right: 0.25rem; }
+[dir="rtl"] .pr-1  { padding-right: 0; padding-left: 0.25rem; }
+[dir="rtl"] .pl-2  { padding-left: 0; padding-right: 0.5rem; }
+[dir="rtl"] .pr-2  { padding-right: 0; padding-left: 0.5rem; }
+[dir="rtl"] .pl-3  { padding-left: 0; padding-right: 0.75rem; }
+[dir="rtl"] .pr-3  { padding-right: 0; padding-left: 0.75rem; }
+[dir="rtl"] .pl-4  { padding-left: 0; padding-right: 1rem; }
+[dir="rtl"] .pr-4  { padding-right: 0; padding-left: 1rem; }
+[dir="rtl"] .pl-6  { padding-left: 0; padding-right: 1.5rem; }
+[dir="rtl"] .pr-6  { padding-right: 0; padding-left: 1.5rem; }
+[dir="rtl"] .pl-8  { padding-left: 0; padding-right: 2rem; }
+[dir="rtl"] .pr-8  { padding-right: 0; padding-left: 2rem; }
+[dir="rtl"] .pl-9  { padding-left: 0; padding-right: 2.25rem; }
+[dir="rtl"] .pr-9  { padding-right: 0; padding-left: 2.25rem; }
+[dir="rtl"] .pl-10 { padding-left: 0; padding-right: 2.5rem; }
+[dir="rtl"] .pr-10 { padding-right: 0; padding-left: 2.5rem; }
+
+/* Rounded corners for split-side inputs (input groups). */
+[dir="rtl"] .rounded-l-md  { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+[dir="rtl"] .rounded-r-md  { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+[dir="rtl"] .rounded-l-lg  { border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+[dir="rtl"] .rounded-r-lg  { border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
+
+/* Ensure numbers, dates, prices stay LTR inside Arabic paragraphs. */
+[dir="rtl"] .tabular-nums,
+[dir="rtl"] time,
+[dir="rtl"] code,
+[dir="rtl"] kbd { direction: ltr; unicode-bidi: isolate; }
+
+
 @utility text-glow {
   text-shadow: 0 0 24px oklch(0.62 0.19 255 / 0.6);
 }

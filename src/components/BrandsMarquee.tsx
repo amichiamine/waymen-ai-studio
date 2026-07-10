@@ -1,12 +1,14 @@
 import { useAdminState } from "@/lib/admin-store";
+import { useLocalize } from "@/lib/i18n";
 
 export function BrandsMarquee() {
   const { marqueeBrands, siteContent } = useAdminState();
+  const L = useLocalize();
   if (marqueeBrands.length === 0) return null;
   return (
     <section className="border-y border-border bg-card/30 overflow-hidden py-8">
       <div className="container-page mb-6">
-        <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">{siteContent.brandsMarquee.title}</p>
+        <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">{L(siteContent.brandsMarquee.title)}</p>
       </div>
       <div dir="ltr" className="group relative flex w-max animate-marquee-fast whitespace-nowrap pause-on-hover motion-reduce:animate-none">
         {[0, 1].map((half) => (

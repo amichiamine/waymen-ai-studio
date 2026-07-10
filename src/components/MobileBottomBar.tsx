@@ -3,11 +3,13 @@ import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { useAdminState } from "@/lib/admin-store";
 import { getIcon, type IconName } from "@/lib/site-content";
+import { useLocalize } from "@/lib/i18n";
 
 export function MobileBottomBar() {
   const { user } = useAuth();
   const { cartCount } = useStore();
   const { siteContent } = useAdminState();
+  const L = useLocalize();
   const items = siteContent.mobileBottomBar.items;
 
   return (
@@ -20,13 +22,14 @@ export function MobileBottomBar() {
         {items.map((it) => {
           const to = it.requiresAuth && !user ? "/auth" : it.href;
           const badge = it.href === "/cart" && user && cartCount > 0 ? cartCount : undefined;
+          const label = L(it.label) ?? "";
           if (it.primary) {
             const Icon = getIcon(it.icon);
             return (
               <li key={it.id} className="flex items-center justify-center">
                 <Link
                   to={to}
-                  aria-label={it.label}
+                  aria-label={label}
                   className="-mt-6 inline-flex flex-col items-center justify-center size-14 rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] active:scale-95 transition-transform"
                 >
                   <Icon className="size-6" />
@@ -34,7 +37,7 @@ export function MobileBottomBar() {
               </li>
             );
           }
-          return <Item key={it.id} to={to} icon={it.icon} label={it.label} badge={badge} />;
+          return <Item key={it.id} to={to} icon={it.icon} label={label} badge={badge} />;
         })}
       </ul>
     </nav>
@@ -52,7 +55,7 @@ function Item({ to, icon, label, badge }: { to: string; icon: IconName; label: s
         <span className="relative">
           <Icon className="size-5" />
           {badge !== undefined && (
-            <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-semibold inline-flex items-center justify-center">
+            <span className="absolute -top-1.5 -end-2 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-semibold inline-flex items-center justify-center">
               {badge}
             </span>
           )}

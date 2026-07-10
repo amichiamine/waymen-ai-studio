@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Lang = "fr" | "en" | "ar";
 export type Dir = "ltr" | "rtl";
@@ -659,3 +659,28 @@ export function useI18n() {
   if (!ctx) throw new Error("useI18n must be used inside I18nProvider");
   return ctx;
 }
+
+/** A translatable value: either a plain string (treated as FR) or a per-lang object. */
+export type Localized<T = string> = T | { fr: T; en?: T; ar?: T };
+
+/** Resolve a Localized value against a given language, with FR fallback. */
+export function localize<T>(value: Localized<T> | undefined, lang: Lang): T | undefined {
+  if (value === undefined || value === null) return value as T | undefined;
+  if (typeof value === "object" && value !== null && "fr" in (value as object)) {
+    const obj = value as { fr: T; en?: T; ar?: T };
+    return (obj[lang] ?? obj.fr) as T;
+  }
+  return value as T;
+}
+
+/**
+ * Hook returning a stable `L(v)` helper that reads any Localized<string> (or plain string)
+ * in the currently selected language, with automatic FR fallback.
+ * Also returns the current language for edge cases (number formatting, etc.).
+ */
+export function useLocalize() {
+  const { lang } = useI18n();
+  const L = useCallback(<T,>(v: Localized<T> | undefined): T | undefined => localize<T>(v, lang), [lang]);
+  return L;
+}
+
