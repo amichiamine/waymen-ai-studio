@@ -212,10 +212,10 @@ function IconPicker({ value, onChange }: { value: IconName; onChange: (n: IconNa
 }
 
 // ---- Forms ----
-function SimpleTitleForm({ value, onChange, titleLabel }: { value: { title: string }; onChange: (v: { title: string }) => void; titleLabel: string }) {
+function SimpleTitleForm({ value, onChange, titleLabel }: { value: { title: Localized<string> }; onChange: (v: { title: Localized<string> }) => void; titleLabel: string }) {
   return <Field label={titleLabel}><LInput value={value.title} onChange={(next) => onChange({ ...value, title: next })} /></Field>;
 }
-function TitleSubForm({ value, onChange }: { value: { title: string; subtitle: string }; onChange: (v: { title: string; subtitle: string }) => void }) {
+function TitleSubForm({ value, onChange }: { value: { title: Localized<string>; subtitle: Localized<string> }; onChange: (v: { title: Localized<string>; subtitle: Localized<string> }) => void }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
       <Field label="Titre"><LInput value={value.title} onChange={(next) => onChange({ ...value, title: next })} /></Field>
