@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ShieldCheck, Truck, Headphones, Award, Star, Heart } from "lucide-react";
 import { useAdminState, type AboutValue } from "@/lib/admin-store";
+import { useI18n, useLocalize } from "@/lib/i18n";
 
 const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
   shield: ShieldCheck, truck: Truck, headphones: Headphones,
@@ -10,38 +11,29 @@ const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
 
 export default function About() {
   const { aboutValues } = useAdminState();
+  const { t } = useI18n();
+  const L = useLocalize();
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
-        <title>À propos — KA Tech</title>
-        <meta name="description" content="KA Tech, boutique tech spécialisée en Algérie : garantie officielle, service client réactif, livraison partout." />
+        <title>{t("about.page.title")}</title>
+        <meta name="description" content={t("about.page.desc")} />
         <link rel="canonical" href="/about" />
       </Helmet>
       <header className="max-w-3xl mb-12">
-        <p className="text-sm font-medium text-primary mb-2">À propos</p>
-        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">KA Tech — La puissance tech entre vos mains</h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Nous sommes une boutique spécialisée dans les ordinateurs portables, les ordinateurs de bureau,
-          les configurations PC et les smartphones. Notre mission : apporter les dernières technologies
-          dans chaque foyer algérien, à des prix compétitifs et avec une vraie garantie.
-        </p>
+        <p className="text-sm font-medium text-primary mb-2">{t("about.kicker")}</p>
+        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">{t("about.title")}</h1>
+        <p className="mt-4 text-lg text-muted-foreground">{t("about.intro")}</p>
       </header>
 
       <section className="grid gap-10 lg:grid-cols-2 mb-16">
         <div>
-          <h2 className="text-2xl font-bold mb-3">Notre histoire</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            KA Tech est née d'une vision simple : rendre la technologie moderne accessible à tous.
-            Aujourd'hui, nous servons des milliers de clients partout en Algérie et continuons
-            d'enrichir notre catalogue avec les produits des meilleures marques mondiales.
-          </p>
+          <h2 className="text-2xl font-bold mb-3">{t("about.history.title")}</h2>
+          <p className="text-muted-foreground leading-relaxed">{t("about.history.body")}</p>
         </div>
         <div>
-          <h2 className="text-2xl font-bold mb-3">Notre mission</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Offrir à nos clients des produits fiables, un service après-vente irréprochable et un
-            véritable accompagnement technique pour une expérience d'achat simple et agréable.
-          </p>
+          <h2 className="text-2xl font-bold mb-3">{t("about.mission.title")}</h2>
+          <p className="text-muted-foreground leading-relaxed">{t("about.mission.body")}</p>
         </div>
       </section>
 
@@ -52,8 +44,8 @@ export default function About() {
             return (
               <div key={v.id} className="rounded-xl border border-border bg-card p-6">
                 <Icon className="size-8 text-primary mb-3" />
-                <h3 className="font-bold text-lg mb-1">{v.title}</h3>
-                <p className="text-sm text-muted-foreground">{v.description}</p>
+                <h3 className="font-bold text-lg mb-1">{(L(v.title as never) as unknown as string) ?? ""}</h3>
+                <p className="text-sm text-muted-foreground">{(L(v.description as never) as unknown as string) ?? ""}</p>
               </div>
             );
           })}
@@ -61,11 +53,11 @@ export default function About() {
       )}
 
       <section className="rounded-2xl border border-border bg-card p-8 lg:p-12 text-center">
-        <h2 className="text-2xl lg:text-3xl font-bold mb-3">Prêt à faire votre choix ?</h2>
-        <p className="text-muted-foreground mb-6">Découvrez notre gamme complète de produits tech.</p>
+        <h2 className="text-2xl lg:text-3xl font-bold mb-3">{t("about.cta.title")}</h2>
+        <p className="text-muted-foreground mb-6">{t("about.cta.sub")}</p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link to="/category" className="inline-flex items-center h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90">Parcourir les catégories</Link>
-          <Link to="/contact" className="inline-flex items-center h-11 px-6 rounded-md border border-border text-sm font-semibold hover:bg-card">Contactez-nous</Link>
+          <Link to="/category" className="inline-flex items-center h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90">{t("about.cta.browse")}</Link>
+          <Link to="/contact" className="inline-flex items-center h-11 px-6 rounded-md border border-border text-sm font-semibold hover:bg-card">{t("about.cta.contact")}</Link>
         </div>
       </section>
     </div>

@@ -9,12 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { validateCoupon, type Coupon } from "@/lib/admin-store";
+import { useI18n } from "@/lib/i18n";
 
 const fmt = (n: number) => n.toLocaleString("fr-FR") + " DA";
 const COUPON_KEY = "ka-cart-coupon";
 
 export default function Cart() {
-  useEffect(() => { document.title = `Mon panier — KA Tech`; }, []);
+  const { t } = useI18n();
+  useEffect(() => { document.title = t("cart.page.title"); }, [t]);
   const { cart, updateQty, removeFromCart } = useStore();
   const products = useProducts();
 
@@ -30,7 +32,6 @@ export default function Cart() {
 
   const subtotal = lines.reduce((a, l) => a + l.product.price * l.quantity, 0);
 
-  // Persist / restore coupon
   useEffect(() => {
     const stored = typeof window !== "undefined" ? window.localStorage.getItem(COUPON_KEY) : null;
     if (stored && subtotal > 0) {
@@ -41,14 +42,13 @@ export default function Cart() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-evaluate on subtotal change
   useEffect(() => {
     if (!applied) return;
     const v = validateCoupon(applied.coupon.code, subtotal);
     if (!v.ok) {
       setApplied(null);
       window.localStorage.removeItem(COUPON_KEY);
-      toast.error(`Coupon retiré : ${v.error}`);
+      toast.error(v.error);
     } else if (v.discount !== applied.discount) {
       setApplied({ coupon: v.coupon, discount: v.discount });
     }
@@ -62,7 +62,7 @@ export default function Cart() {
     setApplied({ coupon: v.coupon, discount: v.discount });
     window.localStorage.setItem(COUPON_KEY, v.coupon.code);
     setCouponInput("");
-    toast.success(`Coupon ${v.coupon.code} appliqué`);
+    toast.success(v.coupon.code);
   }
 
   function removeCoupon() {
@@ -76,13 +76,13 @@ export default function Cart() {
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-bold">Mon panier</h1>
+      <h1 className="mb-6 text-2xl font-bold">{t("cart.title")}</h1>
 
       {lines.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-md border border-dashed p-12 text-center">
           <ShoppingBag className="h-10 w-10 text-muted-foreground" />
-          <p className="text-muted-foreground">Votre panier est vide.</p>
-          <Link to="/category" className="text-primary hover:underline">Découvrir les produits</Link>
+          <p className="text-muted-foreground">{t("cart.empty")}</p>
+          <Link to="/category" className="text-primary hover:underline">{t("cart.discover")}</Link>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -97,10 +97,10 @@ export default function Cart() {
                     <div className="mt-1 flex items-center gap-2">
                       <p className="text-sm font-semibold text-primary">{fmt(l.product.price)}</p>
                       {l.product.stock === "out" && (
-                        <Badge variant="destructive" className="text-[10px]">Rupture</Badge>
+                        <Badge variant="destructive" className="text-[10px]">{t("cart.badge.out")}</Badge>
                       )}
                       {l.product.stock === "low" && (
-                        <Badge variant="secondary" className="text-[10px]">Stock faible</Badge>
+                        <Badge variant="secondary" className="text-[10px]">{t("cart.badge.low")}</Badge>
                       )}
                     </div>
                   </div>
@@ -123,7 +123,6 @@ export default function Cart() {
 
           <Card className="h-fit">
             <CardContent className="space-y-4 p-6">
-              {/* Coupon */}
               {applied ? (
                 <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
                   <div className="flex items-center gap-2">
@@ -139,7 +138,7 @@ export default function Cart() {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Code promo</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t("cart.coupon.label")}</label>
                   <div className="flex gap-2">
                     <Input
                       value={couponInput}
@@ -147,39 +146,39 @@ export default function Cart() {
                       placeholder="BIENVENUE10"
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); apply(); } }}
                     />
-                    <Button type="button" variant="outline" onClick={apply}>Appliquer</Button>
+                    <Button type="button" variant="outline" onClick={apply}>{t("cart.coupon.apply")}</Button>
                   </div>
                 </div>
               )}
 
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Sous-total</span>
+                <span className="text-muted-foreground">{t("cart.subtotal")}</span>
                 <span>{fmt(subtotal)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Remise</span>
+                  <span className="text-muted-foreground">{t("cart.discount")}</span>
                   <span className="text-primary">− {fmt(discount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Livraison</span>
-                <span>Calculée à l'étape suivante</span>
+                <span className="text-muted-foreground">{t("cart.shipping")}</span>
+                <span>{t("cart.shipping.calc")}</span>
               </div>
               <div className="flex justify-between border-t pt-3 text-base font-semibold">
-                <span>Total</span>
+                <span>{t("cart.total")}</span>
                 <span className="text-primary">{fmt(total)}</span>
               </div>
 
               {hasOutOfStock && (
                 <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span>Retirez les articles en rupture pour continuer.</span>
+                  <span>{t("cart.oos.warn")}</span>
                 </div>
               )}
 
               <Link to="/checkout" className={hasOutOfStock ? "pointer-events-none" : ""}>
-                <Button className="w-full" disabled={hasOutOfStock}>Passer commande</Button>
+                <Button className="w-full" disabled={hasOutOfStock}>{t("cart.checkout")}</Button>
               </Link>
             </CardContent>
           </Card>

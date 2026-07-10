@@ -4,18 +4,20 @@ import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useAdminState, addContactMessage } from "@/lib/admin-store";
-
-const contactSchema = z.object({
-  name: z.string().trim().min(2, "Nom requis").max(100),
-  email: z.string().trim().email("E-mail invalide").max(255),
-  phone: z.string().trim().max(30).optional(),
-  subject: z.string().trim().min(2, "Sujet requis").max(150),
-  message: z.string().trim().min(5, "Message trop court").max(2000),
-});
+import { useI18n } from "@/lib/i18n";
 
 export default function Contact() {
   const [sending, setSending] = useState(false);
   const { siteSettings: s } = useAdminState();
+  const { t } = useI18n();
+
+  const contactSchema = z.object({
+    name: z.string().trim().min(2, t("contact.form.name")).max(100),
+    email: z.string().trim().email(t("contact.err.invalid")).max(255),
+    phone: z.string().trim().max(30).optional(),
+    subject: z.string().trim().min(2, t("contact.form.subject")).max(150),
+    message: z.string().trim().min(5, t("contact.form.message")).max(2000),
+  });
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,14 +31,14 @@ export default function Contact() {
       message: String(fd.get("message") || ""),
     });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Formulaire invalide");
+      toast.error(parsed.error.issues[0]?.message ?? t("contact.err.invalid"));
       return;
     }
     setSending(true);
     try {
       addContactMessage(parsed.data);
       form.reset();
-      toast.success("Message reçu ! Nous vous répondrons rapidement.");
+      toast.success(t("contact.toast.ok"));
     } finally {
       setSending(false);
     }
@@ -47,39 +49,39 @@ export default function Contact() {
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
-        <title>Contact — KA Tech</title>
-        <meta name="description" content="Contactez KA Tech par email, téléphone ou WhatsApp — support commercial et service après-vente." />
+        <title>{t("contact.page.title")}</title>
+        <meta name="description" content={t("contact.page.desc")} />
         <link rel="canonical" href="/contact" />
       </Helmet>
       <header className="max-w-3xl mb-10">
-        <p className="text-sm font-medium text-primary mb-2">Contact</p>
-        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">Nous sommes là pour vous aider</h1>
-        <p className="mt-3 text-muted-foreground">Envoyez-nous un message ou contactez-nous directement via les canaux ci-dessous.</p>
+        <p className="text-sm font-medium text-primary mb-2">{t("contact.kicker")}</p>
+        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">{t("contact.title")}</h1>
+        <p className="mt-3 text-muted-foreground">{t("contact.sub")}</p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-3">
         <aside className="lg:col-span-1 space-y-4">
-          {s.contactPhone && <ContactCard Icon={Phone} title="Téléphone" value={s.contactPhone} href={`tel:${phoneDigits}`} />}
-          {s.whatsapp && <ContactCard Icon={MessageCircle} title="WhatsApp" value={`+${s.whatsapp}`} href={`https://wa.me/${s.whatsapp}`} />}
-          {s.contactEmail && <ContactCard Icon={Mail} title="E-mail" value={s.contactEmail} href={`mailto:${s.contactEmail}`} />}
-          {s.address && <ContactCard Icon={MapPin} title="Adresse" value={s.address} />}
-          {s.hours && <ContactCard Icon={Clock} title="Horaires" value={s.hours} />}
+          {s.contactPhone && <ContactCard Icon={Phone} title={t("contact.phone")} value={s.contactPhone} href={`tel:${phoneDigits}`} />}
+          {s.whatsapp && <ContactCard Icon={MessageCircle} title={t("contact.whatsapp")} value={`+${s.whatsapp}`} href={`https://wa.me/${s.whatsapp}`} />}
+          {s.contactEmail && <ContactCard Icon={Mail} title={t("contact.email")} value={s.contactEmail} href={`mailto:${s.contactEmail}`} />}
+          {s.address && <ContactCard Icon={MapPin} title={t("contact.address")} value={s.address} />}
+          {s.hours && <ContactCard Icon={Clock} title={t("contact.hours")} value={s.hours} />}
         </aside>
 
         <form onSubmit={onSubmit} className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 lg:p-8 space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Nom complet" name="name" required />
-            <Field label="E-mail" name="email" type="email" required />
+            <Field label={t("contact.form.name")} name="name" required />
+            <Field label={t("contact.form.email")} name="email" type="email" required />
           </div>
-          <Field label="Téléphone" name="phone" type="tel" />
-          <Field label="Sujet" name="subject" required />
+          <Field label={t("contact.form.phone")} name="phone" type="tel" />
+          <Field label={t("contact.form.subject")} name="subject" required />
           <div>
-            <label className="block text-sm font-medium mb-1.5">Message</label>
+            <label className="block text-sm font-medium mb-1.5 text-start">{t("contact.form.message")}</label>
             <textarea name="message" required rows={6} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20" />
           </div>
           <button type="submit" disabled={sending} className="inline-flex items-center gap-2 h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60">
             <Send className="size-4" />
-            {sending ? "Envoi en cours..." : "Envoyer le message"}
+            {sending ? t("contact.form.sending") : t("contact.form.send")}
           </button>
         </form>
       </div>
@@ -105,7 +107,7 @@ function ContactCard({ Icon, title, value, href }: { Icon: typeof Phone; title: 
 function Field({ label, name, type = "text", required }: { label: string; name: string; type?: string; required?: boolean }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1.5">{label}{required && <span className="text-primary"> *</span>}</label>
+      <label className="block text-sm font-medium mb-1.5 text-start">{label}{required && <span className="text-primary"> *</span>}</label>
       <input type={type} name={name} required={required} className="w-full h-11 bg-background border border-border rounded-lg px-4 text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20" />
     </div>
   );

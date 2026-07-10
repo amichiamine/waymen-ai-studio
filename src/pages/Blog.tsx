@@ -4,10 +4,13 @@ import { Helmet } from "react-helmet-async";
 import { Search, Newspaper } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAdminState } from "@/lib/admin-store";
+import { useI18n } from "@/lib/i18n";
 
 export default function Blog() {
   const [q, setQ] = useState("");
   const { blogPosts } = useAdminState();
+  const { t, lang } = useI18n();
+  const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
 
   const posts = useMemo(() => {
     const published = blogPosts
@@ -18,29 +21,27 @@ export default function Blog() {
     return published.filter((p) =>
       p.title.toLowerCase().includes(needle) ||
       p.excerpt.toLowerCase().includes(needle) ||
-      p.tags.some((t) => t.toLowerCase().includes(needle))
+      p.tags.some((tg) => tg.toLowerCase().includes(needle))
     );
   }, [blogPosts, q]);
 
   return (
     <div className="container mx-auto px-4 py-10">
       <Helmet>
-        <title>Blog — KA Tech</title>
-        <meta name="description" content="Actualités, guides d'achat et conseils tech pour bien choisir votre matériel." />
+        <title>{t("blog.page.title")}</title>
+        <meta name="description" content={t("blog.page.desc")} />
         <link rel="canonical" href="/blog" />
       </Helmet>
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight">Le blog KA Tech</h1>
-        <p className="mt-3 text-muted-foreground">
-          Actualités, guides d'achat et conseils tech pour bien choisir votre matériel.
-        </p>
+        <h1 className="text-4xl font-extrabold tracking-tight">{t("blog.h1")}</h1>
+        <p className="mt-3 text-muted-foreground">{t("blog.intro")}</p>
         <div className="relative mx-auto mt-6 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Rechercher un article…"
-            className="pl-9"
+            placeholder={t("blog.search")}
+            className="ps-9"
           />
         </div>
       </div>
@@ -50,9 +51,7 @@ export default function Blog() {
           <div className="mx-auto max-w-2xl flex flex-col items-center gap-3 rounded-md border border-dashed p-12 text-center">
             <Newspaper className="h-10 w-10 text-muted-foreground" />
             <p className="text-muted-foreground">
-              {blogPosts.length === 0
-                ? "Aucun article publié pour le moment."
-                : "Aucun article ne correspond à votre recherche."}
+              {blogPosts.length === 0 ? t("blog.emptyPub") : t("blog.emptySearch")}
             </p>
           </div>
         ) : (
@@ -75,9 +74,9 @@ export default function Blog() {
                 )}
                 <div className="flex flex-1 flex-col p-5">
                   <div className="mb-2 flex flex-wrap gap-1.5">
-                    {p.tags.slice(0, 3).map((t) => (
-                      <span key={t} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-                        {t}
+                    {p.tags.slice(0, 3).map((tg) => (
+                      <span key={tg} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                        {tg}
                       </span>
                     ))}
                   </div>
@@ -85,7 +84,7 @@ export default function Blog() {
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.excerpt}</p>
                   <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                     <span>{p.author}</span>
-                    <time>{new Date(p.publishedAt ?? p.createdAt).toLocaleDateString("fr-FR")}</time>
+                    <time>{new Date(p.publishedAt ?? p.createdAt).toLocaleDateString(locale)}</time>
                   </div>
                 </div>
               </Link>

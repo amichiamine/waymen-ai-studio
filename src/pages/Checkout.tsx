@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertTriangle, Tag, MapPin } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 const fmt = (n: number) => n.toLocaleString("fr-FR") + " DA";
 const COUPON_KEY = "ka-cart-coupon";
@@ -30,6 +31,7 @@ export default function Checkout() {
   const { cart, clearCart } = useStore();
   const { paymentMethods, shippingSettings } = useAdminState();
   const products = useProducts();
+  const { t } = useI18n();
 
   const { list: addresses, defaultAddress } = useAddresses(user?.id);
   const navigate = useNavigate();
@@ -65,7 +67,6 @@ export default function Checkout() {
 
   const subtotal = lines.reduce((a, l) => a + l.product.price * l.quantity, 0);
 
-  // Coupon (from cart step)
   const storedCode = typeof window !== "undefined" ? window.localStorage.getItem(COUPON_KEY) : null;
   const couponEval = storedCode ? validateCoupon(storedCode, subtotal) : null;
   const discount = couponEval && couponEval.ok ? couponEval.discount : 0;
@@ -79,11 +80,8 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (outOfStock.length > 0) {
-      toast.error("Un article est en rupture, retirez-le du panier.");
-      return;
-    }
-    if (!paymentId) { toast.error("Choisissez un mode de paiement."); return; }
+    if (outOfStock.length > 0) { toast.error(t("checkout.err.oos")); return; }
+    if (!paymentId) { toast.error(t("checkout.err.pm")); return; }
     setBusy(true);
     const pm = activePayments.find((p) => p.id === paymentId);
     const order = createOrder({
@@ -97,17 +95,9 @@ export default function Checkout() {
         qty: l.quantity,
         image: l.product.image,
       })),
-      subtotal,
-      discount,
-      couponCode,
-      shipping,
-      total,
-      paymentMethod: paymentId,
-      paymentLabel: pm?.label,
-      wilaya,
-      deliveryKind: delivery,
-      address,
-      phone,
+      subtotal, discount, couponCode, shipping, total,
+      paymentMethod: paymentId, paymentLabel: pm?.label,
+      wilaya, deliveryKind: delivery, address, phone,
       note: notes || undefined,
     });
     if (couponCode) window.localStorage.removeItem(COUPON_KEY);
@@ -118,8 +108,8 @@ export default function Checkout() {
   if (lines.length === 0) {
     return (
       <div className="container mx-auto max-w-2xl px-4 py-16 text-center">
-        <p className="text-muted-foreground">Votre panier est vide.</p>
-        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">Voir les produits</Link>
+        <p className="text-muted-foreground">{t("checkout.empty")}</p>
+        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">{t("checkout.seeProducts")}</Link>
       </div>
     );
   }
@@ -129,21 +119,21 @@ export default function Checkout() {
   return (
     <div className="container mx-auto max-w-6xl px-4 py-10">
       <Helmet>
-        <title>Finaliser la commande — KA Tech</title>
+        <title>{t("checkout.page.title")}</title>
         <meta name="robots" content="noindex" />
       </Helmet>
-      <h1 className="mb-6 text-2xl font-bold">Finaliser ma commande</h1>
+      <h1 className="mb-6 text-2xl font-bold">{t("checkout.title")}</h1>
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
           {addresses.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Adresse enregistrée</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {t("checkout.savedAddr")}</CardTitle></CardHeader>
               <CardContent>
                 <RadioGroup value={addressId} onValueChange={setAddressId}>
                   {addresses.map((a) => (
                     <label key={a.id} className="flex cursor-pointer items-start gap-3 rounded border p-3">
                       <RadioGroupItem value={a.id} id={`a-${a.id}`} className="mt-1" />
-                      <div className="text-sm">
+                      <div className="text-sm text-start">
                         <p className="font-medium">{a.label} · {a.fullName}</p>
                         <p className="text-xs text-muted-foreground">{a.phone} — {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr}, {a.address}</p>
                       </div>
@@ -151,29 +141,29 @@ export default function Checkout() {
                   ))}
                   <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed p-3">
                     <RadioGroupItem value="new" id="a-new" />
-                    <span className="text-sm">Utiliser une nouvelle adresse</span>
+                    <span className="text-sm">{t("checkout.newAddr")}</span>
                   </label>
                 </RadioGroup>
               </CardContent>
             </Card>
           )}
           <Card>
-            <CardHeader><CardTitle>Coordonnées</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("checkout.contact.title")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="name">Nom complet</Label>
+                  <Label htmlFor="name">{t("checkout.name")}</Label>
                   <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Téléphone</Label>
+                  <Label htmlFor="phone">{t("checkout.phone")}</Label>
                   <Input id="phone" required value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
               </div>
               <div>
-                <Label>Wilaya</Label>
+                <Label>{t("checkout.wilaya")}</Label>
                 <Select value={wilaya} onValueChange={setWilaya}>
-                  <SelectTrigger><SelectValue placeholder="Choisir une wilaya" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("checkout.wilaya.placeholder")} /></SelectTrigger>
                   <SelectContent>
                     {WILAYAS.map((w) => (
                       <SelectItem key={w.code} value={w.code}>{w.code} — {w.name_fr}</SelectItem>
@@ -182,24 +172,24 @@ export default function Checkout() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="address">Adresse</Label>
+                <Label htmlFor="address">{t("checkout.address")}</Label>
                 <Textarea id="address" required value={address} onChange={(e) => setAddress(e.target.value)} rows={2} />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Livraison</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("checkout.delivery.title")}</CardTitle></CardHeader>
             <CardContent>
               <RadioGroup value={delivery} onValueChange={(v) => setDelivery(v as "home" | "desk")}>
                 {shippingSettings.homeEnabled && (
                   <label className="flex cursor-pointer items-center justify-between rounded border p-3">
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value="home" id="d-home" />
-                      <span>Livraison à domicile</span>
+                      <span>{t("checkout.delivery.home")}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {wilaya ? fmt(computeShipping(wilaya, "home", subtotal - discount)) : "Choisir wilaya"}
+                      {wilaya ? fmt(computeShipping(wilaya, "home", subtotal - discount)) : t("checkout.wilaya.choose")}
                     </span>
                   </label>
                 )}
@@ -207,36 +197,31 @@ export default function Checkout() {
                   <label className="flex cursor-pointer items-center justify-between rounded border p-3">
                     <div className="flex items-center gap-3">
                       <RadioGroupItem value="desk" id="d-desk" />
-                      <span>Retrait au bureau Yalidine</span>
+                      <span>{t("checkout.delivery.desk")}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {wilaya ? fmt(computeShipping(wilaya, "desk", subtotal - discount)) : "Choisir wilaya"}
+                      {wilaya ? fmt(computeShipping(wilaya, "desk", subtotal - discount)) : t("checkout.wilaya.choose")}
                     </span>
                   </label>
                 )}
               </RadioGroup>
-              {shippingSettings.freeShippingThreshold > 0 && subtotal - discount < shippingSettings.freeShippingThreshold && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Livraison offerte à partir de {fmt(shippingSettings.freeShippingThreshold)}.
-                </p>
-              )}
               {shippingSettings.freeShippingThreshold > 0 && subtotal - discount >= shippingSettings.freeShippingThreshold && (
-                <Badge variant="secondary" className="mt-3">🎁 Livraison offerte appliquée</Badge>
+                <Badge variant="secondary" className="mt-3">{t("checkout.delivery.freeApplied")}</Badge>
               )}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Paiement</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("checkout.payment.title")}</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {activePayments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun mode de paiement actif.</p>
+                <p className="text-sm text-muted-foreground">{t("checkout.payment.none")}</p>
               ) : (
                 <RadioGroup value={paymentId} onValueChange={setPaymentId}>
                   {activePayments.map((m) => (
                     <label key={m.id} className="flex cursor-pointer items-start gap-3 rounded border p-3">
                       <RadioGroupItem value={m.id} id={`pm-${m.id}`} className="mt-1" />
-                      <div>
+                      <div className="text-start">
                         <p className="font-medium">{m.label}</p>
                         <p className="text-xs text-muted-foreground">{m.instructions}</p>
                       </div>
@@ -253,20 +238,20 @@ export default function Checkout() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Notes (optionnel)</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("checkout.notes.title")}</CardTitle></CardHeader>
             <CardContent>
-              <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Instructions pour le livreur, précisions…" />
+              <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("checkout.notes.placeholder")} />
             </CardContent>
           </Card>
         </div>
 
         <Card className="h-fit">
-          <CardHeader><CardTitle>Récapitulatif</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("checkout.summary.title")}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             {lines.map((l) => (
               <div key={l.product_id} className="flex items-center gap-3 text-sm">
                 <img src={l.product.image} alt="" className="h-12 w-12 rounded object-cover" />
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 text-start">
                   <p className="truncate">{l.product.name}</p>
                   <p className="text-xs text-muted-foreground">× {l.quantity}</p>
                 </div>
@@ -274,7 +259,7 @@ export default function Checkout() {
               </div>
             ))}
             <div className="space-y-1 border-t pt-3 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Sous-total</span><span>{fmt(subtotal)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("cart.subtotal")}</span><span>{fmt(subtotal)}</span></div>
               {discount > 0 && couponCode && (
                 <div className="flex justify-between text-primary">
                   <span className="inline-flex items-center gap-1"><Tag className="h-3 w-3" /> {couponCode}</span>
@@ -282,23 +267,23 @@ export default function Checkout() {
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Livraison</span>
-                <span>{wilaya ? (shipping === 0 ? "Offerte" : fmt(shipping)) : "—"}</span>
+                <span className="text-muted-foreground">{t("cart.shipping")}</span>
+                <span>{wilaya ? (shipping === 0 ? t("common.free") : fmt(shipping)) : "—"}</span>
               </div>
               <div className="flex justify-between border-t pt-2 text-base font-semibold">
-                <span>Total</span><span className="text-primary">{fmt(total)}</span>
+                <span>{t("cart.total")}</span><span className="text-primary">{fmt(total)}</span>
               </div>
             </div>
 
             {outOfStock.length > 0 && (
               <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>Article en rupture : {outOfStock.map((l) => l.product.name).join(", ")}.</span>
+                <span>{outOfStock.map((l) => l.product.name).join(", ")}</span>
               </div>
             )}
 
             <Button type="submit" className="w-full" disabled={busy || !canSubmit}>
-              {busy ? "Traitement…" : "Confirmer la commande"}
+              {busy ? t("checkout.submitting") : t("checkout.submit")}
             </Button>
           </CardContent>
         </Card>
