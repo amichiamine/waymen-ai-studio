@@ -7,6 +7,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { Category } from "@/data/products";
+import type { Localized } from "@/lib/i18n";
 
 export type IconName =
   | "shield" | "truck" | "headphones" | "award" | "star" | "heart"
@@ -34,71 +35,74 @@ export function getIcon(name: IconName | string | undefined): LucideIcon {
   return (name && (ICONS as Record<string, LucideIcon>)[name]) || Star;
 }
 
-export type Cta = { label: string; href: string };
+/** Shortcut: every user-visible string in this file is Localized<string>. */
+type LS = Localized<string>;
 
-export type NavItem = { id: string; label: string; href: string; icon?: IconName; accent?: boolean };
-export type SocialLink = { id: string; icon: IconName; label: string; href: string };
-export type FooterLink = { id: string; label: string; href: string };
-export type FooterColumn = { id: string; title: string; links: FooterLink[] };
+export type Cta = { label: LS; href: string };
+
+export type NavItem = { id: string; label: LS; href: string; icon?: IconName; accent?: boolean };
+export type SocialLink = { id: string; icon: IconName; label: LS; href: string };
+export type FooterLink = { id: string; label: LS; href: string };
+export type FooterColumn = { id: string; title: LS; links: FooterLink[] };
 
 export type SiteContent = {
   header: {
     showSearch: boolean;
-    searchPlaceholder: string;
+    searchPlaceholder: LS;
     builderCta: Cta;
     primaryNav: NavItem[];
     categoryMenu: {
-      label: string;
-      title: string;
-      browseLabel: string;
+      label: LS;
+      title: LS;
+      browseLabel: LS;
       browseHref: string;
       items: NavItem[];
     };
   };
   footer: {
-    tagline: string;
-    copyright: string;
-    madeIn: string;
+    tagline: LS;
+    copyright: LS;
+    madeIn: LS;
     socials: SocialLink[];
     columns: FooterColumn[];
   };
   hero: {
-    badge: string;
-    title1: string;
-    title2: string;
-    subtitle: string;
+    badge: LS;
+    title1: LS;
+    title2: LS;
+    subtitle: LS;
     primaryCta: Cta;
     secondaryCta: Cta;
-    kpis: { id: string; icon: IconName; value: string; label: string }[];
+    kpis: { id: string; icon: IconName; value: LS; label: LS }[];
     showImage: boolean;
   };
-  categories: { title: string; subtitle: string; browseLabel: string };
-  useChips: { title: string };
-  bestSellers: { title: string; subtitle: string };
+  categories: { title: LS; subtitle: LS; browseLabel: LS };
+  useChips: { title: LS };
+  bestSellers: { title: LS; subtitle: LS };
   featuredTabs: {
-    title: string; subtitle: string;
-    tabs: { id: string; categorySlug: Category; label: string }[];
+    title: LS; subtitle: LS;
+    tabs: { id: string; categorySlug: Category; label: LS }[];
   };
   flashSale: {
-    badge: string; title: string;
-    viewAllLabel: string; viewAllHref: string;
+    badge: LS; title: LS;
+    viewAllLabel: LS; viewAllHref: string;
     countdownHours: number;
   };
-  brandsMarquee: { title: string };
+  brandsMarquee: { title: LS };
   whyUs: {
-    kicker: string; title1: string; title2: string; subtitle: string;
-    items: { id: string; icon: IconName; title: string; description: string }[];
+    kicker: LS; title1: LS; title2: LS; subtitle: LS;
+    items: { id: string; icon: IconName; title: LS; description: LS }[];
   };
   builderTeaser: {
-    badge: string; title: string; subtitle: string; cta: Cta;
-    items: { id: string; icon: IconName; title: string; subtitle: string }[];
+    badge: LS; title: LS; subtitle: LS; cta: Cta;
+    items: { id: string; icon: IconName; title: LS; subtitle: LS }[];
   };
-  reviews: { title: string; subtitle: string };
-  contactCta: { title: string; subtitle: string; whatsappLabel: string };
-  floatingWhatsApp: { enabled: boolean; ariaLabel: string };
+  reviews: { title: LS; subtitle: LS };
+  contactCta: { title: LS; subtitle: LS; whatsappLabel: LS };
+  floatingWhatsApp: { enabled: boolean; ariaLabel: LS };
   mobileBottomBar: {
     items: {
-      id: string; icon: IconName; label: string; href: string;
+      id: string; icon: IconName; label: LS; href: string;
       requiresAuth?: boolean; primary?: boolean;
     }[];
   };
@@ -108,145 +112,219 @@ export function seedSiteContent(): SiteContent {
   return {
     header: {
       showSearch: true,
-      searchPlaceholder: "Rechercher un produit, une marque…",
-      builderCta: { label: "Configurez votre PC", href: "/builder" },
+      searchPlaceholder: {
+        fr: "Rechercher un produit, une marque…",
+        en: "Search a product, a brand…",
+        ar: "ابحث عن منتج أو علامة تجارية…",
+      },
+      builderCta: {
+        label: { fr: "Configurez votre PC", en: "Build your PC", ar: "جمّع حاسوبك" },
+        href: "/builder",
+      },
       primaryNav: [
-        { id: "hn_blog", label: "Blog", href: "/blog" },
-        { id: "hn_about", label: "À propos", href: "/about" },
-        { id: "hn_contact", label: "Contact", href: "/contact" },
+        { id: "hn_blog", label: { fr: "Blog", en: "Blog", ar: "المدونة" }, href: "/blog" },
+        { id: "hn_about", label: { fr: "À propos", en: "About", ar: "من نحن" }, href: "/about" },
+        { id: "hn_contact", label: { fr: "Contact", en: "Contact", ar: "اتصل بنا" }, href: "/contact" },
       ],
       categoryMenu: {
-        label: "Catégories",
-        title: "Nos catégories",
-        browseLabel: "Voir toutes les catégories",
+        label: { fr: "Catégories", en: "Categories", ar: "الفئات" },
+        title: { fr: "Nos catégories", en: "Our categories", ar: "فئاتنا" },
+        browseLabel: { fr: "Voir toutes les catégories", en: "Browse all categories", ar: "عرض كل الفئات" },
         browseHref: "/category",
         items: [
-          { id: "hc_1", label: "Ordinateurs portables", href: "/category/laptops", icon: "laptop" },
-          { id: "hc_2", label: "Ordinateurs de bureau", href: "/category/desktops", icon: "monitor" },
-          { id: "hc_3", label: "Configurations", href: "/category/builds", icon: "cpu" },
-          { id: "hc_4", label: "Téléphones", href: "/category/phones", icon: "smartphone" },
-          { id: "hc_5", label: "Offres", href: "/search", icon: "tag", accent: true },
+          { id: "hc_1", label: { fr: "Ordinateurs portables", en: "Laptops", ar: "أجهزة الكمبيوتر المحمولة" }, href: "/category/laptops", icon: "laptop" },
+          { id: "hc_2", label: { fr: "Ordinateurs de bureau", en: "Desktops", ar: "أجهزة الكمبيوتر المكتبية" }, href: "/category/desktops", icon: "monitor" },
+          { id: "hc_3", label: { fr: "Configurations", en: "Builds", ar: "التجميعات" }, href: "/category/builds", icon: "cpu" },
+          { id: "hc_4", label: { fr: "Téléphones", en: "Phones", ar: "الهواتف" }, href: "/category/phones", icon: "smartphone" },
+          { id: "hc_5", label: { fr: "Offres", en: "Deals", ar: "العروض" }, href: "/search", icon: "tag", accent: true },
         ],
       },
     },
     footer: {
-      tagline:
-        "Boutique en ligne spécialisée dans la vente d'ordinateurs, de téléphones et d'accessoires — livraison dans toute l'Algérie avec garantie officielle.",
-      copyright: "© 2026 KA Tech — Tous droits réservés",
-      madeIn: "Fait avec passion en Algérie",
+      tagline: {
+        fr: "Boutique en ligne spécialisée dans la vente d'ordinateurs, de téléphones et d'accessoires — livraison dans toute l'Algérie avec garantie officielle.",
+        en: "Online store specialized in computers, phones and accessories — delivery across Algeria with official warranty.",
+        ar: "متجر إلكتروني متخصص في بيع الحواسيب والهواتف والملحقات — توصيل لكل أنحاء الجزائر مع ضمان رسمي.",
+      },
+      copyright: {
+        fr: "© 2026 KA Tech — Tous droits réservés",
+        en: "© 2026 KA Tech — All rights reserved",
+        ar: "© 2026 KA Tech — جميع الحقوق محفوظة",
+      },
+      madeIn: {
+        fr: "Fait avec passion en Algérie",
+        en: "Made with passion in Algeria",
+        ar: "صُنع بشغف في الجزائر",
+      },
       socials: [
-        { id: "s_fb", icon: "facebook", label: "Facebook", href: "#" },
-        { id: "s_ig", icon: "instagram", label: "Instagram", href: "#" },
-        { id: "s_wa", icon: "message-circle", label: "WhatsApp", href: "#" },
-        { id: "s_tt", icon: "music", label: "TikTok", href: "#" },
+        { id: "s_fb", icon: "facebook", label: { fr: "Facebook", en: "Facebook", ar: "فيسبوك" }, href: "#" },
+        { id: "s_ig", icon: "instagram", label: { fr: "Instagram", en: "Instagram", ar: "إنستغرام" }, href: "#" },
+        { id: "s_wa", icon: "message-circle", label: { fr: "WhatsApp", en: "WhatsApp", ar: "واتساب" }, href: "#" },
+        { id: "s_tt", icon: "music", label: { fr: "TikTok", en: "TikTok", ar: "تيك توك" }, href: "#" },
       ],
       columns: [
         {
-          id: "fc_quick", title: "Liens rapides",
+          id: "fc_quick",
+          title: { fr: "Liens rapides", en: "Quick links", ar: "روابط سريعة" },
           links: [
-            { id: "fl_1", label: "Accueil", href: "/" },
-            { id: "fl_2", label: "Configurez votre PC", href: "/builder" },
-            { id: "fl_3", label: "Offres", href: "/category/laptops" },
+            { id: "fl_1", label: { fr: "Accueil", en: "Home", ar: "الرئيسية" }, href: "/" },
+            { id: "fl_2", label: { fr: "Configurez votre PC", en: "Build your PC", ar: "جمّع حاسوبك" }, href: "/builder" },
+            { id: "fl_3", label: { fr: "Offres", en: "Deals", ar: "العروض" }, href: "/category/laptops" },
           ],
         },
         {
-          id: "fc_cats", title: "Catégories",
+          id: "fc_cats",
+          title: { fr: "Catégories", en: "Categories", ar: "الفئات" },
           links: [
-            { id: "fl_4", label: "Ordinateurs portables", href: "/category/laptops" },
-            { id: "fl_5", label: "Ordinateurs de bureau", href: "/category/desktops" },
-            { id: "fl_6", label: "Configurations", href: "/category/builds" },
-            { id: "fl_7", label: "Téléphones", href: "/category/phones" },
+            { id: "fl_4", label: { fr: "Ordinateurs portables", en: "Laptops", ar: "أجهزة الكمبيوتر المحمولة" }, href: "/category/laptops" },
+            { id: "fl_5", label: { fr: "Ordinateurs de bureau", en: "Desktops", ar: "أجهزة الكمبيوتر المكتبية" }, href: "/category/desktops" },
+            { id: "fl_6", label: { fr: "Configurations", en: "Builds", ar: "التجميعات" }, href: "/category/builds" },
+            { id: "fl_7", label: { fr: "Téléphones", en: "Phones", ar: "الهواتف" }, href: "/category/phones" },
           ],
         },
         {
-          id: "fc_sup", title: "Support",
+          id: "fc_sup",
+          title: { fr: "Support", en: "Support", ar: "الدعم" },
           links: [
-            { id: "fl_8", label: "Contactez-nous", href: "/contact" },
-            { id: "fl_9", label: "Garantie", href: "/about" },
-            { id: "fl_10", label: "Livraison", href: "/about" },
-            { id: "fl_11", label: "FAQ", href: "/about" },
+            { id: "fl_8", label: { fr: "Contactez-nous", en: "Contact us", ar: "اتصل بنا" }, href: "/contact" },
+            { id: "fl_9", label: { fr: "Garantie", en: "Warranty", ar: "الضمان" }, href: "/about" },
+            { id: "fl_10", label: { fr: "Livraison", en: "Shipping", ar: "التوصيل" }, href: "/about" },
+            { id: "fl_11", label: { fr: "FAQ", en: "FAQ", ar: "الأسئلة الشائعة" }, href: "/about" },
           ],
         },
       ],
     },
     hero: {
-      badge: "Collection 2026 disponible",
-      title1: "La puissance tech,",
-      title2: "entre vos mains",
-      subtitle:
-        "Les derniers ordinateurs portables, de bureau et téléphones aux meilleurs prix, avec garantie officielle et support technique dédié.",
-      primaryCta: { label: "Acheter maintenant", href: "/category/laptops" },
-      secondaryCta: { label: "Offres du jour", href: "/category/laptops" },
+      badge: { fr: "Collection 2026 disponible", en: "2026 collection available", ar: "مجموعة 2026 متوفرة" },
+      title1: { fr: "La puissance tech,", en: "Tech power,", ar: "قوة التكنولوجيا،" },
+      title2: { fr: "entre vos mains", en: "in your hands", ar: "بين يديك" },
+      subtitle: {
+        fr: "Les derniers ordinateurs portables, de bureau et téléphones aux meilleurs prix, avec garantie officielle et support technique dédié.",
+        en: "The latest laptops, desktops and phones at the best prices, with official warranty and dedicated tech support.",
+        ar: "أحدث أجهزة الكمبيوتر المحمولة والمكتبية والهواتف بأفضل الأسعار، مع ضمان رسمي ودعم تقني مخصص.",
+      },
+      primaryCta: {
+        label: { fr: "Acheter maintenant", en: "Shop now", ar: "تسوق الآن" },
+        href: "/category/laptops",
+      },
+      secondaryCta: {
+        label: { fr: "Offres du jour", en: "Today's deals", ar: "عروض اليوم" },
+        href: "/category/laptops",
+      },
       kpis: [
-        { id: "kpi_1", icon: "users", value: "+5 000", label: "clients satisfaits" },
-        { id: "kpi_2", icon: "package", value: "+1 200", label: "produits" },
-        { id: "kpi_3", icon: "map-pin", value: "58 wilayas", label: "livraison" },
+        { id: "kpi_1", icon: "users", value: "+5 000", label: { fr: "clients satisfaits", en: "happy customers", ar: "زبون راضٍ" } },
+        { id: "kpi_2", icon: "package", value: "+1 200", label: { fr: "produits", en: "products", ar: "منتجات" } },
+        { id: "kpi_3", icon: "map-pin", value: { fr: "58 wilayas", en: "58 wilayas", ar: "58 ولاية" }, label: { fr: "livraison", en: "delivery", ar: "التوصيل" } },
       ],
       showImage: true,
     },
     categories: {
-      title: "Achetez par catégorie",
-      subtitle: "Choisissez la catégorie qui vous convient",
-      browseLabel: "Parcourir",
+      title: { fr: "Achetez par catégorie", en: "Shop by category", ar: "تسوق حسب الفئة" },
+      subtitle: { fr: "Choisissez la catégorie qui vous convient", en: "Pick the category that suits you", ar: "اختر الفئة التي تناسبك" },
+      browseLabel: { fr: "Parcourir", en: "Browse", ar: "تصفح" },
     },
-    useChips: { title: "Achetez par usage" },
-    bestSellers: { title: "Meilleures ventes", subtitle: "Les produits préférés de nos clients" },
+    useChips: {
+      title: { fr: "Achetez par usage", en: "Shop by use case", ar: "تسوق حسب الاستخدام" },
+    },
+    bestSellers: {
+      title: { fr: "Meilleures ventes", en: "Best sellers", ar: "الأكثر مبيعًا" },
+      subtitle: { fr: "Les produits préférés de nos clients", en: "Our customers' favorite products", ar: "المنتجات المفضلة لدى زبائننا" },
+    },
     featuredTabs: {
-      title: "Produits sélectionnés",
-      subtitle: "Découvrez les nouveautés dans chaque catégorie",
+      title: { fr: "Produits sélectionnés", en: "Featured products", ar: "منتجات مختارة" },
+      subtitle: { fr: "Découvrez les nouveautés dans chaque catégorie", en: "Discover what's new in every category", ar: "اكتشف الجديد في كل فئة" },
       tabs: [
-        { id: "t_1", categorySlug: "laptops", label: "Portables" },
-        { id: "t_2", categorySlug: "desktops", label: "Bureau" },
-        { id: "t_3", categorySlug: "builds", label: "Configs" },
-        { id: "t_4", categorySlug: "phones", label: "Téléphones" },
+        { id: "t_1", categorySlug: "laptops", label: { fr: "Portables", en: "Laptops", ar: "محمولة" } },
+        { id: "t_2", categorySlug: "desktops", label: { fr: "Bureau", en: "Desktops", ar: "مكتبية" } },
+        { id: "t_3", categorySlug: "builds", label: { fr: "Configs", en: "Builds", ar: "تجميعات" } },
+        { id: "t_4", categorySlug: "phones", label: { fr: "Téléphones", en: "Phones", ar: "هواتف" } },
       ],
     },
     flashSale: {
-      badge: "Offres de la semaine",
-      title: "Réductions à durée limitée",
-      viewAllLabel: "Voir toutes les offres",
+      badge: { fr: "Offres de la semaine", en: "Deals of the week", ar: "عروض الأسبوع" },
+      title: { fr: "Réductions à durée limitée", en: "Limited-time discounts", ar: "تخفيضات لفترة محدودة" },
+      viewAllLabel: { fr: "Voir toutes les offres", en: "See all deals", ar: "عرض كل العروض" },
       viewAllHref: "/category/laptops",
       countdownHours: 71,
     },
-    brandsMarquee: { title: "Nous travaillons avec les plus grandes marques" },
+    brandsMarquee: {
+      title: { fr: "Nous travaillons avec les plus grandes marques", en: "We work with the biggest brands", ar: "نتعامل مع أكبر العلامات التجارية" },
+    },
     whyUs: {
-      kicker: "Pourquoi KA Tech",
-      title1: "Parce que la tech mérite",
-      title2: "un partenaire de confiance",
-      subtitle: "Nous sélectionnons nos produits avec soin et nous engageons sur chaque achat.",
+      kicker: { fr: "Pourquoi KA Tech", en: "Why KA Tech", ar: "لماذا KA Tech" },
+      title1: { fr: "Parce que la tech mérite", en: "Because tech deserves", ar: "لأن التكنولوجيا تستحق" },
+      title2: { fr: "un partenaire de confiance", en: "a trusted partner", ar: "شريكًا موثوقًا" },
+      subtitle: {
+        fr: "Nous sélectionnons nos produits avec soin et nous engageons sur chaque achat.",
+        en: "We carefully select our products and stand behind every purchase.",
+        ar: "نختار منتجاتنا بعناية ونلتزم بكل عملية شراء.",
+      },
       items: [
-        { id: "w_1", icon: "shield", title: "Garantie officielle", description: "Garantie revendeur agréé sur tous les produits" },
-        { id: "w_2", icon: "truck", title: "Livraison rapide", description: "Livraison dans toutes les wilayas en 24-72 heures" },
-        { id: "w_3", icon: "headphones", title: "Support technique", description: "Une équipe dédiée avant et après l'achat" },
-        { id: "w_4", icon: "credit-card", title: "Paiement sécurisé", description: "Payez à la livraison ou via des moyens approuvés" },
+        { id: "w_1", icon: "shield",
+          title: { fr: "Garantie officielle", en: "Official warranty", ar: "ضمان رسمي" },
+          description: { fr: "Garantie revendeur agréé sur tous les produits", en: "Authorized reseller warranty on all products", ar: "ضمان الموزع المعتمد على جميع المنتجات" } },
+        { id: "w_2", icon: "truck",
+          title: { fr: "Livraison rapide", en: "Fast delivery", ar: "توصيل سريع" },
+          description: { fr: "Livraison dans toutes les wilayas en 24-72 heures", en: "Delivery to all wilayas in 24-72 hours", ar: "توصيل لجميع الولايات في 24-72 ساعة" } },
+        { id: "w_3", icon: "headphones",
+          title: { fr: "Support technique", en: "Tech support", ar: "دعم تقني" },
+          description: { fr: "Une équipe dédiée avant et après l'achat", en: "A dedicated team before and after purchase", ar: "فريق مخصص قبل وبعد الشراء" } },
+        { id: "w_4", icon: "credit-card",
+          title: { fr: "Paiement sécurisé", en: "Secure payment", ar: "دفع آمن" },
+          description: { fr: "Payez à la livraison ou via des moyens approuvés", en: "Pay on delivery or via approved methods", ar: "ادفع عند الاستلام أو بوسائل معتمدة" } },
       ],
     },
     builderTeaser: {
-      badge: "Outil de configuration",
-      title: "Concevez votre config idéale",
-      subtitle: "Sélectionnez vos composants étape par étape, vérifiez la compatibilité et voyez le prix final en direct.",
-      cta: { label: "Commencer la config", href: "/builder" },
+      badge: { fr: "Outil de configuration", en: "Config tool", ar: "أداة التجميع" },
+      title: { fr: "Concevez votre config idéale", en: "Design your ideal build", ar: "صمم تجميعتك المثالية" },
+      subtitle: {
+        fr: "Sélectionnez vos composants étape par étape, vérifiez la compatibilité et voyez le prix final en direct.",
+        en: "Pick components step by step, check compatibility and see the final price live.",
+        ar: "اختر مكوناتك خطوة بخطوة، تحقق من التوافق وشاهد السعر النهائي مباشرة.",
+      },
+      cta: {
+        label: { fr: "Commencer la config", en: "Start building", ar: "ابدأ التجميع" },
+        href: "/builder",
+      },
       items: [
-        { id: "bt_1", icon: "cpu", title: "Processeurs", subtitle: "Intel · AMD" },
-        { id: "bt_2", icon: "memory", title: "Mémoire", subtitle: "DDR4 · DDR5" },
-        { id: "bt_3", icon: "hard-drive", title: "Stockage", subtitle: "NVMe Gen4" },
-        { id: "bt_4", icon: "zap", title: "Refroidissement", subtitle: "Air · Liquide" },
+        { id: "bt_1", icon: "cpu",
+          title: { fr: "Processeurs", en: "Processors", ar: "المعالجات" },
+          subtitle: "Intel · AMD" },
+        { id: "bt_2", icon: "memory",
+          title: { fr: "Mémoire", en: "Memory", ar: "الذاكرة" },
+          subtitle: "DDR4 · DDR5" },
+        { id: "bt_3", icon: "hard-drive",
+          title: { fr: "Stockage", en: "Storage", ar: "التخزين" },
+          subtitle: "NVMe Gen4" },
+        { id: "bt_4", icon: "zap",
+          title: { fr: "Refroidissement", en: "Cooling", ar: "التبريد" },
+          subtitle: { fr: "Air · Liquide", en: "Air · Liquid", ar: "هواء · سائل" } },
       ],
     },
-    reviews: { title: "Avis de nos clients", subtitle: "Des milliers de clients nous font confiance" },
-    contactCta: {
-      title: "Une question ? Contactez-nous",
-      subtitle: "Notre équipe est disponible du dimanche au jeudi, de 9h à 19h.",
-      whatsappLabel: "Écrivez-nous sur WhatsApp",
+    reviews: {
+      title: { fr: "Avis de nos clients", en: "Customer reviews", ar: "آراء زبائننا" },
+      subtitle: { fr: "Des milliers de clients nous font confiance", en: "Thousands of customers trust us", ar: "آلاف الزبائن يثقون بنا" },
     },
-    floatingWhatsApp: { enabled: true, ariaLabel: "WhatsApp" },
+    contactCta: {
+      title: { fr: "Une question ? Contactez-nous", en: "Got a question? Contact us", ar: "لديك سؤال؟ تواصل معنا" },
+      subtitle: {
+        fr: "Notre équipe est disponible du dimanche au jeudi, de 9h à 19h.",
+        en: "Our team is available Sunday to Thursday, 9am to 7pm.",
+        ar: "فريقنا متاح من الأحد إلى الخميس، من 9 صباحًا إلى 7 مساءً.",
+      },
+      whatsappLabel: { fr: "Écrivez-nous sur WhatsApp", en: "Message us on WhatsApp", ar: "راسلنا عبر واتساب" },
+    },
+    floatingWhatsApp: {
+      enabled: true,
+      ariaLabel: { fr: "WhatsApp", en: "WhatsApp", ar: "واتساب" },
+    },
     mobileBottomBar: {
       items: [
-        { id: "mb_1", icon: "home", label: "Accueil", href: "/" },
-        { id: "mb_2", icon: "grid", label: "Catégories", href: "/category" },
-        { id: "mb_3", icon: "wrench", label: "Configurer", href: "/builder", primary: true },
-        { id: "mb_4", icon: "shopping-cart", label: "Panier", href: "/cart", requiresAuth: true },
-        { id: "mb_5", icon: "user", label: "Compte", href: "/account", requiresAuth: true },
+        { id: "mb_1", icon: "home", label: { fr: "Accueil", en: "Home", ar: "الرئيسية" }, href: "/" },
+        { id: "mb_2", icon: "grid", label: { fr: "Catégories", en: "Categories", ar: "الفئات" }, href: "/category" },
+        { id: "mb_3", icon: "wrench", label: { fr: "Configurer", en: "Build", ar: "تجميع" }, href: "/builder", primary: true },
+        { id: "mb_4", icon: "shopping-cart", label: { fr: "Panier", en: "Cart", ar: "السلة" }, href: "/cart", requiresAuth: true },
+        { id: "mb_5", icon: "user", label: { fr: "Compte", en: "Account", ar: "الحساب" }, href: "/account", requiresAuth: true },
       ],
     },
   };
