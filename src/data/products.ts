@@ -142,9 +142,11 @@ export const formatDZD = (n: number) => {
     ? raw.replace(/\B(?=(\d{3})+(?!\d))/g, sep)
     : raw;
   const signed = (n < 0 ? "-" : "") + grouped;
-  return _currency.position === "prefix"
+  const body = _currency.position === "prefix"
     ? `${_currency.symbol} ${signed}`
     : `${signed} ${_currency.symbol}`;
+  // Isole le prix du contexte bidi (évite l'inversion visuelle en RTL/arabe).
+  return `\u2066${body}\u2069`;
 };
 
 export const categoryMeta: Record<Category, { slug: Category; labelKey: "nav.laptops" | "nav.desktops" | "nav.builds" | "nav.phones"; descKey: "cat.laptops.desc" | "cat.desktops.desc" | "cat.builds.desc" | "cat.phones.desc" }> = {

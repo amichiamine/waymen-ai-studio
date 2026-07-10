@@ -193,6 +193,14 @@ html, body { overflow-x: hidden; max-width: 100%; }
 [dir="rtl"] .text-left  { text-align: right; }
 [dir="rtl"] .text-right { text-align: left; }
 
+/* Isole les segments numériques/dates du réordonnancement bidi en RTL,
+ * pour que "1 299 DA" ou "12/06/2026" restent lisibles dans un contexte arabe.
+ * Applique sur <time>, <bdi>, et toute classe .num / .price / .tabular-nums. */
+[dir="rtl"] :is(time, bdi, .num, .price, .tabular-nums) {
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+
 /* Horizontal spacing: flip space-x-* between children. */
 [dir="rtl"] :is(.space-x-1,.space-x-1\.5,.space-x-2,.space-x-2\.5,.space-x-3,.space-x-4,.space-x-5,.space-x-6,.space-x-8,.space-x-10,.space-x-12) > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 1;
