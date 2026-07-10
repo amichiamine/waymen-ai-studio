@@ -7,7 +7,7 @@ import {
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useI18n } from "@/lib/i18n";
-import { ThemeToggle } from "./ThemeLanguageToggles";
+import { ThemeToggle, LanguageToggle } from "./ThemeLanguageToggles";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { useAdminRoles } from "@/lib/admin-auth";
@@ -126,6 +126,7 @@ export function Header() {
             <Wrench className="size-4" />
             <span>{H.builderCta.label}</span>
           </Link>
+          <LanguageToggle />
           <ThemeToggle />
           <Link to={user ? "/favorites" : "/auth"} aria-label={t("header.wishlist")}
             className="relative hidden md:inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors">

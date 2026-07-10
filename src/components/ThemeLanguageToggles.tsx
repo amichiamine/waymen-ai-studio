@@ -48,7 +48,39 @@ export function ThemeToggle() {
   );
 }
 
-// Version FR-only : sélecteur de langue supprimé.
+const langOptions: { value: "fr" | "en" | "ar"; flag: string; key: "lang.fr" | "lang.en" | "lang.ar" }[] = [
+  { value: "fr", flag: "🇫🇷", key: "lang.fr" },
+  { value: "en", flag: "🇬🇧", key: "lang.en" },
+  { value: "ar", flag: "🇩🇿", key: "lang.ar" },
+];
+
 export function LanguageToggle() {
-  return null;
+  const { lang, setLang, t } = useI18n();
+  const current = langOptions.find((o) => o.value === lang) ?? langOptions[0];
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          aria-label={t("header.language")}
+          className="inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors text-base"
+        >
+          <span aria-hidden>{current.flag}</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[10rem]">
+        <DropdownMenuLabel>{t("header.language")}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {langOptions.map((o) => {
+          const active = lang === o.value;
+          return (
+            <DropdownMenuItem key={o.value} onClick={() => setLang(o.value)} className="gap-2">
+              <span aria-hidden className="text-base leading-none">{o.flag}</span>
+              <span className="flex-1">{t(o.key)}</span>
+              {active && <Check className="size-4 text-primary" />}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
