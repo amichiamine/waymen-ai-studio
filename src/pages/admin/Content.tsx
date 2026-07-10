@@ -16,8 +16,81 @@ import {
 import type { SiteContent } from "@/lib/site-content";
 import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
-import { localize, type Localized } from "@/lib/i18n";
-const S = (v: Localized<string> | undefined) => (localize(v, "fr") ?? "");
+import type { Localized } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
+type LangCode = "fr" | "en" | "ar";
+const LANGS: LangCode[] = ["fr", "en", "ar"];
+
+function toMap(v: Localized<string> | undefined): Record<LangCode, string> {
+  if (v == null) return { fr: "", en: "", ar: "" };
+  if (typeof v === "string") return { fr: v, en: "", ar: "" };
+  return { fr: v.fr ?? "", en: v.en ?? "", ar: v.ar ?? "" };
+}
+
+function LangTabs({ lang, onChange }: { lang: LangCode; onChange: (l: LangCode) => void }) {
+  return (
+    <div className="inline-flex rounded-md border border-border bg-muted/40 p-0.5 text-[10px] font-semibold uppercase">
+      {LANGS.map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => onChange(l)}
+          className={cn(
+            "px-2 py-0.5 rounded-sm transition-colors",
+            lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function LInput({
+  value, onChange, placeholder,
+}: {
+  value: Localized<string> | undefined;
+  onChange: (next: Localized<string>) => void;
+  placeholder?: string;
+}) {
+  const [lang, setLang] = useState<LangCode>("fr");
+  const map = toMap(value);
+  return (
+    <div className="space-y-1">
+      <LangTabs lang={lang} onChange={setLang} />
+      <Input
+        dir={lang === "ar" ? "rtl" : "ltr"}
+        value={map[lang]}
+        placeholder={placeholder}
+        onChange={(e) => onChange({ ...map, [lang]: e.target.value })}
+      />
+    </div>
+  );
+}
+
+function LTextarea({
+  value, onChange, rows,
+}: {
+  value: Localized<string> | undefined;
+  onChange: (next: Localized<string>) => void;
+  rows?: number;
+}) {
+  const [lang, setLang] = useState<LangCode>("fr");
+  const map = toMap(value);
+  return (
+    <div className="space-y-1">
+      <LangTabs lang={lang} onChange={setLang} />
+      <Textarea
+        rows={rows}
+        dir={lang === "ar" ? "rtl" : "ltr"}
+        value={map[lang]}
+        onChange={(e) => onChange({ ...map, [lang]: e.target.value })}
+      />
+    </div>
+  );
+}
 
 
 const SECTIONS: { key: keyof SiteContent; label: string }[] = [
