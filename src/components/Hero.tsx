@@ -3,10 +3,12 @@ import { ArrowRight, Flame } from "lucide-react";
 import heroImg from "@/assets/hero-laptop.jpg";
 import { useAdminState } from "@/lib/admin-store";
 import { getIcon, type IconName } from "@/lib/site-content";
+import { useLocalize, type Localized } from "@/lib/i18n";
 
 export function Hero() {
   const { siteContent } = useAdminState();
   const h = siteContent.hero;
+  const L = useLocalize();
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} aria-hidden />
@@ -31,25 +33,25 @@ export function Hero() {
         <div className="space-y-6 text-center max-w-3xl mx-auto">
           {h.badge && (
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium animate-fade-in-up">
-              <Flame className="size-3.5" /> {h.badge}
+              <Flame className="size-3.5" /> {L(h.badge)}
             </span>
           )}
           <h1
             className="font-bold leading-[1.05] animate-fade-in-up delay-100"
             style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}
           >
-            {h.title1}
+            {L(h.title1)}
             <br />
             <span
               className="inline-block bg-clip-text text-transparent text-glow"
               style={{ backgroundImage: "var(--gradient-glow)" }}
             >
-              {h.title2}
+              {L(h.title2)}
             </span>
           </h1>
           {h.subtitle && (
             <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto animate-fade-in-up delay-200">
-              {h.subtitle}
+              {L(h.subtitle)}
             </p>
           )}
           <div className="flex flex-wrap justify-center gap-3 animate-fade-in-up delay-300">
@@ -58,7 +60,7 @@ export function Hero() {
                 to={h.primaryCta.href}
                 className="inline-flex items-center gap-2 h-12 px-6 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors shadow-[var(--shadow-glow)]"
               >
-                {h.primaryCta.label} <ArrowRight className="size-4" />
+                {L(h.primaryCta.label)} <ArrowRight className="size-4 rtl:rotate-180" />
               </Link>
             )}
             {h.secondaryCta.label && (
@@ -66,7 +68,7 @@ export function Hero() {
                 to={h.secondaryCta.href}
                 className="inline-flex items-center gap-2 h-12 px-6 rounded-md border border-border text-foreground hover:border-primary/60 hover:bg-card transition-colors"
               >
-                {h.secondaryCta.label}
+                {L(h.secondaryCta.label)}
               </Link>
             )}
           </div>
@@ -76,7 +78,7 @@ export function Hero() {
             className="w-full max-w-2xl mx-auto grid gap-3 pt-8 animate-fade-in-up delay-300"
             style={{ gridTemplateColumns: `repeat(${Math.min(h.kpis.length, 4)}, minmax(0,1fr))` }}
           >
-            {h.kpis.map((k) => <Kpi key={k.id} icon={k.icon} n={k.value} l={k.label} />)}
+            {h.kpis.map((k) => <Kpi key={k.id} icon={k.icon} n={L(k.value) ?? ""} l={L(k.label) ?? ""} />)}
           </div>
         )}
         {h.showImage && (
@@ -113,3 +115,6 @@ function Kpi({ icon, n, l }: { icon: IconName; n: string; l: string }) {
     </div>
   );
 }
+
+// Re-export to satisfy unused-import checkers when Localized is referenced elsewhere.
+export type { Localized };
