@@ -6,8 +6,11 @@ export function Ticker() {
   const items = tickerMessages.map((m) => m.text);
   const list = [...items, ...items];
   return (
-    <div className="bg-announcement-bg text-announcement-fg overflow-hidden">
-      <div className="flex animate-marquee whitespace-nowrap h-9 items-center text-xs will-change-transform">
+    <div className="bg-announcement-bg text-announcement-fg marquee-viewport">
+      <div
+        className="flex animate-marquee whitespace-nowrap h-9 items-center text-xs"
+        aria-hidden="true"
+      >
         {list.map((tx, i) => (
           <span key={i} className="inline-flex items-center gap-2 px-6 shrink-0 text-white/90">
             <span>{tx}</span>

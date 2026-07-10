@@ -275,9 +275,6 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 /* Android/mobile perf: avoid GPU-heavy animations/filters that can flicker in WebView */
 @media (max-width: 767px) {
-  .animate-marquee,
-  .animate-marquee-fast,
-  .animate-marquee-slow,
   .animate-fade-in-up,
   .animate-page-in,
   .animate-bounce-in,
