@@ -3,15 +3,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { findUserByEmail, setUserPassword } from "@/lib/admin-store";
+import { useI18n } from "@/lib/i18n";
 
-// Frontend-only : réinitialisation mock validée contre la liste des utilisateurs
-// admin. Aucun jeton n'est envoyé par e-mail — l'utilisateur entre son email
-// puis le nouveau mot de passe.
-const emailSchema = z.string().trim().email("E-mail invalide").max(255);
-const passwordSchema = z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères").max(72);
+const emailSchema = z.string().trim().email().max(255);
+const passwordSchema = z.string().min(6).max(72);
 
 export default function ResetPassword() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -22,21 +21,20 @@ export default function ResetPassword() {
     try {
       emailSchema.parse(email);
       passwordSchema.parse(password);
-    } catch (err) {
-      const msg = err instanceof z.ZodError ? err.errors[0]?.message : "Données invalides";
-      return toast.error(msg ?? "Données invalides");
+    } catch {
+      return toast.error(t("auth.err.invalid"));
     }
-    if (password !== confirm) return toast.error("Les mots de passe ne correspondent pas");
+    if (password !== confirm) return toast.error(t("reset.err.match"));
 
     const known = findUserByEmail(email);
-    if (!known) return toast.error("Aucun compte trouvé avec cet e-mail.");
+    if (!known) return toast.error(t("reset.err.noAccount"));
 
     setBusy(true);
     setTimeout(() => {
       const ok = setUserPassword(email, password);
       setBusy(false);
-      if (!ok) return toast.error("Erreur lors de la mise à jour");
-      toast.success("Mot de passe mis à jour. Connectez-vous.");
+      if (!ok) return toast.error(t("reset.err.update"));
+      toast.success(t("reset.ok"));
       navigate("/auth");
     }, 400);
   };
@@ -44,24 +42,24 @@ export default function ResetPassword() {
   return (
     <section className="container-page py-16 max-w-md">
       <div className="rounded-2xl border border-border bg-card p-8">
-        <h1 className="text-2xl font-bold mb-1">Nouveau mot de passe</h1>
-        <p className="text-sm text-muted-foreground mb-6">Entrez l'e-mail de votre compte et un nouveau mot de passe.</p>
+        <h1 className="text-2xl font-bold mb-1">{t("reset.title")}</h1>
+        <p className="text-sm text-muted-foreground mb-6">{t("reset.subtitle")}</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail du compte" required maxLength={255}
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("reset.email")} required maxLength={255}
             className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm" />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Nouveau mot de passe" required minLength={6} maxLength={72}
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("reset.newpw")} required minLength={6} maxLength={72}
             className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm" />
-          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirmer le mot de passe" required minLength={6} maxLength={72}
+          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t("reset.confirm")} required minLength={6} maxLength={72}
             className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm" />
           <button type="submit" disabled={busy}
             className="w-full h-11 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition disabled:opacity-50">
-            {busy ? "..." : "Mettre à jour le mot de passe"}
+            {busy ? "..." : t("reset.submit")}
           </button>
         </form>
 
         <Link to="/auth" className="block mt-4 text-center text-xs text-muted-foreground hover:text-foreground">
-          Retour à la connexion
+          {t("reset.back")}
         </Link>
       </div>
     </section>
