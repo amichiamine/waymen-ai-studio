@@ -194,16 +194,33 @@ html, body { overflow-x: hidden; max-width: 100%; }
   to   { transform: translate3d(-50%, 0, 0); }
 }
 .marquee-viewport {
+  width: 100%;
   overflow: hidden;
   contain: content;
   isolation: isolate;
   transform: translateZ(0);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  min-width: 200%;
+  align-items: center;
+  white-space: nowrap;
+}
+.marquee-group {
+  display: flex;
+  min-width: 50%;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-around;
 }
 .animate-marquee,
 .animate-marquee-fast,
 .animate-marquee-slow {
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
+  will-change: transform;
+  animation-fill-mode: both;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   animation-name: marquee;
@@ -275,6 +292,19 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
 /* Android/mobile perf: avoid GPU-heavy animations/filters that can flicker in WebView */
 @media (max-width: 767px) {
+  *, *::before, *::after {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+
+  *:not(.animate-marquee):not(.animate-marquee-fast):not(.animate-marquee-slow),
+  *:not(.animate-marquee):not(.animate-marquee-fast):not(.animate-marquee-slow)::before,
+  *:not(.animate-marquee):not(.animate-marquee-fast):not(.animate-marquee-slow)::after {
+    animation: none !important;
+    animation-delay: 0s !important;
+  }
+
   .animate-fade-in-up,
   .animate-page-in,
   .animate-bounce-in,
@@ -289,10 +319,20 @@ html, body { overflow-x: hidden; max-width: 100%; }
     animation: none !important;
   }
 
-  /* keep marquee running on mobile but ensure no stale will-change layer */
+  /* keep marquee running on mobile as the only continuous compositor animation */
   .animate-marquee,
   .animate-marquee-fast,
-  .animate-marquee-slow { will-change: auto !important; }
+  .animate-marquee-slow {
+    animation-name: marquee !important;
+    animation-timing-function: linear !important;
+    animation-iteration-count: infinite !important;
+    transform: translate3d(0, 0, 0);
+    will-change: transform !important;
+  }
+
+  .animate-marquee { animation-duration: 75s !important; }
+  .animate-marquee-fast { animation-duration: 52s !important; }
+  .animate-marquee-slow { animation-duration: 110s !important; }
 
   .reveal,
   .reveal-up,
@@ -315,6 +355,13 @@ html, body { overflow-x: hidden; max-width: 100%; }
 
   .blur-3xl, .blur-2xl, .blur-xl, .blur-lg, .blur-md, .blur-sm {
     filter: none !important;
+  }
+
+  [style*="filter"],
+  [style*="backdrop-filter"] {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   .group:hover .group-hover\:scale-110,
