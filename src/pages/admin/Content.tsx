@@ -140,13 +140,13 @@ function IconPicker({ value, onChange }: { value: IconName; onChange: (n: IconNa
 
 // ---- Forms ----
 function SimpleTitleForm({ value, onChange, titleLabel }: { value: { title: string }; onChange: (v: { title: string }) => void; titleLabel: string }) {
-  return <Field label={titleLabel}><Input value={S(value.title)} onChange={(e) => onChange({ ...value, title: e.target.value })} /></Field>;
+  return <Field label={titleLabel}><LInput value={value.title} onChange={(next) => onChange({ ...value, title: next })} /></Field>;
 }
 function TitleSubForm({ value, onChange }: { value: { title: string; subtitle: string }; onChange: (v: { title: string; subtitle: string }) => void }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <Field label="Titre"><Input value={S(value.title)} onChange={(e) => onChange({ ...value, title: e.target.value })} /></Field>
-      <Field label="Sous-titre"><Input value={S(value.subtitle)} onChange={(e) => onChange({ ...value, subtitle: e.target.value })} /></Field>
+      <Field label="Titre"><LInput value={value.title} onChange={(next) => onChange({ ...value, title: next })} /></Field>
+      <Field label="Sous-titre"><LInput value={value.subtitle} onChange={(next) => onChange({ ...value, subtitle: next })} /></Field>
     </div>
   );
 }
@@ -155,14 +155,14 @@ function HeroForm({ value, onChange }: { value: SiteContent["hero"]; onChange: (
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <Field label="Badge"><Input value={S(v.badge)} onChange={(e) => onChange({ ...v, badge: e.target.value })} /></Field>
+      <Field label="Badge"><LInput value={v.badge} onChange={(next) => onChange({ ...v, badge: next })} /></Field>
       <div className="md:col-span-2 flex items-center justify-between rounded-md border p-3">
         <div><p className="text-sm font-medium">Afficher l'image du hero</p></div>
         <Switch checked={v.showImage} onCheckedChange={(c) => onChange({ ...v, showImage: c })} />
       </div>
-      <Field label="Titre ligne 1"><Input value={S(v.title1)} onChange={(e) => onChange({ ...v, title1: e.target.value })} /></Field>
-      <Field label="Titre ligne 2 (accent)"><Input value={S(v.title2)} onChange={(e) => onChange({ ...v, title2: e.target.value })} /></Field>
-      <div className="md:col-span-2"><Field label="Sous-titre"><Textarea rows={2} value={S(v.subtitle)} onChange={(e) => onChange({ ...v, subtitle: e.target.value })} /></Field></div>
+      <Field label="Titre ligne 1"><LInput value={v.title1} onChange={(next) => onChange({ ...v, title1: next })} /></Field>
+      <Field label="Titre ligne 2 (accent)"><LInput value={v.title2} onChange={(next) => onChange({ ...v, title2: next })} /></Field>
+      <div className="md:col-span-2"><Field label="Sous-titre"><LTextarea rows={2} value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field></div>
       <Field label="CTA principal — libellé"><Input value={S(v.primaryCta.label)} onChange={(e) => onChange({ ...v, primaryCta: { ...v.primaryCta, label: e.target.value } })} /></Field>
       <Field label="CTA principal — lien"><Input value={v.primaryCta.href} onChange={(e) => onChange({ ...v, primaryCta: { ...v.primaryCta, href: e.target.value } })} /></Field>
       <Field label="CTA secondaire — libellé"><Input value={S(v.secondaryCta.label)} onChange={(e) => onChange({ ...v, secondaryCta: { ...v.secondaryCta, label: e.target.value } })} /></Field>
@@ -190,9 +190,9 @@ function FlashSaleForm({ value, onChange }: { value: SiteContent["flashSale"]; o
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <Field label="Badge"><Input value={S(v.badge)} onChange={(e) => onChange({ ...v, badge: e.target.value })} /></Field>
-      <Field label="Titre"><Input value={S(v.title)} onChange={(e) => onChange({ ...v, title: e.target.value })} /></Field>
-      <Field label="Libellé « voir tout »"><Input value={S(v.viewAllLabel)} onChange={(e) => onChange({ ...v, viewAllLabel: e.target.value })} /></Field>
+      <Field label="Badge"><LInput value={v.badge} onChange={(next) => onChange({ ...v, badge: next })} /></Field>
+      <Field label="Titre"><LInput value={v.title} onChange={(next) => onChange({ ...v, title: next })} /></Field>
+      <Field label="Libellé « voir tout »"><LInput value={v.viewAllLabel} onChange={(next) => onChange({ ...v, viewAllLabel: next })} /></Field>
       <Field label="Lien « voir tout »"><Input value={v.viewAllHref} onChange={(e) => onChange({ ...v, viewAllHref: e.target.value })} /></Field>
       <Field label="Durée du compte à rebours (heures)"><Input type="number" min={1} value={v.countdownHours} onChange={(e) => onChange({ ...v, countdownHours: Math.max(1, Number(e.target.value) || 1) })} /></Field>
     </div>
@@ -204,9 +204,9 @@ function CategoriesForm({ value, onChange }: { value: SiteContent["categories"];
   return (
     <>
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="Titre"><Input value={S(v.title)} onChange={(e) => onChange({ ...v, title: e.target.value })} /></Field>
-        <Field label="Sous-titre"><Input value={S(v.subtitle)} onChange={(e) => onChange({ ...v, subtitle: e.target.value })} /></Field>
-        <Field label="Libellé « parcourir »"><Input value={S(v.browseLabel)} onChange={(e) => onChange({ ...v, browseLabel: e.target.value })} /></Field>
+        <Field label="Titre"><LInput value={v.title} onChange={(next) => onChange({ ...v, title: next })} /></Field>
+        <Field label="Sous-titre"><LInput value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field>
+        <Field label="Libellé « parcourir »"><LInput value={v.browseLabel} onChange={(next) => onChange({ ...v, browseLabel: next })} /></Field>
       </div>
       <p className="mt-3 text-xs text-muted-foreground">Les libellés et images des 4 cartes se gèrent depuis <strong>Catégories</strong>.</p>
     </>
@@ -219,8 +219,8 @@ function FeaturedTabsForm({ value, onChange }: { value: SiteContent["featuredTab
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="Titre"><Input value={S(v.title)} onChange={(e) => onChange({ ...v, title: e.target.value })} /></Field>
-        <Field label="Sous-titre"><Input value={S(v.subtitle)} onChange={(e) => onChange({ ...v, subtitle: e.target.value })} /></Field>
+        <Field label="Titre"><LInput value={v.title} onChange={(next) => onChange({ ...v, title: next })} /></Field>
+        <Field label="Sous-titre"><LInput value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field>
       </div>
       <div className="flex items-center justify-between">
         <Label>Onglets</Label>
@@ -249,10 +249,10 @@ function WhyUsForm({ value, onChange }: { value: SiteContent["whyUs"]; onChange:
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="Kicker"><Input value={S(v.kicker)} onChange={(e) => onChange({ ...v, kicker: e.target.value })} /></Field>
-        <Field label="Sous-titre"><Input value={S(v.subtitle)} onChange={(e) => onChange({ ...v, subtitle: e.target.value })} /></Field>
-        <Field label="Titre ligne 1"><Input value={S(v.title1)} onChange={(e) => onChange({ ...v, title1: e.target.value })} /></Field>
-        <Field label="Titre ligne 2"><Input value={S(v.title2)} onChange={(e) => onChange({ ...v, title2: e.target.value })} /></Field>
+        <Field label="Kicker"><LInput value={v.kicker} onChange={(next) => onChange({ ...v, kicker: next })} /></Field>
+        <Field label="Sous-titre"><LInput value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field>
+        <Field label="Titre ligne 1"><LInput value={v.title1} onChange={(next) => onChange({ ...v, title1: next })} /></Field>
+        <Field label="Titre ligne 2"><LInput value={v.title2} onChange={(next) => onChange({ ...v, title2: next })} /></Field>
       </div>
       <div className="flex items-center justify-between">
         <Label>Arguments</Label>
@@ -277,9 +277,9 @@ function BuilderTeaserForm({ value, onChange }: { value: SiteContent["builderTea
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="Badge"><Input value={S(v.badge)} onChange={(e) => onChange({ ...v, badge: e.target.value })} /></Field>
-        <Field label="Titre"><Input value={S(v.title)} onChange={(e) => onChange({ ...v, title: e.target.value })} /></Field>
-        <div className="md:col-span-2"><Field label="Sous-titre"><Textarea rows={2} value={S(v.subtitle)} onChange={(e) => onChange({ ...v, subtitle: e.target.value })} /></Field></div>
+        <Field label="Badge"><LInput value={v.badge} onChange={(next) => onChange({ ...v, badge: next })} /></Field>
+        <Field label="Titre"><LInput value={v.title} onChange={(next) => onChange({ ...v, title: next })} /></Field>
+        <div className="md:col-span-2"><Field label="Sous-titre"><LTextarea rows={2} value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field></div>
         <Field label="CTA — libellé"><Input value={S(v.cta.label)} onChange={(e) => onChange({ ...v, cta: { ...v.cta, label: e.target.value } })} /></Field>
         <Field label="CTA — lien"><Input value={v.cta.href} onChange={(e) => onChange({ ...v, cta: { ...v.cta, href: e.target.value } })} /></Field>
       </div>
@@ -305,9 +305,9 @@ function ContactCtaForm({ value, onChange }: { value: SiteContent["contactCta"];
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <Field label="Titre"><Input value={S(v.title)} onChange={(e) => onChange({ ...v, title: e.target.value })} /></Field>
-      <Field label="Libellé WhatsApp"><Input value={S(v.whatsappLabel)} onChange={(e) => onChange({ ...v, whatsappLabel: e.target.value })} /></Field>
-      <div className="md:col-span-2"><Field label="Sous-titre"><Textarea rows={2} value={S(v.subtitle)} onChange={(e) => onChange({ ...v, subtitle: e.target.value })} /></Field></div>
+      <Field label="Titre"><LInput value={v.title} onChange={(next) => onChange({ ...v, title: next })} /></Field>
+      <Field label="Libellé WhatsApp"><LInput value={v.whatsappLabel} onChange={(next) => onChange({ ...v, whatsappLabel: next })} /></Field>
+      <div className="md:col-span-2"><Field label="Sous-titre"><LTextarea rows={2} value={v.subtitle} onChange={(next) => onChange({ ...v, subtitle: next })} /></Field></div>
       <p className="md:col-span-2 text-xs text-muted-foreground">Le numéro WhatsApp est configuré dans <strong>Paramètres</strong>.</p>
     </div>
   );
@@ -321,7 +321,7 @@ function FloatingWaForm({ value, onChange }: { value: SiteContent["floatingWhats
         <div><p className="text-sm font-medium">Afficher le bouton WhatsApp flottant</p><p className="text-xs text-muted-foreground">Visible seulement si un numéro est configuré dans Paramètres.</p></div>
         <Switch checked={v.enabled} onCheckedChange={(c) => onChange({ ...v, enabled: c })} />
       </div>
-      <Field label="Label d'accessibilité"><Input value={S(v.ariaLabel)} onChange={(e) => onChange({ ...v, ariaLabel: e.target.value })} /></Field>
+      <Field label="Label d'accessibilité"><LInput value={v.ariaLabel} onChange={(next) => onChange({ ...v, ariaLabel: next })} /></Field>
     </div>
   );
 }
@@ -356,7 +356,7 @@ function HeaderForm({ value, onChange }: { value: SiteContent["header"]; onChang
   return (
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="Placeholder du champ de recherche"><Input value={S(v.searchPlaceholder)} onChange={(e) => onChange({ ...v, searchPlaceholder: e.target.value })} /></Field>
+        <Field label="Placeholder du champ de recherche"><LInput value={v.searchPlaceholder} onChange={(next) => onChange({ ...v, searchPlaceholder: next })} /></Field>
         <div className="flex items-center justify-between rounded-md border p-3">
           <div><p className="text-sm font-medium">Afficher la barre de recherche</p></div>
           <Switch checked={v.showSearch} onCheckedChange={(c) => onChange({ ...v, showSearch: c })} />
@@ -415,10 +415,10 @@ function FooterForm({ value, onChange }: { value: SiteContent["footer"]; onChang
   return (
     <div className="space-y-4">
       <div className="grid gap-3">
-        <Field label="Baseline (sous le logo)"><Textarea rows={2} value={S(v.tagline)} onChange={(e) => onChange({ ...v, tagline: e.target.value })} /></Field>
+        <Field label="Baseline (sous le logo)"><LTextarea rows={2} value={v.tagline} onChange={(next) => onChange({ ...v, tagline: next })} /></Field>
         <div className="grid gap-3 md:grid-cols-2">
-          <Field label="Copyright"><Input value={S(v.copyright)} onChange={(e) => onChange({ ...v, copyright: e.target.value })} /></Field>
-          <Field label="Mention « fait à… »"><Input value={S(v.madeIn)} onChange={(e) => onChange({ ...v, madeIn: e.target.value })} /></Field>
+          <Field label="Copyright"><LInput value={v.copyright} onChange={(next) => onChange({ ...v, copyright: next })} /></Field>
+          <Field label="Mention « fait à… »"><LInput value={v.madeIn} onChange={(next) => onChange({ ...v, madeIn: next })} /></Field>
         </div>
       </div>
 
