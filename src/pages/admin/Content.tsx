@@ -177,12 +177,12 @@ function renderForm<K extends keyof SiteContent>(
     case "flashSale": return <FlashSaleForm value={draft as SiteContent["flashSale"]} onChange={onChange as (v: SiteContent["flashSale"]) => void} />;
     case "categories": return <CategoriesForm value={draft as SiteContent["categories"]} onChange={onChange as (v: SiteContent["categories"]) => void} />;
     case "useChips": return <SimpleTitleForm value={draft as { title: Localized<string> }} onChange={onChange as (v: { title: Localized<string> }) => void} titleLabel="Titre de la section" />;
-    case "bestSellers": return <TitleSubForm value={draft as { title: string; subtitle: Localized<string> }} onChange={onChange as (v: { title: string; subtitle: Localized<string> }) => void} />;
+    case "bestSellers": return <TitleSubForm value={draft as { title: Localized<string>; subtitle: Localized<string> }} onChange={onChange as (v: { title: Localized<string>; subtitle: Localized<string> }) => void} />;
     case "featuredTabs": return <FeaturedTabsForm value={draft as SiteContent["featuredTabs"]} onChange={onChange as (v: SiteContent["featuredTabs"]) => void} />;
     case "brandsMarquee": return <SimpleTitleForm value={draft as { title: Localized<string> }} onChange={onChange as (v: { title: Localized<string> }) => void} titleLabel="Kicker au-dessus du défilement" />;
     case "whyUs": return <WhyUsForm value={draft as SiteContent["whyUs"]} onChange={onChange as (v: SiteContent["whyUs"]) => void} />;
     case "builderTeaser": return <BuilderTeaserForm value={draft as SiteContent["builderTeaser"]} onChange={onChange as (v: SiteContent["builderTeaser"]) => void} />;
-    case "reviews": return <TitleSubForm value={draft as { title: string; subtitle: Localized<string> }} onChange={onChange as (v: { title: string; subtitle: Localized<string> }) => void} />;
+    case "reviews": return <TitleSubForm value={draft as { title: Localized<string>; subtitle: Localized<string> }} onChange={onChange as (v: { title: Localized<string>; subtitle: Localized<string> }) => void} />;
     case "contactCta": return <ContactCtaForm value={draft as SiteContent["contactCta"]} onChange={onChange as (v: SiteContent["contactCta"]) => void} />;
     case "floatingWhatsApp": return <FloatingWaForm value={draft as SiteContent["floatingWhatsApp"]} onChange={onChange as (v: SiteContent["floatingWhatsApp"]) => void} />;
     case "mobileBottomBar": return <MobileBarForm value={draft as SiteContent["mobileBottomBar"]} onChange={onChange as (v: SiteContent["mobileBottomBar"]) => void} />;
