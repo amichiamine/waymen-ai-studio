@@ -3,20 +3,16 @@ import { Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { categoryMeta, type Category } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
+import { useI18n } from "@/lib/i18n";
 
 import { ProductCard } from "@/components/ProductCard";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 
 const CATS: Category[] = ["laptops", "desktops", "builds", "phones"];
-const SORTS = [
-  { id: "relevance", label: "Pertinence" },
-  { id: "low", label: "Prix ↑" },
-  { id: "high", label: "Prix ↓" },
-  { id: "new", label: "Nouveautés" },
-];
 
 export default function Search() {
+  const { t, lang } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
   const term = q.trim().toLowerCase();
@@ -26,6 +22,13 @@ export default function Search() {
   const [maxPrice, setMaxPrice] = useState(Number(searchParams.get("max")) || 500_000);
   const [sort, setSort] = useState(searchParams.get("sort") ?? "relevance");
   const [inStock, setInStock] = useState(searchParams.get("stock") === "1");
+
+  const SORTS = [
+    { id: "relevance", label: t("search.sort.relevance") },
+    { id: "low", label: t("search.sort.low") },
+    { id: "high", label: t("search.sort.high") },
+    { id: "new", label: t("search.sort.new") },
+  ];
 
   useEffect(() => {
     const p = new URLSearchParams();
@@ -40,7 +43,6 @@ export default function Search() {
 
   const products = useProducts();
   const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products]);
-
 
   const results = useMemo(() => {
     let r = products.filter((p) => {
@@ -74,43 +76,47 @@ export default function Search() {
   const suggestions = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
   const active = cat || brand.length || maxPrice !== 500_000 || inStock || sort !== "relevance";
 
+  const nfLocale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
+  const pageTitle = q ? t("search.page.titleQ").replace("{q}", q) : t("search.page.title");
+  const pageDesc = t("search.page.desc").replace("{n}", String(products.length));
+
   return (
     <section className="container-page py-12">
       <Helmet>
-        <title>{q ? `Recherche « ${q} » — KA Tech` : "Recherche — KA Tech"}</title>
-        <meta name="description" content={`Rechercher parmi ${products.length} produits KA Tech : laptops, desktops, PC sur-mesure et smartphones.`} />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDesc} />
         <link rel="canonical" href="/search" />
       </Helmet>
 
       <div className="flex items-center gap-3 mb-6">
         <SearchIcon className="size-6 text-primary" />
-        <h1 className="text-2xl font-bold">Recherche {q && <span className="text-muted-foreground font-normal">« {q} »</span>}</h1>
+        <h1 className="text-2xl font-bold">{t("search.title")} {q && <span className="text-muted-foreground font-normal">« {q} »</span>}</h1>
       </div>
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-8">
         <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-lg border border-border bg-card p-5 space-y-5">
             <div>
-              <h3 className="text-sm font-semibold mb-3">Catégorie</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("search.category")}</h3>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="radio" checked={!cat} onChange={() => setCat("")} className="size-4 accent-primary" /> Toutes
+                  <input type="radio" checked={!cat} onChange={() => setCat("")} className="size-4 accent-primary" /> {t("search.all")}
                 </label>
                 {CATS.map((c) => (
                   <label key={c} className="flex items-center gap-2 text-sm cursor-pointer">
                     <input type="radio" checked={cat === c} onChange={() => setCat(c)} className="size-4 accent-primary" />
-                    {categoryMeta[c].labelKey.replace("nav.", "").replace(/^./, (m) => m.toUpperCase())}
+                    {t(categoryMeta[c].labelKey)}
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold mb-3">Prix max</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("search.priceMax")}</h3>
               <input type="range" min={20000} max={500000} step={5000} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-primary" />
-              <div className="text-xs text-muted-foreground mt-2">jusqu'à {new Intl.NumberFormat("fr-FR").format(maxPrice)} DA</div>
+              <div className="text-xs text-muted-foreground mt-2">{t("search.upTo").replace("{v}", new Intl.NumberFormat(nfLocale).format(maxPrice))}</div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold mb-3">Marque</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("search.brand")}</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {brands.map((b) => (
                   <label key={b} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -122,11 +128,11 @@ export default function Search() {
             </div>
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="size-4 accent-primary" />
-              En stock uniquement
+              {t("search.inStockOnly")}
             </label>
             {active && (
               <button onClick={() => { setCat(""); setBrand([]); setMaxPrice(500_000); setInStock(false); setSort("relevance"); }} className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
-                <X className="size-3" /> Réinitialiser les filtres
+                <X className="size-3" /> {t("search.reset")}
               </button>
             )}
           </div>
@@ -134,7 +140,7 @@ export default function Search() {
 
         <div>
           <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-            <span className="text-sm text-muted-foreground">{results.length} résultat(s)</span>
+            <span className="text-sm text-muted-foreground">{t("search.results").replace("{n}", String(results.length))}</span>
             <div className="flex items-center gap-1 p-1 rounded-md bg-card border border-border">
               {SORTS.map((s) => (
                 <button key={s.id} onClick={() => setSort(s.id)} className={`h-8 px-3 rounded text-xs font-medium ${sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{s.label}</button>
@@ -144,12 +150,12 @@ export default function Search() {
 
           {results.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-8 text-center">
-              <p className="text-muted-foreground mb-4">Aucun résultat{q ? ` pour « ${q} »` : ""}.</p>
-              <p className="text-sm font-semibold mb-3">Vous pourriez aimer :</p>
+              <p className="text-muted-foreground mb-4">{q ? t("search.emptyQ").replace("{q}", q) : t("search.empty")}</p>
+              <p className="text-sm font-semibold mb-3">{t("search.suggestions")}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {suggestions.map((p) => <ProductCard key={p.id} p={p} />)}
               </div>
-              <Link to="/" className="mt-6 inline-flex h-10 px-5 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold">Retour à l'accueil</Link>
+              <Link to="/" className="mt-6 inline-flex h-10 px-5 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold">{t("search.backHome")}</Link>
             </div>
           ) : (
             <>
