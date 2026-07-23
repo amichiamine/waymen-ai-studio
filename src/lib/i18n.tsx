@@ -1111,6 +1111,8 @@ const ar: Record<string, string> = {
   "notfound.page.title": "الصفحة غير موجودة — KA Tech",
   "notfound.subtitle": "هذه الصفحة غير موجودة أو تم نقلها.",
   "notfound.backHome": "العودة إلى الرئيسية",
+  "categoryIndex.page.title": "الفئات — KA Tech",
+  "categoryIndex.page.desc": "اكتشف جميع فئات KA Tech: أجهزة الكمبيوتر المحمولة، أجهزة الكمبيوتر المكتبية، تجميعات PC حسب الطلب والهواتف الذكية.",
 };
 
 export const translations = { fr, en, ar } as const;
