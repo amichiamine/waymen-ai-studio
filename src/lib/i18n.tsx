@@ -371,6 +371,8 @@ const fr: Record<string, string> = {
   "notfound.page.title": "Page introuvable — KA Tech",
   "notfound.subtitle": "Cette page n'existe pas ou a été déplacée.",
   "notfound.backHome": "Retour à l'accueil",
+  "categoryIndex.page.title": "Catégories — KA Tech",
+  "categoryIndex.page.desc": "Découvrez toutes les catégories KA Tech : ordinateurs portables, ordinateurs de bureau, PC sur-mesure et smartphones.",
 };
 
 const en: Record<string, string> = {
@@ -739,6 +741,8 @@ const en: Record<string, string> = {
   "notfound.page.title": "Page not found — KA Tech",
   "notfound.subtitle": "This page doesn't exist or has been moved.",
   "notfound.backHome": "Back to home",
+  "categoryIndex.page.title": "Categories — KA Tech",
+  "categoryIndex.page.desc": "Explore all KA Tech categories: laptops, desktops, custom PC builds and smartphones.",
 };
 
 const ar: Record<string, string> = {
@@ -1107,6 +1111,8 @@ const ar: Record<string, string> = {
   "notfound.page.title": "الصفحة غير موجودة — KA Tech",
   "notfound.subtitle": "هذه الصفحة غير موجودة أو تم نقلها.",
   "notfound.backHome": "العودة إلى الرئيسية",
+  "categoryIndex.page.title": "الفئات — KA Tech",
+  "categoryIndex.page.desc": "اكتشف جميع فئات KA Tech: أجهزة الكمبيوتر المحمولة، أجهزة الكمبيوتر المكتبية، تجميعات PC حسب الطلب والهواتف الذكية.",
 };
 
 export const translations = { fr, en, ar } as const;
