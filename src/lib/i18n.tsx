@@ -764,7 +764,28 @@ const en: Record<string, string> = {
   "notfound.backHome": "Back to home",
   "categoryIndex.page.title": "Categories — KA Tech",
   "categoryIndex.page.desc": "Explore all KA Tech categories: laptops, desktops, custom PC builds and smartphones.",
+  "search.page.title": "Search — KA Tech",
+  "search.page.titleQ": "Search “{q}” — KA Tech",
+  "search.page.desc": "Search across {n} KA Tech products: laptops, desktops, custom PCs and smartphones.",
+  "search.title": "Search",
+  "search.category": "Category",
+  "search.all": "All",
+  "search.priceMax": "Max price",
+  "search.upTo": "up to {v} DA",
+  "search.brand": "Brand",
+  "search.inStockOnly": "In stock only",
+  "search.reset": "Reset filters",
+  "search.results": "{n} result(s)",
+  "search.sort.relevance": "Relevance",
+  "search.sort.low": "Price ↑",
+  "search.sort.high": "Price ↓",
+  "search.sort.new": "New",
+  "search.empty": "No results.",
+  "search.emptyQ": "No results for “{q}”.",
+  "search.suggestions": "You might also like:",
+  "search.backHome": "Back to home",
 };
+
 
 const ar: Record<string, string> = {
   "nav.home": "الرئيسية",
