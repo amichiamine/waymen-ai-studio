@@ -371,6 +371,8 @@ const fr: Record<string, string> = {
   "notfound.page.title": "Page introuvable — KA Tech",
   "notfound.subtitle": "Cette page n'existe pas ou a été déplacée.",
   "notfound.backHome": "Retour à l'accueil",
+  "categoryIndex.page.title": "Catégories — KA Tech",
+  "categoryIndex.page.desc": "Découvrez toutes les catégories KA Tech : ordinateurs portables, ordinateurs de bureau, PC sur-mesure et smartphones.",
 };
 
 const en: Record<string, string> = {
