@@ -1155,7 +1155,28 @@ const ar: Record<string, string> = {
   "notfound.backHome": "العودة إلى الرئيسية",
   "categoryIndex.page.title": "الفئات — KA Tech",
   "categoryIndex.page.desc": "اكتشف جميع فئات KA Tech: أجهزة الكمبيوتر المحمولة، أجهزة الكمبيوتر المكتبية، تجميعات PC حسب الطلب والهواتف الذكية.",
+  "search.page.title": "البحث — KA Tech",
+  "search.page.titleQ": "البحث «{q}» — KA Tech",
+  "search.page.desc": "ابحث ضمن {n} منتجًا من KA Tech: أجهزة محمولة، مكتبية، تجميعات مخصّصة وهواتف ذكية.",
+  "search.title": "بحث",
+  "search.category": "الفئة",
+  "search.all": "الكل",
+  "search.priceMax": "السعر الأقصى",
+  "search.upTo": "حتى {v} دج",
+  "search.brand": "الماركة",
+  "search.inStockOnly": "المتوفر فقط",
+  "search.reset": "إعادة ضبط الفلاتر",
+  "search.results": "{n} نتيجة",
+  "search.sort.relevance": "الصلة",
+  "search.sort.low": "السعر ↑",
+  "search.sort.high": "السعر ↓",
+  "search.sort.new": "الجديد",
+  "search.empty": "لا توجد نتائج.",
+  "search.emptyQ": "لا توجد نتائج لـ «{q}».",
+  "search.suggestions": "قد يعجبك أيضًا:",
+  "search.backHome": "العودة إلى الرئيسية",
 };
+
 
 export const translations = { fr, en, ar } as const;
 
