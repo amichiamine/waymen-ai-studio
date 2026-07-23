@@ -373,7 +373,28 @@ const fr: Record<string, string> = {
   "notfound.backHome": "Retour à l'accueil",
   "categoryIndex.page.title": "Catégories — KA Tech",
   "categoryIndex.page.desc": "Découvrez toutes les catégories KA Tech : ordinateurs portables, ordinateurs de bureau, PC sur-mesure et smartphones.",
+  "search.page.title": "Recherche — KA Tech",
+  "search.page.titleQ": "Recherche « {q} » — KA Tech",
+  "search.page.desc": "Rechercher parmi {n} produits KA Tech : laptops, desktops, PC sur-mesure et smartphones.",
+  "search.title": "Recherche",
+  "search.category": "Catégorie",
+  "search.all": "Toutes",
+  "search.priceMax": "Prix max",
+  "search.upTo": "jusqu'à {v} DA",
+  "search.brand": "Marque",
+  "search.inStockOnly": "En stock uniquement",
+  "search.reset": "Réinitialiser les filtres",
+  "search.results": "{n} résultat(s)",
+  "search.sort.relevance": "Pertinence",
+  "search.sort.low": "Prix ↑",
+  "search.sort.high": "Prix ↓",
+  "search.sort.new": "Nouveautés",
+  "search.empty": "Aucun résultat.",
+  "search.emptyQ": "Aucun résultat pour « {q} ».",
+  "search.suggestions": "Vous pourriez aimer :",
+  "search.backHome": "Retour à l'accueil",
 };
+
 
 const en: Record<string, string> = {
   "nav.home": "Home",
