@@ -63,9 +63,43 @@ katech.dz {
 
 ## Comptes de démonstration
 
-Les comptes de démonstration (admin, owner, viewer…) sont semés uniquement en mode développement (`import.meta.env.DEV`). Pour les utiliser, copiez `.env.example` vers `.env.local` ; la variable `VITE_DEV_SEED_CREDENTIALS` y définit les identifiants des comptes semés.
+Les comptes de démonstration sont semés uniquement lorsque le build n'est pas en mode `production` (voir ci-dessous). Pour les utiliser en développement local, copiez `.env.example` vers `.env.local` ; la variable `VITE_DEV_SEED_CREDENTIALS` y définit les identifiants des comptes semés.
 
 En production, aucun compte n'est semé et aucun compte sans mot de passe ne peut se connecter. L'authentification réelle (backend + base de données) sera introduite en phase 4 du `PLAN.md` ; jusque-là, aucune connexion n'est fonctionnelle sur un build de production.
+
+## Déployer une démonstration
+
+Pour déployer une version cliquable avec les comptes de test pré-remplis (par exemple sur un hébergement mutualisé pour faire tester l'interface) :
+
+```bash
+# 1. Créez .env.local à partir du fichier d'exemple (gitignoré)
+cp .env.example .env.local
+
+# 2. Construisez le bundle de démonstration
+bun run build:dev
+```
+
+La commande `bun run build:dev` exécute `vite build --mode development`. En mode `development`, Vite injecte la valeur de `VITE_DEV_SEED_CREDENTIALS` dans le bundle ; les comptes de démonstration sont alors disponibles sans serveur de développement.
+
+**Comptes disponibles après déploiement :**
+
+| E-mail            | Mot de passe | Rôle   |
+| ----------------- | ------------ | ------ |
+| `admin@katech.dz` | `admin123`   | owner  |
+| `sarah@katech.dz` | `sarah123`   | admin  |
+| `karim@katech.dz` | `karim123`   | editor |
+| `lina@katech.dz`  | `lina123`    | editor |
+| `omar@katech.dz`  | `omar123`    | viewer |
+
+> **Avertissement de sécurité.** Un build `--mode development` embarque les mots de passe **en clair dans le JavaScript livré**. Tout visiteur peut les lire. N'utilisez que des identifiants fictifs (comme ceux de l'exemple) et ne déployez jamais ce build en production. Ce build ne remplace pas `bun run build` pour un déploiement réel.
+
+**Build de production normal :**
+
+```bash
+bun run build
+```
+
+`bun run build` produit un bundle optimisé sans aucun identifiant embarqué. Aucun accès administrateur n'est fonctionnel avant l'intégration du backend (phase 4 du `PLAN.md`) ; la page de connexion s'affiche mais toute tentative de connexion est refusée.
 
 ## Architecture
 
