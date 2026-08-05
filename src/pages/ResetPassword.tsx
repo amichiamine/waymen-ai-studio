@@ -43,8 +43,8 @@ export default function ResetPassword() {
   return (
     <section className="container-page py-16 max-w-md">
       <Helmet>
-        <title>{t("reset.title")} — KA Tech</title>
-        <meta name="description" content={t("reset.subtitle")} />
+        <title>{t("reset.page.title")}</title>
+        <meta name="description" content={t("reset.page.desc")} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <div className="rounded-2xl border border-border bg-card p-8">

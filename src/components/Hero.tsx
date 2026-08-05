@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Flame } from "lucide-react";
-import heroImg from "@/assets/hero-laptop.jpg";
+import heroImg from "@/assets/hero-laptop.webp";
 import { useAdminState } from "@/lib/admin-store";
 import { getIcon, type IconName } from "@/lib/site-content";
 import { useLocalize, type Localized } from "@/lib/i18n";

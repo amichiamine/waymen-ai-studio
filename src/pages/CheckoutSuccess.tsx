@@ -19,7 +19,7 @@ export default function CheckoutSuccess() {
     <div className="container mx-auto max-w-xl px-4 py-16 text-center">
       <Helmet>
         <title>{t("success.page.title")}</title>
-        <meta name="description" content={t("success.title")} />
+        <meta name="description" content={t("success.page.desc")} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 text-green-600">

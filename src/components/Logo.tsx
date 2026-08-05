@@ -1,4 +1,4 @@
-import logoSrc from "@/assets/ka-tech-logo.png";
+import logoSrc from "@/assets/ka-tech-logo.webp";
 
 export function Logo({ className = "h-9" }: { className?: string }) {
   return (

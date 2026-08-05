@@ -89,6 +89,8 @@ export default function Account() {
     } catch {
       // localStorage indisponible — la modification est quand même enregistrée
       // dans admin-store.
+      toast.error(t("account.saveError"));
+      return;
     }
     toast.success(t("account.savedToast"));
   };

@@ -60,7 +60,7 @@ export default function Auth() {
   return (
     <section className="container-page py-16 max-w-md">
       <Helmet>
-        <title>{mode === "signin" ? t("auth.signin") : t("auth.signup")} — KA Tech</title>
+        <title>{mode === "signin" ? t("auth.page.title") : t("auth.signup")}</title>
         <meta name="description" content={t("auth.subtitle")} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>

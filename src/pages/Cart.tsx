@@ -81,7 +81,7 @@ export default function Cart() {
     <div className="container mx-auto max-w-5xl px-4 py-10">
       <Helmet>
         <title>{t("cart.page.title")}</title>
-        <meta name="description" content={t("cart.discover")} />
+        <meta name="description" content={t("cart.page.desc")} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <h1 className="mb-6 text-2xl font-bold">{t("cart.title")}</h1>

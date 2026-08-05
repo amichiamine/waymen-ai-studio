@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Laptop, Monitor, Cpu, Smartphone, type LucideIcon } from "lucide-react";
-import laptopsImg from "@/assets/cat-laptops.jpg";
-import desktopsImg from "@/assets/cat-desktops.jpg";
-import buildsImg from "@/assets/cat-builds.jpg";
-import phonesImg from "@/assets/cat-phones.jpg";
+import laptopsImg from "@/assets/cat-laptops.webp";
+import desktopsImg from "@/assets/cat-desktops.webp";
+import buildsImg from "@/assets/cat-builds.webp";
+import phonesImg from "@/assets/cat-phones.webp";
 import { useAdminState } from "@/lib/admin-store";
 import type { Category } from "@/data/products";
 import { Reveal } from "@/components/Reveal";

@@ -1,15 +1,15 @@
-import rog from "@/assets/p-rog.jpg";
-import pavilion from "@/assets/p-pavilion.jpg";
-import thinkpad from "@/assets/p-thinkpad.jpg";
-import macbook from "@/assets/p-macbook.jpg";
-import optiplex from "@/assets/p-optiplex.jpg";
-import omen from "@/assets/p-omen.jpg";
-import buildMid from "@/assets/p-build-mid.jpg";
-import buildPro from "@/assets/p-build-pro.jpg";
-import galaxy from "@/assets/p-galaxy.jpg";
-import iphone from "@/assets/p-iphone.jpg";
-import xiaomi from "@/assets/p-xiaomi.jpg";
-import redmi from "@/assets/p-redmi.jpg";
+import rog from "@/assets/p-rog.webp";
+import pavilion from "@/assets/p-pavilion.webp";
+import thinkpad from "@/assets/p-thinkpad.webp";
+import macbook from "@/assets/p-macbook.webp";
+import optiplex from "@/assets/p-optiplex.webp";
+import omen from "@/assets/p-omen.webp";
+import buildMid from "@/assets/p-build-mid.webp";
+import buildPro from "@/assets/p-build-pro.webp";
+import galaxy from "@/assets/p-galaxy.webp";
+import iphone from "@/assets/p-iphone.webp";
+import xiaomi from "@/assets/p-xiaomi.webp";
+import redmi from "@/assets/p-redmi.webp";
 
 export type Category = "laptops" | "desktops" | "builds" | "phones";
 export type UseTag = "gaming" | "work" | "study" | "edit" | "home";

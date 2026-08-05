@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Cpu } from "lucide-react";
-import banner from "@/assets/builder-banner.jpg";
+import banner from "@/assets/builder-banner.webp";
 import { useAdminState } from "@/lib/admin-store";
 import { getIcon } from "@/lib/site-content";
 import { Reveal } from "@/components/Reveal";

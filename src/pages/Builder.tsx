@@ -337,15 +337,15 @@ export default function Builder() {
     const product = buildProduct();
     upsertProduct(product);
     await addToCart(product.id);
-    toast.success(t("pd.added"), { description: product.specLine });
+    toast.success(t("bp.added"), { description: product.specLine });
   }
 
   return (
     <div className="container-page py-8 lg:py-12">
       <Helmet>
-        <title>{t("bp.title")}</title>
-        <meta name="description" content={t("bp.sub")} />
-        <link rel="canonical" href="/builder" />
+        <title>{t("bp.page.title")}</title>
+        <meta name="description" content={t("bp.page.desc")} />
+        <link rel="canonical" href={`${window.location.origin}/builder`} />
       </Helmet>
 
       <header className="mb-8 max-w-2xl">
@@ -356,7 +356,7 @@ export default function Builder() {
 
       {STEPS.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
-          {t("bp.complete")}
+          {t("bp.empty")}
         </div>
       ) : (
         <div className="grid lg:grid-cols-[1fr_320px] gap-8">
@@ -429,33 +429,57 @@ export default function Builder() {
               </ul>
 
               {issues.length > 0 && (
-                <ul className="mt-5 space-y-2">
-                  {errors.concat(warnings).map((issue) => (
-                    <li
-                      key={issue.id}
-                      className={`rounded-md border p-3 text-xs leading-relaxed ${
-                        issue.severity === "error"
-                          ? "border-destructive/50 bg-destructive/10 text-destructive"
-                          : "border-warning/50 bg-warning/10 text-warning"
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5 font-semibold">
-                        {issue.severity === "error" ? (
-                          <AlertCircle className="size-3.5 shrink-0" />
-                        ) : (
-                          <AlertTriangle className="size-3.5 shrink-0" />
-                        )}
-                        {issue.steps.join(" + ")}
-                      </span>
-                      <span className="mt-1 block text-foreground/80">{issue.detail}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="mt-5 space-y-2">
+                  <p className="text-xs font-semibold text-foreground">{t("bp.compat.title")}</p>
+                  <ul className="space-y-2">
+                    {errors.concat(warnings).map((issue) => {
+                      const compatLabel =
+                        issue.id === "socket"
+                          ? t("bp.compat.socket")
+                          : issue.id === "memory"
+                            ? t("bp.compat.memory")
+                            : t("bp.compat.psu");
+                      return (
+                        <li
+                          key={issue.id}
+                          className={`rounded-md border p-3 text-xs leading-relaxed ${
+                            issue.severity === "error"
+                              ? "border-destructive/50 bg-destructive/10 text-destructive"
+                              : "border-warning/50 bg-warning/10 text-warning"
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5 font-semibold">
+                            {issue.severity === "error" ? (
+                              <AlertCircle className="size-3.5 shrink-0" />
+                            ) : (
+                              <AlertTriangle className="size-3.5 shrink-0" />
+                            )}
+                            {compatLabel}
+                          </span>
+                          <span className="mt-1 block text-foreground/80">{issue.detail}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {blocked && (
+                    <p className="text-xs text-destructive font-medium">{t("bp.compat.blocked")}</p>
+                  )}
+                </div>
               )}
 
-              <div className="border-t border-border mt-5 pt-5 flex items-baseline justify-between">
-                <span className="text-sm text-muted-foreground">{t("bp.total")}</span>
-                <span className="text-2xl font-bold">{formatDZD(total)}</span>
+              <div className="border-t border-border mt-5 pt-5 space-y-1">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">{t("bp.total")}</span>
+                  <span className="text-2xl font-bold">{formatDZD(total)}</span>
+                </div>
+                {!complete && (
+                  <div className="flex items-baseline justify-between text-xs text-muted-foreground">
+                    <span>{t("bp.remaining")}</span>
+                    <span>
+                      {missing.length} / {STEPS.length}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <button
@@ -465,7 +489,7 @@ export default function Builder() {
                 className="mt-5 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors bg-primary text-primary-foreground hover:opacity-90 disabled:bg-card disabled:border disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:hover:opacity-100"
               >
                 <ShoppingCart className="size-4" />
-                {complete ? t("pd.addCart") : t("bp.complete")}
+                {complete ? t("bp.addCart") : t("bp.complete")}
               </button>
 
               <a

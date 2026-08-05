@@ -8,7 +8,7 @@ export default function NotFound() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Helmet>
         <title>{t("notfound.page.title")}</title>
-        <meta name="description" content={t("notfound.subtitle")} />
+        <meta name="description" content={t("notfound.page.desc")} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <div className="max-w-md text-center">

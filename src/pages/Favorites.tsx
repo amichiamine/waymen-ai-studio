@@ -16,7 +16,7 @@ export default function Favorites() {
     <div className="container mx-auto px-4 py-10">
       <Helmet>
         <title>{t("favorites.page.title")}</title>
-        <meta name="description" content={t("favorites.browse")} />
+        <meta name="description" content={t("favorites.page.desc")} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <h1 className="mb-6 text-2xl font-bold">{t("favorites.title")}</h1>
