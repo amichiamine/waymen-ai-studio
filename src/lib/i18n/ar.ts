@@ -390,6 +390,35 @@ const ar: Record<string, string> = {
   "search.emptyQ": "لا توجد نتائج لـ «{q}».",
   "search.suggestions": "قد يعجبك أيضًا:",
   "search.backHome": "العودة إلى الرئيسية",
+  // Configurateur (bp page + panier + compatibilité)
+  "bp.page.title": "مُجمِّع الحاسوب — KA Tech",
+  "bp.page.desc": "اصنع حاسوبك المخصّص: اختر المكونات، تحقق من التوافق وشاهد السعر مباشرة.",
+  "bp.addCart": "أضف إلى السلة",
+  "bp.added": "تمت إضافة التجميعة إلى السلة",
+  "bp.compat.title": "التوافق",
+  "bp.compat.socket": "المقبس غير متوافق بين المعالج واللوحة الأم",
+  "bp.compat.memory": "نوع الذاكرة غير متوافق مع اللوحة الأم",
+  "bp.compat.psu": "مزود الطاقة غير كافٍ للمكونات المختارة",
+  "bp.compat.blocked": "صحّح حالات عدم التوافق قبل المتابعة",
+  "bp.remaining": "الميزانية المتبقية",
+  "bp.empty": "لم يُختر أي مكوّن بعد",
+  // Métadonnées manquantes
+  "auth.page.title": "تسجيل الدخول — KA Tech",
+  "cart.page.desc": "راجع سلتك، عدّل الكميات وأتمم طلبك في KA Tech.",
+  "favorites.page.desc": "اعثر على جميع المنتجات التي أضفتها إلى مفضلتك في KA Tech.",
+  "notfound.page.desc": "الصفحة التي تبحث عنها غير موجودة — عد إلى الرئيسية.",
+  "success.page.desc": "تم تأكيد طلبك في KA Tech. شكرًا على شرائك!",
+  "reset.page.title": "إعادة تعيين كلمة المرور — KA Tech",
+  "reset.page.desc": "أعد تعيين كلمة مرور حسابك في KA Tech.",
+  "account.saveError": "حدث خطأ أثناء حفظ الملف الشخصي",
+  // Écran de maintenance
+  "maintenance.title": "الموقع في صيانة",
+  "maintenance.message": "سنعود قريبًا جدًا.",
+  "maintenance.admin": "فضاء المسؤول",
+  // Gardes App
+  "app.loading": "جارٍ التحميل…",
+  "admin.restricted.title": "منطقة مخصصة لفريق الإدارة",
+  "admin.restricted.desc": "يجب أن تكون مسجلاً بحساب مسؤول للوصول إلى لوحة الإدارة.",
 };
 
 export default ar;

@@ -393,6 +393,37 @@ const en: Record<string, string> = {
   "search.emptyQ": "No results for “{q}”.",
   "search.suggestions": "You might also like:",
   "search.backHome": "Back to home",
+  // Configurateur (bp page + panier + compatibilité)
+  "bp.page.title": "PC Builder — KA Tech",
+  "bp.page.desc":
+    "Build your custom PC: pick components, check compatibility and get a live price.",
+  "bp.addCart": "Add to cart",
+  "bp.added": "Build added to cart",
+  "bp.compat.title": "Compatibility",
+  "bp.compat.socket": "Incompatible socket between the processor and the motherboard",
+  "bp.compat.memory": "Memory type incompatible with the motherboard",
+  "bp.compat.psu": "Power supply insufficient for the selected components",
+  "bp.compat.blocked": "Fix the incompatibilities before continuing",
+  "bp.remaining": "Remaining budget",
+  "bp.empty": "No components selected yet",
+  // Métadonnées manquantes
+  "auth.page.title": "Sign in — KA Tech",
+  "cart.page.desc": "Review your cart, adjust quantities and complete your KA Tech order.",
+  "favorites.page.desc": "Find all the products you have saved to your KA Tech wishlist.",
+  "notfound.page.desc": "The page you are looking for cannot be found — return to KA Tech home.",
+  "success.page.desc": "Your KA Tech order has been confirmed. Thank you for your purchase!",
+  "reset.page.title": "Reset password — KA Tech",
+  "reset.page.desc": "Reset the password for your KA Tech account.",
+  "account.saveError": "Error while saving the profile",
+  // Écran de maintenance
+  "maintenance.title": "Site under maintenance",
+  "maintenance.message": "We'll be back very soon.",
+  "maintenance.admin": "Admin area",
+  // Gardes App
+  "app.loading": "Loading…",
+  "admin.restricted.title": "Area reserved for the admin team",
+  "admin.restricted.desc":
+    "You must be signed in with an administrator account to access the back-office.",
 };
 
 export default en;

@@ -397,6 +397,39 @@ const fr: Record<string, string> = {
   "search.emptyQ": "Aucun résultat pour « {q} ».",
   "search.suggestions": "Vous pourriez aimer :",
   "search.backHome": "Retour à l'accueil",
+  // Configurateur (bp page + panier + compatibilité)
+  "bp.page.title": "Configurateur PC — KA Tech",
+  "bp.page.desc":
+    "Construisez votre PC sur-mesure : choisissez les composants, vérifiez la compatibilité et obtenez un prix en direct.",
+  "bp.addCart": "Ajouter au panier",
+  "bp.added": "Configuration ajoutée au panier",
+  "bp.compat.title": "Compatibilité",
+  "bp.compat.socket": "Socket incompatible entre le processeur et la carte mère",
+  "bp.compat.memory": "Type de mémoire incompatible avec la carte mère",
+  "bp.compat.psu": "Alimentation insuffisante pour les composants sélectionnés",
+  "bp.compat.blocked": "Corrigez les incompatibilités avant de continuer",
+  "bp.remaining": "Budget restant",
+  "bp.empty": "Aucun composant sélectionné pour l'instant",
+  // Métadonnées manquantes
+  "auth.page.title": "Connexion — KA Tech",
+  "cart.page.desc":
+    "Consultez votre panier, ajustez les quantités et finalisez votre commande KA Tech.",
+  "favorites.page.desc": "Retrouvez tous les produits que vous avez mis en favoris sur KA Tech.",
+  "notfound.page.desc":
+    "La page que vous cherchez est introuvable — retournez à l'accueil KA Tech.",
+  "success.page.desc": "Votre commande KA Tech a bien été confirmée. Merci pour votre achat !",
+  "reset.page.title": "Réinitialisation du mot de passe — KA Tech",
+  "reset.page.desc": "Réinitialisez le mot de passe de votre compte KA Tech.",
+  "account.saveError": "Erreur lors de la sauvegarde du profil",
+  // Écran de maintenance
+  "maintenance.title": "Site en maintenance",
+  "maintenance.message": "Nous revenons très vite.",
+  "maintenance.admin": "Espace administrateur",
+  // Gardes App
+  "app.loading": "Chargement…",
+  "admin.restricted.title": "Zone réservée à l'équipe admin",
+  "admin.restricted.desc":
+    "Vous devez être connecté avec un compte administrateur pour accéder au back-office.",
 };
 
 export default fr;
