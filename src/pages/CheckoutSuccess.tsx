@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { CheckCircle2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,9 +10,6 @@ const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
 
 export default function CheckoutSuccess() {
   const { t } = useI18n();
-  useEffect(() => {
-    document.title = t("success.page.title");
-  }, [t]);
   const [params] = useSearchParams();
   const id = params.get("id");
   const { orders } = useAdminState();
@@ -20,6 +17,11 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="container mx-auto max-w-xl px-4 py-16 text-center">
+      <Helmet>
+        <title>{t("success.page.title")}</title>
+        <meta name="description" content={t("success.title")} />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 text-green-600">
         <CheckCircle2 className="h-9 w-9" />
       </div>

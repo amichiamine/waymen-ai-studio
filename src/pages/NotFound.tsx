@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useI18n } from "@/lib/i18n";
 
 export default function NotFound() {
   const { t } = useI18n();
-  useEffect(() => {
-    document.title = t("notfound.page.title");
-  }, [t]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Helmet>
+        <title>{t("notfound.page.title")}</title>
+        <meta name="description" content={t("notfound.subtitle")} />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">{t("notfound.title")}</h2>

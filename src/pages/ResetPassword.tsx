@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { z } from "zod";
 import { findUserByEmail, setUserPassword } from "@/lib/admin-store";
@@ -41,6 +42,11 @@ export default function ResetPassword() {
 
   return (
     <section className="container-page py-16 max-w-md">
+      <Helmet>
+        <title>{t("reset.title")} — KA Tech</title>
+        <meta name="description" content={t("reset.subtitle")} />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="rounded-2xl border border-border bg-card p-8">
         <h1 className="text-2xl font-bold mb-1">{t("reset.title")}</h1>
         <p className="text-sm text-muted-foreground mb-6">{t("reset.subtitle")}</p>

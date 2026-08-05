@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Trash2, Minus, Plus, ShoppingBag, Tag, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
@@ -16,9 +17,6 @@ const COUPON_KEY = "ka-cart-coupon";
 
 export default function Cart() {
   const { t } = useI18n();
-  useEffect(() => {
-    document.title = t("cart.page.title");
-  }, [t]);
   const { cart, updateQty, removeFromCart } = useStore();
   const products = useProducts();
 
@@ -81,6 +79,11 @@ export default function Cart() {
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-10">
+      <Helmet>
+        <title>{t("cart.page.title")}</title>
+        <meta name="description" content={t("cart.discover")} />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <h1 className="mb-6 text-2xl font-bold">{t("cart.title")}</h1>
 
       {lines.length === 0 ? (

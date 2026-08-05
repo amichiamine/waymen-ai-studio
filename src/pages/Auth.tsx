@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { z } from "zod";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -58,6 +59,11 @@ export default function Auth() {
 
   return (
     <section className="container-page py-16 max-w-md">
+      <Helmet>
+        <title>{mode === "signin" ? t("auth.signin") : t("auth.signup")} — KA Tech</title>
+        <meta name="description" content={t("auth.subtitle")} />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="rounded-2xl border border-border bg-card p-8">
         <h1 className="text-2xl font-bold mb-1">
           {mode === "signin" ? t("auth.signin") : t("auth.signup")}

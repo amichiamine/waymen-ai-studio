@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Heart } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useProducts } from "@/lib/useProducts";
@@ -8,15 +8,17 @@ import { useI18n } from "@/lib/i18n";
 
 export default function Favorites() {
   const { t } = useI18n();
-  useEffect(() => {
-    document.title = t("favorites.page.title");
-  }, [t]);
   const { favorites } = useStore();
   const products = useProducts();
   const items = products.filter((p) => favorites.has(p.id));
 
   return (
     <div className="container mx-auto px-4 py-10">
+      <Helmet>
+        <title>{t("favorites.page.title")}</title>
+        <meta name="description" content={t("favorites.browse")} />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <h1 className="mb-6 text-2xl font-bold">{t("favorites.title")}</h1>
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-md border border-dashed p-12 text-center">
