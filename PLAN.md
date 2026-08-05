@@ -654,6 +654,9 @@ serveur. Le frontend ne change pas d'une ligne.
 | Authentification      | Sessions PHP + cookie `httpOnly` (déjà anticipé par `VITE_API_AUTH=cookie`) | 5 août 2026 |
 | Branches              | Phases 2 et 4 sur branche dédiée, fusion après commande de vérité           | 5 août 2026 |
 | Paiement au lancement | Paiement à la livraison seul ; SATIM ultérieurement                         | 5 août 2026 |
+| Backend               | PHP 8.2 + Slim + SQLite serveur ; TypeScript si l'hébergeur propose Node    | 5 août 2026 |
+| Canaux de vente       | Boutique complète prioritaire, WhatsApp complémentaire                      | 5 août 2026 |
+| SQLite navigateur     | Écarté : 400 kB de moteur pour 9 kB de données                              | 5 août 2026 |
 
 ## 11. Décisions ouvertes
 
