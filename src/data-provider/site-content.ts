@@ -1,7 +1,10 @@
 import { useCallback, useMemo } from "react";
 
+import { ApiError } from "@/api/client";
 import { contentApi } from "@/api/resources/content";
 import type { SiteContent } from "@/api/types";
+import { isHttpMode } from "@/api/config";
+import { resetSiteContentSection } from "@/lib/admin-store";
 import { seedSiteContent } from "@/lib/site-content";
 
 import { runMutation, useResource } from "./use-resource";
@@ -42,12 +45,16 @@ export function useSiteContent(): ResourceState<SiteContent> {
 
 export type SiteContentMutations = {
   update: (patch: Partial<SiteContent>) => Promise<void>;
+  resetSection: <K extends keyof SiteContent>(section: K) => Promise<void>;
 };
 
 /**
  * Mutations du contenu éditorial.
  * `update` envoie un patch partiel — seuls les champs présents sont modifiés,
  * ce qui préserve les `Localized<string>` non touchés.
+ * `resetSection` réinitialise une section à sa valeur de départ (seedSiteContent).
+ * En mode http, aucun endpoint de réinitialisation par section n'existe à ce stade ;
+ * la mutation échoue explicitement (phase 4 — PLAN.md).
  */
 export function useSiteContentMutations(): SiteContentMutations {
   const update = useCallback(
@@ -56,5 +63,19 @@ export function useSiteContentMutations(): SiteContentMutations {
     [],
   );
 
-  return useMemo(() => ({ update }), [update]);
+  const resetSection = useCallback(<K extends keyof SiteContent>(section: K) => {
+    return runMutation(SITE_CONTENT_RESOURCE, "resetSection", async () => {
+      if (isHttpMode()) {
+        throw new ApiError(
+          501,
+          "not_implemented",
+          "La réinitialisation par section du contenu éditorial n'est pas disponible via l'API HTTP. " +
+            "Cette mutation sera implémentée en phase 4 (PLAN.md).",
+        );
+      }
+      resetSiteContentSection(section);
+    });
+  }, []);
+
+  return useMemo(() => ({ update, resetSection }), [update, resetSection]);
 }
