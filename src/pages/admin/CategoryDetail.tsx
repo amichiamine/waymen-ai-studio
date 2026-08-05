@@ -3,9 +3,9 @@ import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Pencil, Plus } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Pencil, Plus } from "lucide-react";
 import { formatDZD } from "@/data/products";
-import { useAdminState } from "@/lib/admin-store";
+import { useCategoryDetail, useProductList, useBrandList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
@@ -17,9 +17,57 @@ const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible
 
 export default function AdminCategoryDetail() {
   const { slug } = useParams();
-  const { categories, products, brands } = useAdminState();
+  const { data: category, loading, error } = useCategoryDetail(slug);
+  const { data: products } = useProductList();
+  const { data: brands } = useBrandList();
   const { can, denyReason } = usePermissions();
-  const category = categories.find((c) => c.slug === slug);
+
+  if (loading) {
+    return (
+      <AdminPageShell
+        title="Catégorie"
+        actions={
+          <Link to="/admin/categories">
+            <Button variant="outline">
+              <ArrowLeft className="me-2 h-4 w-4" />
+              Retour
+            </Button>
+          </Link>
+        }
+      >
+        <div className="grid gap-6 lg:grid-cols-[320px_1fr]" aria-busy="true">
+          <div className="h-64 animate-pulse rounded-lg border bg-muted" />
+          <div className="space-y-4">
+            <div className="h-32 animate-pulse rounded-lg border bg-muted" />
+          </div>
+        </div>
+      </AdminPageShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminPageShell
+        title="Catégorie"
+        actions={
+          <Link to="/admin/categories">
+            <Button variant="outline">
+              <ArrowLeft className="me-2 h-4 w-4" />
+              Retour
+            </Button>
+          </Link>
+        }
+      >
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      </AdminPageShell>
+    );
+  }
 
   if (!category) {
     return (

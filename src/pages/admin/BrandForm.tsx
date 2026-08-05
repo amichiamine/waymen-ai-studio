@@ -10,7 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { useAdminState, upsertBrand, deleteBrand, getBrand } from "@/lib/admin-store";
+import {
+  useBrandList,
+  useBrandDetail,
+  useBrandMutations,
+  useProductList,
+  toApiError,
+} from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
 
 const schema = z.object({
@@ -32,11 +38,17 @@ const schema = z.object({
 type V = z.infer<typeof schema>;
 
 export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
-  const { brands, products } = useAdminState();
+  const { data: brands } = useBrandList();
+  const { data: products } = useProductList();
   const { can, guard, denyReason } = usePermissions();
   const { id } = useParams();
+
+  // useBrandDetail reste monté et inactif quand id est undefined — jamais de hook conditionnel.
+  const { data: existing } = useBrandDetail(mode === "edit" ? id : undefined);
+
+  const { create, update: updateBrand, remove } = useBrandMutations();
   const nav = useNavigate();
-  const existing = mode === "edit" && id ? getBrand(id) : undefined;
+
   const [v, setV] = useState<V>(
     existing
       ? {
@@ -49,6 +61,8 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
   );
   const [err, setErr] = useState<Partial<Record<keyof V, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (mode === "edit" && id) {
@@ -68,7 +82,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
     setErr((e) => ({ ...e, [k]: undefined }));
   }
 
-  function submit(e: React.FormEvent) {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Niveau 2 — vérification dans le handler avant toute mutation.
     const perm = mode === "new" ? "create" : "update";
@@ -93,23 +107,32 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       toast.error("Nom déjà utilisé");
       return;
     }
+    setSaving(true);
     try {
-      upsertBrand({
+      const payload = {
         id: p.data.id,
         name: p.data.name,
         description: p.data.description || undefined,
         country: p.data.country || undefined,
-      });
+      };
+      if (mode === "new") {
+        await create(payload);
+      } else {
+        await updateBrand(p.data.id, payload);
+      }
       toast.success(mode === "new" ? "Marque créée" : "Marque mise à jour");
       nav("/admin/brands");
-    } catch {
-      toast.error("Enregistrement échoué");
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
     }
-  }
+  };
 
   const usedCount = existing ? products.filter((p) => p.brand === existing.name).length : 0;
 
-  function doDelete() {
+  const doDelete = async () => {
     if (!existing) return;
     // Niveau 2 — vérification dans le handler avant toute mutation.
     if (!guard("delete", "Supprimer la marque")) return;
@@ -118,14 +141,18 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       toast.error(`Impossible : ${usedCount} produit(s) utilisent cette marque.`);
       return;
     }
+    setDeleting(true);
     try {
-      deleteBrand(existing.id);
+      await remove(existing.id);
       toast.success("Marque supprimée");
       nav("/admin/brands");
-    } catch {
-      toast.error("Suppression échouée");
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setDeleting(false);
     }
-  }
+  };
 
   // Clé de permission selon le mode : création ou modification.
   const formPerm = mode === "new" ? "create" : "update";
@@ -216,8 +243,8 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
           </Link>
           {/* Niveau 1+3 : bouton de soumission désactivé si pas la permission. */}
           <span title={denyReason(formPerm)} className="inline-flex">
-            <Button type="submit" disabled={!can(formPerm)}>
-              {mode === "new" ? "Créer" : "Enregistrer"}
+            <Button type="submit" disabled={!can(formPerm) || saving}>
+              {saving ? "Enregistrement…" : mode === "new" ? "Créer" : "Enregistrer"}
             </Button>
           </span>
         </div>
@@ -240,7 +267,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
             )
           ) : null
         }
-        confirmLabel="Supprimer"
+        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
         destructive
         onConfirm={doDelete}
       />

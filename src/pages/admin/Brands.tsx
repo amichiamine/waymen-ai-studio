@@ -3,14 +3,16 @@ import { Link } from "react-router-dom";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Tag, Pencil } from "lucide-react";
+import { AlertTriangle, Plus, Tag, Pencil } from "lucide-react";
 import { formatDZD } from "@/data/products";
-import { useAdminState } from "@/lib/admin-store";
+import { useBrandList, useProductList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminBrands() {
-  const { brands, products } = useAdminState();
+  const { data: brands, loading, error } = useBrandList();
+  const { data: products } = useProductList();
   const { can, denyReason } = usePermissions();
+
   const rows = useMemo(() => {
     return brands
       .map((b) => {
@@ -24,6 +26,18 @@ export default function AdminBrands() {
       })
       .sort((a, b) => b.count - a.count);
   }, [brands, products]);
+
+  if (loading) {
+    return (
+      <AdminPageShell title="Marques" description="Chargement…">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-busy="true">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="h-32 animate-pulse rounded-lg border bg-muted" />
+          ))}
+        </div>
+      </AdminPageShell>
+    );
+  }
 
   return (
     <AdminPageShell
@@ -46,6 +60,16 @@ export default function AdminBrands() {
         )
       }
     >
+      {error && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {rows.map((b) => (
           <Card key={b.id} className="transition hover:border-primary/50">
