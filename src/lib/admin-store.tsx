@@ -607,10 +607,11 @@ function seedReviews(): Review[] {
  * de démo sont donc lus depuis `VITE_DEV_SEED_CREDENTIALS`, au format
  * `email:motdepasse,email:motdepasse` (voir `.env.example`).
  *
- * Garde de mode : la variable n'est lue que si `import.meta.env.MODE` est
- * différent de `"production"` (typiquement `"development"` pour un build de
- * démonstration). Un build de production (`vite build` sans `--mode`) ne sème
- * donc AUCUN mot de passe, même si la variable est présente dans l'env.
+ * Garde de mode, fail-closed : la variable n'est lue que si
+ * `import.meta.env.MODE` vaut exactement `"development"` — le serveur de dev
+ * et le build de démonstration (`bun run build:dev`). Tout autre mode, y
+ * compris un mode personnalisé (`--mode staging`, `--mode preprod`), ne sème
+ * AUCUN mot de passe, même si la variable est présente dans l'environnement.
  *
  * Note : `import.meta.env.DEV` est toujours `false` en mode `vite build`,
  * même avec `--mode development` (Vite fixe `NODE_ENV=production` pour tout
@@ -621,7 +622,7 @@ function seedReviews(): Review[] {
  */
 function readDevSeedCredentials(): Map<string, string> {
   const credentials = new Map<string, string>();
-  if (import.meta.env.MODE === "production") return credentials;
+  if (import.meta.env.MODE !== "development") return credentials;
 
   const raw = import.meta.env.VITE_DEV_SEED_CREDENTIALS;
   if (!raw || raw.trim() === "") return credentials;
