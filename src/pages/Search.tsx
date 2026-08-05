@@ -1,8 +1,8 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { Search as SearchIcon, X } from "lucide-react";
+import { AlertTriangle, Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { catalogProducts, categoryMeta, type Category } from "@/data/products";
-import { useProducts } from "@/lib/useProducts";
+import { useProductList } from "@/data-provider";
 import { useI18n } from "@/lib/i18n";
 
 import { ProductCard } from "@/components/ProductCard";
@@ -43,10 +43,21 @@ export default function Search() {
     setSearchParams(p, { replace: true });
   }, [q, cat, brand, maxPrice, sort, inStock, setSearchParams]);
 
+  // Lecture via le fournisseur de données : cette page est le pilote de la
+  // migration des 62 fichiers UI (cf. docs/DATA-PROVIDER.md). Les trois états
+  // sont traités bien qu'ils soient inertes en mode mock — `loading` y est faux
+  // dès le premier rendu et `error` reste nul. C'est précisément l'intérêt : le
+  // jour où VITE_API_MODE=http, ce fichier n'a pas une ligne à changer.
+  //
+  // On ne passe AUCUN filtre au fournisseur : le tri, la fourchette de prix et
+  // la sélection de marques sont manipulés en continu par le visiteur. Les
+  // déléguer au serveur déclencherait une requête par mouvement de curseur.
+  // La recherche reste donc côté client, sur un catalogue chargé une fois.
+  const { data: allProducts, loading, error } = useProductList();
+
   // Base de recherche = catalogue seul. Les configurations composées dans
   // /builder vivent dans la même liste (elles doivent rester résolubles par le
   // panier) mais ne sont ni indexables ni affichables ici.
-  const allProducts = useProducts();
   const products = useMemo(() => catalogProducts(allProducts), [allProducts]);
   const brands = useMemo(
     () => Array.from(new Set(products.map((p) => p.brand))).sort(),
@@ -82,7 +93,9 @@ export default function Search() {
   const hasMore = visible < results.length;
   const sentinelRef = useInfiniteScroll<HTMLDivElement>({
     hasMore,
-    loading: false,
+    // On relaie `loading` : pendant le premier chargement réseau la liste est
+    // vide, la sentinelle serait visible et déclencherait des pages inutiles.
+    loading,
     onLoadMore: () => setVisible((v) => v + PAGE),
   });
 
@@ -198,9 +211,18 @@ export default function Search() {
 
         <div>
           <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-            <span className="text-sm text-muted-foreground">
-              {t("search.results").replace("{n}", String(results.length))}
-            </span>
+            {/*
+              Pendant le chargement, le compteur vaudrait « 0 résultat(s) » —
+              une information fausse. On le remplace par un gabarit de la même
+              hauteur pour ne pas décaler les boutons de tri.
+            */}
+            {loading ? (
+              <span className="h-4 w-28 animate-pulse rounded bg-muted" aria-hidden="true" />
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                {t("search.results").replace("{n}", String(results.length))}
+              </span>
+            )}
             <div className="flex items-center gap-1 p-1 rounded-md bg-card border border-border">
               {SORTS.map((s) => (
                 <button
@@ -214,7 +236,48 @@ export default function Search() {
             </div>
           </div>
 
-          {results.length === 0 ? (
+          {/*
+            Ordre imposé par docs/DATA-PROVIDER.md §5.3 : chargement, puis
+            erreur, puis état vide. L'erreur ne remplace PAS la page — `data`
+            reste exploitable (liste vide), donc le bandeau se superpose au
+            contenu habituel. Un « return » ici priverait le visiteur de ses
+            filtres et de l'état vide, et transformerait une panne partielle en
+            écran mort (AGENTS.md §7).
+          */}
+          {error && (
+            <p
+              role="status"
+              className="mb-5 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {/*
+                Message issu du serveur, déjà lisible et localisé côté backend.
+                Aucune clé i18n « ressource indisponible » / « réessayer »
+                n'existe dans src/lib/i18n/*.ts et cette vague n'a pas le droit
+                d'en créer : d'où l'absence de bouton de nouvelle tentative.
+                `refetch()` est prêt côté fournisseur — il suffira de l'étiqueter.
+              */}
+              {error.message}
+            </p>
+          )}
+
+          {loading ? (
+            /*
+              Squelette de la MÊME forme que la grille finale : même nombre de
+              colonnes, même gouttière, hauteur fixe. Un écran vide ou un
+              spinner centré provoquerait un décalage de mise en page à
+              l'arrivée des données. Inerte en mode mock (`loading` y est faux).
+            */
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4" aria-busy="true">
+              <span className="sr-only">{t("app.loading")}</span>
+              {Array.from({ length: PAGE }, (_, i) => (
+                <div
+                  key={i}
+                  className="h-72 animate-pulse rounded-xl border border-border bg-card"
+                />
+              ))}
+            </div>
+          ) : results.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-8 text-center">
               <p className="text-muted-foreground mb-4">
                 {q ? t("search.emptyQ").replace("{q}", q) : t("search.empty")}
