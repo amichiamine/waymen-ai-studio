@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBlogPostDetail } from "@/data-provider";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -11,6 +11,7 @@ export default function BlogArticle() {
   // au premier rendu, le hook est alors inactif — §6 des pièges).
   const { data: post, loading, error } = useBlogPostDetail(slug);
   const { t, lang } = useI18n();
+  const L = useLocalize();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
 
   // 1. Chargement
@@ -55,12 +56,19 @@ export default function BlogArticle() {
     return <BlogNotFound />;
   }
 
+  // Résolution des champs localisés UNE SEULE FOIS — jamais post.title dans le corps.
+  const title = L(post.title) ?? "";
+  const excerpt = L(post.excerpt) ?? "";
+  const content = L(post.content) ?? "";
+
   const canonical = `${window.location.origin}/blog/${post.slug}`;
+  // JSON-LD Article : headline, description et image doivent être des chaînes —
+  // JSON.stringify({ fr: "…" }) produirait un objet invalide pour Google.
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: post.title,
-    description: post.excerpt,
+    headline: title,
+    description: excerpt,
     author: { "@type": "Person", name: post.author },
     datePublished: post.publishedAt ?? post.createdAt,
     image: post.cover,
@@ -69,12 +77,12 @@ export default function BlogArticle() {
   return (
     <article className="container mx-auto max-w-3xl px-4 py-10">
       <Helmet>
-        <title>{`${post.title} — KA Tech`}</title>
-        <meta name="description" content={post.excerpt} />
+        <title>{`${title} — KA Tech`}</title>
+        <meta name="description" content={excerpt} />
         <link rel="canonical" href={canonical} />
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.excerpt} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={excerpt} />
         <meta property="og:url" content={canonical} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
@@ -96,8 +104,8 @@ export default function BlogArticle() {
             </span>
           ))}
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl">{post.title}</h1>
-        <p className="mt-3 text-lg text-muted-foreground">{post.excerpt}</p>
+        <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl">{title}</h1>
+        <p className="mt-3 text-lg text-muted-foreground">{excerpt}</p>
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-medium text-foreground">{post.author}</span>
           <span>·</span>
@@ -114,13 +122,13 @@ export default function BlogArticle() {
       {post.cover && (
         <img
           src={post.cover}
-          alt={post.title}
+          alt={title}
           className="mt-8 aspect-[16/9] w-full rounded-xl border border-border object-cover"
         />
       )}
 
       <div className="prose prose-invert mt-8 max-w-none text-foreground/90">
-        {post.content.split(/\n\n+/).map((block, i) => {
+        {content.split(/\n\n+/).map((block, i) => {
           if (block.startsWith("# "))
             return (
               <h2 key={i} className="mt-8 text-2xl font-bold">

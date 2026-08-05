@@ -10,6 +10,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Pencil, Trash2, Eye, AlertTriangle } from "lucide-react";
 import { useBlogPostList, useBlogPostMutations, toApiError } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { localize, type Localized } from "@/lib/i18n";
+
+/** Toutes les variantes d'un champ localisé, en minuscules — base de recherche admin. */
+const haystack = (v: Localized<string> | undefined): string =>
+  (typeof v === "object" && v !== null ? [v.fr, v.en, v.ar] : [v])
+    .filter((s): s is string => typeof s === "string")
+    .join(" ")
+    .toLowerCase();
 
 export default function AdminBlogList() {
   const { data: blogPosts, loading, error } = useBlogPostList();
@@ -25,7 +33,7 @@ export default function AdminBlogList() {
       .filter(
         (p) =>
           !needle ||
-          p.title.toLowerCase().includes(needle) ||
+          haystack(p.title).includes(needle) ||
           p.slug.includes(needle) ||
           p.tags.some((t) => t.toLowerCase().includes(needle)),
       )
@@ -33,6 +41,8 @@ export default function AdminBlogList() {
   }, [blogPosts, q]);
 
   const target = blogPosts.find((p) => p.id === pendingDelete);
+  // Résoudre le titre en français pour l'affichage dans la boîte de confirmation.
+  const targetTitle = localize(target?.title, "fr") ?? "";
 
   async function confirmDelete() {
     if (!pendingDelete) return;
@@ -108,68 +118,72 @@ export default function AdminBlogList() {
         />
       ) : (
         <div className="grid gap-3">
-          {rows.map((p) => (
-            <Card key={p.id}>
-              <CardContent className="flex flex-wrap items-center gap-4 p-4">
-                {p.cover ? (
-                  <img
-                    src={p.cover}
-                    alt={p.title}
-                    className="h-16 w-24 shrink-0 rounded-md object-cover"
-                  />
-                ) : (
-                  <div className="h-16 w-24 shrink-0 rounded-md bg-muted" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold">{p.title}</h3>
-                    <Badge variant={p.status === "published" ? "default" : "secondary"}>
-                      {p.status === "published" ? "Publié" : "Brouillon"}
-                    </Badge>
-                  </div>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                    /{p.slug} · {p.author} · maj {new Date(p.updatedAt).toLocaleDateString("fr-FR")}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {p.status === "published" && (
-                    <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer">
-                      <Button size="sm" variant="ghost">
-                        <Eye className="me-2 h-4 w-4" /> Voir
-                      </Button>
-                    </a>
-                  )}
-                  {can("update") ? (
-                    <Link to={`/admin/blog/${p.id}`}>
-                      <Button size="sm" variant="outline">
-                        <Pencil className="me-2 h-4 w-4" /> Éditer
-                      </Button>
-                    </Link>
+          {rows.map((p) => {
+            const title = localize(p.title, "fr") ?? "";
+            return (
+              <Card key={p.id}>
+                <CardContent className="flex flex-wrap items-center gap-4 p-4">
+                  {p.cover ? (
+                    <img
+                      src={p.cover}
+                      alt={title}
+                      className="h-16 w-24 shrink-0 rounded-md object-cover"
+                    />
                   ) : (
-                    <span title={denyReason("update")} className="inline-flex">
-                      <Button size="sm" variant="outline" disabled aria-label="Éditer">
-                        <Pencil className="me-2 h-4 w-4" /> Éditer
+                    <div className="h-16 w-24 shrink-0 rounded-md bg-muted" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold">{title}</h3>
+                      <Badge variant={p.status === "published" ? "default" : "secondary"}>
+                        {p.status === "published" ? "Publié" : "Brouillon"}
+                      </Badge>
+                    </div>
+                    <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                      /{p.slug} · {p.author} · maj{" "}
+                      {new Date(p.updatedAt).toLocaleDateString("fr-FR")}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {p.status === "published" && (
+                      <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer">
+                        <Button size="sm" variant="ghost">
+                          <Eye className="me-2 h-4 w-4" /> Voir
+                        </Button>
+                      </a>
+                    )}
+                    {can("update") ? (
+                      <Link to={`/admin/blog/${p.id}`}>
+                        <Button size="sm" variant="outline">
+                          <Pencil className="me-2 h-4 w-4" /> Éditer
+                        </Button>
+                      </Link>
+                    ) : (
+                      <span title={denyReason("update")} className="inline-flex">
+                        <Button size="sm" variant="outline" disabled aria-label="Éditer">
+                          <Pencil className="me-2 h-4 w-4" /> Éditer
+                        </Button>
+                      </span>
+                    )}
+                    <span
+                      title={denyReason("delete") ?? "Supprimer"}
+                      className="inline-flex align-middle"
+                    >
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Supprimer"
+                        disabled={!can("delete") || saving}
+                        onClick={() => setPendingDelete(p.id)}
+                      >
+                        <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer
                       </Button>
                     </span>
-                  )}
-                  <span
-                    title={denyReason("delete") ?? "Supprimer"}
-                    className="inline-flex align-middle"
-                  >
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      aria-label="Supprimer"
-                      disabled={!can("delete") || saving}
-                      onClick={() => setPendingDelete(p.id)}
-                    >
-                      <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer
-                    </Button>
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -178,7 +192,7 @@ export default function AdminBlogList() {
         onOpenChange={(o) => {
           if (!o) setPendingDelete(null);
         }}
-        title={target ? `Supprimer « ${target.title} » ?` : "Supprimer l'article ?"}
+        title={target ? `Supprimer « ${targetTitle} » ?` : "Supprimer l'article ?"}
         description="Cette action est irréversible."
         destructive
         onConfirm={confirmDelete}

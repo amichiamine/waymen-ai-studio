@@ -4,12 +4,20 @@ import { Helmet } from "react-helmet-async";
 import { Search, Newspaper, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useBlogPostList } from "@/data-provider";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
+
+/** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
+const haystack = (v: Localized<string> | undefined): string =>
+  (typeof v === "object" && v !== null ? [v.fr, v.en, v.ar] : [v])
+    .filter((s): s is string => typeof s === "string")
+    .join(" ")
+    .toLowerCase();
 
 export default function Blog() {
   const [q, setQ] = useState("");
   const { data: blogPosts, loading, error } = useBlogPostList();
   const { t, lang } = useI18n();
+  const L = useLocalize();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
 
   const posts = useMemo(() => {
@@ -20,8 +28,8 @@ export default function Blog() {
     const needle = q.trim().toLowerCase();
     return published.filter(
       (p) =>
-        p.title.toLowerCase().includes(needle) ||
-        p.excerpt.toLowerCase().includes(needle) ||
+        haystack(p.title).includes(needle) ||
+        haystack(p.excerpt).includes(needle) ||
         p.tags.some((tg) => tg.toLowerCase().includes(needle)),
     );
   }, [blogPosts, q]);
@@ -81,46 +89,50 @@ export default function Blog() {
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {posts.map((p) => (
-                  <Link
-                    key={p.id}
-                    to={`/blog/${p.slug}`}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/60"
-                  >
-                    {p.cover && (
-                      <div className="aspect-[16/9] overflow-hidden bg-muted">
-                        <img
-                          src={p.cover}
-                          alt={p.title}
-                          loading="lazy"
-                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                        />
+                {posts.map((p) => {
+                  const title = L(p.title) ?? "";
+                  const excerpt = L(p.excerpt) ?? "";
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/blog/${p.slug}`}
+                      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/60"
+                    >
+                      {p.cover && (
+                        <div className="aspect-[16/9] overflow-hidden bg-muted">
+                          <img
+                            src={p.cover}
+                            alt={title}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-1 flex-col p-5">
+                        <div className="mb-2 flex flex-wrap gap-1.5">
+                          {p.tags.slice(0, 3).map((tg) => (
+                            <span
+                              key={tg}
+                              className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+                            >
+                              {tg}
+                            </span>
+                          ))}
+                        </div>
+                        <h2 className="text-lg font-bold leading-snug group-hover:text-primary">
+                          {title}
+                        </h2>
+                        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{excerpt}</p>
+                        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{p.author}</span>
+                          <time>
+                            {new Date(p.publishedAt ?? p.createdAt).toLocaleDateString(locale)}
+                          </time>
+                        </div>
                       </div>
-                    )}
-                    <div className="flex flex-1 flex-col p-5">
-                      <div className="mb-2 flex flex-wrap gap-1.5">
-                        {p.tags.slice(0, 3).map((tg) => (
-                          <span
-                            key={tg}
-                            className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
-                          >
-                            {tg}
-                          </span>
-                        ))}
-                      </div>
-                      <h2 className="text-lg font-bold leading-snug group-hover:text-primary">
-                        {p.title}
-                      </h2>
-                      <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.excerpt}</p>
-                      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{p.author}</span>
-                        <time>
-                          {new Date(p.publishedAt ?? p.createdAt).toLocaleDateString(locale)}
-                        </time>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </>

@@ -12,6 +12,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { useBlogPostDetail, useBlogPostMutations, toApiError } from "@/data-provider";
 import type { BlogPost } from "@/api/types";
 import { usePermissions } from "@/lib/admin-auth";
+import { localize } from "@/lib/i18n";
 
 type Mode = "new" | "edit";
 
@@ -41,6 +42,47 @@ function slugify(s: string) {
     .slice(0, 120);
 }
 
+/**
+ * Convertit un `BlogPost` en valeurs de formulaire.
+ *
+ * Les champs `title`, `excerpt` et `content` sont des `Localized<string>`
+ * depuis la vague 3.2b. On les résout ici en français (langue de référence
+ * du back-office) avec `localize(v, "fr")` afin que le formulaire n'édite
+ * que la variante française — les variantes anglaise et arabe sont préservées
+ * dans `existing` et réinjectées lors de l'enregistrement (voir `mergeLocalized`).
+ */
+function toForm(p: BlogPost) {
+  return {
+    title: localize(p.title, "fr") ?? "",
+    slug: p.slug,
+    excerpt: localize(p.excerpt, "fr") ?? "",
+    content: localize(p.content, "fr") ?? "",
+    cover: p.cover ?? "",
+    author: p.author,
+    tagsRaw: p.tags.join(", "),
+    status: p.status as "draft" | "published",
+  };
+}
+
+/**
+ * Fusionne une valeur française éditée dans le formulaire avec un champ
+ * `Localized<string>` existant, pour ne pas écraser les variantes non éditées.
+ *
+ * Règle : si l'original était un objet multilingue `{ fr, en?, ar? }`, on
+ * remplace uniquement la variante `fr` et on conserve `en` et `ar` telles
+ * quelles. Si l'original était une chaîne simple (monolingue), la valeur
+ * française éditée la remplace directement — le type `Localized` le permet.
+ */
+function mergeLocalized(
+  edited: string,
+  original: { fr: string; en?: string; ar?: string } | string | undefined,
+): { fr: string; en?: string; ar?: string } | string {
+  if (original !== undefined && typeof original === "object" && original !== null) {
+    return { ...original, fr: edited };
+  }
+  return edited;
+}
+
 export function BlogFormPage({ mode }: { mode: Mode }) {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
@@ -59,10 +101,10 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   const permission = mode === "new" ? "create" : "update";
 
   const [form, setForm] = useState(() => ({
-    title: existing?.title ?? "",
+    title: existing ? (localize(existing.title, "fr") ?? "") : "",
     slug: existing?.slug ?? "",
-    excerpt: existing?.excerpt ?? "",
-    content: existing?.content ?? "",
+    excerpt: existing ? (localize(existing.excerpt, "fr") ?? "") : "",
+    content: existing ? (localize(existing.content, "fr") ?? "") : "",
     cover: existing?.cover ?? "",
     author: existing?.author ?? "Équipe KA Tech",
     tagsRaw: (existing?.tags ?? []).join(", "),
@@ -75,16 +117,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   // Synchroniser le formulaire quand le détail de l'article est chargé.
   useEffect(() => {
     if (existing) {
-      setForm({
-        title: existing.title,
-        slug: existing.slug,
-        excerpt: existing.excerpt,
-        content: existing.content,
-        cover: existing.cover ?? "",
-        author: existing.author,
-        tagsRaw: existing.tags.join(", "),
-        status: existing.status,
-      });
+      setForm(toForm(existing));
     }
   }, [existing]);
 
@@ -141,12 +174,25 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
       .map((t) => t.trim())
       .filter(Boolean);
     const now = new Date().toISOString();
+    /**
+     * Préservation des traductions non éditées (piège multilingue, vague 3.2b).
+     *
+     * Le formulaire n'expose qu'un seul champ texte par propriété localisée :
+     * il édite la variante française. Si l'article possédait déjà des variantes
+     * anglaise et arabe (`existing.title = { fr, en, ar }`), écrire
+     * `title: data.title` (string) les détruirait silencieusement.
+     *
+     * `mergeLocalized` réinjecte la valeur française dans l'objet d'origine,
+     * en conservant les autres langues intactes. Pour un nouvel article
+     * (`existing` est undefined), la valeur française est utilisée directement
+     * (chaîne simple, compatible avec `Localized<string>`).
+     */
     const post: BlogPost = {
       id: existing?.id ?? `blog_${Date.now().toString(36)}`,
       slug: parsed.data.slug,
-      title: parsed.data.title,
-      excerpt: parsed.data.excerpt,
-      content: parsed.data.content,
+      title: mergeLocalized(parsed.data.title, existing?.title),
+      excerpt: mergeLocalized(parsed.data.excerpt, existing?.excerpt),
+      content: mergeLocalized(parsed.data.content, existing?.content),
       cover: parsed.data.cover || undefined,
       author: parsed.data.author,
       tags,
