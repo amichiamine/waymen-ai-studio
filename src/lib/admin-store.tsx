@@ -1872,11 +1872,28 @@ export function deleteSubscriber(id: string) {
 }
 
 // ---------- Mock auth against admin users ----------
+// SÉCURITÉ : la comparaison ci-dessous se fait en clair. C'est un provisoire
+// de la phase mock, où aucun backend n'existe et où l'ensemble de l'état vit
+// dans le navigateur. Ce mécanisme n'offre AUCUNE garantie d'authentification.
+// Il est remplacé en phase 4 (PLAN.md) par une vérification côté serveur avec
+// hachage Argon2id ; aucun mot de passe, en clair ou haché, ne devra alors
+// résider ni transiter côté client.
 /** Verify email/password against the users table. Case-insensitive email. */
 export function verifyUserCredentials(email: string, password: string): AdminUser | null {
   const u = state.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
   if (!u || !u.active) return null;
-  if (!u.password || u.password !== password) return null;
+  if (!u.password) {
+    // Échec explicite plutôt que silencieux (AGENTS.md §7) : sans mot de passe
+    // de seed, le refus n'a rien à voir avec la saisie de l'utilisateur.
+    console.warn(
+      `[admin-store] Authentification mock indisponible pour « ${u.email} » : ce compte n'a aucun ` +
+        "mot de passe. Les identifiants de démonstration ne sont semés qu'en développement, via " +
+        "VITE_DEV_SEED_CREDENTIALS (voir .env.example) ; un build de production n'en contient aucun. " +
+        "Connexion refusée.",
+    );
+    return null;
+  }
+  if (u.password !== password) return null;
   return u;
 }
 export function findUserByEmail(email: string): AdminUser | undefined {
