@@ -9,7 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import { useAdminState, type OrderStatus } from "@/lib/admin-store";
+import { AlertTriangle } from "lucide-react";
+import {
+  useOrderList,
+  useProductList,
+  useCategoryList,
+  useCustomerList,
+} from "@/data-provider";
+import type { OrderStatus } from "@/lib/admin-store";
 import { formatDZD } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 import {
@@ -28,6 +35,17 @@ import {
   Legend,
 } from "recharts";
 
+// Stratégie de combinaison pour Analytics (page d'agrégation) :
+//
+// - `loading` global = true si AU MOINS une source charge encore — on attend
+//   que toutes les sources soient disponibles avant d'afficher les KPI, car
+//   un KPI partiel (ex. revenus sans commandes) induirait en erreur.
+// - Les graphiques sont rendus indépendamment : si `orders` est disponible mais
+//   pas `products`, le graphique de CA par jour s'affiche quand même. Un bloc
+//   en erreur affiche un message contextuel sans masquer les autres.
+// - `Analytics.tsx` ne réintroduit aucune métrique inventée : l'entonnoir est
+//   fondé sur `statusHistory` réel, le KPI est « Taux de livraison ».
+
 const COLORS = [
   "hsl(var(--primary))",
   "hsl(var(--chart-2, 200 80% 55%))",
@@ -37,11 +55,18 @@ const COLORS = [
 ];
 
 export default function AdminAnalytics() {
-  const { orders, products, categories, customers } = useAdminState();
+  const { data: orders, loading: lOrd, error: eOrd } = useOrderList();
+  const { data: products, loading: lProd, error: eProd } = useProductList();
+  const { data: categories, loading: lCat, error: eCat } = useCategoryList();
+  const { data: customers, loading: lCust, error: eCust } = useCustomerList();
+
   // Écran de lecture seule — aucune mutation, pas de garde d'action requise.
   const { can } = usePermissions();
   const [range, setRange] = useState<"7" | "30" | "90">("30");
   const days = parseInt(range, 10);
+
+  // Chargement global : on attend toutes les sources avant d'afficher les KPI.
+  const loading = lOrd || lProd || lCat || lCust;
 
   const daily = useMemo(() => {
     const map = new Map<string, { date: string; orders: number; revenue: number }>();
@@ -141,11 +166,63 @@ export default function AdminAnalytics() {
   // Écran de lecture — seul `read` est requis, toujours accordé dans le back-office.
   if (!can("read")) return null;
 
+  // Squelette global pendant le chargement initial (inerte en mode mock).
+  if (loading) {
+    return (
+      <AdminPageShell
+        title="Analytique"
+        description="Tendances de ventes calculées sur les commandes enregistrées (données locales)."
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-busy="true">
+          <span className="sr-only">Chargement…</span>
+          {Array.from({ length: 5 }, (_, i) => (
+            <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-card" />
+          ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="h-72 animate-pulse rounded-xl border border-border bg-card" />
+          ))}
+        </div>
+      </AdminPageShell>
+    );
+  }
+
   return (
     <AdminPageShell
       title="Analytique"
       description="Tendances de ventes calculées sur les commandes enregistrées (données locales)."
     >
+      {/* Bandeaux d'erreur par source — dégradation gracieuse : les blocs
+          alimentés par d'autres sources restent affichés. */}
+      {eOrd && (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          Commandes : {eOrd.message}
+        </p>
+      )}
+      {(eProd || eCat) && (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          Produits / catégories : {(eProd ?? eCat)!.message}
+        </p>
+      )}
+      {eCust && (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          Clients : {eCust.message}
+        </p>
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
@@ -234,7 +311,11 @@ export default function AdminAnalytics() {
           <CardContent className="p-6">
             <h2 className="mb-4 text-sm font-semibold">Répartition CA par catégorie</h2>
             <div className="h-64">
-              {byCategory.length ? (
+              {eProd || eCat ? (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  Données indisponibles
+                </div>
+              ) : byCategory.length ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -275,7 +356,11 @@ export default function AdminAnalytics() {
               paniers) ne sont pas affichées : aucune mesure d&apos;audience n&apos;est en place sur
               le site.
             </p>
-            {funnel.steps[0].value ? (
+            {eOrd ? (
+              <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+                Données indisponibles
+              </div>
+            ) : funnel.steps[0].value ? (
               <>
                 <div className="space-y-3">
                   {funnel.steps.map((f, i) => {
@@ -329,7 +414,9 @@ export default function AdminAnalytics() {
       <Card>
         <CardContent className="p-6">
           <h2 className="mb-4 text-sm font-semibold">Top 8 des produits vendus</h2>
-          {topProducts.length ? (
+          {eOrd ? (
+            <p className="text-sm text-muted-foreground">Données indisponibles.</p>
+          ) : topProducts.length ? (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topProducts} layout="vertical" margin={{ left: 20 }}>

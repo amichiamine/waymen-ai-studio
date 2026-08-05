@@ -11,8 +11,16 @@ import {
   Boxes,
   Ticket,
   Star,
+  AlertTriangle,
 } from "lucide-react";
-import { useAdminState } from "@/lib/admin-store";
+import {
+  useOrderList,
+  useCustomerList,
+  useProductList,
+  useStockMovementList,
+  useCouponList,
+  useReviewList,
+} from "@/data-provider";
 import { formatDZD } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 import { toast } from "sonner";
@@ -22,6 +30,12 @@ import { toast } from "sonner";
 // back-office. Si, à l'avenir, certains exports contiennent des données
 // réellement sensibles (e.g. mots de passe, tokens), il suffira de monter la
 // clé à `manageSettings` ou `manageCriticalSettings` sans modifier la structure.
+//
+// Stratégie de combinaison (Reports) :
+// Chaque carte de rapport est indépendante. Si une source est en cours de
+// chargement ou en erreur, le bouton d'export de CETTE carte est désactivé
+// avec un message explicite — les autres cartes restent opérationnelles.
+// Un export ne s'exécute jamais silencieusement sur données vides (AGENTS.md §7).
 
 function toCsv(rows: (string | number)[][]): string {
   return rows
@@ -47,7 +61,13 @@ function download(name: string, csv: string) {
 }
 
 export default function AdminReports() {
-  const { orders, customers, products, stockMovements, coupons, reviews } = useAdminState();
+  const { data: orders, loading: lOrd, error: eOrd } = useOrderList();
+  const { data: customers, loading: lCust, error: eCust } = useCustomerList();
+  const { data: products, loading: lProd, error: eProd } = useProductList();
+  const { data: stockMovements, loading: lMov, error: eMov } = useStockMovementList();
+  const { data: coupons, loading: lCoup, error: eCoup } = useCouponList();
+  const { data: reviews, loading: lRev, error: eRev } = useReviewList();
+
   const { can, guard, denyReason } = usePermissions();
 
   const summaries = useMemo(() => {
@@ -64,6 +84,15 @@ export default function AdminReports() {
   const exportOrders = () => {
     // Niveau 2 — vérification dans l'action avant toute opération.
     if (!guard("read", "Exporter les ventes")) return;
+    // Refuser silencieusement si les données ne sont pas chargées (AGENTS.md §7).
+    if (lOrd) {
+      toast.error("Export impossible : données en cours de chargement");
+      return;
+    }
+    if (eOrd) {
+      toast.error("Export impossible : " + eOrd.message);
+      return;
+    }
     const rows: (string | number)[][] = [
       [
         "ID",
@@ -107,6 +136,14 @@ export default function AdminReports() {
 
   const exportCustomers = () => {
     if (!guard("read", "Exporter les clients")) return;
+    if (lCust) {
+      toast.error("Export impossible : données en cours de chargement");
+      return;
+    }
+    if (eCust) {
+      toast.error("Export impossible : " + eCust.message);
+      return;
+    }
     const rows: (string | number)[][] = [
       ["ID", "Nom", "Email", "Téléphone", "Wilaya", "Inscrit", "Commandes", "Dépensé DA"],
     ];
@@ -126,6 +163,14 @@ export default function AdminReports() {
 
   const exportInventory = () => {
     if (!guard("read", "Exporter le stock")) return;
+    if (lProd) {
+      toast.error("Export impossible : données en cours de chargement");
+      return;
+    }
+    if (eProd) {
+      toast.error("Export impossible : " + eProd.message);
+      return;
+    }
     const rows: (string | number)[][] = [
       ["ID", "Nom", "Marque", "Catégorie", "Prix DA", "Stock", "Best-seller"],
     ];
@@ -144,6 +189,14 @@ export default function AdminReports() {
 
   const exportMovements = () => {
     if (!guard("read", "Exporter les mouvements")) return;
+    if (lMov) {
+      toast.error("Export impossible : données en cours de chargement");
+      return;
+    }
+    if (eMov) {
+      toast.error("Export impossible : " + eMov.message);
+      return;
+    }
     const rows: (string | number)[][] = [["ID", "Date", "Produit", "Delta", "Raison"]];
     for (const m of stockMovements)
       rows.push([m.id, m.createdAt, m.productName, m.delta, m.reason]);
@@ -152,6 +205,14 @@ export default function AdminReports() {
 
   const exportCoupons = () => {
     if (!guard("read", "Exporter les coupons")) return;
+    if (lCoup) {
+      toast.error("Export impossible : données en cours de chargement");
+      return;
+    }
+    if (eCoup) {
+      toast.error("Export impossible : " + eCoup.message);
+      return;
+    }
     const rows: (string | number)[][] = [
       ["Code", "Type", "Valeur", "Achat min", "Expire", "Utilisations", "Limite", "Actif"],
     ];
@@ -171,6 +232,14 @@ export default function AdminReports() {
 
   const exportReviews = () => {
     if (!guard("read", "Exporter les avis")) return;
+    if (lRev) {
+      toast.error("Export impossible : données en cours de chargement");
+      return;
+    }
+    if (eRev) {
+      toast.error("Export impossible : " + eRev.message);
+      return;
+    }
     const rows: (string | number)[][] = [
       ["ID", "Date", "Produit", "Client", "Note", "Titre", "Corps", "Statut"],
     ];
@@ -188,38 +257,57 @@ export default function AdminReports() {
     download(`ka-avis-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(rows));
   };
 
+  // Chaque carte porte son état de chargement/erreur indépendamment pour
+  // permettre la dégradation gracieuse (skill S3).
   const cards = [
     {
       title: "Ventes",
       desc: `${summaries.ordersCount} commandes · ${formatDZD(summaries.revenue)}`,
       Icon: ShoppingBag,
       action: exportOrders,
+      loading: lOrd,
+      error: eOrd,
     },
     {
       title: "Clients",
       desc: `${summaries.customersCount} clients enregistrés`,
       Icon: UsersIcon,
       action: exportCustomers,
+      loading: lCust,
+      error: eCust,
     },
     {
       title: "Stock",
       desc: `${summaries.productsCount} produits au catalogue`,
       Icon: Package,
       action: exportInventory,
+      loading: lProd,
+      error: eProd,
     },
     {
       title: "Mouvements de stock",
       desc: `${summaries.movementsCount} mouvements journalisés`,
       Icon: Boxes,
       action: exportMovements,
+      loading: lMov,
+      error: eMov,
     },
     {
       title: "Coupons",
       desc: `${coupons.length} codes promotionnels`,
       Icon: Ticket,
       action: exportCoupons,
+      loading: lCoup,
+      error: eCoup,
     },
-    { title: "Avis", desc: `${reviews.length} avis clients`, Icon: Star, action: exportReviews },
+    {
+      title: "Avis",
+      desc: `${reviews.length} avis clients`,
+      Icon: Star,
+      action: exportReviews,
+      loading: lRev,
+      error: eRev,
+    },
   ];
 
   return (
@@ -240,10 +328,30 @@ export default function AdminReports() {
                   <p className="text-xs text-muted-foreground">{c.desc}</p>
                 </div>
               </div>
+              {/* Bandeau d'erreur par carte — dégradation gracieuse. */}
+              {c.error && (
+                <p className="flex items-start gap-1.5 text-xs text-destructive">
+                  <AlertTriangle className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+                  {c.error.message}
+                </p>
+              )}
               {/* Niveau 1 — affichage. Niveau 3 — infobulle sur le <span>
                   car un bouton disabled a pointer-events-none. */}
               {can("read") ? (
-                <Button variant="outline" size="sm" onClick={c.action} className="self-start">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={c.action}
+                  className="self-start"
+                  disabled={c.loading || !!c.error}
+                  title={
+                    c.loading
+                      ? "Données en cours de chargement"
+                      : c.error
+                        ? "Données indisponibles"
+                        : undefined
+                  }
+                >
                   <Download className="me-2 h-4 w-4" /> Exporter CSV
                 </Button>
               ) : (
