@@ -3,6 +3,16 @@ export { ordersApi } from "./resources/orders";
 export { reviewsApi } from "./resources/reviews";
 export { contentApi, settingsApi } from "./resources/content";
 export { authApi } from "./resources/auth";
+// Ressources ajoutées en vague 2.3.
+export { blogApi } from "./resources/blog";
+export { brandsApi } from "./resources/brands";
+export { categoriesApi } from "./resources/categories";
+export { couponsApi } from "./resources/coupons";
+export { contactMessagesApi, subscribersApi } from "./resources/crm";
+export { customersApi } from "./resources/customers";
+export { inventoryApi } from "./resources/inventory";
+export { mediaApi } from "./resources/media";
+export { usersApi } from "./resources/users";
 export { http, apiRequest, ApiError, setAccessToken, getAccessToken } from "./client";
 export { endpoints } from "./endpoints";
 export { API_MODE, API_BASE_URL, AUTH_STRATEGY, isHttpMode } from "./config";
