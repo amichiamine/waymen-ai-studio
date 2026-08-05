@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useAdminState, upsertBrand, deleteBrand, getBrand } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const schema = z.object({
   id: z
@@ -32,6 +33,7 @@ type V = z.infer<typeof schema>;
 
 export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
   const { brands, products } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const { id } = useParams();
   const nav = useNavigate();
   const existing = mode === "edit" && id ? getBrand(id) : undefined;
@@ -68,6 +70,9 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    // Niveau 2 — vérification dans le handler avant toute mutation.
+    const perm = mode === "new" ? "create" : "update";
+    if (!guard(perm, mode === "new" ? "Créer la marque" : "Modifier la marque")) return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Partial<Record<keyof V, string>> = {};
@@ -106,6 +111,9 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
 
   function doDelete() {
     if (!existing) return;
+    // Niveau 2 — vérification dans le handler avant toute mutation.
+    if (!guard("delete", "Supprimer la marque")) return;
+    // Garde métier préservée : refus si des produits sont encore rattachés.
     if (usedCount > 0) {
       toast.error(`Impossible : ${usedCount} produit(s) utilisent cette marque.`);
       return;
@@ -119,6 +127,9 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
     }
   }
 
+  // Clé de permission selon le mode : création ou modification.
+  const formPerm = mode === "new" ? "create" : "update";
+
   return (
     <AdminPageShell
       title={mode === "new" ? "Nouvelle marque" : "Modifier la marque"}
@@ -126,15 +137,22 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
         <div className="flex gap-2">
           <Link to="/admin/brands">
             <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="me-2 h-4 w-4" />
               Retour
             </Button>
           </Link>
           {mode === "edit" && existing && (
-            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </Button>
+            // Niveau 1+3 : bouton Supprimer dans l'en-tête du formulaire.
+            <span title={denyReason("delete")} className="inline-flex">
+              <Button
+                variant="destructive"
+                disabled={!can("delete")}
+                onClick={() => setConfirmOpen(true)}
+              >
+                <Trash2 className="me-2 h-4 w-4" />
+                Supprimer
+              </Button>
+            </span>
           )}
         </div>
       }
@@ -196,7 +214,12 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
               Annuler
             </Button>
           </Link>
-          <Button type="submit">{mode === "new" ? "Créer" : "Enregistrer"}</Button>
+          {/* Niveau 1+3 : bouton de soumission désactivé si pas la permission. */}
+          <span title={denyReason(formPerm)} className="inline-flex">
+            <Button type="submit" disabled={!can(formPerm)}>
+              {mode === "new" ? "Créer" : "Enregistrer"}
+            </Button>
+          </span>
         </div>
       </form>
       <ConfirmDialog

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Pencil, Plus, Tag } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
@@ -17,6 +18,7 @@ const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible
 export default function AdminBrandDetail() {
   const { id } = useParams();
   const { brands, products, categories } = useAdminState();
+  const { can, denyReason } = usePermissions();
   const brand = brands.find((b) => b.id === id);
 
   if (!brand) {
@@ -26,7 +28,7 @@ export default function AdminBrandDetail() {
         actions={
           <Link to="/admin/brands">
             <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="me-2 h-4 w-4" />
               Retour
             </Button>
           </Link>
@@ -50,16 +52,26 @@ export default function AdminBrandDetail() {
         <div className="flex gap-2">
           <Link to="/admin/brands">
             <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="me-2 h-4 w-4" />
               Retour
             </Button>
           </Link>
-          <Link to={`/admin/brands/${brand.id}`}>
-            <Button>
-              <Pencil className="mr-2 h-4 w-4" />
-              Modifier
-            </Button>
-          </Link>
+          {/* Niveau 1+3 : bouton Modifier (action update sur la marque). */}
+          {can("update") ? (
+            <Link to={`/admin/brands/${brand.id}`}>
+              <Button>
+                <Pencil className="me-2 h-4 w-4" />
+                Modifier
+              </Button>
+            </Link>
+          ) : (
+            <span title={denyReason("update")} className="inline-flex">
+              <Button disabled>
+                <Pencil className="me-2 h-4 w-4" />
+                Modifier
+              </Button>
+            </span>
+          )}
         </div>
       }
     >
@@ -120,12 +132,22 @@ export default function AdminBrandDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Produits ({items.length})</CardTitle>
-              <Link to="/admin/products/new">
-                <Button size="sm" variant="outline">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nouveau produit
-                </Button>
-              </Link>
+              {/* Niveau 1+3 : raccourci Nouveau produit (action create sur produit). */}
+              {can("create") ? (
+                <Link to="/admin/products/new">
+                  <Button size="sm" variant="outline">
+                    <Plus className="me-2 h-4 w-4" />
+                    Nouveau produit
+                  </Button>
+                </Link>
+              ) : (
+                <span title={denyReason("create")} className="inline-flex">
+                  <Button size="sm" variant="outline" disabled>
+                    <Plus className="me-2 h-4 w-4" />
+                    Nouveau produit
+                  </Button>
+                </span>
+              )}
             </CardHeader>
             <CardContent>
               {items.length === 0 ? (
@@ -147,7 +169,7 @@ export default function AdminBrandDetail() {
                         <p className="text-xs text-muted-foreground">{p.specLine}</p>
                       </div>
                       <Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge>
-                      <span className="w-24 text-right font-medium">{formatDZD(p.price)}</span>
+                      <span className="w-24 text-end font-medium">{formatDZD(p.price)}</span>
                     </li>
                   ))}
                 </ul>

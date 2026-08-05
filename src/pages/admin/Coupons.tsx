@@ -13,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -33,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { formatDZD } from "@/data/products";
 import { useAdminState, upsertCoupon, deleteCoupon, type Coupon } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const schema = z.object({
   code: z
@@ -64,11 +64,14 @@ function empty(): z.infer<typeof schema> & { code: string } {
 
 export default function AdminCoupons() {
   const { coupons } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [open, setOpen] = useState(false);
   const [v, setV] = useState(empty());
   const [err, setErr] = useState<Record<string, string>>({});
 
   function save() {
+    // Niveau 2 — vérification dans le handler avant toute mutation.
+    if (!guard("create", "Créer le coupon")) return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Record<string, string> = {};
@@ -96,6 +99,8 @@ export default function AdminCoupons() {
   }
 
   function onDelete(code: string) {
+    // Niveau 2 — vérification dans le handler avant toute mutation.
+    if (!guard("delete", "Supprimer le coupon")) return;
     if (!confirm(`Supprimer le coupon ${code} ?`)) return;
     deleteCoupon(code);
     toast.success("Coupon supprimé");
@@ -110,96 +115,107 @@ export default function AdminCoupons() {
       title="Coupons"
       description={`${coupons.length} codes promo actifs et archivés.`}
       actions={
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Nouveau coupon
+        // Niveau 1 — affichage. Le Dialog est contrôlé manuellement pour
+        // éviter que le DialogTrigger l'ouvre quand la permission est refusée.
+        can("create") ? (
+          <>
+            <Button onClick={() => setOpen(true)}>
+              <Plus className="me-2 h-4 w-4" /> Nouveau coupon
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Nouveau coupon</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <Label>Code</Label>
-                <Input
-                  value={v.code}
-                  onChange={(e) => setV({ ...v, code: e.target.value.toUpperCase() })}
-                  placeholder="BIENVENUE10"
-                />
-                {err.code && <p className="text-xs text-destructive mt-1">{err.code}</p>}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Type</Label>
-                  <Select
-                    value={v.type}
-                    onValueChange={(x) => setV({ ...v, type: x as "percent" | "fixed" })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="percent">Pourcentage</SelectItem>
-                      <SelectItem value="fixed">Montant fixe (DA)</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Nouveau coupon</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label>Code</Label>
+                    <Input
+                      value={v.code}
+                      onChange={(e) => setV({ ...v, code: e.target.value.toUpperCase() })}
+                      placeholder="BIENVENUE10"
+                    />
+                    {err.code && <p className="text-xs text-destructive mt-1">{err.code}</p>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Type</Label>
+                      <Select
+                        value={v.type}
+                        onValueChange={(x) => setV({ ...v, type: x as "percent" | "fixed" })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="percent">Pourcentage</SelectItem>
+                          <SelectItem value="fixed">Montant fixe (DA)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Valeur</Label>
+                      <Input
+                        type="number"
+                        value={v.value}
+                        onChange={(e) => setV({ ...v, value: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Achat min. (DA)</Label>
+                      <Input
+                        type="number"
+                        value={v.minPurchase}
+                        onChange={(e) => setV({ ...v, minPurchase: Number(e.target.value) })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Limite d'usage</Label>
+                      <Input
+                        type="number"
+                        value={v.usageLimit}
+                        onChange={(e) => setV({ ...v, usageLimit: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Date d'expiration</Label>
+                    <Input
+                      type="date"
+                      value={v.expiresAt}
+                      onChange={(e) => setV({ ...v, expiresAt: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between rounded-md border p-2">
+                    <Label htmlFor="active" className="mb-0">
+                      Actif
+                    </Label>
+                    <Switch
+                      id="active"
+                      checked={v.active}
+                      onCheckedChange={(x) => setV({ ...v, active: x })}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label>Valeur</Label>
-                  <Input
-                    type="number"
-                    value={v.value}
-                    onChange={(e) => setV({ ...v, value: Number(e.target.value) })}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Achat min. (DA)</Label>
-                  <Input
-                    type="number"
-                    value={v.minPurchase}
-                    onChange={(e) => setV({ ...v, minPurchase: Number(e.target.value) })}
-                  />
-                </div>
-                <div>
-                  <Label>Limite d'usage</Label>
-                  <Input
-                    type="number"
-                    value={v.usageLimit}
-                    onChange={(e) => setV({ ...v, usageLimit: Number(e.target.value) })}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Date d'expiration</Label>
-                <Input
-                  type="date"
-                  value={v.expiresAt}
-                  onChange={(e) => setV({ ...v, expiresAt: e.target.value })}
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-md border p-2">
-                <Label htmlFor="active" className="mb-0">
-                  Actif
-                </Label>
-                <Switch
-                  id="active"
-                  checked={v.active}
-                  onCheckedChange={(x) => setV({ ...v, active: x })}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Annuler
-              </Button>
-              <Button onClick={save}>Créer</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOpen(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={save}>Créer</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        ) : (
+          // Niveau 3 — infobulle portée par le <span>.
+          <span title={denyReason("create")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Nouveau coupon
+            </Button>
+          </span>
+        )
       }
     >
       <div className="overflow-hidden rounded-lg border">
@@ -242,13 +258,25 @@ export default function AdminCoupons() {
                       <Badge>Actif</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-end">
                     <Button variant="ghost" size="icon" onClick={() => copy(c.code)}>
                       <Copy className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(c.code)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    {/* Niveau 1+3 : bouton Supprimer */}
+                    <span
+                      title={denyReason("delete") ?? "Supprimer"}
+                      className="inline-flex align-middle"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Supprimer"
+                        disabled={!can("delete")}
+                        onClick={() => onDelete(c.code)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </span>
                   </TableCell>
                 </TableRow>
               );
