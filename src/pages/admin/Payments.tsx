@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus, Trash2, Pencil } from "lucide-react";
-import {
-  useAdminState,
-  upsertPaymentMethod,
-  deletePaymentMethod,
-  type PaymentMethod,
-} from "@/lib/admin-store";
+import { usePaymentMethodList, usePaymentMethodMutations, toApiError } from "@/data-provider";
+import type { PaymentMethod } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 // Les modes de paiement sont des réglages de boutique (tarification du checkout,
@@ -41,7 +38,10 @@ function slugify(s: string) {
 }
 
 export default function AdminPayments() {
-  const { paymentMethods } = useAdminState();
+  // Lecture via le fournisseur de données — remplace useAdminState().paymentMethods.
+  // En mode mock, `loading` est faux dès le premier rendu et `error` reste nul.
+  const { data: paymentMethods, loading, error } = usePaymentMethodList();
+  const { upsert, remove } = usePaymentMethodMutations();
   // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can, guard, denyReason } = usePermissions();
@@ -53,6 +53,7 @@ export default function AdminPayments() {
     instructions: "",
     active: true,
   });
+  const [saving, setSaving] = useState(false);
 
   function openNew() {
     setEditing(null);
@@ -64,8 +65,11 @@ export default function AdminPayments() {
     setForm({ ...m });
     setOpen(true);
   }
-  function save() {
+
+  // Mutation asynchrone — désactive le bouton pendant l'appel.
+  async function save() {
     // Niveau 2 — vérification dans le handler, pas seulement dans le rendu.
+    // Ordre : garde de permission → mutation → retour d'erreur.
     if (
       !guard(
         "manageSettings",
@@ -82,21 +86,49 @@ export default function AdminPayments() {
       toast.error("Un moyen de paiement avec cet ID existe déjà");
       return;
     }
-    upsertPaymentMethod({ ...form, id });
-    toast.success(editing ? "Moyen de paiement mis à jour" : "Moyen de paiement ajouté");
-    setOpen(false);
+    setSaving(true);
+    try {
+      await upsert({ ...form, id });
+      toast.success(editing ? "Moyen de paiement mis à jour" : "Moyen de paiement ajouté");
+      setOpen(false);
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
+    }
   }
-  function onDelete(id: string) {
+
+  // Mutation asynchrone — désactive le bouton pendant l'appel.
+  async function onDelete(id: string) {
     if (!confirm("Supprimer ce moyen de paiement ?")) return;
     // Niveau 2 — vérification dans le handler avant toute mutation.
     if (!guard("manageSettings", "Supprimer le moyen de paiement")) return;
-    deletePaymentMethod(id);
-    toast.success("Supprimé");
+    setSaving(true);
+    try {
+      await remove(id);
+      toast.success("Supprimé");
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
+    }
   }
-  function toggleActive(m: PaymentMethod) {
+
+  // Mutation asynchrone — désactive le Switch pendant l'appel.
+  async function toggleActive(m: PaymentMethod) {
     // Niveau 2 — vérification dans le handler.
     if (!guard("manageSettings", "Activer / désactiver le moyen de paiement")) return;
-    upsertPaymentMethod({ ...m, active: !m.active });
+    setSaving(true);
+    try {
+      await upsert({ ...m, active: !m.active });
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -118,73 +150,107 @@ export default function AdminPayments() {
         )
       }
     >
+      {/* Erreur au-dessus du contenu, sans remplacer la page (§5.3). */}
+      {error && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <div className="grid gap-3">
-        {paymentMethods.map((m) => (
-          <Card key={m.id}>
-            <CardContent className="flex flex-wrap items-start justify-between gap-3 p-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium">{m.label}</p>
-                  <Badge variant={m.active ? "default" : "secondary"}>
-                    {m.active ? "Actif" : "Inactif"}
-                  </Badge>
-                  <span className="rounded bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                    {m.id}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">{m.instructions || "—"}</p>
+        {/* Chargement — squelettes de cartes (§5.3). */}
+        {loading ? (
+          <>
+            <span className="sr-only" aria-busy="true">
+              Chargement des modes de paiement…
+            </span>
+            {Array.from({ length: 3 }, (_, i) => (
+              <div key={i} className="h-20 animate-pulse rounded-lg border bg-card" />
+            ))}
+          </>
+        ) : (
+          <>
+            {paymentMethods.map((m) => (
+              <Card key={m.id}>
+                <CardContent className="flex flex-wrap items-start justify-between gap-3 p-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{m.label}</p>
+                      <Badge variant={m.active ? "default" : "secondary"}>
+                        {m.active ? "Actif" : "Inactif"}
+                      </Badge>
+                      <span className="rounded bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                        {m.id}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{m.instructions || "—"}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor={`sw-${m.id}`} className="text-xs text-muted-foreground">
+                        Actif
+                      </Label>
+                      {/* Niveau 3 — le <span> porte l'infobulle car Switch disabled
+                          a pointer-events-none. */}
+                      <span
+                        title={denyReason("manageSettings") ?? undefined}
+                        className="inline-flex"
+                      >
+                        <Switch
+                          id={`sw-${m.id}`}
+                          checked={m.active}
+                          disabled={!can("manageSettings") || saving}
+                          onCheckedChange={() => toggleActive(m)}
+                        />
+                      </span>
+                    </div>
+                    {/* Niveau 1 — bouton modifier. */}
+                    {can("manageSettings") ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEdit(m)}
+                        title="Modifier"
+                        disabled={saving}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <span title={denyReason("manageSettings")} className="inline-flex">
+                        <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </span>
+                    )}
+                    {/* Niveau 1 — bouton supprimer. */}
+                    <span
+                      title={denyReason("manageSettings") ?? "Supprimer"}
+                      className="inline-flex align-middle"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Supprimer"
+                        disabled={!can("manageSettings") || saving}
+                        onClick={() => onDelete(m.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {paymentMethods.length === 0 && (
+              <div className="rounded-md border border-dashed p-12 text-center text-sm text-muted-foreground">
+                Aucun moyen de paiement.
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <Label htmlFor={`sw-${m.id}`} className="text-xs text-muted-foreground">
-                    Actif
-                  </Label>
-                  {/* Niveau 3 — le <span> porte l'infobulle car Switch disabled
-                      a pointer-events-none. */}
-                  <span title={denyReason("manageSettings") ?? undefined} className="inline-flex">
-                    <Switch
-                      id={`sw-${m.id}`}
-                      checked={m.active}
-                      disabled={!can("manageSettings")}
-                      onCheckedChange={() => toggleActive(m)}
-                    />
-                  </span>
-                </div>
-                {/* Niveau 1 — bouton modifier. */}
-                {can("manageSettings") ? (
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(m)} title="Modifier">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <span title={denyReason("manageSettings")} className="inline-flex">
-                    <Button variant="ghost" size="icon" disabled aria-label="Modifier">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </span>
-                )}
-                {/* Niveau 1 — bouton supprimer. */}
-                <span
-                  title={denyReason("manageSettings") ?? "Supprimer"}
-                  className="inline-flex align-middle"
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Supprimer"
-                    disabled={!can("manageSettings")}
-                    onClick={() => onDelete(m.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        {paymentMethods.length === 0 && (
-          <div className="rounded-md border border-dashed p-12 text-center text-sm text-muted-foreground">
-            Aucun moyen de paiement.
-          </div>
+            )}
+          </>
         )}
       </div>
 
@@ -202,13 +268,14 @@ export default function AdminPayments() {
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
                 placeholder="Paiement à la livraison"
+                disabled={saving}
               />
             </div>
             <div>
               <Label>Identifiant (ID)</Label>
               <Input
                 value={form.id || slugify(form.label)}
-                disabled={!!editing}
+                disabled={!!editing || saving}
                 onChange={(e) => setForm({ ...form, id: e.target.value })}
                 placeholder="cod"
               />
@@ -219,21 +286,25 @@ export default function AdminPayments() {
                 rows={3}
                 value={form.instructions}
                 onChange={(e) => setForm({ ...form, instructions: e.target.value })}
+                disabled={saving}
               />
             </div>
             <div className="flex items-center justify-between rounded-md border p-2">
               <Label className="mb-0">Actif</Label>
               <Switch
                 checked={form.active}
-                onCheckedChange={(v) => setForm({ ...form, active: v })}
+                onCheckedChange={(val) => setForm({ ...form, active: val })}
+                disabled={saving}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
               Annuler
             </Button>
-            <Button onClick={save}>{editing ? "Enregistrer" : "Créer"}</Button>
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Enregistrement…" : editing ? "Enregistrer" : "Créer"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

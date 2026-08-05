@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDZD } from "@/data/products";
-import { useAdminState, upsertCoupon, deleteCoupon, type Coupon } from "@/lib/admin-store";
+import { useCouponList, useCouponMutations, toApiError } from "@/data-provider";
+import type { Coupon } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 const schema = z.object({
@@ -63,13 +65,17 @@ function empty(): z.infer<typeof schema> & { code: string } {
 }
 
 export default function AdminCoupons() {
-  const { coupons } = useAdminState();
+  // Lecture via le fournisseur de données — remplace useAdminState().coupons.
+  // En mode mock, `loading` est faux dès le premier rendu et `error` reste nul.
+  const { data: coupons, loading, error } = useCouponList();
+  const { create, update, remove } = useCouponMutations();
   const { can, guard, denyReason } = usePermissions();
   const [open, setOpen] = useState(false);
   // editTarget est null en mode création, contient le coupon à modifier en mode édition.
   const [editTarget, setEditTarget] = useState<Coupon | null>(null);
   const [v, setV] = useState(empty());
   const [err, setErr] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
 
   function openNew() {
     setEditTarget(null);
@@ -95,8 +101,10 @@ export default function AdminCoupons() {
     setOpen(true);
   }
 
-  function save() {
+  // Mutation asynchrone — désactive le bouton pendant l'appel.
+  async function save() {
     // Niveau 2 — vérification dans le handler avant toute mutation.
+    // Ordre : garde de permission → mutation → retour d'erreur.
     const permission = editTarget ? "update" : "create";
     const label = editTarget ? "Modifier le coupon" : "Créer le coupon";
     if (!guard(permission, label)) return;
@@ -109,7 +117,7 @@ export default function AdminCoupons() {
       setErr(errs);
       return;
     }
-    const c: Coupon = {
+    const coupon: Coupon = {
       code: p.data.code,
       type: p.data.type,
       value: p.data.value,
@@ -120,20 +128,41 @@ export default function AdminCoupons() {
       expiresAt: new Date(p.data.expiresAt).toISOString(),
       active: p.data.active,
     };
-    upsertCoupon(c);
-    toast.success(editTarget ? "Coupon modifié" : "Coupon créé");
-    setOpen(false);
-    setEditTarget(null);
-    setV(empty());
-    setErr({});
+    setSaving(true);
+    try {
+      if (editTarget) {
+        await update(editTarget.code, coupon);
+      } else {
+        await create(coupon);
+      }
+      toast.success(editTarget ? "Coupon modifié" : "Coupon créé");
+      setOpen(false);
+      setEditTarget(null);
+      setV(empty());
+      setErr({});
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function onDelete(code: string) {
+  // Mutation asynchrone — désactive le bouton pendant l'appel.
+  async function onDelete(code: string) {
     // Niveau 2 — vérification dans le handler avant toute mutation.
     if (!guard("delete", "Supprimer le coupon")) return;
     if (!confirm(`Supprimer le coupon ${code} ?`)) return;
-    deleteCoupon(code);
-    toast.success("Coupon supprimé");
+    setSaving(true);
+    try {
+      await remove(code);
+      toast.success("Coupon supprimé");
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function copy(code: string) {
@@ -149,6 +178,8 @@ export default function AdminCoupons() {
       actions={
         // Niveau 1 — affichage. Le Dialog est contrôlé manuellement pour
         // éviter que le DialogTrigger l'ouvre quand la permission est refusée.
+        // La boîte de dialogue de création est réutilisée pour l'édition
+        // (pas de duplication — phase 1 conservée).
         can("create") ? (
           <>
             <Button onClick={openNew}>
@@ -169,6 +200,7 @@ export default function AdminCoupons() {
                       // Le code est l'identifiant — il ne peut pas être modifié en édition.
                       readOnly={isEditing}
                       className={isEditing ? "bg-muted" : ""}
+                      disabled={saving}
                     />
                     {err.code && <p className="text-xs text-destructive mt-1">{err.code}</p>}
                   </div>
@@ -178,6 +210,7 @@ export default function AdminCoupons() {
                       <Select
                         value={v.type}
                         onValueChange={(x) => setV({ ...v, type: x as "percent" | "fixed" })}
+                        disabled={saving}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -194,6 +227,7 @@ export default function AdminCoupons() {
                         type="number"
                         value={v.value}
                         onChange={(e) => setV({ ...v, value: Number(e.target.value) })}
+                        disabled={saving}
                       />
                     </div>
                   </div>
@@ -204,23 +238,26 @@ export default function AdminCoupons() {
                         type="number"
                         value={v.minPurchase}
                         onChange={(e) => setV({ ...v, minPurchase: Number(e.target.value) })}
+                        disabled={saving}
                       />
                     </div>
                     <div>
-                      <Label>Limite d'usage</Label>
+                      <Label>Limite d&apos;usage</Label>
                       <Input
                         type="number"
                         value={v.usageLimit}
                         onChange={(e) => setV({ ...v, usageLimit: Number(e.target.value) })}
+                        disabled={saving}
                       />
                     </div>
                   </div>
                   <div>
-                    <Label>Date d'expiration</Label>
+                    <Label>Date d&apos;expiration</Label>
                     <Input
                       type="date"
                       value={v.expiresAt}
                       onChange={(e) => setV({ ...v, expiresAt: e.target.value })}
+                      disabled={saving}
                     />
                   </div>
                   <div className="flex items-center justify-between rounded-md border p-2">
@@ -231,14 +268,17 @@ export default function AdminCoupons() {
                       id="active"
                       checked={v.active}
                       onCheckedChange={(x) => setV({ ...v, active: x })}
+                      disabled={saving}
                     />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpen(false)}>
+                  <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
                     Annuler
                   </Button>
-                  <Button onClick={save}>{isEditing ? "Enregistrer" : "Créer"}</Button>
+                  <Button onClick={save} disabled={saving}>
+                    {saving ? "Enregistrement…" : isEditing ? "Enregistrer" : "Créer"}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -253,6 +293,17 @@ export default function AdminCoupons() {
         )
       }
     >
+      {/* Erreur au-dessus du contenu, sans remplacer la page (§5.3). */}
+      {error && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
@@ -267,80 +318,201 @@ export default function AdminCoupons() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {coupons.map((c) => {
-              const expired = new Date(c.expiresAt).getTime() < Date.now();
-              return (
-                <TableRow key={c.code}>
-                  <TableCell>
-                    <span className="rounded bg-muted px-2 py-1 font-mono text-xs">{c.code}</span>
-                  </TableCell>
-                  <TableCell>
-                    {c.type === "percent" ? `${c.value} %` : formatDZD(c.value)}
-                  </TableCell>
-                  <TableCell>{c.minPurchase ? formatDZD(c.minPurchase) : "—"}</TableCell>
-                  <TableCell className="text-sm">
-                    {c.usageCount}/{c.usageLimit}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {new Date(c.expiresAt).toLocaleDateString("fr-FR")}
-                  </TableCell>
-                  <TableCell>
-                    {!c.active ? (
-                      <Badge variant="secondary">Désactivé</Badge>
-                    ) : expired ? (
-                      <Badge variant="destructive">Expiré</Badge>
-                    ) : (
-                      <Badge>Actif</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <Button variant="ghost" size="icon" onClick={() => copy(c.code)}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    {/* Niveau 1+3 : bouton Modifier */}
-                    <span
-                      title={denyReason("update") ?? "Modifier"}
-                      className="inline-flex align-middle"
+            {/* Chargement — squelettes de lignes (§5.3). */}
+            {loading ? (
+              <>
+                <tr className="sr-only" aria-busy="true">
+                  <td>Chargement des coupons…</td>
+                </tr>
+                {Array.from({ length: 4 }, (_, i) => (
+                  <TableRow key={i}>
+                    {[80, 60, 70, 50, 80, 60, 80].map((w, j) => (
+                      <TableCell key={j}>
+                        <div
+                          className="h-4 animate-pulse rounded bg-muted"
+                          style={{ width: `${w}px` }}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </>
+            ) : (
+              <>
+                {coupons.map((c) => {
+                  const expired = new Date(c.expiresAt).getTime() < Date.now();
+                  return (
+                    <TableRow key={c.code}>
+                      <TableCell>
+                        <span className="rounded bg-muted px-2 py-1 font-mono text-xs">
+                          {c.code}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {c.type === "percent" ? `${c.value} %` : formatDZD(c.value)}
+                      </TableCell>
+                      <TableCell>{c.minPurchase ? formatDZD(c.minPurchase) : "—"}</TableCell>
+                      <TableCell className="text-sm">
+                        {c.usageCount}/{c.usageLimit}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {new Date(c.expiresAt).toLocaleDateString("fr-FR")}
+                      </TableCell>
+                      <TableCell>
+                        {!c.active ? (
+                          <Badge variant="secondary">Désactivé</Badge>
+                        ) : expired ? (
+                          <Badge variant="destructive">Expiré</Badge>
+                        ) : (
+                          <Badge>Actif</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-end">
+                        <Button variant="ghost" size="icon" onClick={() => copy(c.code)}>
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        {/* Niveau 1+3 : bouton Modifier */}
+                        <span
+                          title={denyReason("update") ?? "Modifier"}
+                          className="inline-flex align-middle"
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Modifier"
+                            disabled={!can("update") || saving}
+                            onClick={() => openEdit(c)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </span>
+                        {/* Niveau 1+3 : bouton Supprimer */}
+                        <span
+                          title={denyReason("delete") ?? "Supprimer"}
+                          className="inline-flex align-middle"
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Supprimer"
+                            disabled={!can("delete") || saving}
+                            onClick={() => onDelete(c.code)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {coupons.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className="h-24 text-center text-sm text-muted-foreground"
                     >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Modifier"
-                        disabled={!can("update")}
-                        onClick={() => openEdit(c)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </span>
-                    {/* Niveau 1+3 : bouton Supprimer */}
-                    <span
-                      title={denyReason("delete") ?? "Supprimer"}
-                      className="inline-flex align-middle"
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Supprimer"
-                        disabled={!can("delete")}
-                        onClick={() => onDelete(c.code)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </span>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {coupons.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
-                  Aucun coupon.
-                </TableCell>
-              </TableRow>
+                      Aucun coupon.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
             )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Dialog d'édition visible même quand `can("create")` est faux,
+          car l'édition peut être ouverte via openEdit() indépendamment. */}
+      {!can("create") && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Modifier le coupon</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>Code</Label>
+                <Input value={v.code} readOnly className="bg-muted" disabled={saving} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Type</Label>
+                  <Select
+                    value={v.type}
+                    onValueChange={(x) => setV({ ...v, type: x as "percent" | "fixed" })}
+                    disabled={saving}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percent">Pourcentage</SelectItem>
+                      <SelectItem value="fixed">Montant fixe (DA)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Valeur</Label>
+                  <Input
+                    type="number"
+                    value={v.value}
+                    onChange={(e) => setV({ ...v, value: Number(e.target.value) })}
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Achat min. (DA)</Label>
+                  <Input
+                    type="number"
+                    value={v.minPurchase}
+                    onChange={(e) => setV({ ...v, minPurchase: Number(e.target.value) })}
+                    disabled={saving}
+                  />
+                </div>
+                <div>
+                  <Label>Limite d&apos;usage</Label>
+                  <Input
+                    type="number"
+                    value={v.usageLimit}
+                    onChange={(e) => setV({ ...v, usageLimit: Number(e.target.value) })}
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Date d&apos;expiration</Label>
+                <Input
+                  type="date"
+                  value={v.expiresAt}
+                  onChange={(e) => setV({ ...v, expiresAt: e.target.value })}
+                  disabled={saving}
+                />
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <Label htmlFor="active-edit" className="mb-0">
+                  Actif
+                </Label>
+                <Switch
+                  id="active-edit"
+                  checked={v.active}
+                  onCheckedChange={(x) => setV({ ...v, active: x })}
+                  disabled={saving}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
+                Annuler
+              </Button>
+              <Button onClick={save} disabled={saving}>
+                {saving ? "Enregistrement…" : "Enregistrer"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </AdminPageShell>
   );
 }
