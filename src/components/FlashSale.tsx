@@ -4,7 +4,7 @@ import { Flame, ArrowRight } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { useProducts } from "@/lib/useProducts";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { Reveal } from "@/components/Reveal";
 import { catalogProducts } from "@/data/products";
 
@@ -24,7 +24,7 @@ function useCountdown(targetMs: number) {
 }
 
 export function FlashSale() {
-  const { siteContent } = useAdminState();
+  const { data: siteContent } = useSiteContent();
   const cfg = siteContent.flashSale;
   const [target] = useState(() => Date.now() + Math.max(1, cfg.countdownHours) * 3_600_000);
   const t = useCountdown(target);

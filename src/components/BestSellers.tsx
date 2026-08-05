@@ -1,7 +1,7 @@
 import { ProductCard } from "./ProductCard";
 import { SectionHead } from "./CategoryCards";
 import { useProducts } from "@/lib/useProducts";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { useMemo } from "react";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
@@ -9,7 +9,7 @@ import { catalogProducts } from "@/data/products";
 
 export function BestSellers() {
   const products = useProducts();
-  const { siteContent } = useAdminState();
+  const { data: siteContent } = useSiteContent();
   const cfg = siteContent.bestSellers;
   const L = useLocalize();
   // Vitrine publique : jamais de configuration client (voir `catalogProducts`).

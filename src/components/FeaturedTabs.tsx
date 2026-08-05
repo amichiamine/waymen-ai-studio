@@ -2,13 +2,13 @@ import { useMemo, useState } from "react";
 import { ProductCard } from "./ProductCard";
 import { SectionHead } from "./CategoryCards";
 import { useProducts } from "@/lib/useProducts";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 import { catalogProducts } from "@/data/products";
 
 export function FeaturedTabs() {
   const products = useProducts();
-  const { siteContent } = useAdminState();
+  const { data: siteContent } = useSiteContent();
   const cfg = siteContent.featuredTabs;
   const L = useLocalize();
   const first = cfg.tabs[0]?.categorySlug ?? "laptops";

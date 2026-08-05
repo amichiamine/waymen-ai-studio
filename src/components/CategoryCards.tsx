@@ -4,7 +4,7 @@ import laptopsImg from "@/assets/cat-laptops.webp";
 import desktopsImg from "@/assets/cat-desktops.webp";
 import buildsImg from "@/assets/cat-builds.webp";
 import phonesImg from "@/assets/cat-phones.webp";
-import { useAdminState } from "@/lib/admin-store";
+import { useCategoryList, useSiteContent } from "@/data-provider";
 import type { Category } from "@/data/products";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
@@ -23,7 +23,8 @@ const DEFAULT_ICON: Record<string, LucideIcon> = {
 };
 
 export function CategoryCards() {
-  const { siteContent, categories } = useAdminState();
+  const { data: categories } = useCategoryList();
+  const { data: siteContent } = useSiteContent();
   const cfg = siteContent.categories;
   const L = useLocalize();
   const cats = categories.filter((c) =>
