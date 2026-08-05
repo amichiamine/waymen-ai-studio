@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -28,6 +29,9 @@ import {
 
 export default function AdminDashboard() {
   const { products, categories, brands, orders, customers, coupons, reviews } = useAdminState();
+  // Niveau 1 — lecture uniquement : aucune garde d'action n'est requise sur ce
+  // tableau de bord. Le hook est présent pour cohérence et évolution future.
+  const { can } = usePermissions();
 
   const stats = useMemo(() => {
     const total = products.length;
@@ -149,6 +153,11 @@ export default function AdminDashboard() {
     }
     return Array.from(map.values());
   }, [orders]);
+
+  // `can("read")` est toujours vrai pour quiconque entre dans le back-office
+  // (les viewers sont bloqués en amont par App.tsx). Ce garde ne masque rien :
+  // il documente que l'écran est intégralement en lecture seule.
+  if (!can("read")) return null;
 
   return (
     <AdminPageShell

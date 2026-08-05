@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { useAdminState } from "@/lib/admin-store";
 import { formatDZD } from "@/data/products";
+import { usePermissions } from "@/lib/admin-auth";
 import {
   ResponsiveContainer,
   LineChart,
@@ -36,6 +37,8 @@ const COLORS = [
 
 export default function AdminAnalytics() {
   const { orders, products, categories, customers } = useAdminState();
+  // Écran de lecture seule — aucune mutation, pas de garde d'action requise.
+  const { can } = usePermissions();
   const [range, setRange] = useState<"7" | "30" | "90">("30");
   const days = parseInt(range, 10);
 
@@ -112,6 +115,9 @@ export default function AdminAnalytics() {
     const conv = funnel[0].value ? ((funnel[2].value / funnel[0].value) * 100).toFixed(1) : "0";
     return { revenue, count: active.length, aov, conv, customers: customers.length };
   }, [orders, funnel, customers]);
+
+  // Écran de lecture — seul `read` est requis, toujours accordé dans le back-office.
+  if (!can("read")) return null;
 
   return (
     <AdminPageShell

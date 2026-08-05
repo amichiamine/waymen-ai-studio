@@ -14,7 +14,14 @@ import {
 } from "lucide-react";
 import { useAdminState } from "@/lib/admin-store";
 import { formatDZD } from "@/data/products";
+import { usePermissions } from "@/lib/admin-auth";
 import { toast } from "sonner";
+
+// Les exports CSV sont des opérations de LECTURE : ils ne mutent aucune donnée.
+// La clé requise est donc `read`, accordée à tous les rôles présents dans le
+// back-office. Si, à l'avenir, certains exports contiennent des données
+// réellement sensibles (e.g. mots de passe, tokens), il suffira de monter la
+// clé à `manageSettings` ou `manageCriticalSettings` sans modifier la structure.
 
 function toCsv(rows: (string | number)[][]): string {
   return rows
@@ -29,7 +36,7 @@ function toCsv(rows: (string | number)[][]): string {
     .join("\n");
 }
 function download(name: string, csv: string) {
-  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -41,6 +48,7 @@ function download(name: string, csv: string) {
 
 export default function AdminReports() {
   const { orders, customers, products, stockMovements, coupons, reviews } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
 
   const summaries = useMemo(() => {
     const active = orders.filter((o) => o.status !== "cancelled");
@@ -54,6 +62,8 @@ export default function AdminReports() {
   }, [orders, customers, products, stockMovements]);
 
   const exportOrders = () => {
+    // Niveau 2 — vérification dans l'action avant toute opération.
+    if (!guard("read", "Exporter les ventes")) return;
     const rows: (string | number)[][] = [
       [
         "ID",
@@ -96,6 +106,7 @@ export default function AdminReports() {
   };
 
   const exportCustomers = () => {
+    if (!guard("read", "Exporter les clients")) return;
     const rows: (string | number)[][] = [
       ["ID", "Nom", "Email", "Téléphone", "Wilaya", "Inscrit", "Commandes", "Dépensé DA"],
     ];
@@ -114,6 +125,7 @@ export default function AdminReports() {
   };
 
   const exportInventory = () => {
+    if (!guard("read", "Exporter le stock")) return;
     const rows: (string | number)[][] = [
       ["ID", "Nom", "Marque", "Catégorie", "Prix DA", "Stock", "Best-seller"],
     ];
@@ -131,6 +143,7 @@ export default function AdminReports() {
   };
 
   const exportMovements = () => {
+    if (!guard("read", "Exporter les mouvements")) return;
     const rows: (string | number)[][] = [["ID", "Date", "Produit", "Delta", "Raison"]];
     for (const m of stockMovements)
       rows.push([m.id, m.createdAt, m.productName, m.delta, m.reason]);
@@ -138,6 +151,7 @@ export default function AdminReports() {
   };
 
   const exportCoupons = () => {
+    if (!guard("read", "Exporter les coupons")) return;
     const rows: (string | number)[][] = [
       ["Code", "Type", "Valeur", "Achat min", "Expire", "Utilisations", "Limite", "Actif"],
     ];
@@ -156,6 +170,7 @@ export default function AdminReports() {
   };
 
   const exportReviews = () => {
+    if (!guard("read", "Exporter les avis")) return;
     const rows: (string | number)[][] = [
       ["ID", "Date", "Produit", "Client", "Note", "Titre", "Corps", "Statut"],
     ];
@@ -225,9 +240,19 @@ export default function AdminReports() {
                   <p className="text-xs text-muted-foreground">{c.desc}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={c.action} className="self-start">
-                <Download className="mr-2 h-4 w-4" /> Exporter CSV
-              </Button>
+              {/* Niveau 1 — affichage. Niveau 3 — infobulle sur le <span>
+                  car un bouton disabled a pointer-events-none. */}
+              {can("read") ? (
+                <Button variant="outline" size="sm" onClick={c.action} className="self-start">
+                  <Download className="me-2 h-4 w-4" /> Exporter CSV
+                </Button>
+              ) : (
+                <span title={denyReason("read")} className="inline-flex self-start">
+                  <Button variant="outline" size="sm" disabled>
+                    <Download className="me-2 h-4 w-4" /> Exporter CSV
+                  </Button>
+                </span>
+              )}
             </CardContent>
           </Card>
         ))}
