@@ -3,12 +3,13 @@ import { Helmet } from "react-helmet-async";
 import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useAdminState, addContactMessage } from "@/lib/admin-store";
+import { useContactMessageMutations, useSiteSettings } from "@/data-provider";
 import { useI18n } from "@/lib/i18n";
 
 export default function Contact() {
   const [sending, setSending] = useState(false);
-  const { siteSettings: s } = useAdminState();
+  const { data: s } = useSiteSettings();
+  const { create: addContactMessage } = useContactMessageMutations();
   const { t } = useI18n();
 
   const contactSchema = z.object({
@@ -19,7 +20,7 @@ export default function Contact() {
     message: z.string().trim().min(5, t("contact.form.message")).max(2000),
   });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const fd = new FormData(form);
@@ -36,9 +37,12 @@ export default function Contact() {
     }
     setSending(true);
     try {
-      addContactMessage(parsed.data);
+      await addContactMessage(parsed.data);
       form.reset();
       toast.success(t("contact.toast.ok"));
+    } catch (cause) {
+      const msg = cause instanceof Error ? cause.message : t("contact.err.invalid");
+      toast.error(msg);
     } finally {
       setSending(false);
     }

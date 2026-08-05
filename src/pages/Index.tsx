@@ -9,11 +9,11 @@ import { WhyUs } from "@/components/WhyUs";
 import { BuilderTeaser } from "@/components/BuilderTeaser";
 import { Reviews } from "@/components/Reviews";
 import { ContactCTA } from "@/components/ContactCTA";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 
 export default function Index() {
-  const { siteContent } = useAdminState();
+  const { data: siteContent } = useSiteContent();
   const L = useLocalize();
   return (
     <>

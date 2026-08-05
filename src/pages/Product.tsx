@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { formatDZD, categoryMeta, catalogProducts, type SpecKey } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
+import { useProductReviewList, useReviewMutations } from "@/data-provider";
 
 import { ProductCard } from "@/components/ProductCard";
 import {
@@ -19,7 +20,6 @@ import { toast } from "sonner";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { useAdminState, createProductReview } from "@/lib/admin-store";
 
 const specKeyMap: Record<SpecKey, TKey> = {
   cpu: "spec.cpu",
@@ -68,6 +68,9 @@ function ProductView({ p }: { p: ProductType }) {
   const { addToCart, toggleFavorite, isFavorite } = useStore();
   const navigate = useNavigate();
   const liked = isFavorite(p.id);
+
+  // `catalogProducts()` préserve le filtrage des builds personnalisés — ne pas
+  // régresser ce comportement (phase 1).
   const related = catalogProducts(products)
     .filter((x) => x.category === p.category && x.id !== p.id)
     .slice(0, 4);
@@ -80,13 +83,17 @@ function ProductView({ p }: { p: ProductType }) {
     { id: "ship", key: "pd.tab.ship" },
   ];
 
-  const { reviews } = useAdminState();
+  // Lecture des avis via le provider : useProductReviewList filtre déjà sur
+  // productId et status === "approved". Le hook reste toujours monté.
+  const { data: approvedReviews } = useProductReviewList(p.id);
+  const { create: createProductReview } = useReviewMutations();
+
   const stats = useMemo(() => {
-    const approved = reviews.filter((r) => r.productId === p.id && r.status === "approved");
-    const count = approved.length;
-    const avg = count ? approved.reduce((s, r) => s + r.rating, 0) / count : 0;
-    return { avg, count, approved };
-  }, [p.id, reviews]);
+    const count = approvedReviews.length;
+    const avg = count ? approvedReviews.reduce((s, r) => s + r.rating, 0) / count : 0;
+    return { avg, count, approved: approvedReviews };
+  }, [approvedReviews]);
+
   const [rating, setRating] = useState(5);
   const [reviewTitle, setReviewTitle] = useState("");
   const [comment, setComment] = useState("");
@@ -108,7 +115,7 @@ function ProductView({ p }: { p: ProductType }) {
     await toggleFavorite(p.id);
     toast.success(liked ? "Retiré des favoris" : "Ajouté aux favoris");
   };
-  const submitReview = (e: React.FormEvent) => {
+  const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       navigate("/auth");
@@ -118,19 +125,23 @@ function ProductView({ p }: { p: ProductType }) {
       toast.error("Écrivez un commentaire");
       return;
     }
-    createProductReview({
-      productId: p.id,
-      productName: p.name,
-      customerName: user.user_metadata?.name ?? user.email ?? "Client",
-      rating,
-      title: reviewTitle.trim() || "Avis client",
-      body: comment.trim(),
-    });
-    setComment("");
-    setReviewTitle("");
-    setRating(5);
-    setSubmitted(true);
-    toast.success("Merci ! Votre avis sera publié après modération.");
+    try {
+      await createProductReview(p.id, {
+        productName: p.name,
+        customerName: user.user_metadata?.name ?? user.email ?? "Client",
+        rating,
+        title: reviewTitle.trim() || "Avis client",
+        body: comment.trim(),
+      });
+      setComment("");
+      setReviewTitle("");
+      setRating(5);
+      setSubmitted(true);
+      toast.success("Merci ! Votre avis sera publié après modération.");
+    } catch (cause) {
+      const msg = cause instanceof Error ? cause.message : "Erreur lors de l'envoi";
+      toast.error(msg);
+    }
   };
 
   const distribution = useMemo(() => {
@@ -141,7 +152,7 @@ function ProductView({ p }: { p: ProductType }) {
     return dist;
   }, [stats.approved]);
 
-  const canonical = `/product/${p.id}`;
+  // Canonique absolue et JSON-LD Product — conservés depuis la phase 1.
   const absoluteUrl = `${window.location.origin}/product/${p.id}`;
   const jsonLd = {
     "@context": "https://schema.org",
