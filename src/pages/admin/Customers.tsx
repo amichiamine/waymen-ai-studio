@@ -1,9 +1,27 @@
 import { useMemo, useState } from "react";
+import { z } from "zod";
+import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Mail, Phone, MapPin, Calendar } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, Mail, Phone, MapPin, Calendar, Plus, Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,16 +30,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { formatDZD } from "@/data/products";
-import { useAdminState, type Customer, type Order } from "@/lib/admin-store";
 import { Link } from "react-router-dom";
-
-// Cette page est en lecture seule (vague 1.2). Un CRUD sera ajouté en vague 1.3
-// par un autre agent. Aucune action mutative ici : le motif de permissions ne
-// s'applique donc qu'à la correction des classes RTL (text-right → text-end,
-// left- → start-, pl- → ps-). La page se comporte identiquement pour tous
-// les rôles — conforme à la règle d'additivité.
+import { formatDZD } from "@/data/products";
+import { WILAYAS } from "@/data/wilayas";
+import {
+  useAdminState,
+  upsertCustomer,
+  deleteCustomer,
+  type Customer,
+  type Order,
+} from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const STATUS_LABEL: Record<Order["status"], string> = {
   pending: "En attente",
@@ -39,12 +58,200 @@ const STATUS_VARIANT: Record<Order["status"], "default" | "secondary" | "destruc
     cancelled: "destructive",
   };
 
+// ---------- Validation Zod ----------
+const customerSchema = z.object({
+  name: z.string().trim().min(2, "Nom requis (2 caractères min.)").max(100),
+  email: z.string().trim().email("Email invalide").max(150),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^0[5-7]\d{8}$/, "Téléphone invalide (format : 0XXXXXXXXX)")
+    .max(20),
+  wilaya: z.string().trim().min(1, "Wilaya requise").max(100),
+});
+type CustomerFormValues = z.infer<typeof customerSchema>;
+
+// ---------- Formulaire (panneau Dialog) ----------
+type FormProps = {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  initial?: Customer;
+  existingEmails: string[];
+  canSave: boolean;
+  onGuardFail: () => boolean;
+};
+
+function CustomerForm({
+  open,
+  onOpenChange,
+  initial,
+  existingEmails,
+  canSave,
+  onGuardFail,
+}: FormProps) {
+  const [v, setV] = useState<CustomerFormValues>({
+    name: initial?.name ?? "",
+    email: initial?.email ?? "",
+    phone: initial?.phone ?? "",
+    wilaya: initial?.wilaya ?? "",
+  });
+  const [err, setErr] = useState<Record<string, string>>({});
+
+  // Réinitialiser quand le Dialog s'ouvre sur un nouveau contexte
+  const [lastId, setLastId] = useState(initial?.id);
+  if (initial?.id !== lastId) {
+    setLastId(initial?.id);
+    setV({
+      name: initial?.name ?? "",
+      email: initial?.email ?? "",
+      phone: initial?.phone ?? "",
+      wilaya: initial?.wilaya ?? "",
+    });
+    setErr({});
+  }
+
+  function save() {
+    // Niveau 2 — vérification impérative avant toute mutation.
+    if (!onGuardFail()) return;
+
+    const parsed = customerSchema.safeParse(v);
+    if (!parsed.success) {
+      const errs: Record<string, string> = {};
+      parsed.error.issues.forEach((i) => {
+        errs[i.path[0] as string] = i.message;
+      });
+      setErr(errs);
+      return;
+    }
+
+    // Unicité email (hors client courant en modification)
+    const otherEmails = initial
+      ? existingEmails.filter((e) => e !== initial.email.toLowerCase())
+      : existingEmails;
+    if (otherEmails.includes(parsed.data.email.toLowerCase())) {
+      setErr({ email: "Adresse email déjà utilisée par un autre client" });
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const customer: Customer = {
+      id: initial?.id ?? `cus_${Date.now()}`,
+      name: parsed.data.name,
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      wilaya: parsed.data.wilaya,
+      createdAt: initial?.createdAt ?? now,
+      ordersCount: initial?.ordersCount ?? 0,
+      totalSpent: initial?.totalSpent ?? 0,
+    };
+    upsertCustomer(customer);
+    toast.success(initial ? `« ${customer.name} » mis à jour` : `Client « ${customer.name} » créé`);
+    setErr({});
+    onOpenChange(false);
+  }
+
+  const wilayaNames = useMemo(() => WILAYAS.map((w) => w.name_fr).sort(), []);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{initial ? "Modifier le client" : "Nouveau client"}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Nom */}
+          <div className="space-y-1">
+            <Label htmlFor="cf-name">Nom complet</Label>
+            <Input
+              id="cf-name"
+              value={v.name}
+              onChange={(e) => setV({ ...v, name: e.target.value })}
+              placeholder="Prénom Nom"
+              disabled={!canSave}
+            />
+            {err.name && <p className="text-xs text-destructive">{err.name}</p>}
+          </div>
+
+          {/* Email */}
+          <div className="space-y-1">
+            <Label htmlFor="cf-email">Email</Label>
+            <Input
+              id="cf-email"
+              type="email"
+              value={v.email}
+              onChange={(e) => setV({ ...v, email: e.target.value })}
+              placeholder="client@example.dz"
+              disabled={!canSave}
+            />
+            {err.email && <p className="text-xs text-destructive">{err.email}</p>}
+          </div>
+
+          {/* Téléphone */}
+          <div className="space-y-1">
+            <Label htmlFor="cf-phone">Téléphone</Label>
+            <Input
+              id="cf-phone"
+              type="tel"
+              value={v.phone}
+              onChange={(e) => setV({ ...v, phone: e.target.value })}
+              placeholder="0XXXXXXXXX"
+              disabled={!canSave}
+            />
+            {err.phone && <p className="text-xs text-destructive">{err.phone}</p>}
+          </div>
+
+          {/* Wilaya */}
+          <div className="space-y-1">
+            <Label htmlFor="cf-wilaya">Wilaya</Label>
+            <Select
+              value={v.wilaya}
+              onValueChange={(x) => setV({ ...v, wilaya: x })}
+              disabled={!canSave}
+            >
+              <SelectTrigger id="cf-wilaya">
+                <SelectValue placeholder="Sélectionner une wilaya…" />
+              </SelectTrigger>
+              <SelectContent className="max-h-64">
+                {wilayaNames.map((w) => (
+                  <SelectItem key={w} value={w}>
+                    {w}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {err.wilaya && <p className="text-xs text-destructive">{err.wilaya}</p>}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Annuler
+          </Button>
+          <Button onClick={save} disabled={!canSave}>
+            Enregistrer
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------- Page principale ----------
 export default function AdminCustomers() {
   const { customers, orders } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
+
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<Customer | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Customer | undefined>(undefined);
+  const [toDelete, setToDelete] = useState<Customer | null>(null);
 
-  // Derive live stats from orders (overrides seed aggregates as source of truth)
+  // Index email existants pour validation d'unicité
+  const existingEmails = useMemo(() => customers.map((c) => c.email.toLowerCase()), [customers]);
+
+  // Statistiques dérivées des commandes (source de vérité)
   const stats = useMemo(() => {
     const map = new Map<string, { count: number; spent: number; last?: string }>();
     for (const o of orders) {
@@ -81,6 +288,7 @@ export default function AdminCustomers() {
       .sort((a, b) => b.totalSpent - a.totalSpent);
   }, [customers, q, stats]);
 
+  // Commandes du client sélectionné (vue détail)
   const detailOrders = useMemo(
     () =>
       selected
@@ -100,11 +308,58 @@ export default function AdminCustomers() {
     };
   }, [detailOrders]);
 
+  // Nombre de commandes actives pour la garde métier de suppression
+  const deleteOrderCount = useMemo(() => {
+    if (!toDelete) return 0;
+    return orders.filter((o) => o.customerId === toDelete.id && o.status !== "cancelled").length;
+  }, [toDelete, orders]);
+
+  function openNew() {
+    setEditing(undefined);
+    setFormOpen(true);
+  }
+
+  function openEdit(c: Customer) {
+    setEditing(c);
+    setFormOpen(true);
+  }
+
+  // Garde retournée comme callback pour CustomerForm (niveau 2)
+  function guardSave(): boolean {
+    return guard(editing ? "update" : "create", editing ? "Modifier le client" : "Créer le client");
+  }
+
+  function confirmDelete() {
+    if (!toDelete) return;
+    // Niveau 2 — vérification impérative.
+    if (!guard("delete", "Supprimer le client")) return;
+    deleteCustomer(toDelete.id);
+    toast.success(`Client « ${toDelete.name} » supprimé`);
+    setToDelete(null);
+    // Fermer la vue détail si le client supprimé y était affiché
+    if (selected?.id === toDelete.id) setSelected(null);
+  }
+
   return (
     <AdminPageShell
       title="Clients"
       description={`${customers.length} clients enregistrés — statistiques dérivées des commandes.`}
+      actions={
+        // Niveau 1 — affichage. Niveau 3 — infobulle portée par le <span>.
+        can("create") ? (
+          <Button onClick={openNew}>
+            <Plus className="me-2 h-4 w-4" /> Nouveau client
+          </Button>
+        ) : (
+          <span title={denyReason("create")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Nouveau client
+            </Button>
+          </span>
+        )
+      }
     >
+      {/* Barre de recherche */}
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -114,6 +369,8 @@ export default function AdminCustomers() {
           onChange={(e) => setQ(e.target.value)}
         />
       </div>
+
+      {/* Table principale */}
       <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
@@ -125,7 +382,7 @@ export default function AdminCustomers() {
               <TableHead className="text-end">Commandes</TableHead>
               <TableHead className="text-end">Dépensé (LTV)</TableHead>
               <TableHead>Dernière commande</TableHead>
-              <TableHead />
+              <TableHead className="w-[140px] text-end">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -141,16 +398,59 @@ export default function AdminCustomers() {
                   {c.lastOrderAt ? new Date(c.lastOrderAt).toLocaleDateString("fr-FR") : "—"}
                 </TableCell>
                 <TableCell className="text-end">
-                  <Button variant="outline" size="sm" onClick={() => setSelected(c)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="me-1"
+                    onClick={() => setSelected(c)}
+                  >
                     Détails
                   </Button>
+
+                  {/* Modifier — niveau 1+3 */}
+                  {can("update") ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Modifier"
+                      onClick={() => openEdit(c)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <span title={denyReason("update")} className="inline-flex align-middle">
+                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </span>
+                  )}
+
+                  {/* Supprimer — niveau 1+3 */}
+                  <span
+                    title={denyReason("delete") ?? "Supprimer"}
+                    className="inline-flex align-middle"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Supprimer"
+                      disabled={!can("delete")}
+                      onClick={() => setToDelete(c)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </span>
                 </TableCell>
               </TableRow>
             ))}
+
+            {/* État vide utile */}
             {rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
-                  Aucun client.
+                  {q
+                    ? "Aucun client ne correspond à la recherche."
+                    : "Aucun client enregistré. Créez le premier client avec le bouton ci-dessus."}
                 </TableCell>
               </TableRow>
             )}
@@ -158,6 +458,7 @@ export default function AdminCustomers() {
         </Table>
       </div>
 
+      {/* Vue détail (Dialog lecture seule) */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -252,10 +553,72 @@ export default function AdminCustomers() {
                   </Table>
                 </div>
               </div>
+
+              {/* Actions dans la vue détail */}
+              {can("update") && (
+                <div className="flex justify-end gap-2 border-t pt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelected(null);
+                      openEdit(selected);
+                    }}
+                  >
+                    <Pencil className="me-2 h-4 w-4" />
+                    Modifier
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Formulaire création / modification */}
+      <CustomerForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        initial={editing}
+        existingEmails={existingEmails}
+        canSave={can(editing ? "update" : "create")}
+        onGuardFail={guardSave}
+      />
+
+      {/* Dialog de confirmation de suppression avec garde métier */}
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(o) => {
+          if (!o) setToDelete(null);
+        }}
+        title="Supprimer ce client ?"
+        description={
+          toDelete ? (
+            deleteOrderCount > 0 ? (
+              <>
+                Impossible : le client <strong>{toDelete.name}</strong> est rattaché à{" "}
+                <strong>
+                  {deleteOrderCount} commande{deleteOrderCount > 1 ? "s" : ""} active
+                  {deleteOrderCount > 1 ? "s" : ""}
+                </strong>
+                . Clôturez ou annulez ces commandes depuis{" "}
+                <Link to="/admin/orders" className="text-primary underline">
+                  /admin/orders
+                </Link>{" "}
+                avant de supprimer ce client.
+              </>
+            ) : (
+              <>
+                Le client <strong>{toDelete.name}</strong> ({toDelete.email}) sera supprimé
+                définitivement. Cette action est irréversible.
+              </>
+            )
+          ) : null
+        }
+        confirmLabel="Supprimer"
+        destructive
+        onConfirm={deleteOrderCount > 0 ? () => setToDelete(null) : confirmDelete}
+      />
     </AdminPageShell>
   );
 }

@@ -1486,6 +1486,31 @@ export function createOrder(input: {
   return order;
 }
 
+// Customers
+export function upsertCustomer(c: Customer) {
+  const list = state.customers.slice();
+  const idx = list.findIndex((x) => x.id === c.id);
+  if (idx >= 0) list[idx] = c;
+  else list.unshift(c);
+  set("customers", list);
+  logAudit(
+    `client ${c.name}`,
+    idx >= 0 ? "customer.update" : "customer.create",
+    `${c.email} · ${c.wilaya}`,
+  );
+}
+export function deleteCustomer(id: string) {
+  const c = state.customers.find((x) => x.id === id);
+  set(
+    "customers",
+    state.customers.filter((x) => x.id !== id),
+  );
+  if (c) logAudit(`client ${c.name}`, "customer.delete", c.email);
+}
+export function getCustomer(id: string) {
+  return state.customers.find((c) => c.id === id);
+}
+
 // Coupons
 export function upsertCoupon(c: Coupon) {
   const list = state.coupons.slice();
