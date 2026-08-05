@@ -18,7 +18,7 @@ export function useInfiniteScroll<T extends HTMLElement = HTMLDivElement>(opts: 
       (entries) => {
         if (entries[0]?.isIntersecting) cbRef.current();
       },
-      { rootMargin }
+      { rootMargin },
     );
     io.observe(el);
     return () => io.disconnect();

@@ -7,6 +7,7 @@ Compléter le travail commencé dans Lot 1 en rendant toutes les pages visiteur 
 ## Fichiers concernés
 
 ### Pages à internationaliser avec `t("...")`
+
 - `src/pages/About.tsx`
 - `src/pages/Contact.tsx`
 - `src/pages/Blog.tsx`
@@ -22,14 +23,17 @@ Compléter le travail commencé dans Lot 1 en rendant toutes les pages visiteur 
 - `src/pages/NotFound.tsx`
 
 ### Données mock
+
 - `src/data/products.ts` — champs `name`, `description`, `title`, `excerpt` en `Localized<string>` avec EN/AR.
 - Fichiers blog mock équivalents.
 
 ### Fondations i18n
+
 - `src/lib/i18n.tsx` — ajouter toutes les clés `t()` manquantes aux 3 dictionnaires FR/EN/AR.
 - `src/lib/site-content.ts` — vérifier que les valeurs par défaut couvrent aussi les nouvelles pages.
 
 ### RTL
+
 - Corriger l'alignement des formulaires (Auth, Checkout, Contact, Account).
 - Remplacer `text-left`/`text-right` par `text-start`/`text-end` dans ces pages.
 - Vérifier les icônes directionnelles (chevrons, flèches).

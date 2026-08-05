@@ -4,18 +4,34 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Mail, Phone, MapPin, Calendar } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatDZD } from "@/data/products";
 import { useAdminState, type Customer, type Order } from "@/lib/admin-store";
 import { Link } from "react-router-dom";
 
 const STATUS_LABEL: Record<Order["status"], string> = {
-  pending: "En attente", processing: "En traitement", shipped: "Expédiée", delivered: "Livrée", cancelled: "Annulée",
+  pending: "En attente",
+  processing: "En traitement",
+  shipped: "Expédiée",
+  delivered: "Livrée",
+  cancelled: "Annulée",
 };
-const STATUS_VARIANT: Record<Order["status"], "default" | "secondary" | "destructive" | "outline"> = {
-  pending: "outline", processing: "secondary", shipped: "secondary", delivered: "default", cancelled: "destructive",
-};
+const STATUS_VARIANT: Record<Order["status"], "default" | "secondary" | "destructive" | "outline"> =
+  {
+    pending: "outline",
+    processing: "secondary",
+    shipped: "secondary",
+    delivered: "default",
+    cancelled: "destructive",
+  };
 
 export default function AdminCustomers() {
   const { customers, orders } = useAdminState();
@@ -41,15 +57,32 @@ export default function AdminCustomers() {
     return customers
       .map((c) => {
         const s = stats.get(c.id);
-        return { ...c, ordersCount: s?.count ?? c.ordersCount, totalSpent: s?.spent ?? c.totalSpent, lastOrderAt: s?.last };
+        return {
+          ...c,
+          ordersCount: s?.count ?? c.ordersCount,
+          totalSpent: s?.spent ?? c.totalSpent,
+          lastOrderAt: s?.last,
+        };
       })
-      .filter((c) => !n || c.name.toLowerCase().includes(n) || c.email.toLowerCase().includes(n) || c.wilaya.toLowerCase().includes(n) || c.phone.includes(n))
+      .filter(
+        (c) =>
+          !n ||
+          c.name.toLowerCase().includes(n) ||
+          c.email.toLowerCase().includes(n) ||
+          c.wilaya.toLowerCase().includes(n) ||
+          c.phone.includes(n),
+      )
       .sort((a, b) => b.totalSpent - a.totalSpent);
   }, [customers, q, stats]);
 
   const detailOrders = useMemo(
-    () => (selected ? orders.filter((o) => o.customerId === selected.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : []),
-    [selected, orders]
+    () =>
+      selected
+        ? orders
+            .filter((o) => o.customerId === selected.id)
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        : [],
+    [selected, orders],
   );
   const detailStats = useMemo(() => {
     const active = detailOrders.filter((o) => o.status !== "cancelled");
@@ -62,10 +95,18 @@ export default function AdminCustomers() {
   }, [detailOrders]);
 
   return (
-    <AdminPageShell title="Clients" description={`${customers.length} clients enregistrés — statistiques dérivées des commandes.`}>
+    <AdminPageShell
+      title="Clients"
+      description={`${customers.length} clients enregistrés — statistiques dérivées des commandes.`}
+    >
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Rechercher (nom, email, wilaya, tél)…" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input
+          placeholder="Rechercher (nom, email, wilaya, tél)…"
+          className="pl-9"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
       </div>
       <div className="overflow-hidden rounded-lg border">
         <Table>
@@ -94,25 +135,44 @@ export default function AdminCustomers() {
                   {c.lastOrderAt ? new Date(c.lastOrderAt).toLocaleDateString("fr-FR") : "—"}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="outline" size="sm" onClick={() => setSelected(c)}>Détails</Button>
+                  <Button variant="outline" size="sm" onClick={() => setSelected(c)}>
+                    Détails
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
-            {rows.length === 0 && <TableRow><TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">Aucun client.</TableCell></TableRow>}
+            {rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
+                  Aucun client.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader><DialogTitle>{selected?.name}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{selected?.name}</DialogTitle>
+          </DialogHeader>
           {selected && (
             <div className="space-y-6">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /> {selected.email}</div>
-                <div className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /> {selected.phone}</div>
-                <div className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-muted-foreground" /> {selected.wilaya}</div>
-                <div className="flex items-center gap-2 text-sm"><Calendar className="h-4 w-4 text-muted-foreground" /> Inscrit le {new Date(selected.createdAt).toLocaleDateString("fr-FR")}</div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-muted-foreground" /> {selected.email}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-4 w-4 text-muted-foreground" /> {selected.phone}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" /> {selected.wilaya}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" /> Inscrit le{" "}
+                  {new Date(selected.createdAt).toLocaleDateString("fr-FR")}
+                </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-4">
@@ -120,7 +180,12 @@ export default function AdminCustomers() {
                   { label: "LTV", value: formatDZD(detailStats.ltv) },
                   { label: "Commandes", value: detailStats.count.toString() },
                   { label: "Panier moyen", value: formatDZD(detailStats.aov) },
-                  { label: "Dernière", value: detailStats.last ? new Date(detailStats.last).toLocaleDateString("fr-FR") : "—" },
+                  {
+                    label: "Dernière",
+                    value: detailStats.last
+                      ? new Date(detailStats.last).toLocaleDateString("fr-FR")
+                      : "—",
+                  },
                 ].map((k) => (
                   <div key={k.label} className="rounded-md border p-3">
                     <p className="text-xs text-muted-foreground">{k.label}</p>
@@ -146,13 +211,37 @@ export default function AdminCustomers() {
                       {detailOrders.map((o) => (
                         <TableRow key={o.id}>
                           <TableCell className="font-mono text-xs">{o.id}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString("fr-FR")}</TableCell>
-                          <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge></TableCell>
-                          <TableCell className="text-right font-medium">{formatDZD(o.total)}</TableCell>
-                          <TableCell className="text-right"><Link to={`/admin/orders/${o.id}`} className="text-xs text-primary hover:underline">Ouvrir</Link></TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {new Date(o.createdAt).toLocaleDateString("fr-FR")}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={STATUS_VARIANT[o.status]}>
+                              {STATUS_LABEL[o.status]}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatDZD(o.total)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Link
+                              to={`/admin/orders/${o.id}`}
+                              className="text-xs text-primary hover:underline"
+                            >
+                              Ouvrir
+                            </Link>
+                          </TableCell>
                         </TableRow>
                       ))}
-                      {detailOrders.length === 0 && <TableRow><TableCell colSpan={5} className="h-16 text-center text-sm text-muted-foreground">Aucune commande.</TableCell></TableRow>}
+                      {detailOrders.length === 0 && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="h-16 text-center text-sm text-muted-foreground"
+                          >
+                            Aucune commande.
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>

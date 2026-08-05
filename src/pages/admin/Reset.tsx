@@ -7,8 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, RotateCcw, Trash2, Database, Download, Upload } from "lucide-react";
 import {
-  useAdminState, resetData, clearData, exportState, importState,
-  ARRAY_KEYS, type ArrayKey,
+  useAdminState,
+  resetData,
+  clearData,
+  exportState,
+  importState,
+  ARRAY_KEYS,
+  type ArrayKey,
 } from "@/lib/admin-store";
 
 type ResetTarget = ArrayKey | "siteSettings" | "shippingSettings";
@@ -25,20 +30,68 @@ const ROWS: Row[] = [
   { key: "users", label: "Utilisateurs admin", description: "Membres de l'équipe." },
   { key: "blogPosts", label: "Articles de blog", description: "Publications du blog." },
   { key: "homeReviews", label: "Avis d'accueil", description: "Témoignages en page d'accueil." },
-  { key: "tickerMessages", label: "Bandeau défilant", description: "Messages du ruban en haut de page." },
-  { key: "marqueeBrands", label: "Marques défilantes", description: "Logos textuels du carrousel de marques." },
-  { key: "aboutValues", label: "Valeurs (À propos)", description: "Cartes d'engagements de la page À propos." },
-  { key: "builderSteps", label: "Étapes du configurateur", description: "Composants et options du builder PC." },
-  { key: "shippingRates", label: "Tarifs de livraison", description: "Tarifs par wilaya (domicile / bureau)." },
-  { key: "paymentMethods", label: "Moyens de paiement", description: "Modes de paiement proposés au checkout." },
-  { key: "stockMovements", label: "Mouvements de stock", description: "Journal des ajustements de stock." },
-  { key: "mediaAssets", label: "Médiathèque", description: "Images téléversées disponibles pour le contenu." },
-  { key: "notifications", label: "Notifications", description: "Notifications internes de l'admin." },
+  {
+    key: "tickerMessages",
+    label: "Bandeau défilant",
+    description: "Messages du ruban en haut de page.",
+  },
+  {
+    key: "marqueeBrands",
+    label: "Marques défilantes",
+    description: "Logos textuels du carrousel de marques.",
+  },
+  {
+    key: "aboutValues",
+    label: "Valeurs (À propos)",
+    description: "Cartes d'engagements de la page À propos.",
+  },
+  {
+    key: "builderSteps",
+    label: "Étapes du configurateur",
+    description: "Composants et options du builder PC.",
+  },
+  {
+    key: "shippingRates",
+    label: "Tarifs de livraison",
+    description: "Tarifs par wilaya (domicile / bureau).",
+  },
+  {
+    key: "paymentMethods",
+    label: "Moyens de paiement",
+    description: "Modes de paiement proposés au checkout.",
+  },
+  {
+    key: "stockMovements",
+    label: "Mouvements de stock",
+    description: "Journal des ajustements de stock.",
+  },
+  {
+    key: "mediaAssets",
+    label: "Médiathèque",
+    description: "Images téléversées disponibles pour le contenu.",
+  },
+  {
+    key: "notifications",
+    label: "Notifications",
+    description: "Notifications internes de l'admin.",
+  },
   { key: "auditLogs", label: "Journal d'audit", description: "Actions effectuées dans l'admin." },
   { key: "messages", label: "Messages de contact", description: "Messages reçus via /contact." },
-  { key: "subscribers", label: "Inscrits newsletter", description: "E-mails collectés via le pied de page." },
-  { key: "siteSettings", label: "Paramètres du site", description: "Nom, contact, WhatsApp, adresse, horaires." },
-  { key: "shippingSettings", label: "Réglages livraison", description: "Franco de port, activation des modes de livraison." },
+  {
+    key: "subscribers",
+    label: "Inscrits newsletter",
+    description: "E-mails collectés via le pied de page.",
+  },
+  {
+    key: "siteSettings",
+    label: "Paramètres du site",
+    description: "Nom, contact, WhatsApp, adresse, horaires.",
+  },
+  {
+    key: "shippingSettings",
+    label: "Réglages livraison",
+    description: "Franco de port, activation des modes de livraison.",
+  },
 ];
 
 type PendingAction =
@@ -89,11 +142,16 @@ export default function AdminReset() {
         clearData(pending.key);
         toast.success(`${pending.label} vidé`);
       } else if (pending.kind === "clearAll") {
-        [...ARRAY_KEYS, "siteSettings" as const, "shippingSettings" as const].forEach((k) => clearData(k));
+        [...ARRAY_KEYS, "siteSettings" as const, "shippingSettings" as const].forEach((k) =>
+          clearData(k),
+        );
         toast.success("Toutes les données ont été vidées");
       } else if (pending.kind === "import") {
         const res = importState(pending.json);
-        if (!res.ok) { toast.error(`Import échoué : ${res.error}`); return; }
+        if (!res.ok) {
+          toast.error(`Import échoué : ${res.error}`);
+          return;
+        }
         const total = Object.values(res.counts).reduce((s, n) => s + n, 0);
         toast.success(`Import réussi (${total} enregistrements depuis ${pending.fileName})`);
       }
@@ -111,7 +169,9 @@ export default function AdminReset() {
       const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
       a.href = url;
       a.download = `katech-admin-${stamp}.json`;
-      document.body.appendChild(a); a.click(); a.remove();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
       URL.revokeObjectURL(url);
       toast.success("Export téléchargé");
     } catch {
@@ -123,7 +183,10 @@ export default function AdminReset() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (file.size > 5_000_000) { toast.error("Fichier trop volumineux (>5 Mo)"); return; }
+    if (file.size > 5_000_000) {
+      toast.error("Fichier trop volumineux (>5 Mo)");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? "");
@@ -133,16 +196,19 @@ export default function AdminReset() {
     reader.readAsText(file);
   }
 
-  const dialogTitle =
-    !pending ? "" :
-    pending.kind === "reset" ? `Réinitialiser ${pending.label} ?` :
-    pending.kind === "clear" ? `Vider ${pending.label} ?` :
-    pending.kind === "clearAll" ? "Vider TOUTES les données ?" :
-    `Importer « ${pending.fileName} » ?`;
+  const dialogTitle = !pending
+    ? ""
+    : pending.kind === "reset"
+      ? `Réinitialiser ${pending.label} ?`
+      : pending.kind === "clear"
+        ? `Vider ${pending.label} ?`
+        : pending.kind === "clearAll"
+          ? "Vider TOUTES les données ?"
+          : `Importer « ${pending.fileName} » ?`;
 
-  const dialogDesc =
-    !pending ? null :
-    pending.kind === "import"
+  const dialogDesc = !pending
+    ? null
+    : pending.kind === "import"
       ? "Cela remplacera toutes les données locales par le contenu du fichier."
       : "Cette action est irréversible sur les données locales du navigateur.";
 
@@ -160,7 +226,11 @@ export default function AdminReset() {
       </Alert>
 
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Download className="h-4 w-4" /> Sauvegarde & restauration</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="h-4 w-4" /> Sauvegarde & restauration
+          </CardTitle>
+        </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <Button variant="outline" onClick={downloadJson}>
             <Download className="mr-2 h-4 w-4" /> Exporter en JSON
@@ -168,14 +238,26 @@ export default function AdminReset() {
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
             <Upload className="mr-2 h-4 w-4" /> Importer un JSON…
           </Button>
-          <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={onFileChosen} />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={onFileChosen}
+          />
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Database className="h-4 w-4" /> Actions globales</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-4 w-4" /> Actions globales
+          </CardTitle>
+        </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Button onClick={() => setPending({ kind: "reset", key: "all", label: "toutes les données" })}>
+          <Button
+            onClick={() => setPending({ kind: "reset", key: "all", label: "toutes les données" })}
+          >
             <RotateCcw className="mr-2 h-4 w-4" /> Réinitialiser toute la boutique
           </Button>
           <Button variant="destructive" onClick={() => setPending({ kind: "clearAll" })}>
@@ -185,7 +267,9 @@ export default function AdminReset() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Par type de données</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Par type de données</CardTitle>
+        </CardHeader>
         <CardContent className="divide-y">
           {ROWS.map((r) => (
             <div key={r.key} className="flex flex-wrap items-center justify-between gap-3 py-3">
@@ -201,10 +285,22 @@ export default function AdminReset() {
                 <p className="text-xs text-muted-foreground">{r.description}</p>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setPending({ kind: "reset", key: r.key, label: r.label.toLowerCase() })}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setPending({ kind: "reset", key: r.key, label: r.label.toLowerCase() })
+                  }
+                >
                   <RotateCcw className="mr-2 h-4 w-4" /> Réinitialiser
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setPending({ kind: "clear", key: r.key, label: r.label.toLowerCase() })}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    setPending({ kind: "clear", key: r.key, label: r.label.toLowerCase() })
+                  }
+                >
                   <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Vider
                 </Button>
               </div>
@@ -215,7 +311,9 @@ export default function AdminReset() {
 
       <ConfirmDialog
         open={!!pending}
-        onOpenChange={(o) => { if (!o) setPending(null); }}
+        onOpenChange={(o) => {
+          if (!o) setPending(null);
+        }}
         title={dialogTitle}
         description={dialogDesc}
         confirmLabel={pending?.kind === "import" ? "Importer" : "Confirmer"}

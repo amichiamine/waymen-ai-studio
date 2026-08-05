@@ -7,13 +7,36 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Plus, Trash2, Pencil, Search } from "lucide-react";
 import { WILAYAS } from "@/data/wilayas";
 import {
-  useAdminState, upsertShippingRate, deleteShippingRate, updateShippingSettings,
+  useAdminState,
+  upsertShippingRate,
+  deleteShippingRate,
+  updateShippingSettings,
   type ShippingRate,
 } from "@/lib/admin-store";
 
@@ -27,12 +50,22 @@ export default function AdminShipping() {
   const [form, setForm] = useState<ShippingRate>({ wilayaCode: "", home: 0, desk: 0 });
 
   const wilayaLabel = (code: string) =>
-    code === "*" ? "Par défaut (toutes)" : WILAYAS.find((w) => w.code === code)?.name_fr ?? code;
+    code === "*" ? "Par défaut (toutes)" : (WILAYAS.find((w) => w.code === code)?.name_fr ?? code);
 
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase();
-    return [...shippingRates].sort((a, b) => a.wilayaCode === "*" ? -1 : b.wilayaCode === "*" ? 1 : a.wilayaCode.localeCompare(b.wilayaCode))
-      .filter((r) => !n || r.wilayaCode.includes(n) || wilayaLabel(r.wilayaCode).toLowerCase().includes(n));
+    return [...shippingRates]
+      .sort((a, b) =>
+        a.wilayaCode === "*"
+          ? -1
+          : b.wilayaCode === "*"
+            ? 1
+            : a.wilayaCode.localeCompare(b.wilayaCode),
+      )
+      .filter(
+        (r) =>
+          !n || r.wilayaCode.includes(n) || wilayaLabel(r.wilayaCode).toLowerCase().includes(n),
+      );
   }, [shippingRates, q]);
 
   function openNew() {
@@ -46,41 +79,61 @@ export default function AdminShipping() {
     setOpen(true);
   }
   function save() {
-    if (!form.wilayaCode) { toast.error("Choisissez une wilaya"); return; }
-    if (!editing && shippingRates.some((r) => r.wilayaCode === form.wilayaCode)) {
-      toast.error("Une règle existe déjà pour cette wilaya"); return;
+    if (!form.wilayaCode) {
+      toast.error("Choisissez une wilaya");
+      return;
     }
-    if (form.home < 0 || form.desk < 0) { toast.error("Tarifs invalides"); return; }
+    if (!editing && shippingRates.some((r) => r.wilayaCode === form.wilayaCode)) {
+      toast.error("Une règle existe déjà pour cette wilaya");
+      return;
+    }
+    if (form.home < 0 || form.desk < 0) {
+      toast.error("Tarifs invalides");
+      return;
+    }
     upsertShippingRate(form);
     toast.success(editing ? "Tarif mis à jour" : "Tarif ajouté");
     setOpen(false);
   }
   function onDelete(code: string) {
-    if (code === "*") { toast.error("Le tarif par défaut ne peut pas être supprimé"); return; }
+    if (code === "*") {
+      toast.error("Le tarif par défaut ne peut pas être supprimé");
+      return;
+    }
     if (!confirm(`Supprimer le tarif pour ${wilayaLabel(code)} ?`)) return;
     deleteShippingRate(code);
     toast.success("Tarif supprimé");
   }
 
-  const availableWilayas = WILAYAS.filter((w) => !shippingRates.some((r) => r.wilayaCode === w.code));
+  const availableWilayas = WILAYAS.filter(
+    (w) => !shippingRates.some((r) => r.wilayaCode === w.code),
+  );
 
   return (
     <AdminPageShell
       title="Livraison"
       description="Tarifs par wilaya et règles de livraison."
       actions={
-        <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Ajouter un tarif</Button>
+        <Button onClick={openNew}>
+          <Plus className="mr-2 h-4 w-4" /> Ajouter un tarif
+        </Button>
       }
     >
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
-          <CardHeader><CardTitle className="text-base">Franco de port</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Franco de port</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-2">
             <Label className="text-xs">Livraison offerte à partir de (DA)</Label>
             <Input
               type="number"
               value={shippingSettings.freeShippingThreshold}
-              onChange={(e) => updateShippingSettings({ freeShippingThreshold: Math.max(0, Number(e.target.value) || 0) })}
+              onChange={(e) =>
+                updateShippingSettings({
+                  freeShippingThreshold: Math.max(0, Number(e.target.value) || 0),
+                })
+              }
             />
             <p className="text-xs text-muted-foreground">
               Mettre 0 pour désactiver la livraison offerte.
@@ -88,24 +141,39 @@ export default function AdminShipping() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-base">Livraison à domicile</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Livraison à domicile</CardTitle>
+          </CardHeader>
           <CardContent className="flex items-center justify-between">
             <Label>Activée</Label>
-            <Switch checked={shippingSettings.homeEnabled} onCheckedChange={(v) => updateShippingSettings({ homeEnabled: v })} />
+            <Switch
+              checked={shippingSettings.homeEnabled}
+              onCheckedChange={(v) => updateShippingSettings({ homeEnabled: v })}
+            />
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-base">Retrait bureau</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Retrait bureau</CardTitle>
+          </CardHeader>
           <CardContent className="flex items-center justify-between">
             <Label>Activé</Label>
-            <Switch checked={shippingSettings.deskEnabled} onCheckedChange={(v) => updateShippingSettings({ deskEnabled: v })} />
+            <Switch
+              checked={shippingSettings.deskEnabled}
+              onCheckedChange={(v) => updateShippingSettings({ deskEnabled: v })}
+            />
           </CardContent>
         </Card>
       </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Rechercher une wilaya…" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input
+          placeholder="Rechercher une wilaya…"
+          className="pl-9"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
       </div>
 
       <div className="overflow-hidden rounded-lg border">
@@ -129,15 +197,23 @@ export default function AdminShipping() {
                 <TableCell className="text-right">{fmt(r.home)}</TableCell>
                 <TableCell className="text-right">{fmt(r.desk)}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => openEdit(r)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   {r.wilayaCode !== "*" && (
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(r.wilayaCode)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(r.wilayaCode)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   )}
                 </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
-              <TableRow><TableCell colSpan={5} className="h-24 text-center text-sm text-muted-foreground">Aucun tarif.</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-sm text-muted-foreground">
+                  Aucun tarif.
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>
@@ -145,18 +221,27 @@ export default function AdminShipping() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editing ? "Modifier le tarif" : "Nouveau tarif"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editing ? "Modifier le tarif" : "Nouveau tarif"}</DialogTitle>
+          </DialogHeader>
           <div className="space-y-3">
             <div>
               <Label>Wilaya</Label>
               {editing ? (
                 <Input value={wilayaLabel(form.wilayaCode)} disabled />
               ) : (
-                <Select value={form.wilayaCode} onValueChange={(v) => setForm({ ...form, wilayaCode: v })}>
-                  <SelectTrigger><SelectValue placeholder="Choisir une wilaya" /></SelectTrigger>
+                <Select
+                  value={form.wilayaCode}
+                  onValueChange={(v) => setForm({ ...form, wilayaCode: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choisir une wilaya" />
+                  </SelectTrigger>
                   <SelectContent>
                     {availableWilayas.map((w) => (
-                      <SelectItem key={w.code} value={w.code}>{w.code} — {w.name_fr}</SelectItem>
+                      <SelectItem key={w.code} value={w.code}>
+                        {w.code} — {w.name_fr}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -165,16 +250,26 @@ export default function AdminShipping() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Domicile (DA)</Label>
-                <Input type="number" value={form.home} onChange={(e) => setForm({ ...form, home: Number(e.target.value) || 0 })} />
+                <Input
+                  type="number"
+                  value={form.home}
+                  onChange={(e) => setForm({ ...form, home: Number(e.target.value) || 0 })}
+                />
               </div>
               <div>
                 <Label>Bureau (DA)</Label>
-                <Input type="number" value={form.desk} onChange={(e) => setForm({ ...form, desk: Number(e.target.value) || 0 })} />
+                <Input
+                  type="number"
+                  value={form.desk}
+                  onChange={(e) => setForm({ ...form, desk: Number(e.target.value) || 0 })}
+                />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Annuler
+            </Button>
             <Button onClick={save}>{editing ? "Enregistrer" : "Créer"}</Button>
           </DialogFooter>
         </DialogContent>

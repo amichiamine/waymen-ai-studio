@@ -8,14 +8,27 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Pencil, Trash2, Eye } from "lucide-react";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDZD, type Category } from "@/data/products";
 import { useAdminState, deleteProduct } from "@/lib/admin-store";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
-  in: "default", low: "secondary", out: "destructive",
+  in: "default",
+  low: "secondary",
+  out: "destructive",
 };
 const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
 
@@ -30,7 +43,11 @@ export default function AdminProducts() {
     return products.filter((p) => {
       if (cat !== "all" && p.category !== cat) return false;
       if (!needle) return true;
-      return p.name.toLowerCase().includes(needle) || p.brand.toLowerCase().includes(needle) || p.id.toLowerCase().includes(needle);
+      return (
+        p.name.toLowerCase().includes(needle) ||
+        p.brand.toLowerCase().includes(needle) ||
+        p.id.toLowerCase().includes(needle)
+      );
     });
   }, [q, cat, products]);
 
@@ -44,28 +61,38 @@ export default function AdminProducts() {
     }
   }
 
-
   return (
     <AdminPageShell
       title="Produits"
       description={`${products.length} produits dans le catalogue local.`}
       actions={
         <Link to="/admin/products/new">
-          <Button><Plus className="mr-2 h-4 w-4" /> Nouveau produit</Button>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Nouveau produit
+          </Button>
         </Link>
       }
     >
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Rechercher (nom, marque, id)…" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input
+            placeholder="Rechercher (nom, marque, id)…"
+            className="pl-9"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
         </div>
         <Select value={cat} onValueChange={(v) => setCat(v as "all" | Category)}>
-          <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes catégories</SelectItem>
             {categories.map((c) => (
-              <SelectItem key={c.slug} value={c.slug}>{c.label}</SelectItem>
+              <SelectItem key={c.slug} value={c.slug}>
+                {c.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -93,7 +120,10 @@ export default function AdminProducts() {
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <Link to={`/admin/products/${p.id}/view`} className="font-medium hover:text-primary hover:underline">
+                  <Link
+                    to={`/admin/products/${p.id}/view`}
+                    className="font-medium hover:text-primary hover:underline"
+                  >
                     {p.name}
                   </Link>
                   <div className="text-xs text-muted-foreground line-clamp-1">{p.specLine}</div>
@@ -101,15 +131,26 @@ export default function AdminProducts() {
                 <TableCell className="text-sm">{p.brand}</TableCell>
                 <TableCell className="text-sm capitalize">{p.category}</TableCell>
                 <TableCell className="text-right font-medium">{formatDZD(p.price)}</TableCell>
-                <TableCell><Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge></TableCell>
+                <TableCell>
+                  <Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge>
+                </TableCell>
                 <TableCell className="text-right">
                   <Link to={`/product/${p.id}`} target="_blank" rel="noreferrer">
-                    <Button variant="ghost" size="icon" title="Voir la fiche publique"><Eye className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" title="Voir la fiche publique">
+                      <Eye className="h-4 w-4" />
+                    </Button>
                   </Link>
                   <Link to={`/admin/products/${p.id}`}>
-                    <Button variant="ghost" size="icon" title="Modifier"><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" title="Modifier">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   </Link>
-                  <Button variant="ghost" size="icon" title="Supprimer" onClick={() => setToDelete({ id: p.id, name: p.name })}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Supprimer"
+                    onClick={() => setToDelete({ id: p.id, name: p.name })}
+                  >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </TableCell>
@@ -128,9 +169,18 @@ export default function AdminProducts() {
 
       <ConfirmDialog
         open={!!toDelete}
-        onOpenChange={(o) => { if (!o) setToDelete(null); }}
+        onOpenChange={(o) => {
+          if (!o) setToDelete(null);
+        }}
         title="Supprimer ce produit ?"
-        description={toDelete ? <>Le produit « <strong>{toDelete.name}</strong> » sera supprimé du catalogue local. Cette action est irréversible.</> : null}
+        description={
+          toDelete ? (
+            <>
+              Le produit « <strong>{toDelete.name}</strong> » sera supprimé du catalogue local.
+              Cette action est irréversible.
+            </>
+          ) : null
+        }
         confirmLabel="Supprimer"
         destructive
         onConfirm={confirmDelete}
@@ -138,4 +188,3 @@ export default function AdminProducts() {
     </AdminPageShell>
   );
 }
-

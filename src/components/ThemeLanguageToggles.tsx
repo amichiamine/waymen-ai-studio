@@ -10,7 +10,11 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-const themeOptions: { value: Theme; icon: typeof Sun; key: "theme.light" | "theme.dark" | "theme.system" }[] = [
+const themeOptions: {
+  value: Theme;
+  icon: typeof Sun;
+  key: "theme.light" | "theme.dark" | "theme.system";
+}[] = [
   { value: "light", icon: Sun, key: "theme.light" },
   { value: "dark", icon: Moon, key: "theme.dark" },
   { value: "system", icon: Monitor, key: "theme.system" },
@@ -48,7 +52,11 @@ export function ThemeToggle() {
   );
 }
 
-const langOptions: { value: "fr" | "en" | "ar"; flag: string; key: "lang.fr" | "lang.en" | "lang.ar" }[] = [
+const langOptions: {
+  value: "fr" | "en" | "ar";
+  flag: string;
+  key: "lang.fr" | "lang.en" | "lang.ar";
+}[] = [
   { value: "fr", flag: "🇫🇷", key: "lang.fr" },
   { value: "en", flag: "🇬🇧", key: "lang.en" },
   { value: "ar", flag: "🇩🇿", key: "lang.ar" },
@@ -74,7 +82,9 @@ export function LanguageToggle() {
           const active = lang === o.value;
           return (
             <DropdownMenuItem key={o.value} onClick={() => setLang(o.value)} className="gap-2">
-              <span aria-hidden className="text-base leading-none">{o.flag}</span>
+              <span aria-hidden className="text-base leading-none">
+                {o.flag}
+              </span>
               <span className="flex-1">{t(o.key)}</span>
               {active && <Check className="size-4 text-primary" />}
             </DropdownMenuItem>

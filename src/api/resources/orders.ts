@@ -11,7 +11,12 @@ export const ordersApi = {
     if (query.status) items = items.filter((o) => o.status === query.status);
     const page = query.page ?? 1;
     const perPage = query.perPage ?? (items.length || 1);
-    return { items: items.slice((page - 1) * perPage, page * perPage), total: items.length, page, perPage };
+    return {
+      items: items.slice((page - 1) * perPage, page * perPage),
+      total: items.length,
+      page,
+      perPage,
+    };
   },
 
   async detail(id: string): Promise<Order | undefined> {
@@ -25,7 +30,10 @@ export const ordersApi = {
   },
 
   async updateStatus(id: string, status: OrderStatus, note?: string): Promise<void> {
-    if (isHttpMode()) { await http.patch<void>(E.orders.updateStatus(id), { status, note }); return; }
+    if (isHttpMode()) {
+      await http.patch<void>(E.orders.updateStatus(id), { status, note });
+      return;
+    }
     updateOrderStatus(id, status, note);
   },
 

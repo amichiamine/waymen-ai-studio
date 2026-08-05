@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import {
-  verifyUserCredentials, findUserByEmail, touchUserLogin,
-  upsertUser, type AdminUser,
+  verifyUserCredentials,
+  findUserByEmail,
+  touchUserLogin,
+  upsertUser,
+  type AdminUser,
 } from "@/lib/admin-store";
 
 // Auth mockée : pas de backend. Les identifiants sont validés contre la
@@ -22,7 +25,7 @@ type AuthCtx = {
   signUp: (
     email: string,
     password: string,
-    meta?: { name?: string; phone?: string }
+    meta?: { name?: string; phone?: string },
   ) => Promise<{ error: null | { message: string } }>;
   signOut: () => Promise<void>;
 };

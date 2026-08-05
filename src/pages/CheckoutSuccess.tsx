@@ -10,7 +10,9 @@ const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
 
 export default function CheckoutSuccess() {
   const { t } = useI18n();
-  useEffect(() => { document.title = t("success.page.title"); }, [t]);
+  useEffect(() => {
+    document.title = t("success.page.title");
+  }, [t]);
   const [params] = useSearchParams();
   const id = params.get("id");
   const { orders } = useAdminState();
@@ -35,17 +37,37 @@ export default function CheckoutSuccess() {
               </div>
               {order.items.map((it, i) => (
                 <div key={i} className="flex justify-between text-xs">
-                  <span className="truncate">{it.name} × {it.qty}</span>
+                  <span className="truncate">
+                    {it.name} × {it.qty}
+                  </span>
                   <span>{fmt(it.price * it.qty)}</span>
                 </div>
               ))}
               <div className="border-t pt-2 text-xs space-y-1">
-                <div className="flex justify-between"><span className="text-muted-foreground">{t("cart.subtotal")}</span><span>{fmt(order.subtotal)}</span></div>
-                {order.discount > 0 && <div className="flex justify-between text-primary"><span>{t("cart.discount")} {order.couponCode}</span><span>− {fmt(order.discount)}</span></div>}
-                <div className="flex justify-between"><span className="text-muted-foreground">{t("cart.shipping")}</span><span>{order.shipping === 0 ? t("common.free") : fmt(order.shipping)}</span></div>
-                <div className="flex justify-between text-sm font-semibold"><span>{t("cart.total")}</span><span>{fmt(order.total)}</span></div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("cart.subtotal")}</span>
+                  <span>{fmt(order.subtotal)}</span>
+                </div>
+                {order.discount > 0 && (
+                  <div className="flex justify-between text-primary">
+                    <span>
+                      {t("cart.discount")} {order.couponCode}
+                    </span>
+                    <span>− {fmt(order.discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("cart.shipping")}</span>
+                  <span>{order.shipping === 0 ? t("common.free") : fmt(order.shipping)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-semibold">
+                  <span>{t("cart.total")}</span>
+                  <span>{fmt(order.total)}</span>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">{t("success.payment")} : {order.paymentLabel ?? order.paymentMethod}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("success.payment")} : {order.paymentLabel ?? order.paymentMethod}
+              </p>
             </CardContent>
           </Card>
         </>
@@ -53,8 +75,12 @@ export default function CheckoutSuccess() {
         <p className="mt-2 text-sm text-muted-foreground">{t("success.generic")}</p>
       )}
       <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <Link to="/account"><Button variant="outline">{t("success.myOrders")}</Button></Link>
-        <Link to="/"><Button>{t("success.backHome")}</Button></Link>
+        <Link to="/account">
+          <Button variant="outline">{t("success.myOrders")}</Button>
+        </Link>
+        <Link to="/">
+          <Button>{t("success.backHome")}</Button>
+        </Link>
       </div>
     </div>
   );

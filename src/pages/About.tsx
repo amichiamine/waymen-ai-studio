@@ -5,8 +5,12 @@ import { useAdminState, type AboutValue } from "@/lib/admin-store";
 import { useI18n, useLocalize } from "@/lib/i18n";
 
 const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
-  shield: ShieldCheck, truck: Truck, headphones: Headphones,
-  award: Award, star: Star, heart: Heart,
+  shield: ShieldCheck,
+  truck: Truck,
+  headphones: Headphones,
+  award: Award,
+  star: Star,
+  heart: Heart,
 };
 
 export default function About() {
@@ -44,8 +48,12 @@ export default function About() {
             return (
               <div key={v.id} className="rounded-xl border border-border bg-card p-6">
                 <Icon className="size-8 text-primary mb-3" />
-                <h3 className="font-bold text-lg mb-1">{(L(v.title as never) as unknown as string) ?? ""}</h3>
-                <p className="text-sm text-muted-foreground">{(L(v.description as never) as unknown as string) ?? ""}</p>
+                <h3 className="font-bold text-lg mb-1">
+                  {(L(v.title as never) as unknown as string) ?? ""}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {(L(v.description as never) as unknown as string) ?? ""}
+                </p>
               </div>
             );
           })}
@@ -56,8 +64,18 @@ export default function About() {
         <h2 className="text-2xl lg:text-3xl font-bold mb-3">{t("about.cta.title")}</h2>
         <p className="text-muted-foreground mb-6">{t("about.cta.sub")}</p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link to="/category" className="inline-flex items-center h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90">{t("about.cta.browse")}</Link>
-          <Link to="/contact" className="inline-flex items-center h-11 px-6 rounded-md border border-border text-sm font-semibold hover:bg-card">{t("about.cta.contact")}</Link>
+          <Link
+            to="/category"
+            className="inline-flex items-center h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90"
+          >
+            {t("about.cta.browse")}
+          </Link>
+          <Link
+            to="/contact"
+            className="inline-flex items-center h-11 px-6 rounded-md border border-border text-sm font-semibold hover:bg-card"
+          >
+            {t("about.cta.contact")}
+          </Link>
         </div>
       </section>
     </div>

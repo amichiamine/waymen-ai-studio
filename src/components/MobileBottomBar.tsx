@@ -18,7 +18,10 @@ export function MobileBottomBar() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Navigation mobile"
     >
-      <ul className="grid h-16" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}>
+      <ul
+        className="grid h-16"
+        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}
+      >
         {items.map((it) => {
           const to = it.requiresAuth && !user ? "/auth" : it.href;
           const badge = it.href === "/cart" && user && cartCount > 0 ? cartCount : undefined;
@@ -44,7 +47,17 @@ export function MobileBottomBar() {
   );
 }
 
-function Item({ to, icon, label, badge }: { to: string; icon: IconName; label: string; badge?: number }) {
+function Item({
+  to,
+  icon,
+  label,
+  badge,
+}: {
+  to: string;
+  icon: IconName;
+  label: string;
+  badge?: number;
+}) {
   const Icon = getIcon(icon);
   return (
     <li>

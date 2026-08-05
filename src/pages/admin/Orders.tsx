@@ -6,15 +6,30 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, Eye } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatDZD } from "@/data/products";
 import { useAdminState, type OrderStatus } from "@/lib/admin-store";
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
-  pending: "En attente", processing: "En traitement", shipped: "Expédiée", delivered: "Livrée", cancelled: "Annulée",
+  pending: "En attente",
+  processing: "En traitement",
+  shipped: "Expédiée",
+  delivered: "Livrée",
+  cancelled: "Annulée",
 };
 const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  pending: "secondary", processing: "outline", shipped: "outline", delivered: "default", cancelled: "destructive",
+  pending: "secondary",
+  processing: "outline",
+  shipped: "outline",
+  delivered: "default",
+  cancelled: "destructive",
 };
 
 export default function AdminOrders() {
@@ -26,13 +41,20 @@ export default function AdminOrders() {
     const n = q.trim().toLowerCase();
     return orders
       .filter((o) => tab === "all" || o.status === tab)
-      .filter((o) => !n || o.id.toLowerCase().includes(n) || o.customerName.toLowerCase().includes(n) || o.wilaya.toLowerCase().includes(n))
+      .filter(
+        (o) =>
+          !n ||
+          o.id.toLowerCase().includes(n) ||
+          o.customerName.toLowerCase().includes(n) ||
+          o.wilaya.toLowerCase().includes(n),
+      )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [orders, tab, q]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: orders.length };
-    for (const s of ["pending", "processing", "shipped", "delivered", "cancelled"] as OrderStatus[]) c[s] = orders.filter((o) => o.status === s).length;
+    for (const s of ["pending", "processing", "shipped", "delivered", "cancelled"] as OrderStatus[])
+      c[s] = orders.filter((o) => o.status === s).length;
     return c;
   }, [orders]);
 
@@ -50,7 +72,12 @@ export default function AdminOrders() {
       </Tabs>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Rechercher (n°, client, wilaya)…" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input
+          placeholder="Rechercher (n°, client, wilaya)…"
+          className="pl-9"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
       </div>
       <div className="overflow-hidden rounded-lg border">
         <Table>
@@ -71,16 +98,28 @@ export default function AdminOrders() {
                 <TableCell className="font-mono text-xs">{o.id}</TableCell>
                 <TableCell>{o.customerName}</TableCell>
                 <TableCell className="text-sm">{o.wilaya}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{new Date(o.createdAt).toLocaleDateString("fr-FR")}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {new Date(o.createdAt).toLocaleDateString("fr-FR")}
+                </TableCell>
                 <TableCell className="text-right font-medium">{formatDZD(o.total)}</TableCell>
-                <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge></TableCell>
                 <TableCell>
-                  <Link to={`/admin/orders/${o.id}`}><Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button></Link>
+                  <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
+                </TableCell>
+                <TableCell>
+                  <Link to={`/admin/orders/${o.id}`}>
+                    <Button variant="ghost" size="icon">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">Aucune commande.</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
+                  Aucune commande.
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>

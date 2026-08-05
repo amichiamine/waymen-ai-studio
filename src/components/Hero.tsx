@@ -11,7 +11,11 @@ export function Hero() {
   const L = useLocalize();
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} aria-hidden />
+      <div
+        className="absolute inset-0 -z-10"
+        style={{ background: "var(--gradient-hero)" }}
+        aria-hidden
+      />
       <div
         className="absolute inset-0 -z-10"
         style={{
@@ -78,7 +82,9 @@ export function Hero() {
             className="w-full max-w-2xl mx-auto grid gap-3 pt-8 animate-fade-in-up delay-300"
             style={{ gridTemplateColumns: `repeat(${Math.min(h.kpis.length, 4)}, minmax(0,1fr))` }}
           >
-            {h.kpis.map((k) => <Kpi key={k.id} icon={k.icon} n={L(k.value) ?? ""} l={L(k.label) ?? ""} />)}
+            {h.kpis.map((k) => (
+              <Kpi key={k.id} icon={k.icon} n={L(k.value) ?? ""} l={L(k.label) ?? ""} />
+            ))}
           </div>
         )}
         {h.showImage && (
@@ -96,7 +102,10 @@ export function Hero() {
                 height={900}
                 className="w-full h-full object-cover animate-hero-zoom"
               />
-              <div className="pointer-events-none absolute inset-y-0 -inset-x-1/3 w-1/3 animate-hero-shine" aria-hidden />
+              <div
+                className="pointer-events-none absolute inset-y-0 -inset-x-1/3 w-1/3 animate-hero-shine"
+                aria-hidden
+              />
             </div>
           </div>
         )}

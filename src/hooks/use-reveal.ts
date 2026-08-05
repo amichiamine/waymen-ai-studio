@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
  * Ajoute `.is-visible` à un élément quand il entre dans le viewport.
  * Idempotent et respectueux de `prefers-reduced-motion`.
  */
-export function useReveal<T extends HTMLElement = HTMLDivElement>(options?: IntersectionObserverInit) {
+export function useReveal<T extends HTMLElement = HTMLDivElement>(
+  options?: IntersectionObserverInit,
+) {
   const ref = useRef<T | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -28,7 +30,7 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(options?: Inte
           }
         }
       },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.08, ...options }
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.08, ...options },
     );
     io.observe(el);
     return () => io.disconnect();

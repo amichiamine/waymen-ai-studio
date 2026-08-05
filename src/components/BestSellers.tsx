@@ -14,10 +14,14 @@ export function BestSellers() {
   const list = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
   return (
     <section className="container-page py-16">
-      <Reveal variant="up"><SectionHead title={L(cfg.title) ?? ""} sub={L(cfg.subtitle) ?? ""} /></Reveal>
+      <Reveal variant="up">
+        <SectionHead title={L(cfg.title) ?? ""} sub={L(cfg.subtitle) ?? ""} />
+      </Reveal>
       <div className="mt-8 grid gap-5 grid-cols-2 lg:grid-cols-4">
         {list.map((p, i) => (
-          <Reveal key={p.id} variant="up" delay={i * 80}><ProductCard p={p} /></Reveal>
+          <Reveal key={p.id} variant="up" delay={i * 80}>
+            <ProductCard p={p} />
+          </Reveal>
         ))}
       </div>
     </section>

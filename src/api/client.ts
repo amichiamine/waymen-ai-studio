@@ -17,7 +17,9 @@ export class ApiError extends Error {
 
 /** Access token en mémoire (jamais en localStorage) pour la stratégie bearer. */
 let accessToken: string | null = null;
-export const setAccessToken = (t: string | null) => { accessToken = t; };
+export const setAccessToken = (t: string | null) => {
+  accessToken = t;
+};
 export const getAccessToken = () => accessToken;
 
 type RequestOptions = {
@@ -52,7 +54,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   const finalHeaders: Record<string, string> = { Accept: "application/json", ...headers };
   if (!formData && body !== undefined) finalHeaders["Content-Type"] = "application/json";
-  if (AUTH_STRATEGY === "bearer" && accessToken) finalHeaders.Authorization = `Bearer ${accessToken}`;
+  if (AUTH_STRATEGY === "bearer" && accessToken)
+    finalHeaders.Authorization = `Bearer ${accessToken}`;
 
   try {
     const res = await fetch(buildUrl(path, query), {
@@ -103,8 +106,7 @@ export const http = {
     apiRequest<T>(path, { ...o, method: "PATCH", body }),
   put: <T>(path: string, body?: unknown, o?: RequestOptions) =>
     apiRequest<T>(path, { ...o, method: "PUT", body }),
-  del: <T>(path: string, o?: RequestOptions) =>
-    apiRequest<T>(path, { ...o, method: "DELETE" }),
+  del: <T>(path: string, o?: RequestOptions) => apiRequest<T>(path, { ...o, method: "DELETE" }),
   upload: <T>(path: string, formData: FormData) =>
     apiRequest<T>(path, { method: "POST", formData }),
 };

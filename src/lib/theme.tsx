@@ -40,7 +40,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setResolved(applyTheme(t) as "light" | "dark");
   };
 
-  return <ThemeContext.Provider value={{ theme, setTheme, resolved }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, resolved }}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

@@ -6,9 +6,7 @@ import { useStore } from "@/lib/store";
 import { useProducts } from "@/lib/useProducts";
 import { WILAYAS } from "@/data/wilayas";
 import { useAuth } from "@/lib/auth";
-import {
-  useAdminState, validateCoupon, computeShipping, createOrder,
-} from "@/lib/admin-store";
+import { useAdminState, validateCoupon, computeShipping, createOrder } from "@/lib/admin-store";
 import { useAddresses } from "@/lib/addresses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +15,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertTriangle, Tag, MapPin } from "lucide-react";
@@ -43,7 +45,9 @@ export default function Checkout() {
   const [phone, setPhone] = useState(defaultAddress?.phone ?? user?.user_metadata?.phone ?? "");
   const [wilaya, setWilaya] = useState(defaultAddress?.wilaya ?? "");
   const [address, setAddress] = useState(defaultAddress?.address ?? "");
-  const [delivery, setDelivery] = useState<"home" | "desk">(shippingSettings.homeEnabled ? "home" : "desk");
+  const [delivery, setDelivery] = useState<"home" | "desk">(
+    shippingSettings.homeEnabled ? "home" : "desk",
+  );
   const [paymentId, setPaymentId] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -55,7 +59,12 @@ export default function Checkout() {
   useEffect(() => {
     if (addressId === "new") return;
     const a = addresses.find((x) => x.id === addressId);
-    if (a) { setName(a.fullName); setPhone(a.phone); setWilaya(a.wilaya); setAddress(a.address); }
+    if (a) {
+      setName(a.fullName);
+      setPhone(a.phone);
+      setWilaya(a.wilaya);
+      setAddress(a.address);
+    }
   }, [addressId, addresses]);
 
   const lines = cart
@@ -80,8 +89,14 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (outOfStock.length > 0) { toast.error(t("checkout.err.oos")); return; }
-    if (!paymentId) { toast.error(t("checkout.err.pm")); return; }
+    if (outOfStock.length > 0) {
+      toast.error(t("checkout.err.oos"));
+      return;
+    }
+    if (!paymentId) {
+      toast.error(t("checkout.err.pm"));
+      return;
+    }
     setBusy(true);
     const pm = activePayments.find((p) => p.id === paymentId);
     const order = createOrder({
@@ -95,9 +110,17 @@ export default function Checkout() {
         qty: l.quantity,
         image: l.product.image,
       })),
-      subtotal, discount, couponCode, shipping, total,
-      paymentMethod: paymentId, paymentLabel: pm?.label,
-      wilaya, deliveryKind: delivery, address, phone,
+      subtotal,
+      discount,
+      couponCode,
+      shipping,
+      total,
+      paymentMethod: paymentId,
+      paymentLabel: pm?.label,
+      wilaya,
+      deliveryKind: delivery,
+      address,
+      phone,
       note: notes || undefined,
     });
     if (couponCode) window.localStorage.removeItem(COUPON_KEY);
@@ -109,7 +132,9 @@ export default function Checkout() {
     return (
       <div className="container mx-auto max-w-2xl px-4 py-16 text-center">
         <p className="text-muted-foreground">{t("checkout.empty")}</p>
-        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">{t("checkout.seeProducts")}</Link>
+        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">
+          {t("checkout.seeProducts")}
+        </Link>
       </div>
     );
   }
@@ -127,15 +152,27 @@ export default function Checkout() {
         <div className="space-y-6">
           {addresses.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {t("checkout.savedAddr")}</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" /> {t("checkout.savedAddr")}
+                </CardTitle>
+              </CardHeader>
               <CardContent>
                 <RadioGroup value={addressId} onValueChange={setAddressId}>
                   {addresses.map((a) => (
-                    <label key={a.id} className="flex cursor-pointer items-start gap-3 rounded border p-3">
+                    <label
+                      key={a.id}
+                      className="flex cursor-pointer items-start gap-3 rounded border p-3"
+                    >
                       <RadioGroupItem value={a.id} id={`a-${a.id}`} className="mt-1" />
                       <div className="text-sm text-start">
-                        <p className="font-medium">{a.label} · {a.fullName}</p>
-                        <p className="text-xs text-muted-foreground">{a.phone} — {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr}, {a.address}</p>
+                        <p className="font-medium">
+                          {a.label} · {a.fullName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {a.phone} — {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr},{" "}
+                          {a.address}
+                        </p>
                       </div>
                     </label>
                   ))}
@@ -148,38 +185,62 @@ export default function Checkout() {
             </Card>
           )}
           <Card>
-            <CardHeader><CardTitle>{t("checkout.contact.title")}</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>{t("checkout.contact.title")}</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="name">{t("checkout.name")}</Label>
-                  <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+                  <Input
+                    id="name"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="phone">{t("checkout.phone")}</Label>
-                  <Input id="phone" required value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  <Input
+                    id="phone"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
                 </div>
               </div>
               <div>
                 <Label>{t("checkout.wilaya")}</Label>
                 <Select value={wilaya} onValueChange={setWilaya}>
-                  <SelectTrigger><SelectValue placeholder={t("checkout.wilaya.placeholder")} /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("checkout.wilaya.placeholder")} />
+                  </SelectTrigger>
                   <SelectContent>
                     {WILAYAS.map((w) => (
-                      <SelectItem key={w.code} value={w.code}>{w.code} — {w.name_fr}</SelectItem>
+                      <SelectItem key={w.code} value={w.code}>
+                        {w.code} — {w.name_fr}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label htmlFor="address">{t("checkout.address")}</Label>
-                <Textarea id="address" required value={address} onChange={(e) => setAddress(e.target.value)} rows={2} />
+                <Textarea
+                  id="address"
+                  required
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows={2}
+                />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>{t("checkout.delivery.title")}</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>{t("checkout.delivery.title")}</CardTitle>
+            </CardHeader>
             <CardContent>
               <RadioGroup value={delivery} onValueChange={(v) => setDelivery(v as "home" | "desk")}>
                 {shippingSettings.homeEnabled && (
@@ -189,7 +250,9 @@ export default function Checkout() {
                       <span>{t("checkout.delivery.home")}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {wilaya ? fmt(computeShipping(wilaya, "home", subtotal - discount)) : t("checkout.wilaya.choose")}
+                      {wilaya
+                        ? fmt(computeShipping(wilaya, "home", subtotal - discount))
+                        : t("checkout.wilaya.choose")}
                     </span>
                   </label>
                 )}
@@ -200,26 +263,36 @@ export default function Checkout() {
                       <span>{t("checkout.delivery.desk")}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {wilaya ? fmt(computeShipping(wilaya, "desk", subtotal - discount)) : t("checkout.wilaya.choose")}
+                      {wilaya
+                        ? fmt(computeShipping(wilaya, "desk", subtotal - discount))
+                        : t("checkout.wilaya.choose")}
                     </span>
                   </label>
                 )}
               </RadioGroup>
-              {shippingSettings.freeShippingThreshold > 0 && subtotal - discount >= shippingSettings.freeShippingThreshold && (
-                <Badge variant="secondary" className="mt-3">{t("checkout.delivery.freeApplied")}</Badge>
-              )}
+              {shippingSettings.freeShippingThreshold > 0 &&
+                subtotal - discount >= shippingSettings.freeShippingThreshold && (
+                  <Badge variant="secondary" className="mt-3">
+                    {t("checkout.delivery.freeApplied")}
+                  </Badge>
+                )}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>{t("checkout.payment.title")}</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>{t("checkout.payment.title")}</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3">
               {activePayments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("checkout.payment.none")}</p>
               ) : (
                 <RadioGroup value={paymentId} onValueChange={setPaymentId}>
                   {activePayments.map((m) => (
-                    <label key={m.id} className="flex cursor-pointer items-start gap-3 rounded border p-3">
+                    <label
+                      key={m.id}
+                      className="flex cursor-pointer items-start gap-3 rounded border p-3"
+                    >
                       <RadioGroupItem value={m.id} id={`pm-${m.id}`} className="mt-1" />
                       <div className="text-start">
                         <p className="font-medium">{m.label}</p>
@@ -238,15 +311,24 @@ export default function Checkout() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>{t("checkout.notes.title")}</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>{t("checkout.notes.title")}</CardTitle>
+            </CardHeader>
             <CardContent>
-              <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("checkout.notes.placeholder")} />
+              <Textarea
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t("checkout.notes.placeholder")}
+              />
             </CardContent>
           </Card>
         </div>
 
         <Card className="h-fit">
-          <CardHeader><CardTitle>{t("checkout.summary.title")}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t("checkout.summary.title")}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
             {lines.map((l) => (
               <div key={l.product_id} className="flex items-center gap-3 text-sm">
@@ -259,10 +341,15 @@ export default function Checkout() {
               </div>
             ))}
             <div className="space-y-1 border-t pt-3 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">{t("cart.subtotal")}</span><span>{fmt(subtotal)}</span></div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("cart.subtotal")}</span>
+                <span>{fmt(subtotal)}</span>
+              </div>
               {discount > 0 && couponCode && (
                 <div className="flex justify-between text-primary">
-                  <span className="inline-flex items-center gap-1"><Tag className="h-3 w-3" /> {couponCode}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Tag className="h-3 w-3" /> {couponCode}
+                  </span>
                   <span>− {fmt(discount)}</span>
                 </div>
               )}
@@ -271,7 +358,8 @@ export default function Checkout() {
                 <span>{wilaya ? (shipping === 0 ? t("common.free") : fmt(shipping)) : "—"}</span>
               </div>
               <div className="flex justify-between border-t pt-2 text-base font-semibold">
-                <span>{t("cart.total")}</span><span className="text-primary">{fmt(total)}</span>
+                <span>{t("cart.total")}</span>
+                <span className="text-primary">{fmt(total)}</span>
               </div>
             </div>
 

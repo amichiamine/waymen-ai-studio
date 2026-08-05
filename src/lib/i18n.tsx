@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type Lang = "fr" | "en" | "ar";
 export type Dir = "ltr" | "rtl";
@@ -101,7 +109,8 @@ const fr: Record<string, string> = {
   "bt.cooling.n": "Air · Liquide",
   "rev.title": "Avis de nos clients",
   "rev.sub": "Des milliers de clients nous font confiance",
-  "rev.1.text": "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.",
+  "rev.1.text":
+    "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.",
   "rev.2.text": "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.",
   "rev.3.text": "Config puissante à un prix juste, fonctionnelle dès la première utilisation.",
   "rev.1.name": "Amine Bensalah",
@@ -211,22 +220,27 @@ const fr: Record<string, string> = {
   "common.free": "Offerte",
   "about.kicker": "À propos",
   "about.title": "KA Tech — La puissance tech entre vos mains",
-  "about.intro": "Nous sommes une boutique spécialisée dans les ordinateurs portables, les ordinateurs de bureau, les configurations PC et les smartphones. Notre mission : apporter les dernières technologies dans chaque foyer algérien, à des prix compétitifs et avec une vraie garantie.",
+  "about.intro":
+    "Nous sommes une boutique spécialisée dans les ordinateurs portables, les ordinateurs de bureau, les configurations PC et les smartphones. Notre mission : apporter les dernières technologies dans chaque foyer algérien, à des prix compétitifs et avec une vraie garantie.",
   "about.history.title": "Notre histoire",
-  "about.history.body": "KA Tech est née d'une vision simple : rendre la technologie moderne accessible à tous. Aujourd'hui, nous servons des milliers de clients partout en Algérie et continuons d'enrichir notre catalogue avec les produits des meilleures marques mondiales.",
+  "about.history.body":
+    "KA Tech est née d'une vision simple : rendre la technologie moderne accessible à tous. Aujourd'hui, nous servons des milliers de clients partout en Algérie et continuons d'enrichir notre catalogue avec les produits des meilleures marques mondiales.",
   "about.mission.title": "Notre mission",
-  "about.mission.body": "Offrir à nos clients des produits fiables, un service après-vente irréprochable et un véritable accompagnement technique pour une expérience d'achat simple et agréable.",
+  "about.mission.body":
+    "Offrir à nos clients des produits fiables, un service après-vente irréprochable et un véritable accompagnement technique pour une expérience d'achat simple et agréable.",
   "about.cta.title": "Prêt à faire votre choix ?",
   "about.cta.sub": "Découvrez notre gamme complète de produits tech.",
   "about.cta.browse": "Parcourir les catégories",
   "about.cta.contact": "Contactez-nous",
   "about.page.title": "À propos — KA Tech",
-  "about.page.desc": "KA Tech, boutique tech spécialisée en Algérie : garantie officielle, service client réactif, livraison partout.",
+  "about.page.desc":
+    "KA Tech, boutique tech spécialisée en Algérie : garantie officielle, service client réactif, livraison partout.",
   "contact.kicker": "Contact",
   "contact.title": "Nous sommes là pour vous aider",
   "contact.sub": "Envoyez-nous un message ou contactez-nous directement via les canaux ci-dessous.",
   "contact.page.title": "Contact — KA Tech",
-  "contact.page.desc": "Contactez KA Tech par email, téléphone ou WhatsApp — support commercial et service après-vente.",
+  "contact.page.desc":
+    "Contactez KA Tech par email, téléphone ou WhatsApp — support commercial et service après-vente.",
   "contact.phone": "Téléphone",
   "contact.whatsapp": "WhatsApp",
   "contact.email": "E-mail",
@@ -284,7 +298,8 @@ const fr: Record<string, string> = {
   "checkout.seeProducts": "Voir les produits",
   "success.page.title": "Commande confirmée — KA Tech",
   "success.title": "Merci pour votre commande !",
-  "success.generic": "Votre demande a bien été enregistrée. Notre équipe vous contactera très prochainement.",
+  "success.generic":
+    "Votre demande a bien été enregistrée. Notre équipe vous contactera très prochainement.",
   "success.summary": "Récapitulatif",
   "success.payment": "Paiement",
   "success.myOrders": "Mes commandes",
@@ -318,7 +333,8 @@ const fr: Record<string, string> = {
   "reset.err.update": "Erreur lors de la mise à jour",
   "reset.ok": "Mot de passe mis à jour. Connectez-vous.",
   "account.page.title": "Mon compte — KA Tech",
-  "account.page.desc": "Gérez votre profil, vos adresses de livraison et suivez vos commandes KA Tech.",
+  "account.page.desc":
+    "Gérez votre profil, vos adresses de livraison et suivez vos commandes KA Tech.",
   "account.title": "Mon compte",
   "account.tab.profile": "Profil",
   "account.tab.addresses": "Adresses",
@@ -372,10 +388,12 @@ const fr: Record<string, string> = {
   "notfound.subtitle": "Cette page n'existe pas ou a été déplacée.",
   "notfound.backHome": "Retour à l'accueil",
   "categoryIndex.page.title": "Catégories — KA Tech",
-  "categoryIndex.page.desc": "Découvrez toutes les catégories KA Tech : ordinateurs portables, ordinateurs de bureau, PC sur-mesure et smartphones.",
+  "categoryIndex.page.desc":
+    "Découvrez toutes les catégories KA Tech : ordinateurs portables, ordinateurs de bureau, PC sur-mesure et smartphones.",
   "search.page.title": "Recherche — KA Tech",
   "search.page.titleQ": "Recherche « {q} » — KA Tech",
-  "search.page.desc": "Rechercher parmi {n} produits KA Tech : laptops, desktops, PC sur-mesure et smartphones.",
+  "search.page.desc":
+    "Rechercher parmi {n} produits KA Tech : laptops, desktops, PC sur-mesure et smartphones.",
   "search.title": "Recherche",
   "search.category": "Catégorie",
   "search.all": "Toutes",
@@ -394,7 +412,6 @@ const fr: Record<string, string> = {
   "search.suggestions": "Vous pourriez aimer :",
   "search.backHome": "Retour à l'accueil",
 };
-
 
 const en: Record<string, string> = {
   "nav.home": "Home",
@@ -479,8 +496,7 @@ const en: Record<string, string> = {
   "why.4.desc": "Pay on delivery or via approved methods",
   "bt.badge": "Config tool",
   "bt.title": "Design your ideal build",
-  "bt.sub":
-    "Pick components step by step, check compatibility and see the final price live.",
+  "bt.sub": "Pick components step by step, check compatibility and see the final price live.",
   "bt.cta": "Start building",
   "bt.cpu": "Processors",
   "bt.cpu.n": "Intel · AMD",
@@ -602,22 +618,27 @@ const en: Record<string, string> = {
   "common.free": "Free",
   "about.kicker": "About",
   "about.title": "KA Tech — Tech power in your hands",
-  "about.intro": "We're a store specialized in laptops, desktops, PC builds and smartphones. Our mission: bring the latest technology to every Algerian home, at competitive prices and with a real warranty.",
+  "about.intro":
+    "We're a store specialized in laptops, desktops, PC builds and smartphones. Our mission: bring the latest technology to every Algerian home, at competitive prices and with a real warranty.",
   "about.history.title": "Our story",
-  "about.history.body": "KA Tech was born from a simple vision: make modern technology accessible to everyone. Today we serve thousands of customers across Algeria and keep expanding our catalog with the best global brands.",
+  "about.history.body":
+    "KA Tech was born from a simple vision: make modern technology accessible to everyone. Today we serve thousands of customers across Algeria and keep expanding our catalog with the best global brands.",
   "about.mission.title": "Our mission",
-  "about.mission.body": "Offer reliable products, flawless after-sales service and genuine technical support for a simple and enjoyable shopping experience.",
+  "about.mission.body":
+    "Offer reliable products, flawless after-sales service and genuine technical support for a simple and enjoyable shopping experience.",
   "about.cta.title": "Ready to make your choice?",
   "about.cta.sub": "Discover our full range of tech products.",
   "about.cta.browse": "Browse categories",
   "about.cta.contact": "Contact us",
   "about.page.title": "About — KA Tech",
-  "about.page.desc": "KA Tech, specialized tech store in Algeria: official warranty, responsive customer service, delivery everywhere.",
+  "about.page.desc":
+    "KA Tech, specialized tech store in Algeria: official warranty, responsive customer service, delivery everywhere.",
   "contact.kicker": "Contact",
   "contact.title": "We're here to help",
   "contact.sub": "Send us a message or reach out directly via the channels below.",
   "contact.page.title": "Contact — KA Tech",
-  "contact.page.desc": "Contact KA Tech via email, phone or WhatsApp — sales support and after-sales service.",
+  "contact.page.desc":
+    "Contact KA Tech via email, phone or WhatsApp — sales support and after-sales service.",
   "contact.phone": "Phone",
   "contact.whatsapp": "WhatsApp",
   "contact.email": "Email",
@@ -763,10 +784,12 @@ const en: Record<string, string> = {
   "notfound.subtitle": "This page doesn't exist or has been moved.",
   "notfound.backHome": "Back to home",
   "categoryIndex.page.title": "Categories — KA Tech",
-  "categoryIndex.page.desc": "Explore all KA Tech categories: laptops, desktops, custom PC builds and smartphones.",
+  "categoryIndex.page.desc":
+    "Explore all KA Tech categories: laptops, desktops, custom PC builds and smartphones.",
   "search.page.title": "Search — KA Tech",
   "search.page.titleQ": "Search “{q}” — KA Tech",
-  "search.page.desc": "Search across {n} KA Tech products: laptops, desktops, custom PCs and smartphones.",
+  "search.page.desc":
+    "Search across {n} KA Tech products: laptops, desktops, custom PCs and smartphones.",
   "search.title": "Search",
   "search.category": "Category",
   "search.all": "All",
@@ -785,7 +808,6 @@ const en: Record<string, string> = {
   "search.suggestions": "You might also like:",
   "search.backHome": "Back to home",
 };
-
 
 const ar: Record<string, string> = {
   "nav.home": "الرئيسية",
@@ -870,8 +892,7 @@ const ar: Record<string, string> = {
   "why.4.desc": "ادفع عند الاستلام أو بوسائل معتمدة",
   "bt.badge": "أداة التجميع",
   "bt.title": "صمم تجميعتك المثالية",
-  "bt.sub":
-    "اختر مكوناتك خطوة بخطوة، تحقق من التوافق وشاهد السعر النهائي مباشرة.",
+  "bt.sub": "اختر مكوناتك خطوة بخطوة، تحقق من التوافق وشاهد السعر النهائي مباشرة.",
   "bt.cta": "ابدأ التجميع",
   "bt.cpu": "المعالجات",
   "bt.cpu.n": "Intel · AMD",
@@ -895,8 +916,7 @@ const ar: Record<string, string> = {
   "cta.title": "لديك سؤال؟ تواصل معنا",
   "cta.sub": "فريقنا متاح من الأحد إلى الخميس، من 9 صباحًا إلى 7 مساءً.",
   "cta.wa": "راسلنا عبر واتساب",
-  "footer.tagline":
-    "وجهتك التقنية رقم 1 في الجزائر. حواسيب وتجميعات وهواتف مع ضمان رسمي.",
+  "footer.tagline": "وجهتك التقنية رقم 1 في الجزائر. حواسيب وتجميعات وهواتف مع ضمان رسمي.",
   "footer.quick": "روابط سريعة",
   "footer.categories": "الفئات",
   "footer.support": "الدعم",
@@ -944,8 +964,7 @@ const ar: Record<string, string> = {
   "pd.tab.desc": "الوصف",
   "pd.tab.rev": "الآراء",
   "pd.tab.ship": "التوصيل والضمان",
-  "pd.desc":
-    "منتج أصلي بضمان KA Tech الرسمي، مصمم لأداء عالٍ وتجربة سلسة.",
+  "pd.desc": "منتج أصلي بضمان KA Tech الرسمي، مصمم لأداء عالٍ وتجربة سلسة.",
   "pd.noRev": "لا توجد آراء بعد. كن أول من يترك رأيًا.",
   "pd.shipText":
     "التوصيل لجميع ولايات الجزائر. ضمان 12 شهرًا على القطع الجديدة يغطي عيوب التصنيع. الدفع عند الاستلام متاح.",
@@ -970,8 +989,7 @@ const ar: Record<string, string> = {
   "bp.picked": "تم اختياره",
   "bp.send": "إرسال الطلب عبر واتساب",
   "bp.complete": "أكمل اختيارك",
-  "bp.note":
-    "السعر إرشادي. سنتحقق من التوافق ونتصل بك لتأكيد التركيب والاختبار.",
+  "bp.note": "السعر إرشادي. سنتحقق من التوافق ونتصل بك لتأكيد التركيب والاختبار.",
   "bp.wa.greeting": "مرحبًا KA Tech، أريد هذه التجميعة:",
   "bp.wa.total": "المجموع التقديري",
   "bp.step.case": "الصندوق",
@@ -993,22 +1011,27 @@ const ar: Record<string, string> = {
   "common.free": "مجاني",
   "about.kicker": "من نحن",
   "about.title": "KA Tech — قوة التكنولوجيا بين يديك",
-  "about.intro": "نحن متجر متخصص في أجهزة الكمبيوتر المحمولة والمكتبية وتجميعات الحواسيب والهواتف الذكية. مهمتنا: إيصال أحدث التقنيات إلى كل بيت جزائري، بأسعار تنافسية وضمان حقيقي.",
+  "about.intro":
+    "نحن متجر متخصص في أجهزة الكمبيوتر المحمولة والمكتبية وتجميعات الحواسيب والهواتف الذكية. مهمتنا: إيصال أحدث التقنيات إلى كل بيت جزائري، بأسعار تنافسية وضمان حقيقي.",
   "about.history.title": "قصتنا",
-  "about.history.body": "وُلدت KA Tech من رؤية بسيطة: جعل التكنولوجيا الحديثة في متناول الجميع. اليوم نخدم آلاف الزبائن عبر الجزائر ونواصل توسيع تشكيلتنا بأفضل العلامات العالمية.",
+  "about.history.body":
+    "وُلدت KA Tech من رؤية بسيطة: جعل التكنولوجيا الحديثة في متناول الجميع. اليوم نخدم آلاف الزبائن عبر الجزائر ونواصل توسيع تشكيلتنا بأفضل العلامات العالمية.",
   "about.mission.title": "مهمتنا",
-  "about.mission.body": "تقديم منتجات موثوقة وخدمة ما بعد البيع لا تشوبها شائبة ومرافقة تقنية حقيقية لتجربة شراء سهلة وممتعة.",
+  "about.mission.body":
+    "تقديم منتجات موثوقة وخدمة ما بعد البيع لا تشوبها شائبة ومرافقة تقنية حقيقية لتجربة شراء سهلة وممتعة.",
   "about.cta.title": "جاهز لاختيارك؟",
   "about.cta.sub": "اكتشف مجموعتنا الكاملة من المنتجات التقنية.",
   "about.cta.browse": "تصفح الفئات",
   "about.cta.contact": "اتصل بنا",
   "about.page.title": "من نحن — KA Tech",
-  "about.page.desc": "KA Tech، متجر تقني متخصص في الجزائر: ضمان رسمي، خدمة زبائن سريعة الاستجابة، توصيل في كل مكان.",
+  "about.page.desc":
+    "KA Tech، متجر تقني متخصص في الجزائر: ضمان رسمي، خدمة زبائن سريعة الاستجابة، توصيل في كل مكان.",
   "contact.kicker": "اتصل بنا",
   "contact.title": "نحن هنا لمساعدتك",
   "contact.sub": "أرسل لنا رسالة أو تواصل معنا مباشرة عبر القنوات أدناه.",
   "contact.page.title": "اتصل بنا — KA Tech",
-  "contact.page.desc": "تواصل مع KA Tech عبر البريد الإلكتروني أو الهاتف أو واتساب — الدعم التجاري وخدمة ما بعد البيع.",
+  "contact.page.desc":
+    "تواصل مع KA Tech عبر البريد الإلكتروني أو الهاتف أو واتساب — الدعم التجاري وخدمة ما بعد البيع.",
   "contact.phone": "الهاتف",
   "contact.whatsapp": "واتساب",
   "contact.email": "البريد الإلكتروني",
@@ -1154,10 +1177,12 @@ const ar: Record<string, string> = {
   "notfound.subtitle": "هذه الصفحة غير موجودة أو تم نقلها.",
   "notfound.backHome": "العودة إلى الرئيسية",
   "categoryIndex.page.title": "الفئات — KA Tech",
-  "categoryIndex.page.desc": "اكتشف جميع فئات KA Tech: أجهزة الكمبيوتر المحمولة، أجهزة الكمبيوتر المكتبية، تجميعات PC حسب الطلب والهواتف الذكية.",
+  "categoryIndex.page.desc":
+    "اكتشف جميع فئات KA Tech: أجهزة الكمبيوتر المحمولة، أجهزة الكمبيوتر المكتبية، تجميعات PC حسب الطلب والهواتف الذكية.",
   "search.page.title": "البحث — KA Tech",
   "search.page.titleQ": "البحث «{q}» — KA Tech",
-  "search.page.desc": "ابحث ضمن {n} منتجًا من KA Tech: أجهزة محمولة، مكتبية، تجميعات مخصّصة وهواتف ذكية.",
+  "search.page.desc":
+    "ابحث ضمن {n} منتجًا من KA Tech: أجهزة محمولة، مكتبية، تجميعات مخصّصة وهواتف ذكية.",
   "search.title": "بحث",
   "search.category": "الفئة",
   "search.all": "الكل",
@@ -1176,7 +1201,6 @@ const ar: Record<string, string> = {
   "search.suggestions": "قد يعجبك أيضًا:",
   "search.backHome": "العودة إلى الرئيسية",
 };
-
 
 export const translations = { fr, en, ar } as const;
 
@@ -1218,7 +1242,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       dir,
       setLang: (l) => {
         setLangState(l);
-        try { window.localStorage.setItem(STORAGE_KEY, l); } catch {}
+        try {
+          window.localStorage.setItem(STORAGE_KEY, l);
+        } catch {}
       },
       t: (k) => dict[k] ?? translations.fr[k] ?? k,
     };
@@ -1253,7 +1279,9 @@ export function localize<T>(value: Localized<T> | undefined, lang: Lang): T | un
  */
 export function useLocalize() {
   const { lang } = useI18n();
-  const L = useCallback(<T,>(v: Localized<T> | undefined): T | undefined => localize<T>(v, lang), [lang]);
+  const L = useCallback(
+    <T,>(v: Localized<T> | undefined): T | undefined => localize<T>(v, lang),
+    [lang],
+  );
   return L;
 }
-

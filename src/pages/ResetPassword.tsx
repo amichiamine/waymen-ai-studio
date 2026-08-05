@@ -46,19 +46,48 @@ export default function ResetPassword() {
         <p className="text-sm text-muted-foreground mb-6">{t("reset.subtitle")}</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("reset.email")} required maxLength={255}
-            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm" />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("reset.newpw")} required minLength={6} maxLength={72}
-            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm" />
-          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t("reset.confirm")} required minLength={6} maxLength={72}
-            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm" />
-          <button type="submit" disabled={busy}
-            className="w-full h-11 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition disabled:opacity-50">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t("reset.email")}
+            required
+            maxLength={255}
+            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t("reset.newpw")}
+            required
+            minLength={6}
+            maxLength={72}
+            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
+          />
+          <input
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder={t("reset.confirm")}
+            required
+            minLength={6}
+            maxLength={72}
+            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
+          />
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full h-11 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition disabled:opacity-50"
+          >
             {busy ? "..." : t("reset.submit")}
           </button>
         </form>
 
-        <Link to="/auth" className="block mt-4 text-center text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/auth"
+          className="block mt-4 text-center text-xs text-muted-foreground hover:text-foreground"
+        >
           {t("reset.back")}
         </Link>
       </div>

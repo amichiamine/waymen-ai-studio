@@ -2,7 +2,13 @@ import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
 import { getAdminSnapshot, setSiteContentSection, updateSiteSettings } from "@/lib/admin-store";
-import type { SiteContent, SiteSettings, ShippingSettings, ShippingRate, PaymentMethod } from "../types";
+import type {
+  SiteContent,
+  SiteSettings,
+  ShippingSettings,
+  ShippingRate,
+  PaymentMethod,
+} from "../types";
 
 export const contentApi = {
   async get(): Promise<SiteContent> {
@@ -10,8 +16,13 @@ export const contentApi = {
     return getAdminSnapshot().siteContent;
   },
   async update(patch: Partial<SiteContent>): Promise<void> {
-    if (isHttpMode()) { await http.patch<void>(E.content.update(), patch); return; }
-    Object.entries(patch).forEach(([k, v]) => setSiteContentSection(k as keyof SiteContent, v as SiteContent[keyof SiteContent]));
+    if (isHttpMode()) {
+      await http.patch<void>(E.content.update(), patch);
+      return;
+    }
+    Object.entries(patch).forEach(([k, v]) =>
+      setSiteContentSection(k as keyof SiteContent, v as SiteContent[keyof SiteContent]),
+    );
   },
 };
 
@@ -21,7 +32,10 @@ export const settingsApi = {
     return getAdminSnapshot().siteSettings;
   },
   async updateSite(patch: Partial<SiteSettings>): Promise<void> {
-    if (isHttpMode()) { await http.patch<void>(E.settings.site(), patch); return; }
+    if (isHttpMode()) {
+      await http.patch<void>(E.settings.site(), patch);
+      return;
+    }
     updateSiteSettings(patch);
   },
   async shipping(): Promise<ShippingSettings> {

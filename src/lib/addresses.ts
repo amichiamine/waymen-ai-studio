@@ -14,7 +14,11 @@ const KEY = (uid: string) => `katech.addresses.v1.${uid || "guest"}`;
 
 function read(uid: string): UserAddress[] {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(window.localStorage.getItem(KEY(uid)) ?? "[]"); } catch { return []; }
+  try {
+    return JSON.parse(window.localStorage.getItem(KEY(uid)) ?? "[]");
+  } catch {
+    return [];
+  }
 }
 function write(uid: string, list: UserAddress[]) {
   if (typeof window === "undefined") return;
@@ -36,26 +40,36 @@ export function useAddresses(userId: string | undefined) {
     return () => window.removeEventListener("katech:addresses-changed", handler);
   }, [uid]);
 
-  const upsert = useCallback((a: UserAddress) => {
-    const cur = read(uid);
-    let next = cur.slice();
-    const idx = next.findIndex((x) => x.id === a.id);
-    if (idx >= 0) next[idx] = a; else next.push(a);
-    if (a.isDefault) next = next.map((x) => ({ ...x, isDefault: x.id === a.id }));
-    if (!next.some((x) => x.isDefault) && next.length) next[0].isDefault = true;
-    write(uid, next);
-  }, [uid]);
+  const upsert = useCallback(
+    (a: UserAddress) => {
+      const cur = read(uid);
+      let next = cur.slice();
+      const idx = next.findIndex((x) => x.id === a.id);
+      if (idx >= 0) next[idx] = a;
+      else next.push(a);
+      if (a.isDefault) next = next.map((x) => ({ ...x, isDefault: x.id === a.id }));
+      if (!next.some((x) => x.isDefault) && next.length) next[0].isDefault = true;
+      write(uid, next);
+    },
+    [uid],
+  );
 
-  const remove = useCallback((id: string) => {
-    const cur = read(uid).filter((x) => x.id !== id);
-    if (!cur.some((x) => x.isDefault) && cur.length) cur[0].isDefault = true;
-    write(uid, cur);
-  }, [uid]);
+  const remove = useCallback(
+    (id: string) => {
+      const cur = read(uid).filter((x) => x.id !== id);
+      if (!cur.some((x) => x.isDefault) && cur.length) cur[0].isDefault = true;
+      write(uid, cur);
+    },
+    [uid],
+  );
 
-  const setDefault = useCallback((id: string) => {
-    const cur = read(uid).map((x) => ({ ...x, isDefault: x.id === id }));
-    write(uid, cur);
-  }, [uid]);
+  const setDefault = useCallback(
+    (id: string) => {
+      const cur = read(uid).map((x) => ({ ...x, isDefault: x.id === id }));
+      write(uid, cur);
+    },
+    [uid],
+  );
 
   const defaultAddress = list.find((x) => x.isDefault) ?? list[0];
 

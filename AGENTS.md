@@ -1,5 +1,6 @@
 <!-- Bloc géré par Lovable — ne pas supprimer -->
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -8,6 +9,7 @@
 >
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
+
 <!-- LOVABLE:END -->
 
 ---
@@ -40,15 +42,15 @@
 
 ### Repères d'arborescence
 
-| Chemin | Rôle |
-|---|---|
-| `src/pages/` | Écrans routés (visiteur + `admin/`) |
-| `src/components/` | Composants partagés, `ui/` = primitives shadcn (ne pas réécrire) |
-| `src/api/` | Couche d'accès aux données — respecter `docs/API-CONTRACT.md` |
-| `src/lib/` | Fondations transverses : `i18n.tsx`, `site-content.ts`, utilitaires |
-| `src/data/` | Données mock (produits, blog) |
-| `src/hooks/` | Hooks réutilisables |
-| `scripts/` | Outillage build (`generate-sitemap.ts`) |
+| Chemin            | Rôle                                                                |
+| ----------------- | ------------------------------------------------------------------- |
+| `src/pages/`      | Écrans routés (visiteur + `admin/`)                                 |
+| `src/components/` | Composants partagés, `ui/` = primitives shadcn (ne pas réécrire)    |
+| `src/api/`        | Couche d'accès aux données — respecter `docs/API-CONTRACT.md`       |
+| `src/lib/`        | Fondations transverses : `i18n.tsx`, `site-content.ts`, utilitaires |
+| `src/data/`       | Données mock (produits, blog)                                       |
+| `src/hooks/`      | Hooks réutilisables                                                 |
+| `scripts/`        | Outillage build (`generate-sitemap.ts`)                             |
 
 ### Conditions absolues — à recopier dans chaque consigne d'agent
 
@@ -69,12 +71,12 @@
 > **Le modèle fort DÉCIDE. Le modèle rapide EXÉCUTE un pattern déjà décidé.
 > Le modèle minimal INVENTORIE.**
 
-Sur un projet d'envergure, 90 % du volume est de la *réplication* :
+Sur un projet d'envergure, 90 % du volume est de la _réplication_ :
 appliquer 20 fois une structure, écrire 40 manifestes, produire 600 lignes
 de données. Ce travail n'a pas besoin du meilleur raisonnement — il a besoin
 d'un **exemplaire à copier** et de consignes sans ambiguïté.
 
-**Corollaire stratégique** : investir le modèle fort *en amont* (un pilote
+**Corollaire stratégique** : investir le modèle fort _en amont_ (un pilote
 exemplaire, un plan versioned dans le dépôt) est ce qui rend l'exécution
 économe. L'inverse — lancer 20 agents forts sans pilote — coûte 10× plus
 pour un résultat moins homogène.
@@ -83,16 +85,16 @@ pour un résultat moins homogène.
 
 ## 2. Allocation des modèles
 
-| Rôle | Modèle | Justification |
-|---|---|---|
-| **Orchestrateur** (session principale) | **fort** — effort élevé | Architecture, arbitrages, consignes, diagnostic. Erreur ici × N agents. |
-| **Diagnostic de cause racine** | **fort** | Suivre une chaîne d'appels, formuler une hypothèse falsifiable. |
-| **Conception d'un pilote** | **fort** | Copié N fois : qualité et défauts multipliés par N. |
-| **Réplication d'un pattern établi** ⭐ | **intermédiaire** | 5-10× moins cher, même qualité si un exemplaire est nommé. |
-| **Données structurées** | **intermédiaire** | Doit lire les signatures réelles — le minimal invente. |
-| **Inventaire / extraction / renommage** | **minimal** | Mécanique, format strict, aucun arbitrage. |
-| **Rédaction décisionnelle** (plan, ADR) | **fort** | Engage des choix durables. |
-| **Rédaction informative** (note, rapport) | **intermédiaire** | |
+| Rôle                                      | Modèle                  | Justification                                                           |
+| ----------------------------------------- | ----------------------- | ----------------------------------------------------------------------- |
+| **Orchestrateur** (session principale)    | **fort** — effort élevé | Architecture, arbitrages, consignes, diagnostic. Erreur ici × N agents. |
+| **Diagnostic de cause racine**            | **fort**                | Suivre une chaîne d'appels, formuler une hypothèse falsifiable.         |
+| **Conception d'un pilote**                | **fort**                | Copié N fois : qualité et défauts multipliés par N.                     |
+| **Réplication d'un pattern établi** ⭐    | **intermédiaire**       | 5-10× moins cher, même qualité si un exemplaire est nommé.              |
+| **Données structurées**                   | **intermédiaire**       | Doit lire les signatures réelles — le minimal invente.                  |
+| **Inventaire / extraction / renommage**   | **minimal**             | Mécanique, format strict, aucun arbitrage.                              |
+| **Rédaction décisionnelle** (plan, ADR)   | **fort**                | Engage des choix durables.                                              |
+| **Rédaction informative** (note, rapport) | **intermédiaire**       |                                                                         |
 
 ### Règle de bascule en 3 phrases
 
@@ -102,7 +104,7 @@ pour un résultat moins homogène.
 
 ### Signal qu'on s'est trompé de modèle
 
-- L'agent intermédiaire *conçoit* au lieu de copier → il manquait un pilote.
+- L'agent intermédiaire _conçoit_ au lieu de copier → il manquait un pilote.
 - L'agent fort produit du répétitif → gaspillage, le pilote existait.
 - Le minimal invente des valeurs → tâche mal classifiée, passer en intermédiaire.
 
@@ -114,11 +116,13 @@ Le vrai gouffre n'est **pas le modèle** : c'est le **travail perdu**. Un agent
 interrompu sans commit coûte plein tarif et rend zéro.
 
 ### 3.1 Micro-tâches
+
 Une tâche = **une unité livrable** (un composant, un module), jamais un
 domaine entier. Cible : **5 à 10 minutes**. Une tâche courte finit avant
 l'incident ; une tâche longue est un pari sur la stabilité de l'environnement.
 
 ### 3.2 Auto-commit par l'agent lui-même
+
 Chaque consigne se termine **littéralement** par :
 
 ```bash
@@ -131,29 +135,35 @@ Plusieurs agents "perdus" ont en réalité déjà poussé. Vérifier avant de
 relancer à zéro.
 
 ### 3.3 Livrables numérotés avec seuil de commit
+
 Écrire : **« committe dès que 1 + 2 sont faits, puis continue »**. Une
 interruption ne coûte que les points 3-4.
 
 ### 3.4 Périmètres disjoints
+
 Agents parallèles = dossiers strictement séparés. Chacun ne committe que
 ses chemins. Le parallélisme devient sûr : conflits de rebase transitoires
 au pire, jamais de perte.
 
 ### 3.5 Anti-doublon obligatoire
+
 Chaque consigne commence par `git pull --rebase` + `git log --oneline -3`.
 Si la tâche est déjà livrée → l'agent s'arrête et le signale. Sans cette
 règle on repaye du travail fait.
 
 ### 3.6 Reprise, jamais redémarrage
+
 Après interruption : `git status` d'abord. Travail sur disque = agent de
 **reprise** (« complète et committe l'existant »). Un agent tué à 80 %
 ne coûte alors que 20 %.
 
 ### 3.7 Parallélisme raisonnable
+
 **4 à 6 agents** simultanés est l'optimum observé. Au-delà, les collisions
 de rebase et les reprises annulent les gains.
 
 ### 3.8 Rapports courts
+
 **4 à 5 lignes maximum** : hashes poussés, livrables, reste. Le contexte
 de l'orchestrateur est une ressource — un rapport verbeux le consume inutilement.
 
@@ -175,14 +185,14 @@ de l'orchestrateur est une ressource — un rapport verbeux le consume inutileme
 
 ### Anti-patterns coûteux
 
-| Anti-pattern | Conséquence |
-|---|---|
-| Demander de « concevoir » à un modèle rapide | Réinvention, code hétérogène |
-| Omettre l'exemplaire | L'agent raisonne : coût ×5 |
-| Laisser choisir le périmètre | Collisions, commits croisés |
-| Un seul commit en fin de tâche | Tout ou rien face aux interruptions |
-| Rapport détaillé | Contexte orchestrateur saturé |
-| Vague sans pilote validé | N variantes du même défaut |
+| Anti-pattern                                 | Conséquence                         |
+| -------------------------------------------- | ----------------------------------- |
+| Demander de « concevoir » à un modèle rapide | Réinvention, code hétérogène        |
+| Omettre l'exemplaire                         | L'agent raisonne : coût ×5          |
+| Laisser choisir le périmètre                 | Collisions, commits croisés         |
+| Un seul commit en fin de tâche               | Tout ou rien face aux interruptions |
+| Rapport détaillé                             | Contexte orchestrateur saturé       |
+| Vague sans pilote validé                     | N variantes du même défaut          |
 
 ---
 
@@ -198,22 +208,26 @@ de l'orchestrateur est une ressource — un rapport verbeux le consume inutileme
 ```
 
 ### Planifier — dans le dépôt, pas dans le chat
+
 Le plan versionné (`PLAN.md`) survit aux redémarrages, est citable dans les
 consignes et devient la source de vérité unique. Un plan resté dans la
 conversation est perdu.
 
 ### Piloter — l'investissement décisif
+
 Un seul exemplaire complet et conforme avant toute réplication. Le pilote
 est la spécification exécutable : plus besoin de décrire, il suffit de
 désigner. C'est ce qui autorise la bascule vers un modèle rapide.
 
 ### Valider — l'orchestrateur ne code pas, il vérifie
+
 À froid, aucun agent en train de tourner. `git status` propre + batterie
 complète de checks. Ne jamais conclure sur la foi des rapports d'agents :
 vérifier soi-même. Plusieurs rapports « tout est livré » se sont révélés
 partiellement faux.
 
 ### Tester — rôle irremplaçable de l'humain
+
 L'environnement d'un agent ne peut pas tout exécuter (navigateur, build
 complet, tests e2e, interactions réelles). **Certains bugs ne se voient que
 chez l'utilisateur.** Jalons courts et testables > grande révélation finale.
@@ -225,26 +239,29 @@ chez l'utilisateur.** Jalons courts et testables > grande révélation finale.
 À recopier **dans chaque consigne**. Chaque ligne vaut un incident.
 
 ### Règles de conformité
-| Règle | Détail |
-|---|---|
-| Contrats du projet | Respect intégral, aucune dérogation |
-| Checks | Jamais affaiblis ; enrichissement additif seulement |
-| Additivité | Types, schémas, permissions : on **ajoute**, jamais on ne casse |
-| Isolation | Pas d'import direct entre composants — passer par l'interface publique |
-| Souveraineté | Une entité = un propriétaire ; les autres la référencent par ID |
-| Dégradation gracieuse | Source absente → repli visible, **jamais** d'erreur bloquante |
+
+| Règle                 | Détail                                                                 |
+| --------------------- | ---------------------------------------------------------------------- |
+| Contrats du projet    | Respect intégral, aucune dérogation                                    |
+| Checks                | Jamais affaiblis ; enrichissement additif seulement                    |
+| Additivité            | Types, schémas, permissions : on **ajoute**, jamais on ne casse        |
+| Isolation             | Pas d'import direct entre composants — passer par l'interface publique |
+| Souveraineté          | Une entité = un propriétaire ; les autres la référencent par ID        |
+| Dégradation gracieuse | Source absente → repli visible, **jamais** d'erreur bloquante          |
 
 ### Pièges universels ⟨complétés par les pièges de ton projet⟩
-| Piège | Règle |
-|---|---|
-| Import non utilisé | Tout import ajouté doit être consommé → build cassé sinon |
-| Élargissement de périmètre "pendant qu'on y est" | Rester strictement dans les chemins assignés |
-| Sonde de disponibilité en écriture | Lecture seule pour tester la présence d'un service |
-| Valeurs inventées | Lire les sources réelles avant d'écrire (IDs, signatures, schémas) |
-| Duplication de logique | Les handlers appellent les méthodes existantes, jamais de copie |
-| Données non injectables | Si un champ est dans les types, il doit aussi être dans l'API |
+
+| Piège                                            | Règle                                                              |
+| ------------------------------------------------ | ------------------------------------------------------------------ |
+| Import non utilisé                               | Tout import ajouté doit être consommé → build cassé sinon          |
+| Élargissement de périmètre "pendant qu'on y est" | Rester strictement dans les chemins assignés                       |
+| Sonde de disponibilité en écriture               | Lecture seule pour tester la présence d'un service                 |
+| Valeurs inventées                                | Lire les sources réelles avant d'écrire (IDs, signatures, schémas) |
+| Duplication de logique                           | Les handlers appellent les méthodes existantes, jamais de copie    |
+| Données non injectables                          | Si un champ est dans les types, il doit aussi être dans l'API      |
 
 ### Leçon transversale
+
 Quand une fonctionnalité est ajoutée à un modèle de données, vérifier que
 **toutes les portes d'entrée** l'exposent (API, bus, imports, seeds). Un
 champ présent dans les types mais absent des APIs est invisible à la démo,
@@ -263,6 +280,7 @@ aux imports et à l'automatisation.
 7. **Instrumenter** : laisser un message d'erreur explicite là où régnait le silence.
 
 ### Rendre les échecs visibles
+
 Une dégradation gracieuse silencieuse masque ses pannes. Accompagner toujours
 la dégradation d'un **journal** (cause par entrée) et d'un **indicateur visible**
 dans l'interface. Sans ça, un traitement qui ne fait rien reste inexpliqué.
@@ -294,5 +312,5 @@ dans l'interface. Sans ça, un traitement qui ne fait rien reste inexpliqué.
 
 ---
 
-*Guide universel — à enrichir après chaque incident. Chaque nouvelle règle
-au §6 "Pièges" représente une leçon concrète.*
+_Guide universel — à enrichir après chaque incident. Chaque nouvelle règle
+au §6 "Pièges" représente une leçon concrète._

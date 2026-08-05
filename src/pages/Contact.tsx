@@ -61,14 +61,40 @@ export default function Contact() {
 
       <div className="grid gap-8 lg:grid-cols-3">
         <aside className="lg:col-span-1 space-y-4">
-          {s.contactPhone && <ContactCard Icon={Phone} title={t("contact.phone")} value={s.contactPhone} href={`tel:${phoneDigits}`} />}
-          {s.whatsapp && <ContactCard Icon={MessageCircle} title={t("contact.whatsapp")} value={`+${s.whatsapp}`} href={`https://wa.me/${s.whatsapp}`} />}
-          {s.contactEmail && <ContactCard Icon={Mail} title={t("contact.email")} value={s.contactEmail} href={`mailto:${s.contactEmail}`} />}
-          {s.address && <ContactCard Icon={MapPin} title={t("contact.address")} value={s.address} />}
+          {s.contactPhone && (
+            <ContactCard
+              Icon={Phone}
+              title={t("contact.phone")}
+              value={s.contactPhone}
+              href={`tel:${phoneDigits}`}
+            />
+          )}
+          {s.whatsapp && (
+            <ContactCard
+              Icon={MessageCircle}
+              title={t("contact.whatsapp")}
+              value={`+${s.whatsapp}`}
+              href={`https://wa.me/${s.whatsapp}`}
+            />
+          )}
+          {s.contactEmail && (
+            <ContactCard
+              Icon={Mail}
+              title={t("contact.email")}
+              value={s.contactEmail}
+              href={`mailto:${s.contactEmail}`}
+            />
+          )}
+          {s.address && (
+            <ContactCard Icon={MapPin} title={t("contact.address")} value={s.address} />
+          )}
           {s.hours && <ContactCard Icon={Clock} title={t("contact.hours")} value={s.hours} />}
         </aside>
 
-        <form onSubmit={onSubmit} className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 lg:p-8 space-y-4">
+        <form
+          onSubmit={onSubmit}
+          className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 lg:p-8 space-y-4"
+        >
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label={t("contact.form.name")} name="name" required />
             <Field label={t("contact.form.email")} name="email" type="email" required />
@@ -76,10 +102,21 @@ export default function Contact() {
           <Field label={t("contact.form.phone")} name="phone" type="tel" />
           <Field label={t("contact.form.subject")} name="subject" required />
           <div>
-            <label className="block text-sm font-medium mb-1.5 text-start">{t("contact.form.message")}</label>
-            <textarea name="message" required rows={6} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20" />
+            <label className="block text-sm font-medium mb-1.5 text-start">
+              {t("contact.form.message")}
+            </label>
+            <textarea
+              name="message"
+              required
+              rows={6}
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+            />
           </div>
-          <button type="submit" disabled={sending} className="inline-flex items-center gap-2 h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={sending}
+            className="inline-flex items-center gap-2 h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60"
+          >
             <Send className="size-4" />
             {sending ? t("contact.form.sending") : t("contact.form.send")}
           </button>
@@ -89,7 +126,17 @@ export default function Contact() {
   );
 }
 
-function ContactCard({ Icon, title, value, href }: { Icon: typeof Phone; title: string; value: string; href?: string }) {
+function ContactCard({
+  Icon,
+  title,
+  value,
+  href,
+}: {
+  Icon: typeof Phone;
+  title: string;
+  value: string;
+  href?: string;
+}) {
   const inner = (
     <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary/60 transition-colors">
       <div className="size-10 rounded-md bg-primary/10 text-primary inline-flex items-center justify-center shrink-0">
@@ -104,11 +151,29 @@ function ContactCard({ Icon, title, value, href }: { Icon: typeof Phone; title: 
   return href ? <a href={href}>{inner}</a> : inner;
 }
 
-function Field({ label, name, type = "text", required }: { label: string; name: string; type?: string; required?: boolean }) {
+function Field({
+  label,
+  name,
+  type = "text",
+  required,
+}: {
+  label: string;
+  name: string;
+  type?: string;
+  required?: boolean;
+}) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1.5 text-start">{label}{required && <span className="text-primary"> *</span>}</label>
-      <input type={type} name={name} required={required} className="w-full h-11 bg-background border border-border rounded-lg px-4 text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20" />
+      <label className="block text-sm font-medium mb-1.5 text-start">
+        {label}
+        {required && <span className="text-primary"> *</span>}
+      </label>
+      <input
+        type={type}
+        name={name}
+        required={required}
+        className="w-full h-11 bg-background border border-border rounded-lg px-4 text-sm focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+      />
     </div>
   );
 }

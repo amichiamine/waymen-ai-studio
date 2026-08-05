@@ -16,7 +16,9 @@ const COUPON_KEY = "ka-cart-coupon";
 
 export default function Cart() {
   const { t } = useI18n();
-  useEffect(() => { document.title = t("cart.page.title"); }, [t]);
+  useEffect(() => {
+    document.title = t("cart.page.title");
+  }, [t]);
   const { cart, updateQty, removeFromCart } = useStore();
   const products = useProducts();
 
@@ -58,7 +60,10 @@ export default function Cart() {
   function apply() {
     if (!couponInput.trim()) return;
     const v = validateCoupon(couponInput, subtotal);
-    if (!v.ok) { toast.error(v.error); return; }
+    if (!v.ok) {
+      toast.error(v.error);
+      return;
+    }
     setApplied({ coupon: v.coupon, discount: v.discount });
     window.localStorage.setItem(COUPON_KEY, v.coupon.code);
     setCouponInput("");
@@ -82,7 +87,9 @@ export default function Cart() {
         <div className="flex flex-col items-center gap-3 rounded-md border border-dashed p-12 text-center">
           <ShoppingBag className="h-10 w-10 text-muted-foreground" />
           <p className="text-muted-foreground">{t("cart.empty")}</p>
-          <Link to="/category" className="text-primary hover:underline">{t("cart.discover")}</Link>
+          <Link to="/category" className="text-primary hover:underline">
+            {t("cart.discover")}
+          </Link>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -90,26 +97,42 @@ export default function Cart() {
             {lines.map((l) => (
               <Card key={l.product_id}>
                 <CardContent className="flex items-center gap-4 p-4">
-                  <img src={l.product.image} alt={l.product.name} className="h-20 w-20 rounded object-cover" />
+                  <img
+                    src={l.product.image}
+                    alt={l.product.name}
+                    className="h-20 w-20 rounded object-cover"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{l.product.name}</p>
                     <p className="text-xs text-muted-foreground">{l.product.specLine}</p>
                     <div className="mt-1 flex items-center gap-2">
                       <p className="text-sm font-semibold text-primary">{fmt(l.product.price)}</p>
                       {l.product.stock === "out" && (
-                        <Badge variant="destructive" className="text-[10px]">{t("cart.badge.out")}</Badge>
+                        <Badge variant="destructive" className="text-[10px]">
+                          {t("cart.badge.out")}
+                        </Badge>
                       )}
                       {l.product.stock === "low" && (
-                        <Badge variant="secondary" className="text-[10px]">{t("cart.badge.low")}</Badge>
+                        <Badge variant="secondary" className="text-[10px]">
+                          {t("cart.badge.low")}
+                        </Badge>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button size="icon" variant="outline" onClick={() => updateQty(l.product_id, l.quantity - 1)}>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => updateQty(l.product_id, l.quantity - 1)}
+                    >
                       <Minus className="h-4 w-4" />
                     </Button>
                     <span className="w-8 text-center">{l.quantity}</span>
-                    <Button size="icon" variant="outline" onClick={() => updateQty(l.product_id, l.quantity + 1)}>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => updateQty(l.product_id, l.quantity + 1)}
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -129,7 +152,9 @@ export default function Cart() {
                     <Tag className="h-4 w-4 text-primary" />
                     <span className="font-mono font-medium">{applied.coupon.code}</span>
                     <span className="text-xs text-muted-foreground">
-                      {applied.coupon.type === "percent" ? `-${applied.coupon.value}%` : `-${fmt(applied.coupon.value)}`}
+                      {applied.coupon.type === "percent"
+                        ? `-${applied.coupon.value}%`
+                        : `-${fmt(applied.coupon.value)}`}
                     </span>
                   </div>
                   <Button size="icon" variant="ghost" onClick={removeCoupon}>
@@ -138,15 +163,24 @@ export default function Cart() {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">{t("cart.coupon.label")}</label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    {t("cart.coupon.label")}
+                  </label>
                   <div className="flex gap-2">
                     <Input
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                       placeholder="BIENVENUE10"
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); apply(); } }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          apply();
+                        }
+                      }}
                     />
-                    <Button type="button" variant="outline" onClick={apply}>{t("cart.coupon.apply")}</Button>
+                    <Button type="button" variant="outline" onClick={apply}>
+                      {t("cart.coupon.apply")}
+                    </Button>
                   </div>
                 </div>
               )}
@@ -178,7 +212,9 @@ export default function Cart() {
               )}
 
               <Link to="/checkout" className={hasOutOfStock ? "pointer-events-none" : ""}>
-                <Button className="w-full" disabled={hasOutOfStock}>{t("cart.checkout")}</Button>
+                <Button className="w-full" disabled={hasOutOfStock}>
+                  {t("cart.checkout")}
+                </Button>
               </Link>
             </CardContent>
           </Card>

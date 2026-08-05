@@ -1,12 +1,7 @@
 import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
-import {
-  getAdminSnapshot,
-  getProduct,
-  upsertProduct,
-  deleteProduct,
-} from "@/lib/admin-store";
+import { getAdminSnapshot, getProduct, upsertProduct, deleteProduct } from "@/lib/admin-store";
 import type { Paginated, Product, ProductQuery } from "../types";
 
 function paginateLocal(items: Product[], q: ProductQuery = {}): Paginated<Product> {
@@ -56,7 +51,10 @@ export const productsApi = {
   },
 
   async remove(id: string): Promise<void> {
-    if (isHttpMode()) { await http.del<void>(E.products.remove(id)); return; }
+    if (isHttpMode()) {
+      await http.del<void>(E.products.remove(id));
+      return;
+    }
     deleteProduct(id);
   },
 };

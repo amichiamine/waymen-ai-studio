@@ -42,21 +42,33 @@ export function FlashSale() {
             </span>
             <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">{L(cfg.title)}</h2>
           </div>
-          <div className="flex items-center justify-center gap-1.5 md:gap-2 mx-auto lg:mx-0" dir="ltr">
-            <TimeBox v={t.d} l={tr("flash.days")} /><Sep />
-            <TimeBox v={t.h} l={tr("flash.hrs")} /><Sep />
-            <TimeBox v={t.m} l={tr("flash.min")} /><Sep />
+          <div
+            className="flex items-center justify-center gap-1.5 md:gap-2 mx-auto lg:mx-0"
+            dir="ltr"
+          >
+            <TimeBox v={t.d} l={tr("flash.days")} />
+            <Sep />
+            <TimeBox v={t.h} l={tr("flash.hrs")} />
+            <Sep />
+            <TimeBox v={t.m} l={tr("flash.min")} />
+            <Sep />
             <TimeBox v={t.s} l={tr("flash.sec")} />
           </div>
         </div>
         <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
           {sale.map((p, i) => (
-            <Reveal key={p.id} variant="up" delay={i * 80}><ProductCard p={p} /></Reveal>
+            <Reveal key={p.id} variant="up" delay={i * 80}>
+              <ProductCard p={p} />
+            </Reveal>
           ))}
         </div>
         <div className="mt-8 flex justify-center">
-          <Link to={cfg.viewAllHref} className="group inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white transition-all duration-300 hover:bg-white/10 hover:-translate-y-0.5 hover:border-white/40">
-            {L(cfg.viewAllLabel)} <ArrowRight className="size-4 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+          <Link
+            to={cfg.viewAllHref}
+            className="group inline-flex items-center gap-2 h-11 px-5 rounded-md border border-white/20 bg-white/5 text-white transition-all duration-300 hover:bg-white/10 hover:-translate-y-0.5 hover:border-white/40"
+          >
+            {L(cfg.viewAllLabel)}{" "}
+            <ArrowRight className="size-4 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
           </Link>
         </div>
       </div>
@@ -67,9 +79,15 @@ export function FlashSale() {
 function TimeBox({ v, l }: { v: number; l: string }) {
   return (
     <div className="min-w-[56px] sm:min-w-[72px] md:min-w-[88px] rounded-xl bg-white/5 border border-white/10 p-2 sm:p-3 text-center">
-      <div className="text-2xl sm:text-4xl md:text-6xl font-bold tabular-nums text-white leading-none">{String(v).padStart(2, "0")}</div>
-      <div className="text-[9px] sm:text-[10px] md:text-xs mt-1 sm:mt-2 tracking-widest text-white/60 uppercase">{l}</div>
+      <div className="text-2xl sm:text-4xl md:text-6xl font-bold tabular-nums text-white leading-none">
+        {String(v).padStart(2, "0")}
+      </div>
+      <div className="text-[9px] sm:text-[10px] md:text-xs mt-1 sm:mt-2 tracking-widest text-white/60 uppercase">
+        {l}
+      </div>
     </div>
   );
 }
-function Sep() { return <span className="text-xl sm:text-3xl md:text-5xl text-white/40 font-bold">:</span>; }
+function Sep() {
+  return <span className="text-xl sm:text-3xl md:text-5xl text-white/40 font-bold">:</span>;
+}

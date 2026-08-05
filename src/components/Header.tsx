@@ -1,8 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  Heart, ShoppingCart, User, Search, Menu, X, Settings, Shield, LogOut,
-  Wrench, ChevronDown, ArrowRight,
+  Heart,
+  ShoppingCart,
+  User,
+  Search,
+  Menu,
+  X,
+  Settings,
+  Shield,
+  LogOut,
+  Wrench,
+  ChevronDown,
+  ArrowRight,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -42,7 +52,6 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all ${
@@ -72,7 +81,9 @@ export function Header() {
                     onSelect={() => navigate(n.href)}
                     className="group/item gap-3 px-2 py-2.5 rounded-md cursor-pointer text-sm font-medium text-foreground/80 focus:bg-primary/10 focus:text-foreground data-[highlighted]:bg-primary/10 data-[highlighted]:text-foreground transition-colors"
                   >
-                    <span className={`inline-flex items-center justify-center size-8 rounded-md border border-border bg-card text-muted-foreground transition-colors group-hover/item:border-primary/40 group-hover/item:text-primary group-focus/item:border-primary/40 group-focus/item:text-primary ${n.accent ? "border-primary/40 text-primary bg-primary/10" : ""}`}>
+                    <span
+                      className={`inline-flex items-center justify-center size-8 rounded-md border border-border bg-card text-muted-foreground transition-colors group-hover/item:border-primary/40 group-hover/item:text-primary group-focus/item:border-primary/40 group-focus/item:text-primary ${n.accent ? "border-primary/40 text-primary bg-primary/10" : ""}`}
+                    >
                       <Icon className="size-4" />
                     </span>
                     <span className="flex-1">{L(n.label)}</span>
@@ -101,23 +112,30 @@ export function Header() {
         </nav>
 
         {H.showSearch && (
-        <form
-          onSubmit={(e) => { e.preventDefault(); const q = query.trim(); if (q) navigate(`/search?q=${encodeURIComponent(q)}`); }}
-          className="hidden md:flex flex-1 max-w-md mx-auto relative"
-        >
-          <button type="submit" aria-label="Rechercher" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            <Search className="size-4" />
-          </button>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={L(H.searchPlaceholder) ?? ""}
-            className="w-full bg-card border border-border rounded-lg pl-10 pr-4 h-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
-          />
-        </form>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = query.trim();
+              if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
+            }}
+            className="hidden md:flex flex-1 max-w-md mx-auto relative"
+          >
+            <button
+              type="submit"
+              aria-label="Rechercher"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <Search className="size-4" />
+            </button>
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={L(H.searchPlaceholder) ?? ""}
+              className="w-full bg-card border border-border rounded-lg pl-10 pr-4 h-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+            />
+          </form>
         )}
-
 
         <div className="flex items-center gap-0.5 md:gap-1 ms-auto lg:ms-0">
           <Link
@@ -129,18 +147,28 @@ export function Header() {
           </Link>
           <LanguageToggle />
           <ThemeToggle />
-          <Link to={user ? "/favorites" : "/auth"} aria-label={t("header.wishlist")}
-            className="relative hidden md:inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors">
+          <Link
+            to={user ? "/favorites" : "/auth"}
+            aria-label={t("header.wishlist")}
+            className="relative hidden md:inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
+          >
             <Heart className="size-5" />
             {user && favorites.size > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">{favorites.size}</span>
+              <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">
+                {favorites.size}
+              </span>
             )}
           </Link>
-          <Link to={user ? "/cart" : "/auth"} aria-label={t("header.cart")}
-            className="relative hidden md:inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors">
+          <Link
+            to={user ? "/cart" : "/auth"}
+            aria-label={t("header.cart")}
+            className="relative hidden md:inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
+          >
             <ShoppingCart className="size-5" />
             {user && cartCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">{cartCount}</span>
+              <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">
+                {cartCount}
+              </span>
             )}
           </Link>
           {user && isAdmin ? (
@@ -180,8 +208,11 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link to={user ? "/account" : "/auth"} aria-label={t("header.account")}
-              className="hidden md:inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors">
+            <Link
+              to={user ? "/account" : "/auth"}
+              aria-label={t("header.account")}
+              className="hidden md:inline-flex items-center justify-center size-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
+            >
               <User className="size-5" />
             </Link>
           )}
@@ -199,12 +230,18 @@ export function Header() {
               <SheetTitle className="sr-only">{t("header.menu")}</SheetTitle>
               <div className="flex items-center justify-between mb-8">
                 <Logo />
-                <button onClick={() => setOpen(false)} aria-label={t("header.close")} className="size-9 inline-flex items-center justify-center rounded-md hover:bg-card">
+                <button
+                  onClick={() => setOpen(false)}
+                  aria-label={t("header.close")}
+                  className="size-9 inline-flex items-center justify-center rounded-md hover:bg-card"
+                >
                   <X className="size-5" />
                 </button>
               </div>
               <nav className="flex flex-col gap-1">
-                <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">{L(H.categoryMenu.label)}</div>
+                <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">
+                  {L(H.categoryMenu.label)}
+                </div>
                 {H.categoryMenu.items.map((n) => {
                   const Icon = getIcon(n.icon);
                   return (

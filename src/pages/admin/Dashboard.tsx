@@ -2,10 +2,29 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, ShoppingBag, Users, DollarSign, Tag, Layers, AlertTriangle, Star, MessageSquare, Ticket } from "lucide-react";
+import {
+  Package,
+  ShoppingBag,
+  Users,
+  DollarSign,
+  Tag,
+  Layers,
+  AlertTriangle,
+  Star,
+  MessageSquare,
+  Ticket,
+} from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 
 export default function AdminDashboard() {
   const { products, categories, brands, orders, customers, coupons, reviews } = useAdminState();
@@ -19,34 +38,105 @@ export default function AdminDashboard() {
     const revenue = orders.filter((o) => o.status !== "cancelled").reduce((s, o) => s + o.total, 0);
     const pendingOrders = orders.filter((o) => o.status === "pending").length;
     const pendingReviews = reviews.filter((r) => r.status === "pending").length;
-    const activeCoupons = coupons.filter((c) => c.active && new Date(c.expiresAt).getTime() > Date.now()).length;
-    return { total, inStock, low, bestsellers, catalogValue, revenue, pendingOrders, pendingReviews, activeCoupons };
+    const activeCoupons = coupons.filter(
+      (c) => c.active && new Date(c.expiresAt).getTime() > Date.now(),
+    ).length;
+    return {
+      total,
+      inStock,
+      low,
+      bestsellers,
+      catalogValue,
+      revenue,
+      pendingOrders,
+      pendingReviews,
+      activeCoupons,
+    };
   }, [products, orders, reviews, coupons]);
 
-  const byCategory = useMemo(() => categories.map((c) => ({
-    slug: c.slug, label: c.label, count: products.filter((p) => p.category === c.slug).length,
-  })), [categories, products]);
+  const byCategory = useMemo(
+    () =>
+      categories.map((c) => ({
+        slug: c.slug,
+        label: c.label,
+        count: products.filter((p) => p.category === c.slug).length,
+      })),
+    [categories, products],
+  );
 
   const KPIS = [
     { label: "Produits", value: stats.total.toString(), Icon: Package, to: "/admin/products" },
-    { label: "Catégories", value: categories.length.toString(), Icon: Layers, to: "/admin/categories" },
+    {
+      label: "Catégories",
+      value: categories.length.toString(),
+      Icon: Layers,
+      to: "/admin/categories",
+    },
     { label: "Marques", value: brands.length.toString(), Icon: Tag, to: "/admin/brands" },
-    { label: "Valeur catalogue", value: formatDZD(stats.catalogValue), Icon: DollarSign, to: "/admin/products" },
-    { label: "Chiffre d'affaires", value: formatDZD(stats.revenue), Icon: DollarSign, to: "/admin/orders" },
-    { label: "Commandes en attente", value: stats.pendingOrders.toString(), Icon: ShoppingBag, to: "/admin/orders" },
+    {
+      label: "Valeur catalogue",
+      value: formatDZD(stats.catalogValue),
+      Icon: DollarSign,
+      to: "/admin/products",
+    },
+    {
+      label: "Chiffre d'affaires",
+      value: formatDZD(stats.revenue),
+      Icon: DollarSign,
+      to: "/admin/orders",
+    },
+    {
+      label: "Commandes en attente",
+      value: stats.pendingOrders.toString(),
+      Icon: ShoppingBag,
+      to: "/admin/orders",
+    },
     { label: "Clients", value: customers.length.toString(), Icon: Users, to: "/admin/customers" },
-    { label: "Avis à modérer", value: stats.pendingReviews.toString(), Icon: MessageSquare, to: "/admin/reviews" },
-    { label: "Coupons actifs", value: stats.activeCoupons.toString(), Icon: Ticket, to: "/admin/coupons" },
-    { label: "Stock faible", value: stats.low.toString(), Icon: AlertTriangle, to: "/admin/inventory" },
-    { label: "En stock", value: stats.inStock.toString(), Icon: ShoppingBag, to: "/admin/inventory" },
-    { label: "Best-sellers", value: stats.bestsellers.toString(), Icon: Star, to: "/admin/products" },
+    {
+      label: "Avis à modérer",
+      value: stats.pendingReviews.toString(),
+      Icon: MessageSquare,
+      to: "/admin/reviews",
+    },
+    {
+      label: "Coupons actifs",
+      value: stats.activeCoupons.toString(),
+      Icon: Ticket,
+      to: "/admin/coupons",
+    },
+    {
+      label: "Stock faible",
+      value: stats.low.toString(),
+      Icon: AlertTriangle,
+      to: "/admin/inventory",
+    },
+    {
+      label: "En stock",
+      value: stats.inStock.toString(),
+      Icon: ShoppingBag,
+      to: "/admin/inventory",
+    },
+    {
+      label: "Best-sellers",
+      value: stats.bestsellers.toString(),
+      Icon: Star,
+      to: "/admin/products",
+    },
   ];
 
-  const recentOrders = useMemo(() => orders.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5), [orders]);
+  const recentOrders = useMemo(
+    () =>
+      orders
+        .slice()
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, 5),
+    [orders],
+  );
 
   const trend = useMemo(() => {
     const map = new Map<string, { date: string; revenue: number }>();
-    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     for (let i = 29; i >= 0; i--) {
       const d = new Date(today.getTime() - i * 86400000);
       const key = d.toISOString().slice(0, 10);
@@ -61,13 +151,18 @@ export default function AdminDashboard() {
   }, [orders]);
 
   return (
-    <AdminPageShell title="Tableau de bord" description="Vue d'ensemble de la boutique KA Tech (données locales).">
+    <AdminPageShell
+      title="Tableau de bord"
+      description="Vue d'ensemble de la boutique KA Tech (données locales)."
+    >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {KPIS.map((k) => (
           <Link key={k.label} to={k.to}>
             <Card className="transition hover:border-primary/50 hover:shadow-sm">
               <CardContent className="flex items-center gap-4 p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary"><k.Icon className="h-5 w-5" /></div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <k.Icon className="h-5 w-5" />
+                </div>
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">{k.label}</p>
                   <p className="truncate text-lg font-semibold">{k.value}</p>
@@ -93,14 +188,25 @@ export default function AdminDashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: number) => formatDZD(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#revGrad)" />
+                <Tooltip
+                  formatter={(v: number) => formatDZD(v)}
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  fill="url(#revGrad)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
-
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -112,11 +218,18 @@ export default function AdminDashboard() {
                 return (
                   <div key={c.slug}>
                     <div className="mb-1 flex items-center justify-between text-sm">
-                      <Link to={`/admin/products`} className="hover:text-primary">{c.label}</Link>
-                      <span className="text-muted-foreground">{c.count} · {pct}%</span>
+                      <Link to={`/admin/products`} className="hover:text-primary">
+                        {c.label}
+                      </Link>
+                      <span className="text-muted-foreground">
+                        {c.count} · {pct}%
+                      </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
                 );
@@ -131,13 +244,18 @@ export default function AdminDashboard() {
             <ul className="divide-y divide-border">
               {recentOrders.map((o) => (
                 <li key={o.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <Link to={`/admin/orders/${o.id}`} className="min-w-0 truncate hover:text-primary">
+                  <Link
+                    to={`/admin/orders/${o.id}`}
+                    className="min-w-0 truncate hover:text-primary"
+                  >
                     <span className="font-mono text-xs">{o.id}</span> · {o.customerName}
                   </Link>
                   <span className="shrink-0 text-muted-foreground">{formatDZD(o.total)}</span>
                 </li>
               ))}
-              {recentOrders.length === 0 && <li className="py-2 text-sm text-muted-foreground">Aucune commande.</li>}
+              {recentOrders.length === 0 && (
+                <li className="py-2 text-sm text-muted-foreground">Aucune commande.</li>
+              )}
             </ul>
           </CardContent>
         </Card>

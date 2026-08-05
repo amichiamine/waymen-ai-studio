@@ -12,8 +12,20 @@ export function WhyUs() {
       <div className="container-page space-y-10">
         <Reveal variant="up">
           <div className="space-y-3 max-w-2xl">
-            {w.kicker && <span className="text-xs uppercase tracking-[0.25em] text-primary">{L(w.kicker)}</span>}
-            <h2 className="text-3xl lg:text-4xl font-bold leading-tight">{L(w.title1)}{w.title2 && (<><br />{L(w.title2)}</>)}</h2>
+            {w.kicker && (
+              <span className="text-xs uppercase tracking-[0.25em] text-primary">
+                {L(w.kicker)}
+              </span>
+            )}
+            <h2 className="text-3xl lg:text-4xl font-bold leading-tight">
+              {L(w.title1)}
+              {w.title2 && (
+                <>
+                  <br />
+                  {L(w.title2)}
+                </>
+              )}
+            </h2>
             {w.subtitle && <p className="text-muted-foreground">{L(w.subtitle)}</p>}
           </div>
         </Reveal>
@@ -27,7 +39,9 @@ export function WhyUs() {
                     <Icon className="size-5" />
                   </div>
                   <h3 className="text-base lg:text-lg font-semibold">{L(it.title)}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{L(it.description)}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {L(it.description)}
+                  </p>
                 </div>
               </Reveal>
             );

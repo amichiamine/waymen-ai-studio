@@ -29,7 +29,10 @@ export function MaintenanceScreen() {
             </a>
           )}
           {s.contactPhone && (
-            <a href={`tel:${s.contactPhone.replace(/\s+/g, "")}`} className="text-primary hover:underline">
+            <a
+              href={`tel:${s.contactPhone.replace(/\s+/g, "")}`}
+              className="text-primary hover:underline"
+            >
               {s.contactPhone}
             </a>
           )}

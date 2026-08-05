@@ -16,13 +16,19 @@ export function PromoBanner() {
     try {
       const stored = window.localStorage.getItem(DISMISS_KEY);
       setDismissed(stored === sig);
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, [sig]);
 
   if (!s.showPromoBanner || !s.promoBannerText || dismissed) return null;
 
   function dismiss() {
-    try { window.localStorage.setItem(DISMISS_KEY, sig); } catch { /* noop */ }
+    try {
+      window.localStorage.setItem(DISMISS_KEY, sig);
+    } catch {
+      /* noop */
+    }
     setDismissed(true);
   }
 

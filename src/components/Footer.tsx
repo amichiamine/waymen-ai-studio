@@ -19,7 +19,10 @@ export function Footer() {
     setBusy(true);
     const r = addSubscriber(email, "footer");
     setBusy(false);
-    if (!r.ok) { toast.error(r.error || "Inscription impossible"); return; }
+    if (!r.ok) {
+      toast.error(r.error || "Inscription impossible");
+      return;
+    }
     toast.success("Merci pour votre inscription !");
     setEmail("");
   }
@@ -28,9 +31,7 @@ export function Footer() {
       <div className="container-page py-14 grid gap-10 md:grid-cols-5">
         <div className="md:col-span-2 space-y-4">
           <Logo className="h-10 text-foreground" />
-          <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-            {L(f.tagline)}
-          </p>
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">{L(f.tagline)}</p>
           {f.socials.length > 0 && (
             <div className="flex gap-2">
               {f.socials.map((s) => {
@@ -52,7 +53,9 @@ export function Footer() {
             </div>
           )}
           <form onSubmit={subscribe} className="pt-3 max-w-sm">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">Newsletter</label>
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">
+              Newsletter
+            </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -81,7 +84,10 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm">
               {col.links.map((l) => (
                 <li key={l.id}>
-                  <Link to={l.href || "/"} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    to={l.href || "/"}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     {L(l.label)}
                   </Link>
                 </li>

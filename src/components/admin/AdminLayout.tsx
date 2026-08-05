@@ -1,19 +1,52 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import {
-  LayoutDashboard, Package, ShoppingBag, Users, Tags, Star, FileText,
-  Settings as SettingsIcon, BarChart3, Image as ImageIcon, Bell, ShieldCheck,
-  ScrollText, Warehouse, Truck, CreditCard, PieChart, Ticket, Boxes,
-  Menu, ChevronRight, Home, RotateCcw, Check, Palette, Mail, Send,
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Users,
+  Tags,
+  Star,
+  FileText,
+  Settings as SettingsIcon,
+  BarChart3,
+  Image as ImageIcon,
+  Bell,
+  ShieldCheck,
+  ScrollText,
+  Warehouse,
+  Truck,
+  CreditCard,
+  PieChart,
+  Ticket,
+  Boxes,
+  Menu,
+  ChevronRight,
+  Home,
+  RotateCcw,
+  Check,
+  Palette,
+  Mail,
+  Send,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
-  useAdminState, getActiveRole, setActiveRole, markAllNotificationsRead, updateNotification,
+  useAdminState,
+  getActiveRole,
+  setActiveRole,
+  markAllNotificationsRead,
+  updateNotification,
   type AdminUserRole,
 } from "@/lib/admin-store";
 
@@ -90,17 +123,22 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         if (items.length === 0) return null;
         return (
           <div key={s.title}>
-            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.title}</p>
+            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {s.title}
+            </p>
             <ul className="space-y-1">
               {items.map((it) => {
-                const active = pathname === it.to || (it.to !== "/admin" && pathname.startsWith(it.to));
+                const active =
+                  pathname === it.to || (it.to !== "/admin" && pathname.startsWith(it.to));
                 return (
                   <li key={it.to}>
                     <Link
                       to={it.to}
                       onClick={onNavigate}
                       className={`flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${
-                        active ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent"
+                        active
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-foreground hover:bg-accent"
                       }`}
                     >
                       <it.Icon className="h-4 w-4" />
@@ -153,7 +191,6 @@ export function AdminMobileNav() {
   );
 }
 
-
 export function AdminBreadcrumbs() {
   const { pathname } = useLocation();
   const segments = pathname.split("/").filter(Boolean); // e.g. ["admin", "products", "abc"]
@@ -179,7 +216,10 @@ export function AdminBreadcrumbs() {
   });
 
   return (
-    <nav className="flex items-center gap-1 text-sm text-muted-foreground" aria-label="Fil d'Ariane">
+    <nav
+      className="flex items-center gap-1 text-sm text-muted-foreground"
+      aria-label="Fil d'Ariane"
+    >
       <Link to="/admin" className="flex items-center gap-1 hover:text-foreground">
         <Home className="h-3.5 w-3.5" />
       </Link>
@@ -187,7 +227,9 @@ export function AdminBreadcrumbs() {
         <span key={i} className="flex items-center gap-1">
           <ChevronRight className="h-3.5 w-3.5" />
           {c.to ? (
-            <Link to={c.to} className="hover:text-foreground">{c.label}</Link>
+            <Link to={c.to} className="hover:text-foreground">
+              {c.label}
+            </Link>
           ) : (
             <span className="text-foreground font-medium">{c.label}</span>
           )}
@@ -231,7 +273,12 @@ export function AdminEmptyState({ label = "Aucune donnée pour le moment" }: { l
 }
 
 // ---------- Role switcher (démo) ----------
-const ROLE_LABEL: Record<AdminUserRole, string> = { owner: "Propriétaire", admin: "Administrateur", editor: "Éditeur", viewer: "Lecteur" };
+const ROLE_LABEL: Record<AdminUserRole, string> = {
+  owner: "Propriétaire",
+  admin: "Administrateur",
+  editor: "Éditeur",
+  viewer: "Lecteur",
+};
 
 function subscribeRole(l: () => void) {
   window.addEventListener("katech:role-changed", l);
@@ -247,10 +294,14 @@ export function AdminRoleSwitcher() {
     <div className="hidden items-center gap-2 md:flex">
       <span className="text-xs text-muted-foreground">Rôle actif</span>
       <Select value={role} onValueChange={(v) => setActiveRole(v as AdminUserRole)}>
-        <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+        <SelectTrigger className="h-8 w-[140px] text-xs">
+          <SelectValue />
+        </SelectTrigger>
         <SelectContent>
           {(Object.keys(ROLE_LABEL) as AdminUserRole[]).map((r) => (
-            <SelectItem key={r} value={r} className="text-xs">{ROLE_LABEL[r]}</SelectItem>
+            <SelectItem key={r} value={r} className="text-xs">
+              {ROLE_LABEL[r]}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -269,14 +320,22 @@ export function AdminNotificationBell() {
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-5 w-5" />
           {unread > 0 && (
-            <Badge className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center px-1 text-[10px]">{unread > 9 ? "9+" : unread}</Badge>
+            <Badge className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center px-1 text-[10px]">
+              {unread > 9 ? "9+" : unread}
+            </Badge>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b p-3">
           <p className="text-sm font-semibold">Notifications</p>
-          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAllNotificationsRead} disabled={unread === 0}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={markAllNotificationsRead}
+            disabled={unread === 0}
+          >
             <Check className="mr-1 h-3 w-3" /> Tout lu
           </Button>
         </div>
@@ -289,12 +348,27 @@ export function AdminNotificationBell() {
                 <li key={n.id} className={`p-3 text-sm ${n.read ? "opacity-70" : "bg-primary/5"}`}>
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-medium">{n.title}</p>
-                    <span className="shrink-0 text-[10px] text-muted-foreground">{new Date(n.createdAt).toLocaleDateString("fr-FR")}</span>
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                      {new Date(n.createdAt).toLocaleDateString("fr-FR")}
+                    </span>
                   </div>
-                  {n.body && <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{n.body}</p>}
+                  {n.body && (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{n.body}</p>
+                  )}
                   <div className="mt-1 flex items-center gap-2">
-                    {n.link && <Link to={n.link} className="text-xs text-primary hover:underline">Voir</Link>}
-                    {!n.read && <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => updateNotification(n.id, { read: true })}>Marquer lu</button>}
+                    {n.link && (
+                      <Link to={n.link} className="text-xs text-primary hover:underline">
+                        Voir
+                      </Link>
+                    )}
+                    {!n.read && (
+                      <button
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => updateNotification(n.id, { read: true })}
+                      >
+                        Marquer lu
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}
@@ -302,10 +376,11 @@ export function AdminNotificationBell() {
           )}
         </div>
         <div className="border-t p-2 text-center">
-          <Link to="/admin/notifications" className="text-xs text-primary hover:underline">Toutes les notifications →</Link>
+          <Link to="/admin/notifications" className="text-xs text-primary hover:underline">
+            Toutes les notifications →
+          </Link>
         </div>
       </PopoverContent>
     </Popover>
   );
 }
-

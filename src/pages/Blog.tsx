@@ -18,10 +18,11 @@ export default function Blog() {
       .sort((a, b) => (b.publishedAt ?? b.createdAt).localeCompare(a.publishedAt ?? a.createdAt));
     if (!q.trim()) return published;
     const needle = q.trim().toLowerCase();
-    return published.filter((p) =>
-      p.title.toLowerCase().includes(needle) ||
-      p.excerpt.toLowerCase().includes(needle) ||
-      p.tags.some((tg) => tg.toLowerCase().includes(needle))
+    return published.filter(
+      (p) =>
+        p.title.toLowerCase().includes(needle) ||
+        p.excerpt.toLowerCase().includes(needle) ||
+        p.tags.some((tg) => tg.toLowerCase().includes(needle)),
     );
   }, [blogPosts, q]);
 
@@ -75,12 +76,17 @@ export default function Blog() {
                 <div className="flex flex-1 flex-col p-5">
                   <div className="mb-2 flex flex-wrap gap-1.5">
                     {p.tags.slice(0, 3).map((tg) => (
-                      <span key={tg} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                      <span
+                        key={tg}
+                        className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+                      >
                         {tg}
                       </span>
                     ))}
                   </div>
-                  <h2 className="text-lg font-bold leading-snug group-hover:text-primary">{p.title}</h2>
+                  <h2 className="text-lg font-bold leading-snug group-hover:text-primary">
+                    {p.title}
+                  </h2>
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.excerpt}</p>
                   <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                     <span>{p.author}</span>

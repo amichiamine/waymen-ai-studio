@@ -12,7 +12,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/auth";
 import { useAdminState } from "@/lib/admin-store";
 import { useAdminRoles } from "@/lib/admin-auth";
-import { AdminSidebar, AdminMobileNav, AdminBreadcrumbs, AdminRoleSwitcher, AdminNotificationBell } from "@/components/admin/AdminLayout";
+import {
+  AdminSidebar,
+  AdminMobileNav,
+  AdminBreadcrumbs,
+  AdminRoleSwitcher,
+  AdminNotificationBell,
+} from "@/components/admin/AdminLayout";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Home } from "lucide-react";
@@ -74,7 +80,6 @@ import AdminContent from "@/pages/admin/Content";
 import AdminMessages from "@/pages/admin/Messages";
 import AdminSubscribers from "@/pages/admin/Subscribers";
 
-
 function RequireAuth() {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -97,7 +102,11 @@ function AdminLayout() {
   }, []);
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Chargement…</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+        Chargement…
+      </div>
+    );
   }
   if (!user) {
     return <Navigate to="/auth" replace state={{ from: location }} />;
@@ -114,7 +123,11 @@ function AdminLayout() {
             Vous devez être connecté avec un compte administrateur pour accéder au back-office.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link to="/"><Button variant="outline"><Home className="mr-2 h-4 w-4" /> Accueil</Button></Link>
+            <Link to="/">
+              <Button variant="outline">
+                <Home className="mr-2 h-4 w-4" /> Accueil
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -130,7 +143,9 @@ function AdminLayout() {
           <div className="ml-auto flex items-center gap-2">
             <AdminRoleSwitcher />
             <AdminNotificationBell />
-            <Link to="/" className="text-sm text-primary hover:underline">← Boutique</Link>
+            <Link to="/" className="text-sm text-primary hover:underline">
+              ← Boutique
+            </Link>
           </div>
         </header>
         <main className="min-w-0 flex-1 p-4 lg:p-8">
@@ -164,69 +179,69 @@ export default function App() {
       {!isAdmin && <Header />}
       <main className="pb-16 md:pb-0">
         <PageTransition>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/builder" element={<Builder />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogArticle />} />
-          <Route path="/category" element={<CategoryIndex />} />
-          <Route path="/category/:slug" element={<CategoryDetail />} />
-          <Route path="/product/:id" element={<Product />} />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/builder" element={<Builder />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogArticle />} />
+            <Route path="/category" element={<CategoryIndex />} />
+            <Route path="/category/:slug" element={<CategoryDetail />} />
+            <Route path="/product/:id" element={<Product />} />
 
-          <Route element={<RequireAuth />}>
-            <Route path="/account" element={<Account />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          </Route>
+            <Route element={<RequireAuth />}>
+              <Route path="/account" element={<Account />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/favorites" element={<Favorites />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            </Route>
 
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="analytics" element={<AdminAnalytics />} />
-            <Route path="audit" element={<AdminAudit />} />
-            <Route path="blog" element={<AdminBlogList />} />
-            <Route path="blog/new" element={<AdminBlogNew />} />
-            <Route path="blog/:id" element={<AdminBlogEdit />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route path="categories/new" element={<AdminCategoryForm mode="new" />} />
-            <Route path="categories/:slug/view" element={<AdminCategoryDetail />} />
-            <Route path="categories/:slug" element={<AdminCategoryForm mode="edit" />} />
-            <Route path="brands" element={<AdminBrands />} />
-            <Route path="brands/new" element={<AdminBrandForm mode="new" />} />
-            <Route path="brands/:id/view" element={<AdminBrandDetail />} />
-            <Route path="brands/:id" element={<AdminBrandForm mode="edit" />} />
-            <Route path="reset" element={<AdminReset />} />
-            <Route path="coupons" element={<AdminCoupons />} />
-            <Route path="customers" element={<AdminCustomers />} />
-            <Route path="inventory" element={<AdminInventory />} />
-            <Route path="media" element={<AdminMedia />} />
-            <Route path="notifications" element={<AdminNotifications />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="orders/:id" element={<AdminOrderDetail />} />
-            <Route path="payments" element={<AdminPayments />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="products/new" element={<AdminProductNew />} />
-            <Route path="products/:id/view" element={<AdminProductDetail />} />
-            <Route path="products/:id" element={<AdminProductEdit />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="audit" element={<AdminAudit />} />
+              <Route path="blog" element={<AdminBlogList />} />
+              <Route path="blog/new" element={<AdminBlogNew />} />
+              <Route path="blog/:id" element={<AdminBlogEdit />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="categories/new" element={<AdminCategoryForm mode="new" />} />
+              <Route path="categories/:slug/view" element={<AdminCategoryDetail />} />
+              <Route path="categories/:slug" element={<AdminCategoryForm mode="edit" />} />
+              <Route path="brands" element={<AdminBrands />} />
+              <Route path="brands/new" element={<AdminBrandForm mode="new" />} />
+              <Route path="brands/:id/view" element={<AdminBrandDetail />} />
+              <Route path="brands/:id" element={<AdminBrandForm mode="edit" />} />
+              <Route path="reset" element={<AdminReset />} />
+              <Route path="coupons" element={<AdminCoupons />} />
+              <Route path="customers" element={<AdminCustomers />} />
+              <Route path="inventory" element={<AdminInventory />} />
+              <Route path="media" element={<AdminMedia />} />
+              <Route path="notifications" element={<AdminNotifications />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="orders/:id" element={<AdminOrderDetail />} />
+              <Route path="payments" element={<AdminPayments />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="products/new" element={<AdminProductNew />} />
+              <Route path="products/:id/view" element={<AdminProductDetail />} />
+              <Route path="products/:id" element={<AdminProductEdit />} />
 
-            <Route path="reports" element={<AdminReports />} />
-            <Route path="reviews" element={<AdminReviews />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="content" element={<AdminContent />} />
-            <Route path="messages" element={<AdminMessages />} />
-            <Route path="subscribers" element={<AdminSubscribers />} />
-            <Route path="shipping" element={<AdminShipping />} />
-            <Route path="users" element={<AdminUsers />} />
-          </Route>
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="reviews" element={<AdminReviews />} />
+              <Route path="settings" element={<AdminSettings />} />
+              <Route path="content" element={<AdminContent />} />
+              <Route path="messages" element={<AdminMessages />} />
+              <Route path="subscribers" element={<AdminSubscribers />} />
+              <Route path="shipping" element={<AdminShipping />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </PageTransition>
       </main>
       {!isAdmin && <Footer />}

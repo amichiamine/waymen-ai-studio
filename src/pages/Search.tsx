@@ -18,7 +18,9 @@ export default function Search() {
   const term = q.trim().toLowerCase();
 
   const [cat, setCat] = useState<Category | "">((searchParams.get("cat") as Category) ?? "");
-  const [brand, setBrand] = useState<string[]>((searchParams.get("brands") ?? "").split(",").filter(Boolean));
+  const [brand, setBrand] = useState<string[]>(
+    (searchParams.get("brands") ?? "").split(",").filter(Boolean),
+  );
   const [maxPrice, setMaxPrice] = useState(Number(searchParams.get("max")) || 500_000);
   const [sort, setSort] = useState(searchParams.get("sort") ?? "relevance");
   const [inStock, setInStock] = useState(searchParams.get("stock") === "1");
@@ -42,7 +44,10 @@ export default function Search() {
   }, [q, cat, brand, maxPrice, sort, inStock, setSearchParams]);
 
   const products = useProducts();
-  const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products]);
+  const brands = useMemo(
+    () => Array.from(new Set(products.map((p) => p.brand))).sort(),
+    [products],
+  );
 
   const results = useMemo(() => {
     let r = products.filter((p) => {
@@ -66,11 +71,15 @@ export default function Search() {
 
   const PAGE = 12;
   const [visible, setVisible] = useState(PAGE);
-  useEffect(() => { setVisible(PAGE); }, [q, cat, brand, maxPrice, sort, inStock]);
+  useEffect(() => {
+    setVisible(PAGE);
+  }, [q, cat, brand, maxPrice, sort, inStock]);
   const shown = results.slice(0, visible);
   const hasMore = visible < results.length;
   const sentinelRef = useInfiniteScroll<HTMLDivElement>({
-    hasMore, loading: false, onLoadMore: () => setVisible((v) => v + PAGE),
+    hasMore,
+    loading: false,
+    onLoadMore: () => setVisible((v) => v + PAGE),
   });
 
   const suggestions = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
@@ -90,7 +99,10 @@ export default function Search() {
 
       <div className="flex items-center gap-3 mb-6">
         <SearchIcon className="size-6 text-primary" />
-        <h1 className="text-2xl font-bold">{t("search.title")} {q && <span className="text-muted-foreground font-normal">« {q} »</span>}</h1>
+        <h1 className="text-2xl font-bold">
+          {t("search.title")}{" "}
+          {q && <span className="text-muted-foreground font-normal">« {q} »</span>}
+        </h1>
       </div>
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-8">
@@ -100,11 +112,22 @@ export default function Search() {
               <h3 className="text-sm font-semibold mb-3">{t("search.category")}</h3>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="radio" checked={!cat} onChange={() => setCat("")} className="size-4 accent-primary" /> {t("search.all")}
+                  <input
+                    type="radio"
+                    checked={!cat}
+                    onChange={() => setCat("")}
+                    className="size-4 accent-primary"
+                  />{" "}
+                  {t("search.all")}
                 </label>
                 {CATS.map((c) => (
                   <label key={c} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" checked={cat === c} onChange={() => setCat(c)} className="size-4 accent-primary" />
+                    <input
+                      type="radio"
+                      checked={cat === c}
+                      onChange={() => setCat(c)}
+                      className="size-4 accent-primary"
+                    />
                     {t(categoryMeta[c].labelKey)}
                   </label>
                 ))}
@@ -112,26 +135,57 @@ export default function Search() {
             </div>
             <div>
               <h3 className="text-sm font-semibold mb-3">{t("search.priceMax")}</h3>
-              <input type="range" min={20000} max={500000} step={5000} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-primary" />
-              <div className="text-xs text-muted-foreground mt-2">{t("search.upTo").replace("{v}", new Intl.NumberFormat(nfLocale).format(maxPrice))}</div>
+              <input
+                type="range"
+                min={20000}
+                max={500000}
+                step={5000}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                className="w-full accent-primary"
+              />
+              <div className="text-xs text-muted-foreground mt-2">
+                {t("search.upTo").replace("{v}", new Intl.NumberFormat(nfLocale).format(maxPrice))}
+              </div>
             </div>
             <div>
               <h3 className="text-sm font-semibold mb-3">{t("search.brand")}</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {brands.map((b) => (
                   <label key={b} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="checkbox" checked={brand.includes(b)} onChange={(e) => setBrand((s) => e.target.checked ? [...s, b] : s.filter((x) => x !== b))} className="size-4 accent-primary" />
+                    <input
+                      type="checkbox"
+                      checked={brand.includes(b)}
+                      onChange={(e) =>
+                        setBrand((s) => (e.target.checked ? [...s, b] : s.filter((x) => x !== b)))
+                      }
+                      className="size-4 accent-primary"
+                    />
                     {b}
                   </label>
                 ))}
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="size-4 accent-primary" />
+              <input
+                type="checkbox"
+                checked={inStock}
+                onChange={(e) => setInStock(e.target.checked)}
+                className="size-4 accent-primary"
+              />
               {t("search.inStockOnly")}
             </label>
             {active && (
-              <button onClick={() => { setCat(""); setBrand([]); setMaxPrice(500_000); setInStock(false); setSort("relevance"); }} className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+              <button
+                onClick={() => {
+                  setCat("");
+                  setBrand([]);
+                  setMaxPrice(500_000);
+                  setInStock(false);
+                  setSort("relevance");
+                }}
+                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+              >
                 <X className="size-3" /> {t("search.reset")}
               </button>
             )}
@@ -140,30 +194,54 @@ export default function Search() {
 
         <div>
           <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-            <span className="text-sm text-muted-foreground">{t("search.results").replace("{n}", String(results.length))}</span>
+            <span className="text-sm text-muted-foreground">
+              {t("search.results").replace("{n}", String(results.length))}
+            </span>
             <div className="flex items-center gap-1 p-1 rounded-md bg-card border border-border">
               {SORTS.map((s) => (
-                <button key={s.id} onClick={() => setSort(s.id)} className={`h-8 px-3 rounded text-xs font-medium ${sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{s.label}</button>
+                <button
+                  key={s.id}
+                  onClick={() => setSort(s.id)}
+                  className={`h-8 px-3 rounded text-xs font-medium ${sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {s.label}
+                </button>
               ))}
             </div>
           </div>
 
           {results.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-8 text-center">
-              <p className="text-muted-foreground mb-4">{q ? t("search.emptyQ").replace("{q}", q) : t("search.empty")}</p>
+              <p className="text-muted-foreground mb-4">
+                {q ? t("search.emptyQ").replace("{q}", q) : t("search.empty")}
+              </p>
               <p className="text-sm font-semibold mb-3">{t("search.suggestions")}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {suggestions.map((p) => <ProductCard key={p.id} p={p} />)}
+                {suggestions.map((p) => (
+                  <ProductCard key={p.id} p={p} />
+                ))}
               </div>
-              <Link to="/" className="mt-6 inline-flex h-10 px-5 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold">{t("search.backHome")}</Link>
+              <Link
+                to="/"
+                className="mt-6 inline-flex h-10 px-5 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold"
+              >
+                {t("search.backHome")}
+              </Link>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {shown.map((p) => <ProductCard key={p.id} p={p} />)}
+                {shown.map((p) => (
+                  <ProductCard key={p.id} p={p} />
+                ))}
               </div>
               {hasMore && (
-                <div ref={sentinelRef} className="h-16 mt-6 flex items-center justify-center text-xs text-muted-foreground">…</div>
+                <div
+                  ref={sentinelRef}
+                  className="h-16 mt-6 flex items-center justify-center text-xs text-muted-foreground"
+                >
+                  …
+                </div>
               )}
             </>
           )}

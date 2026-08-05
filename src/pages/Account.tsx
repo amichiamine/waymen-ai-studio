@@ -13,14 +13,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { LogOut, User, Package, MapPin, Plus, Trash2, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
 
 const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  pending: "secondary", processing: "outline", shipped: "outline", delivered: "default", cancelled: "destructive",
+  pending: "secondary",
+  processing: "outline",
+  shipped: "outline",
+  delivered: "default",
+  cancelled: "destructive",
 };
 
 export default function Account() {
@@ -43,7 +53,11 @@ export default function Account() {
   };
 
   const myOrders = orders
-    .filter((o) => (user?.email && o.customerEmail?.toLowerCase() === user.email.toLowerCase()) || o.customerId === user?.id)
+    .filter(
+      (o) =>
+        (user?.email && o.customerEmail?.toLowerCase() === user.email.toLowerCase()) ||
+        o.customerId === user?.id,
+    )
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   const handleSave = (e: React.FormEvent) => {
@@ -71,7 +85,8 @@ export default function Account() {
   function saveAddress() {
     if (!editing) return;
     if (!editing.fullName.trim() || !editing.phone.trim() || !editing.address.trim()) {
-      toast.error(t("account.addr.err.required")); return;
+      toast.error(t("account.addr.err.required"));
+      return;
     }
     upsert(editing);
     toast.success(t("account.addr.saveOk"));
@@ -99,13 +114,19 @@ export default function Account() {
       <Tabs defaultValue="profile">
         <TabsList>
           <TabsTrigger value="profile">{t("account.tab.profile")}</TabsTrigger>
-          <TabsTrigger value="addresses">{t("account.tab.addresses")} ({addresses.length})</TabsTrigger>
-          <TabsTrigger value="orders">{t("account.tab.orders")} ({myOrders.length})</TabsTrigger>
+          <TabsTrigger value="addresses">
+            {t("account.tab.addresses")} ({addresses.length})
+          </TabsTrigger>
+          <TabsTrigger value="orders">
+            {t("account.tab.orders")} ({myOrders.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-4">
           <Card>
-            <CardHeader><CardTitle>{t("account.profile.title")}</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>{t("account.profile.title")}</CardTitle>
+            </CardHeader>
             <CardContent>
               <form onSubmit={handleSave} className="space-y-4">
                 <div>
@@ -129,13 +150,17 @@ export default function Account() {
 
         <TabsContent value="addresses" className="mt-4 space-y-4">
           <div className="flex justify-end">
-            <Button size="sm" onClick={startNewAddress}><Plus className="me-2 h-4 w-4" /> {t("account.addr.newBtn")}</Button>
+            <Button size="sm" onClick={startNewAddress}>
+              <Plus className="me-2 h-4 w-4" /> {t("account.addr.newBtn")}
+            </Button>
           </div>
           {addresses.length === 0 && !editing && (
-            <Card><CardContent className="p-12 text-center text-sm text-muted-foreground">
-              <MapPin className="mx-auto mb-3 h-10 w-10 opacity-40" />
-              {t("account.addr.none")}
-            </CardContent></Card>
+            <Card>
+              <CardContent className="p-12 text-center text-sm text-muted-foreground">
+                <MapPin className="mx-auto mb-3 h-10 w-10 opacity-40" />
+                {t("account.addr.none")}
+              </CardContent>
+            </Card>
           )}
           <div className="grid gap-3 md:grid-cols-2">
             {addresses.map((a) => (
@@ -143,16 +168,36 @@ export default function Account() {
                 <CardContent className="p-4 space-y-2 text-start">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-semibold">{a.label}</span>
-                    {a.isDefault && <Badge variant="default"><Star className="h-3 w-3 me-1" />{t("account.addr.default")}</Badge>}
+                    {a.isDefault && (
+                      <Badge variant="default">
+                        <Star className="h-3 w-3 me-1" />
+                        {t("account.addr.default")}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm">{a.fullName} · {a.phone}</p>
+                  <p className="text-sm">
+                    {a.fullName} · {a.phone}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr ?? a.wilaya} — {a.address}
                   </p>
                   <div className="flex flex-wrap gap-2 pt-1">
-                    <Button size="sm" variant="outline" onClick={() => setEditing(a)}>{t("common.edit")}</Button>
-                    {!a.isDefault && <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)}>{t("account.addr.setDefault")}</Button>}
-                    <Button size="sm" variant="ghost" onClick={() => { remove(a.id); toast.success(t("account.addr.delOk")); }}>
+                    <Button size="sm" variant="outline" onClick={() => setEditing(a)}>
+                      {t("common.edit")}
+                    </Button>
+                    {!a.isDefault && (
+                      <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)}>
+                        {t("account.addr.setDefault")}
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        remove(a.id);
+                        toast.success(t("account.addr.delOk"));
+                      }}
+                    >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
@@ -162,27 +207,75 @@ export default function Account() {
           </div>
           {editing && (
             <Card className="border-primary/60">
-              <CardHeader><CardTitle className="text-base">{addresses.find((a) => a.id === editing.id) ? t("account.addr.editing") : t("account.addr.new")}</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {addresses.find((a) => a.id === editing.id)
+                    ? t("account.addr.editing")
+                    : t("account.addr.new")}
+                </CardTitle>
+              </CardHeader>
               <CardContent className="grid gap-3 md:grid-cols-2">
-                <div><Label>{t("account.addr.label")}</Label><Input value={editing.label} onChange={(e) => setEditing({ ...editing, label: e.target.value })} placeholder={t("account.addr.labelPh")} /></div>
-                <div><Label>{t("account.addr.fullName")}</Label><Input value={editing.fullName} onChange={(e) => setEditing({ ...editing, fullName: e.target.value })} /></div>
-                <div><Label>{t("account.addr.phone")}</Label><Input value={editing.phone} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} /></div>
+                <div>
+                  <Label>{t("account.addr.label")}</Label>
+                  <Input
+                    value={editing.label}
+                    onChange={(e) => setEditing({ ...editing, label: e.target.value })}
+                    placeholder={t("account.addr.labelPh")}
+                  />
+                </div>
+                <div>
+                  <Label>{t("account.addr.fullName")}</Label>
+                  <Input
+                    value={editing.fullName}
+                    onChange={(e) => setEditing({ ...editing, fullName: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>{t("account.addr.phone")}</Label>
+                  <Input
+                    value={editing.phone}
+                    onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
+                  />
+                </div>
                 <div>
                   <Label>{t("account.addr.wilaya")}</Label>
-                  <Select value={editing.wilaya} onValueChange={(v) => setEditing({ ...editing, wilaya: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={editing.wilaya}
+                    onValueChange={(v) => setEditing({ ...editing, wilaya: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {WILAYAS.map((w) => <SelectItem key={w.code} value={w.code}>{w.code} — {w.name_fr}</SelectItem>)}
+                      {WILAYAS.map((w) => (
+                        <SelectItem key={w.code} value={w.code}>
+                          {w.code} — {w.name_fr}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="md:col-span-2"><Label>{t("account.addr.address")}</Label><Textarea rows={2} value={editing.address} onChange={(e) => setEditing({ ...editing, address: e.target.value })} /></div>
+                <div className="md:col-span-2">
+                  <Label>{t("account.addr.address")}</Label>
+                  <Textarea
+                    rows={2}
+                    value={editing.address}
+                    onChange={(e) => setEditing({ ...editing, address: e.target.value })}
+                  />
+                </div>
                 <label className="md:col-span-2 flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={!!editing.isDefault} onChange={(e) => setEditing({ ...editing, isDefault: e.target.checked })} className="size-4 accent-primary" />
+                  <input
+                    type="checkbox"
+                    checked={!!editing.isDefault}
+                    onChange={(e) => setEditing({ ...editing, isDefault: e.target.checked })}
+                    className="size-4 accent-primary"
+                  />
                   {t("account.addr.markDefault")}
                 </label>
                 <div className="md:col-span-2 flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setEditing(null)}>{t("common.cancel")}</Button>
+                  <Button variant="outline" onClick={() => setEditing(null)}>
+                    {t("common.cancel")}
+                  </Button>
                   <Button onClick={saveAddress}>{t("common.save")}</Button>
                 </div>
               </CardContent>
@@ -197,7 +290,9 @@ export default function Account() {
                 <Package className="mx-auto mb-3 h-10 w-10 opacity-40" />
                 {t("account.orders.none")}
                 <div className="mt-3">
-                  <Link to="/category" className="text-primary hover:underline">{t("account.orders.discover")}</Link>
+                  <Link to="/category" className="text-primary hover:underline">
+                    {t("account.orders.discover")}
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -210,7 +305,8 @@ export default function Account() {
                       <div className="text-start">
                         <p className="font-mono text-sm font-semibold">{o.id}</p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(o.createdAt).toLocaleString(locale)} · {o.items.length} {t("account.order.articles")}
+                          {new Date(o.createdAt).toLocaleString(locale)} · {o.items.length}{" "}
+                          {t("account.order.articles")}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -219,14 +315,31 @@ export default function Account() {
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {o.items.slice(0, 4).map((it, i) => (
-                        it.image && <img key={i} src={it.image} alt="" className="h-10 w-10 rounded object-cover" />
-                      ))}
+                      {o.items
+                        .slice(0, 4)
+                        .map(
+                          (it, i) =>
+                            it.image && (
+                              <img
+                                key={i}
+                                src={it.image}
+                                alt=""
+                                className="h-10 w-10 rounded object-cover"
+                              />
+                            ),
+                        )}
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                      {(o.statusHistory ?? []).map((ev, i) => (
-                        <span key={i}>{STATUS_LABEL[ev.status]} · {new Date(ev.at).toLocaleDateString(locale)}</span>
-                      )).reduce<React.ReactNode[]>((acc, cur, i) => i === 0 ? [cur] : [...acc, " → ", cur], [])}
+                      {(o.statusHistory ?? [])
+                        .map((ev, i) => (
+                          <span key={i}>
+                            {STATUS_LABEL[ev.status]} · {new Date(ev.at).toLocaleDateString(locale)}
+                          </span>
+                        ))
+                        .reduce<React.ReactNode[]>(
+                          (acc, cur, i) => (i === 0 ? [cur] : [...acc, " → ", cur]),
+                          [],
+                        )}
                     </div>
                   </CardContent>
                 </Card>
