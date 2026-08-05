@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Plus, Tag, Pencil } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminBrands() {
   const { brands, products } = useAdminState();
+  const { can, denyReason } = usePermissions();
   const rows = useMemo(() => {
     return brands
       .map((b) => {
@@ -28,11 +30,20 @@ export default function AdminBrands() {
       title="Marques"
       description={`${brands.length} marques référencées.`}
       actions={
-        <Link to="/admin/brands/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Nouvelle marque
-          </Button>
-        </Link>
+        // Niveau 1 — affichage. Niveau 3 — infobulle portée par le <span>.
+        can("create") ? (
+          <Link to="/admin/brands/new">
+            <Button>
+              <Plus className="me-2 h-4 w-4" /> Nouvelle marque
+            </Button>
+          </Link>
+        ) : (
+          <span title={denyReason("create")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Nouvelle marque
+            </Button>
+          </span>
+        )
       }
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -54,11 +65,20 @@ export default function AdminBrands() {
                     </p>
                   </div>
                 </Link>
-                <Link to={`/admin/brands/${b.id}`}>
-                  <Button variant="ghost" size="icon" title="Modifier">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </Link>
+                {/* Niveau 1+3 : bouton Modifier */}
+                {can("update") ? (
+                  <Link to={`/admin/brands/${b.id}`}>
+                    <Button variant="ghost" size="icon" title="Modifier">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <span title={denyReason("update")} className="inline-flex">
+                    <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </span>
+                )}
               </div>
 
               <div className="mt-4 border-t pt-3 text-xs text-muted-foreground">

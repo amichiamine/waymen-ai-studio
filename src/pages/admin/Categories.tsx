@@ -16,9 +16,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAdminState, deleteCategory, type AdminCategory } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminCategories() {
   const { categories, products } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [pending, setPending] = useState<AdminCategory | null>(null);
 
   const rows = useMemo(
@@ -34,7 +36,10 @@ export default function AdminCategories() {
 
   function confirmDelete() {
     if (!pending) return;
-    if (pendingCount > 0) return; // safety
+    // Niveau 2 — vérification dans le handler, pas seulement dans le rendu.
+    if (!guard("delete", "Supprimer la catégorie")) return;
+    // Garde métier préservée : refus si des produits sont encore rattachés.
+    if (pendingCount > 0) return;
     deleteCategory(pending.slug);
     toast.success(`Catégorie « ${pending.label} » supprimée`);
     setPending(null);
@@ -45,11 +50,20 @@ export default function AdminCategories() {
       title="Catégories"
       description={`${categories.length} catégories · ${products.length} produits rattachés.`}
       actions={
-        <Link to="/admin/categories/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Nouvelle catégorie
-          </Button>
-        </Link>
+        // Niveau 1 — affichage. Niveau 3 — infobulle portée par le <span>.
+        can("create") ? (
+          <Link to="/admin/categories/new">
+            <Button>
+              <Plus className="me-2 h-4 w-4" /> Nouvelle catégorie
+            </Button>
+          </Link>
+        ) : (
+          <span title={denyReason("create")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Nouvelle catégorie
+            </Button>
+          </span>
+        )
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -87,19 +101,35 @@ export default function AdminCategories() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{c.count} produits</span>
                 <div className="flex gap-1">
-                  <Link to={`/admin/categories/${c.slug}`}>
-                    <Button variant="ghost" size="icon" title="Modifier">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Supprimer"
-                    onClick={() => setPending(c)}
+                  {/* Niveau 1+3 : bouton Modifier */}
+                  {can("update") ? (
+                    <Link to={`/admin/categories/${c.slug}`}>
+                      <Button variant="ghost" size="icon" title="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  ) : (
+                    <span title={denyReason("update")} className="inline-flex">
+                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </span>
+                  )}
+                  {/* Niveau 1+3 : bouton Supprimer */}
+                  <span
+                    title={denyReason("delete") ?? "Supprimer"}
+                    className="inline-flex align-middle"
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Supprimer"
+                      disabled={!can("delete")}
+                      onClick={() => setPending(c)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </span>
                   <Link
                     to={`/admin/categories/${c.slug}/view`}
                     className="flex items-center gap-1 text-primary hover:underline text-xs"
