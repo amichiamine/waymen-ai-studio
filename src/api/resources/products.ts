@@ -2,6 +2,7 @@ import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
 import { getAdminSnapshot, getProduct, upsertProduct, deleteProduct } from "@/lib/admin-store";
+import type { UseTag } from "@/data/products";
 import type { Paginated, Product, ProductQuery } from "../types";
 
 function paginateLocal(items: Product[], q: ProductQuery = {}): Paginated<Product> {
@@ -13,6 +14,7 @@ function paginateLocal(items: Product[], q: ProductQuery = {}): Paginated<Produc
   if (q.stock) list = list.filter((p) => p.stock === q.stock);
   if (q.sale) list = list.filter((p) => p.sale);
   if (q.bestSeller) list = list.filter((p) => p.bestSeller);
+  if (q.use) list = list.filter((p) => p.use.includes(q.use as UseTag));
   if (q.minPrice != null) list = list.filter((p) => p.price >= q.minPrice!);
   if (q.maxPrice != null) list = list.filter((p) => p.price <= q.maxPrice!);
   if (q.search) {
