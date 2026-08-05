@@ -15,6 +15,12 @@
  *   4. Le total est compté avec EXACTEMENT le même WHERE que la page, sinon
  *      la pagination du frontend ment.
  *   5. Zéro test de `DB_DRIVER` : la portabilité est déjà dans Db.
+ *
+ * Vague 4.2 — ajouts :
+ *   - creer()   : POST /products
+ *   - modifier() : PATCH /products/:id
+ *   - supprimer() : DELETE /products/:id
+ *   - mettreAJourStock() : PATCH /products/:id/stock — atomique, sans survente
  */
 
 declare(strict_types=1);
@@ -38,6 +44,9 @@ final class ControleurProduits
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
     ];
+
+    /** Valeurs autorisées pour la colonne `stock`. */
+    private const STOCK_STATUTS = ['in', 'low', 'out'];
 
     public function __construct(private readonly Db $db)
     {
@@ -93,6 +102,180 @@ final class ControleurProduits
         }
 
         return Reponse::ok($this->enDto($ligne));
+    }
+
+    /**
+     * POST /products
+     * → 201 { data: Product }
+     *
+     * Les champs `name`, `spec_line`, `specs` sont des JSON localisés
+     * (Localized<string>) : on les encode avec Db::json() à l'écriture.
+     */
+    public function creer(Requete $r): Reponse
+    {
+        $donnees = $this->validerEtNormaliser($r, null);
+        $maintenant = gmdate('c');
+
+        // Colonnes à mettre à jour en cas de conflit d'identifiant : toutes sauf
+        // `id` (clé de conflit) et `created_at` (ne jamais écraser la date de
+        // création lors d'un upsert).
+        $colsMaj = array_values(array_diff(
+            array_keys($donnees),
+            ['id'],
+        ));
+        $colsMaj[] = 'updated_at';
+
+        $this->db->transaction(fn (Db $d) => $d->upsert('products', array_merge($donnees, [
+            'created_at' => $maintenant,
+            'updated_at' => $maintenant,
+        ]), ['id'], $colsMaj));
+
+        return Reponse::cree($this->enDto(
+            (array) $this->db->un('SELECT * FROM products WHERE id = :id', [':id' => $donnees['id']])
+        ));
+    }
+
+    /**
+     * PATCH /products/:id
+     * → 200 { data: Product }
+     *
+     * Mise à jour partielle (PATCH) : seuls les champs fournis sont écrasés.
+     */
+    public function modifier(Requete $r): Reponse
+    {
+        $id = $r->param('id');
+
+        $existant = $this->db->un('SELECT * FROM products WHERE id = :id', [':id' => $id]);
+        if ($existant === null) {
+            throw ApiException::introuvable("Aucun produit ne porte l'identifiant « {$id} ».");
+        }
+
+        $donnees = $this->validerEtNormaliser($r, $existant);
+        $maintenant = gmdate('c');
+
+        // Construire la liste SET dynamiquement à partir des colonnes à modifier.
+        $set = implode(', ', array_map(
+            static fn (string $c): string => Db::identifiant($c) . ' = :' . $c,
+            array_keys($donnees),
+        ));
+
+        $this->db->run(
+            "UPDATE products SET {$set}, updated_at = :updated_at WHERE id = :id_cible",
+            array_merge(
+                array_combine(
+                    array_map(static fn (string $c): string => ':' . $c, array_keys($donnees)),
+                    array_values($donnees),
+                ),
+                [':updated_at' => $maintenant, ':id_cible' => $id],
+            ),
+        );
+
+        return Reponse::ok($this->enDto(
+            (array) $this->db->un('SELECT * FROM products WHERE id = :id', [':id' => $id])
+        ));
+    }
+
+    /**
+     * DELETE /products/:id
+     * → 204 sans corps.
+     */
+    public function supprimer(Requete $r): Reponse
+    {
+        $id = $r->param('id');
+
+        $n = $this->db->run(
+            'DELETE FROM products WHERE id = :id',
+            [':id' => $id],
+        )->rowCount();
+
+        if ($n === 0) {
+            throw ApiException::introuvable("Aucun produit ne porte l'identifiant « {$id} ».");
+        }
+
+        return Reponse::vide();
+    }
+
+    /**
+     * PATCH /products/:id/stock
+     * Corps : { "delta": <entier signé> }
+     * → 200 { data: { stockQty } } ou erreur métier 409 (stock insuffisant).
+     *
+     * ATOMICITÉ : la mise à jour se fait dans une transaction `beginWrite()`
+     * (BEGIN IMMEDIATE en SQLite, BEGIN en MySQL) avec une requête conditionnelle
+     * qui incorpore la vérification et la mise à jour en une seule passe :
+     *
+     *   UPDATE products
+     *      SET stock_qty = stock_qty + :delta1
+     *    WHERE id = :id
+     *      AND stock_qty + :delta2 >= 0
+     *
+     * Si rowCount() == 0, soit le produit n'existe pas, soit le stock serait
+     * négatif : on distingue les deux cas. Cette approche empêche la survente
+     * parce qu'aucune lecture du stock n'est jamais suivie d'une réécriture
+     * séparée — une seule instruction atomique.
+     *
+     * PIÈGE DIALECTE (BACKEND.md §4, règle 1) : MySQL avec
+     * ATTR_EMULATE_PREPARES=false interdit qu'un même paramètre nommé apparaisse
+     * deux fois. On utilise donc :delta1 et :delta2 (valeur identique, nom
+     * distinct) pour contourner cette limitation tout en restant correct en
+     * SQLite et MySQL.
+     */
+    public function mettreAJourStock(Requete $r): Reponse
+    {
+        $id = $r->param('id');
+        $delta = $r->corps('delta');
+
+        if ($delta === null || !is_numeric($delta)) {
+            throw ApiException::validation('Mise à jour de stock invalide.', [
+                'delta' => ['Champ obligatoire, entier signé (ex. : 5 ou -3).'],
+            ]);
+        }
+        $delta = (int) $delta;
+
+        // Vérification préalable d'existence — pour distinguer « introuvable »
+        // de « stock insuffisant » au retour de l'UPDATE conditionnel.
+        $existant = $this->db->un('SELECT id, stock_qty FROM products WHERE id = :id', [':id' => $id]);
+        if ($existant === null) {
+            throw ApiException::introuvable("Aucun produit ne porte l'identifiant « {$id} ».");
+        }
+
+        // UPDATE atomique et conditionnel dans une transaction d'écriture.
+        // :delta1 et :delta2 ont la même valeur mais des noms distincts
+        // (obligation MySQL avec ATTR_EMULATE_PREPARES=false).
+        $n = 0;
+        $this->db->transaction(function (Db $d) use ($id, $delta, &$n): void {
+            $n = $d->run(
+                'UPDATE products
+                    SET stock_qty = stock_qty + :delta1
+                  WHERE id = :id
+                    AND stock_qty + :delta2 >= 0',
+                [':id' => $id, ':delta1' => $delta, ':delta2' => $delta],
+            )->rowCount();
+        });
+
+        if ($n === 0) {
+            // L'existence a déjà été vérifiée : la seule cause restante est un
+            // stock insuffisant (stock_qty + delta < 0).
+            $actuel = (int) $this->db->valeur(
+                'SELECT stock_qty FROM products WHERE id = :id',
+                [':id' => $id],
+            );
+
+            throw new ApiException(
+                409,
+                'STOCK_INSUFFISANT',
+                "Stock insuffisant pour le produit « {$id} » : "
+                . "stock actuel {$actuel}, delta demandé {$delta}. "
+                . 'Le stock ne peut pas devenir négatif.',
+            );
+        }
+
+        $nouveauStock = (int) $this->db->valeur(
+            'SELECT stock_qty FROM products WHERE id = :id',
+            [':id' => $id],
+        );
+
+        return Reponse::ok(['stockQty' => $nouveauStock]);
     }
 
     // -----------------------------------------------------------------
@@ -177,6 +360,122 @@ final class ControleurProduits
     private function echapperLike(string $v): string
     {
         return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $v);
+    }
+
+    // -----------------------------------------------------------------
+    // Validation et normalisation du corps de requête
+    // -----------------------------------------------------------------
+
+    /**
+     * Valide et normalise les champs reçus dans le corps de la requête.
+     * En mode PATCH, `$existant` contient la ligne actuelle : les champs
+     * absents du corps conservent leur valeur courante.
+     *
+     * Retourne un tableau colonne → valeur prêt à insérer/mettre à jour.
+     *
+     * @param array<string,mixed>|null $existant  Ligne SQL courante (PATCH) ou null (POST)
+     * @return array<string,mixed>
+     */
+    private function validerEtNormaliser(Requete $r, ?array $existant): array
+    {
+        $estCreation = $existant === null;
+
+        // --- Champs obligatoires en création ---
+        $nameRaw = $r->corps('name', $existant ? Db::dejson($existant['name'], '') : null);
+        if ($estCreation && $nameRaw === null) {
+            throw ApiException::validation('Produit invalide.', ['name' => ['Champ obligatoire.']]);
+        }
+
+        $category = $r->corps('category', $existant['category'] ?? null);
+        if ($estCreation && ($category === null || trim((string) $category) === '')) {
+            throw ApiException::validation('Produit invalide.', ['category' => ['Champ obligatoire.']]);
+        }
+
+        // --- id (création uniquement si non fourni) ---
+        if ($estCreation) {
+            $idFourni = $r->corps('id');
+            $id = $idFourni !== null && trim((string) $idFourni) !== ''
+                ? strtolower(trim((string) $idFourni))
+                : strtolower(preg_replace('/[^a-z0-9]+/i', '-', (string) $nameRaw) ?? '');
+        } else {
+            $id = (string) $existant['id'];
+        }
+
+        // --- Prix ---
+        $price = $r->corps('price', $existant['price'] ?? null);
+        if ($estCreation && $price === null) {
+            throw ApiException::validation('Produit invalide.', ['price' => ['Champ obligatoire.']]);
+        }
+        if ($price !== null && (!is_numeric($price) || (int) $price < 0)) {
+            throw ApiException::validation('Produit invalide.', ['price' => ['Doit être un entier positif en DZD.']]);
+        }
+
+        // --- Statut de stock ---
+        $stock = (string) $r->corps('stock', $existant['stock'] ?? 'in');
+        if (!in_array($stock, self::STOCK_STATUTS, true)) {
+            throw ApiException::validation('Produit invalide.', [
+                'stock' => ['Valeurs acceptées : in, low, out.'],
+            ]);
+        }
+
+        // --- Champs JSON localisés (Localized<string>) ---
+        // On encode avec Db::json() : l'appelant peut passer une chaîne simple
+        // (monolingue français) ou un objet { fr, en?, ar? } — les deux sont
+        // valides selon LOCALIZED-DATA.md §1.
+        $nameEncode = Db::json($nameRaw ?? Db::dejson($existant['name'] ?? null, ''));
+
+        $specLineRaw = $r->corps('specLine', null)
+            ?? ($existant ? Db::dejson($existant['spec_line'], null) : null);
+        $specLineEncode = $specLineRaw !== null ? Db::json($specLineRaw) : null;
+
+        $specsRaw = $r->corps('specs', null)
+            ?? ($existant ? Db::dejson($existant['specs'], null) : null);
+        $specsEncode = $specsRaw !== null ? Db::json($specsRaw) : null;
+
+        $useRaw = $r->corps('use', null)
+            ?? ($existant ? Db::dejson($existant['use_tags'], []) : []);
+        $useEncode = Db::json($useRaw ?? []);
+
+        // --- Champs simples ---
+        $brand     = (string) $r->corps('brand', $existant['brand'] ?? '');
+        $image     = (string) $r->corps('image', $existant['image'] ?? '');
+        $stockQty  = $r->corps('stockQty') !== null ? (int) $r->corps('stockQty') : ($existant['stock_qty'] ?? null);
+        $oldPrice  = $r->corps('oldPrice') !== null ? (int) $r->corps('oldPrice') : ($existant['old_price'] ?? null);
+
+        $bestSeller = $r->corps('bestSeller') !== null
+            ? ($r->corps('bestSeller') ? 1 : 0)
+            : (int) ($existant['best_seller'] ?? 0);
+        $sale = $r->corps('sale') !== null
+            ? ($r->corps('sale') ? 1 : 0)
+            : (int) ($existant['sale'] ?? 0);
+        $customBuild = $r->corps('customBuild') !== null
+            ? ($r->corps('customBuild') ? 1 : 0)
+            : (int) ($existant['custom_build'] ?? 0);
+
+        $donnees = [
+            'id'           => $id,
+            'name'         => $nameEncode,
+            'brand'        => $brand,
+            'category'     => (string) ($category ?? ''),
+            'use_tags'     => $useEncode,
+            'spec_line'    => $specLineEncode,
+            'specs'        => $specsEncode,
+            'price'        => $price !== null ? (int) $price : 0,
+            'old_price'    => $oldPrice,
+            'stock'        => $stock,
+            'stock_qty'    => $stockQty,
+            'image'        => $image,
+            'best_seller'  => $bestSeller,
+            'sale'         => $sale,
+            'custom_build' => $customBuild,
+        ];
+
+        // En mode PATCH, ne renvoyer que les colonnes qui ont été modifiées
+        // (celles dont la valeur diffère ou dont le corps fourni est non-null).
+        // Simplification : on renvoie toutes les colonnes ; l'UPDATE
+        // les écrasera avec leur valeur actuelle pour les non-fournis, ce qui
+        // est correct (validerEtNormaliser les a déjà hydratés depuis $existant).
+        return $donnees;
     }
 
     // -----------------------------------------------------------------
