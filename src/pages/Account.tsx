@@ -2,8 +2,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useAdminState, upsertUser, findUserByEmail, type OrderStatus } from "@/lib/admin-store";
+import { upsertUser, findUserByEmail } from "@/lib/admin-store";
+import { useMyOrderList } from "@/data-provider";
+import type { OrderStatus } from "@/lib/admin-store";
 import { useAddresses, newAddressId, type UserAddress } from "@/lib/addresses";
 import { WILAYAS } from "@/data/wilayas";
 import { Button } from "@/components/ui/button";
@@ -23,7 +26,7 @@ import {
 import { LogOut, User, Package, MapPin, Plus, Trash2, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
+const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 
 const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
@@ -35,7 +38,7 @@ const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive
 
 export default function Account() {
   const { user, signOut } = useAuth();
-  const { orders } = useAdminState();
+  const { data: orders, loading, error } = useMyOrderList();
   const navigate = useNavigate();
   const { t, lang } = useI18n();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
@@ -52,13 +55,8 @@ export default function Account() {
     cancelled: t("order.status.cancelled"),
   };
 
-  const myOrders = orders
-    .filter(
-      (o) =>
-        (user?.email && o.customerEmail?.toLowerCase() === user.email.toLowerCase()) ||
-        o.customerId === user?.id,
-    )
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // useMyOrderList() filtre déjà par client connecté côté provider.
+  const myOrders = [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,7 +146,7 @@ export default function Account() {
             {t("account.tab.addresses")} ({addresses.length})
           </TabsTrigger>
           <TabsTrigger value="orders">
-            {t("account.tab.orders")} ({myOrders.length})
+            {t("account.tab.orders")} ({loading ? "…" : myOrders.length})
           </TabsTrigger>
         </TabsList>
 
@@ -314,67 +312,97 @@ export default function Account() {
         </TabsContent>
 
         <TabsContent value="orders" className="mt-4">
-          {myOrders.length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center text-sm text-muted-foreground">
-                <Package className="mx-auto mb-3 h-10 w-10 opacity-40" />
-                {t("account.orders.none")}
-                <div className="mt-3">
-                  <Link to="/category" className="text-primary hover:underline">
-                    {t("account.orders.discover")}
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+          {/* 1. Chargement */}
+          {loading ? (
+            <div className="space-y-3" aria-busy="true">
+              <span className="sr-only">{t("app.loading")}</span>
+              {Array.from({ length: 3 }, (_, i) => (
+                <div
+                  key={i}
+                  className="h-24 animate-pulse rounded-xl border border-border bg-card"
+                />
+              ))}
+            </div>
           ) : (
-            <div className="space-y-3">
-              {myOrders.map((o) => (
-                <Card key={o.id}>
-                  <CardContent className="p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="text-start">
-                        <p className="font-mono text-sm font-semibold">{o.id}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(o.createdAt).toLocaleString(locale)} · {o.items.length}{" "}
-                          {t("account.order.articles")}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold">{fmt(o.total)}</span>
-                        <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {o.items
-                        .slice(0, 4)
-                        .map(
-                          (it, i) =>
-                            it.image && (
-                              <img
-                                key={i}
-                                src={it.image}
-                                alt=""
-                                className="h-10 w-10 rounded object-cover"
-                              />
-                            ),
-                        )}
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                      {(o.statusHistory ?? [])
-                        .map((ev, i) => (
-                          <span key={i}>
-                            {STATUS_LABEL[ev.status]} · {new Date(ev.at).toLocaleDateString(locale)}
-                          </span>
-                        ))
-                        .reduce<React.ReactNode[]>(
-                          (acc, cur, i) => (i === 0 ? [cur] : [...acc, " → ", cur]),
-                          [],
-                        )}
+            <>
+              {/* 2. Erreur */}
+              {error && (
+                <p
+                  role="status"
+                  className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+                >
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                  {error.message}
+                </p>
+              )}
+
+              {/* 3. Vide / contenu */}
+              {myOrders.length === 0 ? (
+                <Card>
+                  <CardContent className="p-12 text-center text-sm text-muted-foreground">
+                    <Package className="mx-auto mb-3 h-10 w-10 opacity-40" />
+                    {t("account.orders.none")}
+                    <div className="mt-3">
+                      <Link to="/category" className="text-primary hover:underline">
+                        {t("account.orders.discover")}
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              ) : (
+                <div className="space-y-3">
+                  {myOrders.map((o) => (
+                    <Card key={o.id}>
+                      <CardContent className="p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="text-start">
+                            <p className="font-mono text-sm font-semibold">{o.id}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(o.createdAt).toLocaleString(locale)} · {o.items.length}{" "}
+                              {t("account.order.articles")}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-semibold">{fmt(o.total)}</span>
+                            <Badge variant={STATUS_VARIANT[o.status]}>
+                              {STATUS_LABEL[o.status]}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {o.items
+                            .slice(0, 4)
+                            .map(
+                              (it, i) =>
+                                it.image && (
+                                  <img
+                                    key={i}
+                                    src={it.image}
+                                    alt=""
+                                    className="h-10 w-10 rounded object-cover"
+                                  />
+                                ),
+                            )}
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                          {(o.statusHistory ?? [])
+                            .map((ev, i) => (
+                              <span key={i}>
+                                {STATUS_LABEL[ev.status]} ·{" "}
+                                {new Date(ev.at).toLocaleDateString(locale)}
+                              </span>
+                            ))
+                            .reduce<React.ReactNode[]>(
+                              (acc, cur, i) => (i === 0 ? [cur] : [...acc, " → ", cur]),
+                              [],
+                            )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
       </Tabs>

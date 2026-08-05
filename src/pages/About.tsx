@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ShieldCheck, Truck, Headphones, Award, Star, Heart } from "lucide-react";
-import { useAdminState, type AboutValue } from "@/lib/admin-store";
+import { ShieldCheck, Truck, Headphones, Award, Star, Heart, AlertTriangle } from "lucide-react";
+import { useAboutValueList } from "@/data-provider";
+import type { AboutValue } from "@/lib/admin-store";
 import { useI18n, useLocalize } from "@/lib/i18n";
 
 const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
@@ -14,9 +15,10 @@ const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
 };
 
 export default function About() {
-  const { aboutValues } = useAdminState();
+  const { data: aboutValues, loading, error } = useAboutValueList();
   const { t } = useI18n();
   const L = useLocalize();
+
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
@@ -41,23 +43,47 @@ export default function About() {
         </div>
       </section>
 
-      {aboutValues.length > 0 && (
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12">
-          {aboutValues.map((v) => {
-            const Icon = ICONS[v.icon] ?? Award;
-            return (
-              <div key={v.id} className="rounded-xl border border-border bg-card p-6">
-                <Icon className="size-8 text-primary mb-3" />
-                <h3 className="font-bold text-lg mb-1">
-                  {(L(v.title as never) as unknown as string) ?? ""}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {(L(v.description as never) as unknown as string) ?? ""}
-                </p>
-              </div>
-            );
-          })}
+      {/* 1. Chargement */}
+      {loading ? (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12" aria-busy="true">
+          <span className="sr-only">{t("app.loading")}</span>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="h-40 animate-pulse rounded-xl border border-border bg-card" />
+          ))}
         </section>
+      ) : (
+        <>
+          {/* 2. Erreur */}
+          {error && (
+            <p
+              role="status"
+              className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {error.message}
+            </p>
+          )}
+
+          {/* 3. Contenu (l'état vide est visuellement neutre : la section est omise) */}
+          {aboutValues.length > 0 && (
+            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12">
+              {aboutValues.map((v) => {
+                const Icon = ICONS[v.icon] ?? Award;
+                return (
+                  <div key={v.id} className="rounded-xl border border-border bg-card p-6">
+                    <Icon className="size-8 text-primary mb-3" />
+                    <h3 className="font-bold text-lg mb-1">
+                      {(L(v.title as never) as unknown as string) ?? ""}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {(L(v.description as never) as unknown as string) ?? ""}
+                    </p>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+        </>
       )}
 
       <section className="rounded-2xl border border-border bg-card p-8 lg:p-12 text-center">

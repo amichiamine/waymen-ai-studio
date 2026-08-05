@@ -1,18 +1,59 @@
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAdminState } from "@/lib/admin-store";
+import { useBlogPostDetail } from "@/data-provider";
 import { useI18n } from "@/lib/i18n";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
-  const { blogPosts } = useAdminState();
+  // Le hook reste toujours monté : on passe `slug` au hook (peut être undefined
+  // au premier rendu, le hook est alors inactif — §6 des pièges).
+  const { data: post, loading, error } = useBlogPostDetail(slug);
   const { t, lang } = useI18n();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
-  const post = blogPosts.find((p) => p.slug === slug && p.status === "published");
 
-  if (!post) return <BlogNotFound />;
+  // 1. Chargement
+  if (loading) {
+    return (
+      <article className="container mx-auto max-w-3xl px-4 py-10">
+        <div className="h-4 w-24 animate-pulse rounded bg-muted mb-8" />
+        <div className="space-y-4" aria-busy="true">
+          <span className="sr-only">{t("app.loading")}</span>
+          <div className="h-8 animate-pulse rounded bg-muted w-3/4" />
+          <div className="h-4 animate-pulse rounded bg-muted w-full" />
+          <div className="h-4 animate-pulse rounded bg-muted w-5/6" />
+          <div className="mt-8 aspect-[16/9] animate-pulse rounded-xl bg-muted" />
+        </div>
+      </article>
+    );
+  }
+
+  // 2. Erreur réseau (pas la même chose que « article introuvable »)
+  if (error) {
+    return (
+      <div className="container mx-auto max-w-3xl px-4 py-10">
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+        <Link
+          to="/blog"
+          className="mt-6 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="me-1.5 h-4 w-4 rtl:rotate-180" /> {t("blogArticle.back")}
+        </Link>
+      </div>
+    );
+  }
+
+  // 3. Article introuvable ou non publié
+  if (!post || post.status !== "published") {
+    return <BlogNotFound />;
+  }
 
   const canonical = `${window.location.origin}/blog/${post.slug}`;
   const jsonLd = {
