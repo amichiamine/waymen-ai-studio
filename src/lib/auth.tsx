@@ -19,22 +19,9 @@ export type { AuthUser };
  * Session exposée à l'interface.
  *
  * Forme alignée sur le contrat (`AuthSession["user"]` : `id`, `email`, `name?`,
- * `phone?`, `role`). Le champ `user_metadata` est un **alias de compatibilité
- * déprécié**, hérité de la forme Supabase : il est dérivé de `name` / `phone` et
- * n'est plus la source de vérité.
- *
- * Il subsiste uniquement parce que trois consommateurs le lisent encore, tous
- * hors du périmètre de cette vague :
- *   - `src/components/admin/AdminLayout.tsx`
- *   - `src/pages/Checkout.tsx`
- *   - `src/pages/Product.tsx`
- * À supprimer d'un bloc avec ces trois lectures ; aucun code nouveau ne doit
- * l'utiliser — lire `user.name` / `user.phone`.
+ * `phone?`, `role`).
  */
-export type SessionUser = AuthUser & {
-  /** @deprecated Utiliser `name` / `phone`. Alias dérivé, voir `SessionUser`. */
-  user_metadata?: { name?: string; phone?: string };
-};
+export type SessionUser = AuthUser;
 
 type AuthCtx = {
   user: SessionUser | null;
@@ -72,11 +59,6 @@ const Ctx = createContext<AuthCtx>({
   changePassword: async () => false,
 });
 
-/** Attache l'alias déprécié `user_metadata`, dérivé des champs du contrat. */
-function withLegacyMetadata(u: AuthUser): SessionUser {
-  return { ...u, user_metadata: { name: u.name, phone: u.phone } };
-}
-
 /**
  * Forme historique de la session persistée (avant l'alignement sur le contrat).
  * Les sessions déjà en localStorage doivent survivre à la mise à jour : sans
@@ -93,7 +75,7 @@ function readStored(): SessionUser | null {
     if (!raw) return null;
     const stored = JSON.parse(raw) as StoredSession;
     if (!stored.id || !stored.email) return null;
-    return withLegacyMetadata({
+    return {
       id: stored.id,
       email: stored.email,
       name: stored.name ?? stored.user_metadata?.name,
@@ -102,7 +84,7 @@ function readStored(): SessionUser | null {
       // privilège du contrat ; l'autorité admin reste dérivée de la table
       // `users` par `useAdminRoles()`, jamais de cette valeur.
       role: stored.role ?? "customer",
-    });
+    };
   } catch {
     return null;
   }
@@ -113,11 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const persist = useCallback((u: AuthUser | null) => {
-    const next = u ? withLegacyMetadata(u) : null;
+    const next: SessionUser | null = u ?? null;
     if (typeof window !== "undefined") {
       if (u) {
-        // On n'écrit que la forme du contrat : l'alias déprécié est recalculé
-        // à la lecture, il n'a pas à être stocké.
+        // On n'écrit que la forme du contrat.
         const { id, email, name, phone, role } = u;
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, email, name, phone, role }));
       } else {
@@ -138,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // En mock, `me()` renvoie `null` : le localStorage reste la source de
         // vérité. En http, la session serveur prime lorsqu'elle répond.
         const remote = await authProvider.me();
-        if (!cancelled && remote) setUser(withLegacyMetadata(remote));
+        if (!cancelled && remote) setUser(remote);
       } catch (e) {
         // Échec visible plutôt que silencieux (AGENTS.md §7) : on conserve la
         // session locale au lieu de déconnecter sur un simple aléa réseau.
