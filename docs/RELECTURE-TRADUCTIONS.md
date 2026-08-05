@@ -70,3 +70,60 @@ Ce tableau ne couvre que les **22 clés ajoutées en phase 1**. Les 384 autres
 clés viennent des lots précédents et n'ont jamais été relues par un locuteur.
 Si le relecteur a le temps, `src/lib/i18n/ar.ts` mérite une passe complète —
 c'est un fichier de 406 lignes lisibles.
+
+---
+
+# Deuxième lot — données produits et articles (phase 3)
+
+Les **données** sont désormais multilingues, en plus de l'interface. Deux
+fichiers à relire, tous deux directement éditables :
+
+| Contenu   | Fichier                                               | Volume                     |
+| --------- | ----------------------------------------------------- | -------------------------- |
+| Catalogue | `src/data/products.ts`                                | 4 champs traduits sur ~100 |
+| Articles  | `src/lib/admin-store.tsx`, fonction `seedBlogPosts()` | 5 articles × 3 champs      |
+
+## Pourquoi si peu de champs traduits côté produits
+
+C'est délibéré, et c'est le bon choix. **Seul le langage naturel est traduit ;
+les références ne le sont pas.** « ASUS ROG Strix G16 », « Intel Core
+i9-13980HX », « 32GB DDR5 » s'écrivent à l'identique dans les trois langues —
+en fabriquer trois copies serait du bruit sans valeur, et une source d'erreurs
+à la maintenance.
+
+Ont donc reçu une traduction : les deux configurations dont le nom contient des
+mots descriptifs (« Configuration Gaming Mid-Range », « Configuration Montage
+Pro ») et les deux autonomies rédigées en prose (« Jusqu'à 18 heures »).
+
+## Points signalés par les agents traducteurs
+
+1. **`مونتاج`** (pour « Montage ») — emprunt du français, courant en Algérie.
+   Un relecteur pourrait préférer `تحرير` ou `إنتاج`. À trancher selon l'usage
+   de ta clientèle.
+2. **`تجميعة ألعاب متوسطة المستوى`** et **`تجميعة مونتاج احترافية`** —
+   terminologie de l'assemblage PC, registre à valider.
+3. **`حتى 18 ساعة`**, **`حتى 33 ساعة تشغيل فيديو`** — idiomatiques, mais le
+   registre commercial mérite confirmation.
+4. **Divergence de contenu à arbitrer** — dans l'article
+   `livraison-58-wilayas`, la version **arabe est plus riche que la française**
+   et l'anglaise : l'agent y a ajouté des noms de wilayas
+   (الجزائر، وهران، قسنطينة، عنابة، سطيف، تيزي وزو، البليدة، باتنة) absents des
+   deux autres versions. Ce n'est pas une erreur de traduction mais un écart
+   éditorial : soit tu enrichis les versions FR et EN de la même façon, soit tu
+   alignes l'arabe. À toi de décider — un lecteur arabophone lira simplement un
+   article un peu plus détaillé.
+
+## Éditer sans passer par le code
+
+Depuis la phase 3, l'administration permet de saisir les trois langues
+directement, sans toucher aux fichiers :
+
+- **`/admin/products`** → fiche produit : onglets **FR / EN / AR** sur le nom,
+  la ligne de caractéristiques et les spécifications.
+- **`/admin/blog`** → article : onglets **FR / EN / AR** sur le titre, le
+  chapô et le corps, avec saisie en RTL sur l'onglet arabe.
+- **`/admin/content`** → les 15 sections du site vitrine.
+
+Un **point ambré** sur un onglet signale une traduction manquante. Seul le
+français est obligatoire : un produit ou un article sans traduction reste
+parfaitement valide, l'affichage se replie sur le français.
