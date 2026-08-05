@@ -123,7 +123,7 @@ export function Header() {
             <button
               type="submit"
               aria-label="Rechercher"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <Search className="size-4" />
             </button>
@@ -132,7 +132,7 @@ export function Header() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={L(H.searchPlaceholder) ?? ""}
-              className="w-full bg-card border border-border rounded-lg pl-10 pr-4 h-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+              className="w-full bg-card border border-border rounded-lg ps-10 pe-4 h-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
             />
           </form>
         )}
@@ -154,7 +154,7 @@ export function Header() {
           >
             <Heart className="size-5" />
             {user && favorites.size > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">
+              <span className="absolute top-1.5 end-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">
                 {favorites.size}
               </span>
             )}
@@ -166,7 +166,7 @@ export function Header() {
           >
             <ShoppingCart className="size-5" />
             {user && cartCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">
+              <span className="absolute top-1.5 end-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold inline-flex items-center justify-center">
                 {cartCount}
               </span>
             )}
