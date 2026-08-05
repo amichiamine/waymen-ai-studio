@@ -19,9 +19,11 @@ import {
   type ReviewStatus,
   type HomeReview,
 } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminReviews() {
   const { reviews, homeReviews, products } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [tab, setTab] = useState<"product" | "home">("product");
   const [statusTab, setStatusTab] = useState<"all" | ReviewStatus>("all");
   const [pendingDelete, setPendingDelete] = useState<{
@@ -45,6 +47,15 @@ export default function AdminReviews() {
     }),
     [reviews],
   );
+
+  // Niveau 2 — vérification dans le handler de confirmation de suppression.
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    if (!guard("delete", "Supprimer l'avis")) return;
+    if (pendingDelete.kind === "product") deleteReview(pendingDelete.id);
+    else deleteHomeReview(pendingDelete.id);
+    toast.success("Supprimé");
+  }
 
   return (
     <AdminPageShell
@@ -104,39 +115,62 @@ export default function AdminReviews() {
                   </div>
                   <p className="mt-3 text-sm">{r.body}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {r.status !== "approved" && (
+                    {/* Niveau 1 + 3 — approuver / rejeter (update). */}
+                    {r.status !== "approved" &&
+                      (can("update") ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // Niveau 2 — vérification dans le handler.
+                            if (!guard("update", "Approuver l'avis")) return;
+                            updateReviewStatus(r.id, "approved");
+                            toast.success("Approuvé");
+                          }}
+                        >
+                          <Check className="me-2 h-4 w-4" /> Approuver
+                        </Button>
+                      ) : (
+                        <span title={denyReason("update")} className="inline-flex">
+                          <Button size="sm" variant="outline" disabled>
+                            <Check className="me-2 h-4 w-4" /> Approuver
+                          </Button>
+                        </span>
+                      ))}
+                    {r.status !== "rejected" &&
+                      (can("update") ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // Niveau 2 — vérification dans le handler.
+                            if (!guard("update", "Rejeter l'avis")) return;
+                            updateReviewStatus(r.id, "rejected");
+                            toast.success("Rejeté");
+                          }}
+                        >
+                          <X className="me-2 h-4 w-4" /> Rejeter
+                        </Button>
+                      ) : (
+                        <span title={denyReason("update")} className="inline-flex">
+                          <Button size="sm" variant="outline" disabled>
+                            <X className="me-2 h-4 w-4" /> Rejeter
+                          </Button>
+                        </span>
+                      ))}
+                    {/* Niveau 1 + 3 — supprimer (delete). */}
+                    <span title={denyReason("delete") ?? "Supprimer"} className="inline-flex">
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          updateReviewStatus(r.id, "approved");
-                          toast.success("Approuvé");
-                        }}
+                        variant="ghost"
+                        disabled={!can("delete")}
+                        onClick={() =>
+                          setPendingDelete({ kind: "product", id: r.id, label: r.title })
+                        }
                       >
-                        <Check className="mr-2 h-4 w-4" /> Approuver
+                        <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer
                       </Button>
-                    )}
-                    {r.status !== "rejected" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          updateReviewStatus(r.id, "rejected");
-                          toast.success("Rejeté");
-                        }}
-                      >
-                        <X className="mr-2 h-4 w-4" /> Rejeter
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        setPendingDelete({ kind: "product", id: r.id, label: r.title })
-                      }
-                    >
-                      <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Supprimer
-                    </Button>
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -157,6 +191,12 @@ export default function AdminReviews() {
             reviews={homeReviews}
             products={products.map((p) => ({ id: p.id, name: p.name }))}
             onDeleteRequest={(r) => setPendingDelete({ kind: "home", id: r.id, label: r.name })}
+            canUpdate={can("update")}
+            canCreate={can("create")}
+            denyReasonUpdate={denyReason("update")}
+            denyReasonCreate={denyReason("create")}
+            guardUpdate={(label: string) => guard("update", label)}
+            guardCreate={(label: string) => guard("create", label)}
           />
         </TabsContent>
       </Tabs>
@@ -169,12 +209,7 @@ export default function AdminReviews() {
         title={pendingDelete ? `Supprimer « ${pendingDelete.label} » ?` : "Supprimer ?"}
         description="Cette action est irréversible."
         destructive
-        onConfirm={() => {
-          if (!pendingDelete) return;
-          if (pendingDelete.kind === "product") deleteReview(pendingDelete.id);
-          else deleteHomeReview(pendingDelete.id);
-          toast.success("Supprimé");
-        }}
+        onConfirm={confirmDelete}
       />
     </AdminPageShell>
   );
@@ -192,10 +227,22 @@ function HomeReviewsEditor({
   reviews,
   products,
   onDeleteRequest,
+  canUpdate,
+  canCreate,
+  denyReasonUpdate,
+  denyReasonCreate,
+  guardUpdate,
+  guardCreate,
 }: {
   reviews: HomeReview[];
   products: { id: string; name: string }[];
   onDeleteRequest: (r: HomeReview) => void;
+  canUpdate: boolean;
+  canCreate: boolean;
+  denyReasonUpdate: string | undefined;
+  denyReasonCreate: string | undefined;
+  guardUpdate: (label: string) => boolean;
+  guardCreate: (label: string) => boolean;
 }) {
   const [editing, setEditing] = useState<HomeReview | null>(null);
 
@@ -214,9 +261,18 @@ function HomeReviewsEditor({
   return (
     <div className="space-y-3">
       <div className="flex justify-end">
-        <Button size="sm" onClick={startNew}>
-          <Plus className="mr-2 h-4 w-4" /> Nouvel avis d'accueil
-        </Button>
+        {/* Niveau 1 + 3 — créer un avis d'accueil (create). */}
+        {canCreate ? (
+          <Button size="sm" onClick={startNew}>
+            <Plus className="me-2 h-4 w-4" /> Nouvel avis d'accueil
+          </Button>
+        ) : (
+          <span title={denyReasonCreate} className="inline-flex">
+            <Button size="sm" disabled>
+              <Plus className="me-2 h-4 w-4" /> Nouvel avis d'accueil
+            </Button>
+          </span>
+        )}
       </div>
       {reviews.length === 0 && !editing && (
         <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
@@ -237,7 +293,7 @@ function HomeReviewsEditor({
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{r.name || "Sans nom"}</span>
                   <span className="text-xs text-muted-foreground">· {r.city}</span>
-                  <span className="ml-auto flex gap-0.5">
+                  <span className="ms-auto flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
@@ -252,11 +308,20 @@ function HomeReviewsEditor({
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
-                  <Pencil className="mr-2 h-4 w-4" /> Éditer
-                </Button>
+                {/* Niveau 1 + 3 — modifier un avis d'accueil (update). */}
+                {canUpdate ? (
+                  <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
+                    <Pencil className="me-2 h-4 w-4" /> Éditer
+                  </Button>
+                ) : (
+                  <span title={denyReasonUpdate} className="inline-flex">
+                    <Button size="sm" variant="outline" disabled>
+                      <Pencil className="me-2 h-4 w-4" /> Éditer
+                    </Button>
+                  </span>
+                )}
                 <Button size="sm" variant="ghost" onClick={() => onDeleteRequest(r)}>
-                  <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Supprimer
+                  <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer
                 </Button>
               </div>
             </CardContent>
@@ -348,12 +413,19 @@ function HomeReviewsEditor({
                     toast.error("Nom et texte requis");
                     return;
                   }
+                  // Niveau 2 — vérification dans le handler d'enregistrement.
+                  const isNew = !reviews.find((r) => r.id === editing.id);
+                  if (isNew) {
+                    if (!guardCreate("Créer l'avis d'accueil")) return;
+                  } else {
+                    if (!guardUpdate("Modifier l'avis d'accueil")) return;
+                  }
                   upsertHomeReview(editing);
                   toast.success("Avis enregistré");
                   setEditing(null);
                 }}
               >
-                <Save className="mr-2 h-4 w-4" /> Enregistrer
+                <Save className="me-2 h-4 w-4" /> Enregistrer
               </Button>
             </div>
           </CardContent>

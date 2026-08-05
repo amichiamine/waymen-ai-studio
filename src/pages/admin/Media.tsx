@@ -19,6 +19,7 @@ import {
   renameMediaAsset,
   type MediaAsset,
 } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const MAX = 5 * 1024 * 1024; // 5 MB per file
 const fmtSize = (b: number) =>
@@ -30,6 +31,7 @@ const fmtSize = (b: number) =>
 
 export default function AdminMedia() {
   const { mediaAssets, products } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const inputRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
   const [preview, setPreview] = useState<MediaAsset | null>(null);
@@ -70,8 +72,10 @@ export default function AdminMedia() {
 
   const totalSize = mediaAssets.reduce((s, m) => s + m.size, 0);
 
+  // Niveau 2 — vérification dans le handler avant tout téléversement.
   const onFiles = async (files: FileList | null) => {
     if (!files) return;
+    if (!guard("create", "Téléverser un média")) return;
     for (const f of Array.from(files)) {
       if (!f.type.startsWith("image/")) {
         toast.error(`${f.name} : format non supporté`);
@@ -112,8 +116,11 @@ export default function AdminMedia() {
     setRName(m.name);
     setRTag(m.tag ?? "");
   };
+
+  // Niveau 2 — vérification dans le handler de renommage (update).
   const saveRename = () => {
     if (!renameFor) return;
+    if (!guard("update", "Renommer le média")) return;
     if (!rName.trim()) {
       toast.error("Nom requis");
       return;
@@ -128,6 +135,8 @@ export default function AdminMedia() {
       title="Médiathèque"
       description={`${mediaAssets.length} images téléversées · ${products.length} images du catalogue · ${fmtSize(totalSize)} utilisés (limite pratique 5 Mo par fichier).`}
       actions={
+        // Niveau 1 — désactiver le bouton Téléverser si create est interdit.
+        // Niveau 3 — infobulle portée par le <span>.
         <>
           <input
             ref={inputRef}
@@ -137,17 +146,25 @@ export default function AdminMedia() {
             hidden
             onChange={(e) => onFiles(e.target.files)}
           />
-          <Button onClick={() => inputRef.current?.click()}>
-            <Upload className="mr-2 h-4 w-4" /> Téléverser
-          </Button>
+          {can("create") ? (
+            <Button onClick={() => inputRef.current?.click()}>
+              <Upload className="me-2 h-4 w-4" /> Téléverser
+            </Button>
+          ) : (
+            <span title={denyReason("create")} className="inline-flex">
+              <Button disabled>
+                <Upload className="me-2 h-4 w-4" /> Téléverser
+              </Button>
+            </span>
+          )}
         </>
       }
     >
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher (nom, tag)…"
-          className="pl-9"
+          className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -201,29 +218,48 @@ export default function AdminMedia() {
                     </Button>
                     {!(m as MediaAsset & { fromCatalog?: boolean }).fromCatalog && (
                       <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => openRename(m as MediaAsset)}
-                          title="Renommer"
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => {
-                            if (confirm(`Supprimer ${m.name} ?`)) {
+                        {/* Niveau 1 + 3 — renommer (update). */}
+                        {can("update") ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => openRename(m as MediaAsset)}
+                            title="Renommer"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        ) : (
+                          <span title={denyReason("update")} className="inline-flex">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              disabled
+                              aria-label="Renommer"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          </span>
+                        )}
+                        {/* Niveau 1 + 3 — supprimer (delete). */}
+                        <span title={denyReason("delete") ?? "Supprimer"} className="inline-flex">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            disabled={!can("delete")}
+                            onClick={() => {
+                              // Niveau 2 — vérification dans le handler.
+                              if (!guard("delete", "Supprimer le média")) return;
                               deleteMediaAsset(m.id);
                               toast.success("Supprimé");
-                            }
-                          }}
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-3 w-3 text-destructive" />
-                        </Button>
+                            }}
+                            aria-label="Supprimer"
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </span>
                       </>
                     )}
                   </div>
@@ -254,7 +290,7 @@ export default function AdminMedia() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={() => copySrc(preview.src)}>
-                  <Copy className="mr-2 h-4 w-4" /> Copier l'URL / data
+                  <Copy className="me-2 h-4 w-4" /> Copier l'URL / data
                 </Button>
               </div>
             </div>
