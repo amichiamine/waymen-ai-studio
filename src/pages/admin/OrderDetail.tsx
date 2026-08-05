@@ -14,6 +14,7 @@ import {
 import { ArrowLeft, Circle, CheckCircle2, XCircle } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState, updateOrderStatus, type OrderStatus } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "En attente",
@@ -27,6 +28,9 @@ export default function AdminOrderDetail() {
   const { id } = useParams();
   const { orders, customers } = useAdminState();
   const nav = useNavigate();
+  // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
+  // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
+  const { can, guard, denyReason } = usePermissions();
   const order = orders.find((o) => o.id === id);
 
   if (!order) {
@@ -36,7 +40,7 @@ export default function AdminOrderDetail() {
         actions={
           <Link to="/admin/orders">
             <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="me-2 h-4 w-4" />
               Retour
             </Button>
           </Link>
@@ -50,6 +54,15 @@ export default function AdminOrderDetail() {
   const customer = customers.find((c) => c.id === order.customerId);
   const history = order.statusHistory ?? [{ status: order.status, at: order.createdAt }];
 
+  // Niveau 2 — le handler vérifie lui-même avant de muter.
+  // Critique : passer une commande en « expédiée » ou « annulée » a un effet
+  // commercial réel ; le masquage visuel seul ne suffit pas.
+  function handleStatusChange(v: string) {
+    if (!guard("update", "Changer le statut de la commande")) return;
+    updateOrderStatus(order!.id, v as OrderStatus);
+    toast.success("Statut mis à jour");
+  }
+
   return (
     <AdminPageShell
       title={`Commande ${order.id}`}
@@ -57,7 +70,7 @@ export default function AdminOrderDetail() {
       actions={
         <Link to="/admin/orders">
           <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="me-2 h-4 w-4" />
             Retour
           </Button>
         </Link>
@@ -120,7 +133,7 @@ export default function AdminOrderDetail() {
               <CardTitle>Suivi du statut</CardTitle>
             </CardHeader>
             <CardContent>
-              <ol className="relative space-y-3 border-l pl-5">
+              <ol className="relative space-y-3 border-s ps-5">
                 {history.map((ev, i) => {
                   const Icon =
                     ev.status === "cancelled"
@@ -137,7 +150,7 @@ export default function AdminOrderDetail() {
                   return (
                     <li key={i} className="relative">
                       <span
-                        className={`absolute -left-[26px] top-0 rounded-full bg-background ${color}`}
+                        className={`absolute -start-[26px] top-0 rounded-full bg-background ${color}`}
                       >
                         <Icon className="h-4 w-4" />
                       </span>
@@ -173,24 +186,29 @@ export default function AdminOrderDetail() {
             </CardHeader>
             <CardContent className="space-y-3">
               <Badge variant="secondary">{STATUS_LABEL[order.status]}</Badge>
-              <Select
-                value={order.status}
-                onValueChange={(v) => {
-                  updateOrderStatus(order.id, v as OrderStatus);
-                  toast.success("Statut mis à jour");
-                }}
+              {/* Niveau 1 — affichage. Niveau 3 — le <span> porte l'infobulle
+                  car un Select `disabled` a pointer-events-none. */}
+              <span
+                title={denyReason("update") ?? undefined}
+                className="block"
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">En attente</SelectItem>
-                  <SelectItem value="processing">En traitement</SelectItem>
-                  <SelectItem value="shipped">Expédiée</SelectItem>
-                  <SelectItem value="delivered">Livrée</SelectItem>
-                  <SelectItem value="cancelled">Annulée</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select
+                  value={order.status}
+                  onValueChange={handleStatusChange}
+                  disabled={!can("update")}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="processing">En traitement</SelectItem>
+                    <SelectItem value="shipped">Expédiée</SelectItem>
+                    <SelectItem value="delivered">Livrée</SelectItem>
+                    <SelectItem value="cancelled">Annulée</SelectItem>
+                  </SelectContent>
+                </Select>
+              </span>
             </CardContent>
           </Card>
           <Card>

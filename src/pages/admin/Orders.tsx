@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { formatDZD } from "@/data/products";
 import { useAdminState, type OrderStatus } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "En attente",
@@ -34,6 +35,9 @@ const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive
 
 export default function AdminOrders() {
   const { orders } = useAdminState();
+  // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
+  // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
+  const { can } = usePermissions();
   const [tab, setTab] = useState<"all" | OrderStatus>("all");
   const [q, setQ] = useState("");
 
@@ -71,10 +75,10 @@ export default function AdminOrders() {
         </TabsList>
       </Tabs>
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher (n°, client, wilaya)…"
-          className="pl-9"
+          className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -87,7 +91,7 @@ export default function AdminOrders() {
               <TableHead>Client</TableHead>
               <TableHead>Wilaya</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-end">Total</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead className="w-[60px]"></TableHead>
             </TableRow>
@@ -101,16 +105,23 @@ export default function AdminOrders() {
                 <TableCell className="text-sm text-muted-foreground">
                   {new Date(o.createdAt).toLocaleDateString("fr-FR")}
                 </TableCell>
-                <TableCell className="text-right font-medium">{formatDZD(o.total)}</TableCell>
+                <TableCell className="text-end font-medium">{formatDZD(o.total)}</TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
                 </TableCell>
                 <TableCell>
-                  <Link to={`/admin/orders/${o.id}`}>
-                    <Button variant="ghost" size="icon">
+                  {/* Niveau 1 — la consultation du détail est un `read`, toujours permis. */}
+                  {can("read") ? (
+                    <Link to={`/admin/orders/${o.id}`}>
+                      <Button variant="ghost" size="icon" title="Voir la commande">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button variant="ghost" size="icon" disabled aria-label="Voir la commande">
                       <Eye className="h-4 w-4" />
                     </Button>
-                  </Link>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

@@ -17,6 +17,12 @@ import { formatDZD } from "@/data/products";
 import { useAdminState, type Customer, type Order } from "@/lib/admin-store";
 import { Link } from "react-router-dom";
 
+// Cette page est en lecture seule (vague 1.2). Un CRUD sera ajouté en vague 1.3
+// par un autre agent. Aucune action mutative ici : le motif de permissions ne
+// s'applique donc qu'à la correction des classes RTL (text-right → text-end,
+// left- → start-, pl- → ps-). La page se comporte identiquement pour tous
+// les rôles — conforme à la règle d'additivité.
+
 const STATUS_LABEL: Record<Order["status"], string> = {
   pending: "En attente",
   processing: "En traitement",
@@ -100,10 +106,10 @@ export default function AdminCustomers() {
       description={`${customers.length} clients enregistrés — statistiques dérivées des commandes.`}
     >
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher (nom, email, wilaya, tél)…"
-          className="pl-9"
+          className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -116,8 +122,8 @@ export default function AdminCustomers() {
               <TableHead>Email</TableHead>
               <TableHead>Téléphone</TableHead>
               <TableHead>Wilaya</TableHead>
-              <TableHead className="text-right">Commandes</TableHead>
-              <TableHead className="text-right">Dépensé (LTV)</TableHead>
+              <TableHead className="text-end">Commandes</TableHead>
+              <TableHead className="text-end">Dépensé (LTV)</TableHead>
               <TableHead>Dernière commande</TableHead>
               <TableHead />
             </TableRow>
@@ -129,12 +135,12 @@ export default function AdminCustomers() {
                 <TableCell className="text-sm">{c.email}</TableCell>
                 <TableCell className="text-sm">{c.phone}</TableCell>
                 <TableCell className="text-sm">{c.wilaya}</TableCell>
-                <TableCell className="text-right">{c.ordersCount}</TableCell>
-                <TableCell className="text-right font-medium">{formatDZD(c.totalSpent)}</TableCell>
+                <TableCell className="text-end">{c.ordersCount}</TableCell>
+                <TableCell className="text-end font-medium">{formatDZD(c.totalSpent)}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {c.lastOrderAt ? new Date(c.lastOrderAt).toLocaleDateString("fr-FR") : "—"}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-end">
                   <Button variant="outline" size="sm" onClick={() => setSelected(c)}>
                     Détails
                   </Button>
@@ -203,7 +209,7 @@ export default function AdminCustomers() {
                         <TableHead>ID</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Statut</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="text-end">Total</TableHead>
                         <TableHead />
                       </TableRow>
                     </TableHeader>
@@ -219,10 +225,10 @@ export default function AdminCustomers() {
                               {STATUS_LABEL[o.status]}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right font-medium">
+                          <TableCell className="text-end font-medium">
                             {formatDZD(o.total)}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-end">
                             <Link
                               to={`/admin/orders/${o.id}`}
                               className="text-xs text-primary hover:underline"
