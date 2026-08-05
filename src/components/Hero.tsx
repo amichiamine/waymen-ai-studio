@@ -124,6 +124,3 @@ function Kpi({ icon, n, l }: { icon: IconName; n: string; l: string }) {
     </div>
   );
 }
-
-// Re-export to satisfy unused-import checkers when Localized is referenced elsewhere.
-export type { Localized };
