@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { formatDZD, categoryMeta, type SpecKey } from "@/data/products";
+import { formatDZD, categoryMeta, catalogProducts, type SpecKey } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
 
 import { ProductCard } from "@/components/ProductCard";
@@ -68,7 +68,9 @@ function ProductView({ p }: { p: ProductType }) {
   const { addToCart, toggleFavorite, isFavorite } = useStore();
   const navigate = useNavigate();
   const liked = isFavorite(p.id);
-  const related = products.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 4);
+  const related = catalogProducts(products)
+    .filter((x) => x.category === p.category && x.id !== p.id)
+    .slice(0, 4);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
   const name = p.name;
   const tabs: { id: string; key: TKey }[] = [
@@ -176,11 +178,11 @@ function ProductView({ p }: { p: ProductType }) {
           name="description"
           content={`${p.name} — ${p.specLine}. ${formatDZD(p.price)}. Garantie officielle KA Tech.`}
         />
-        <link rel="canonical" href={canonical} />
+        <link rel="canonical" href={absoluteUrl} />
         <meta property="og:type" content="product" />
         <meta property="og:title" content={p.name} />
         <meta property="og:description" content={p.specLine} />
-        <meta property="og:url" content={canonical} />
+        <meta property="og:url" content={absoluteUrl} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <nav className="text-xs text-muted-foreground flex items-center gap-1.5 mb-6">

@@ -92,8 +92,8 @@ function CategoryView({ cat }: { cat: Category }) {
           name="description"
           content={`${desc} ${list.length} produits disponibles chez KA Tech.`}
         />
-        <link rel="canonical" href={`/category/${cat}`} />
-        <meta property="og:url" content={`/category/${cat}`} />
+        <link rel="canonical" href={`${window.location.origin}/category/${cat}`} />
+        <meta property="og:url" content={`${window.location.origin}/category/${cat}`} />
       </Helmet>
       <nav className="text-xs text-muted-foreground flex items-center gap-1.5 mb-6">
         <Link to="/" className="hover:text-foreground">

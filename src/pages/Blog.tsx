@@ -31,7 +31,7 @@ export default function Blog() {
       <Helmet>
         <title>{t("blog.page.title")}</title>
         <meta name="description" content={t("blog.page.desc")} />
-        <link rel="canonical" href="/blog" />
+        <link rel="canonical" href={`${window.location.origin}/blog`} />
       </Helmet>
       <div className="mx-auto max-w-3xl text-center">
         <h1 className="text-4xl font-extrabold tracking-tight">{t("blog.h1")}</h1>

@@ -9,7 +9,7 @@ export default function CategoryIndex() {
       <Helmet>
         <title>{t("categoryIndex.page.title")}</title>
         <meta name="description" content={t("categoryIndex.page.desc")} />
-        <link rel="canonical" href="/category" />
+        <link rel="canonical" href={`${window.location.origin}/category`} />
       </Helmet>
       <CategoryCards />
     </div>

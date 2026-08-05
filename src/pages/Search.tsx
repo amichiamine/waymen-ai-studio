@@ -98,7 +98,7 @@ export default function Search() {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDesc} />
-        <link rel="canonical" href="/search" />
+        <link rel="canonical" href={`${window.location.origin}/search`} />
       </Helmet>
 
       <div className="flex items-center gap-3 mb-6">

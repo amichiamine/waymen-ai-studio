@@ -128,7 +128,7 @@ export default function Account() {
       <Helmet>
         <title>{t("account.page.title")}</title>
         <meta name="description" content={t("account.page.desc")} />
-        <link rel="canonical" href="/account" />
+        <link rel="canonical" href={`${window.location.origin}/account`} />
         <meta name="robots" content="noindex" />
       </Helmet>
       <div className="mb-6 flex items-center gap-3">

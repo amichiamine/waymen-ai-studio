@@ -51,7 +51,7 @@ export default function Contact() {
       <Helmet>
         <title>{t("contact.page.title")}</title>
         <meta name="description" content={t("contact.page.desc")} />
-        <link rel="canonical" href="/contact" />
+        <link rel="canonical" href={`${window.location.origin}/contact`} />
       </Helmet>
       <header className="max-w-3xl mb-10">
         <p className="text-sm font-medium text-primary mb-2">{t("contact.kicker")}</p>

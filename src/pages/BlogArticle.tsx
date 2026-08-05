@@ -14,7 +14,7 @@ export default function BlogArticle() {
 
   if (!post) return <BlogNotFound />;
 
-  const canonical = `/blog/${post.slug}`;
+  const canonical = `${window.location.origin}/blog/${post.slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",

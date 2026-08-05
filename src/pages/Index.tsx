@@ -23,8 +23,8 @@ export default function Index() {
           name="description"
           content="Ordinateurs portables, ordinateurs de bureau, configurations sur mesure et smartphones avec garantie officielle et livraison partout en Algérie."
         />
-        <link rel="canonical" href="/" />
-        <meta property="og:url" content="/" />
+        <link rel="canonical" href={window.location.origin} />
+        <meta property="og:url" content={window.location.origin} />
       </Helmet>
       <Hero />
       <FlashSale />

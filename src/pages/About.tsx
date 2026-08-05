@@ -22,7 +22,7 @@ export default function About() {
       <Helmet>
         <title>{t("about.page.title")}</title>
         <meta name="description" content={t("about.page.desc")} />
-        <link rel="canonical" href="/about" />
+        <link rel="canonical" href={`${window.location.origin}/about`} />
       </Helmet>
       <header className="max-w-3xl mb-12">
         <p className="text-sm font-medium text-primary mb-2">{t("about.kicker")}</p>
