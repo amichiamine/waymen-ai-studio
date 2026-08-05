@@ -3,18 +3,26 @@ import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Check, AlertTriangle, Star, Zap } from "lucide-react";
 import { type Product, formatDZD } from "@/data/products";
 import { toast } from "sonner";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { useReviewList, useSiteSettings } from "@/data-provider";
 
 export function ProductCard({ p }: { p: Product }) {
   const { t } = useI18n();
+  const L = useLocalize();
   const { isFavorite, toggleFavorite, addToCart } = useStore();
   const { data: reviews } = useReviewList();
   const { data: siteSettings } = useSiteSettings();
   const liked = isFavorite(p.id);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
-  const name = p.name;
+  /**
+   * Localisation faite **une seule fois par champ**, en tête de composant :
+   * tout le rendu en dessous consomme des `string` garantis. Le `?? ""` couvre
+   * le retour `undefined` de `L` (signature générique) et garantit qu'aucun
+   * attribut HTML — `alt` en particulier — ne reçoive `undefined`.
+   */
+  const name = L(p.name) ?? "";
+  const specLine = L(p.specLine) ?? "";
   const stats = useMemo(() => {
     const approved = reviews.filter((r) => r.productId === p.id && r.status === "approved");
     const count = approved.length;
@@ -90,7 +98,7 @@ export function ProductCard({ p }: { p: Product }) {
             </span>
           </div>
         )}
-        <p className="text-xs text-muted-foreground line-clamp-1">{p.specLine}</p>
+        <p className="text-xs text-muted-foreground line-clamp-1">{specLine}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-base font-bold text-foreground">{formatDZD(p.price)}</span>
           {p.oldPrice && (

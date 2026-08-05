@@ -17,7 +17,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useI18n, type TKey } from "@/lib/i18n";
+import { useI18n, useLocalize, type TKey } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 
@@ -39,10 +39,14 @@ const specKeyMap: Record<SpecKey, TKey> = {
 export default function Product() {
   const { id } = useParams();
   const products = useProducts();
+  // La comparaison porte sur l'identifiant technique, qui n'est **pas**
+  // localisé : la résolution d'un produit ne dépend jamais de la langue.
   const p = products.find((x) => x.id === id);
+  const L = useLocalize();
+  const localizedName = L(p?.name) ?? "";
   useEffect(() => {
-    document.title = p ? `${p.name} — KA Tech` : "Produit introuvable — KA Tech";
-  }, [p]);
+    document.title = p ? `${localizedName} — KA Tech` : "Produit introuvable — KA Tech";
+  }, [p, localizedName]);
   if (!p) {
     return (
       <div className="container mx-auto max-w-xl px-4 py-16 text-center">
@@ -64,6 +68,7 @@ function ProductView({ p }: { p: ProductType }) {
   const cat = categoryMeta[p.category];
   const [tab, setTab] = useState("specs");
   const { t } = useI18n();
+  const L = useLocalize();
   const { user } = useAuth();
   const { addToCart, toggleFavorite, isFavorite } = useStore();
   const navigate = useNavigate();
@@ -75,7 +80,13 @@ function ProductView({ p }: { p: ProductType }) {
     .filter((x) => x.category === p.category && x.id !== p.id)
     .slice(0, 4);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
-  const name = p.name;
+  /**
+   * Localisation faite **une seule fois par champ**, en tête de composant :
+   * `name` et `specLine` sont des `string` garantis, réutilisables partout —
+   * y compris dans les métadonnées et le JSON-LD, qui refusent les objets.
+   */
+  const name = L(p.name) ?? "";
+  const specLine = L(p.specLine) ?? "";
   const tabs: { id: string; key: TKey }[] = [
     { id: "specs", key: "pd.tab.specs" },
     { id: "desc", key: "pd.tab.desc" },
@@ -127,7 +138,9 @@ function ProductView({ p }: { p: ProductType }) {
     }
     try {
       await createProductReview(p.id, {
-        productName: p.name,
+        // Instantané textuel : l'avis conserve le nom tel que le client l'a lu.
+        // L'avis reste rattaché au produit par `p.id`, pas par ce libellé.
+        productName: name,
         customerName: user.name ?? user.email ?? "Client",
         rating,
         title: reviewTitle.trim() || "Avis client",
@@ -153,15 +166,20 @@ function ProductView({ p }: { p: ProductType }) {
   }, [stats.approved]);
 
   // Canonique absolue et JSON-LD Product — conservés depuis la phase 1.
+  //
+  // Règle non négociable : `name`, `description` et `brand.name` doivent être
+  // des **chaînes**. Y interpoler un `Localized` non résolu écrirait
+  // `{"fr":"…","en":"…"}` dans le balisage, et Google invaliderait la fiche.
+  // D'où l'usage des variables déjà localisées plutôt que de `p.name` brut.
   const absoluteUrl = `${window.location.origin}/product/${p.id}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: p.name,
+    name,
     brand: { "@type": "Brand", name: p.brand },
     category: t(cat.labelKey),
     image: p.image,
-    description: p.specLine,
+    description: specLine,
     url: absoluteUrl,
     offers: {
       "@type": "Offer",
@@ -184,15 +202,15 @@ function ProductView({ p }: { p: ProductType }) {
   return (
     <div className="container-page py-8 lg:py-12">
       <Helmet>
-        <title>{`${p.name} — KA Tech`}</title>
+        <title>{`${name} — KA Tech`}</title>
         <meta
           name="description"
-          content={`${p.name} — ${p.specLine}. ${formatDZD(p.price)}. Garantie officielle KA Tech.`}
+          content={`${name} — ${specLine}. ${formatDZD(p.price)}. Garantie officielle KA Tech.`}
         />
         <link rel="canonical" href={absoluteUrl} />
         <meta property="og:type" content="product" />
-        <meta property="og:title" content={p.name} />
-        <meta property="og:description" content={p.specLine} />
+        <meta property="og:title" content={name} />
+        <meta property="og:description" content={specLine} />
         <meta property="og:url" content={absoluteUrl} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
@@ -236,7 +254,7 @@ function ProductView({ p }: { p: ProductType }) {
             )}
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold leading-tight">{name}</h1>
-          <p className="text-muted-foreground">{p.specLine}</p>
+          <p className="text-muted-foreground">{specLine}</p>
           {stats.count > 0 && (
             <div className="flex items-center gap-2 text-sm">
               <div className="flex">
@@ -322,10 +340,15 @@ function ProductView({ p }: { p: ProductType }) {
         <div className="py-8">
           {tab === "specs" && (
             <dl className="grid sm:grid-cols-2 gap-px bg-border rounded-xl overflow-hidden border border-border">
+              {/*
+                Les clés de `specs` restent techniques : elles sont traduites
+                par le dictionnaire (`t(specKeyMap[k])`), pas par `L`. Seules
+                les valeurs sont des `Localized<string>`.
+              */}
               {Object.entries(p.specs).map(([k, v]) => (
                 <div key={k} className="bg-card flex justify-between gap-4 px-5 py-3.5">
                   <dt className="text-sm text-muted-foreground">{t(specKeyMap[k as SpecKey])}</dt>
-                  <dd className="text-sm font-medium text-foreground text-right">{v}</dd>
+                  <dd className="text-sm font-medium text-foreground text-end">{L(v)}</dd>
                 </div>
               ))}
             </dl>
