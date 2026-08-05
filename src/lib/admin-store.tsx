@@ -599,16 +599,56 @@ function seedReviews(): Review[] {
   return list;
 }
 
+/**
+ * Identifiants de démonstration — JAMAIS dans le code de production.
+ *
+ * Ce module est compilé dans le bundle livré au navigateur : tout mot de passe
+ * écrit en dur ici est lisible par n'importe qui via les DevTools. Les comptes
+ * de démo sont donc lus depuis `VITE_DEV_SEED_CREDENTIALS`, au format
+ * `email:motdepasse,email:motdepasse` (voir `.env.example`).
+ *
+ * Double garde : la variable n'est lue que si `import.meta.env.DEV` est vrai.
+ * Un build de production ne sème donc AUCUN mot de passe, même si la variable
+ * est présente dans l'environnement de build.
+ *
+ * Provisoire de la phase mock : remplacé en phase 4 (PLAN.md) par une
+ * authentification serveur.
+ */
+function readDevSeedCredentials(): Map<string, string> {
+  const credentials = new Map<string, string>();
+  if (!import.meta.env.DEV) return credentials;
+
+  const env = import.meta.env as Record<string, string | undefined>;
+  const raw = env.VITE_DEV_SEED_CREDENTIALS;
+  if (!raw || raw.trim() === "") return credentials;
+
+  for (const entry of raw.split(",")) {
+    if (entry.trim() === "") continue;
+    const separator = entry.indexOf(":");
+    const email = separator > 0 ? entry.slice(0, separator).trim().toLowerCase() : "";
+    const password = separator > 0 ? entry.slice(separator + 1).trim() : "";
+    if (!email || !password) {
+      // Échec visible plutôt que silencieux (AGENTS.md §7).
+      console.warn(
+        `[admin-store] VITE_DEV_SEED_CREDENTIALS : entrée ignorée, format attendu "email:motdepasse" → ${entry.trim()}`,
+      );
+      continue;
+    }
+    credentials.set(email, password);
+  }
+  return credentials;
+}
+
 function seedUsers(): AdminUser[] {
   const now = Date.now();
-  return [
+  const devCredentials = readDevSeedCredentials();
+  const users: AdminUser[] = [
     {
       id: "usr_1",
       name: "Yacine Admin",
       email: "admin@katech.dz",
       role: "owner",
       active: true,
-      password: "admin123",
       lastLogin: new Date(now - 3600000).toISOString(),
       createdAt: new Date(now - 365 * 86400000).toISOString(),
     },
@@ -618,7 +658,6 @@ function seedUsers(): AdminUser[] {
       email: "sarah@katech.dz",
       role: "admin",
       active: true,
-      password: "sarah123",
       lastLogin: new Date(now - 86400000).toISOString(),
       createdAt: new Date(now - 200 * 86400000).toISOString(),
     },
@@ -628,7 +667,6 @@ function seedUsers(): AdminUser[] {
       email: "karim@katech.dz",
       role: "editor",
       active: true,
-      password: "karim123",
       lastLogin: new Date(now - 4 * 86400000).toISOString(),
       createdAt: new Date(now - 120 * 86400000).toISOString(),
     },
@@ -638,7 +676,6 @@ function seedUsers(): AdminUser[] {
       email: "lina@katech.dz",
       role: "editor",
       active: false,
-      password: "lina123",
       lastLogin: new Date(now - 30 * 86400000).toISOString(),
       createdAt: new Date(now - 90 * 86400000).toISOString(),
     },
@@ -648,11 +685,17 @@ function seedUsers(): AdminUser[] {
       email: "omar@katech.dz",
       role: "viewer",
       active: true,
-      password: "omar123",
       lastLogin: new Date(now - 2 * 86400000).toISOString(),
       createdAt: new Date(now - 45 * 86400000).toISOString(),
     },
   ];
+
+  // En production `devCredentials` est toujours vide : la table `users` est
+  // alors semée sans aucun mot de passe.
+  return users.map((u) => {
+    const password = devCredentials.get(u.email.toLowerCase());
+    return password ? { ...u, password } : u;
+  });
 }
 
 function seedBlogPosts(): BlogPost[] {
