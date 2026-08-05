@@ -215,9 +215,7 @@ export default function AdminInventory() {
                     </TableCell>
                     <TableCell className="text-sm">{p.brand}</TableCell>
                     <TableCell className="text-sm capitalize">{p.category}</TableCell>
-                    <TableCell className="text-end font-mono text-sm">
-                      {p.stockQty ?? 0}
-                    </TableCell>
+                    <TableCell className="text-end font-mono text-sm">{p.stockQty ?? 0}</TableCell>
                     <TableCell>
                       <Badge variant={VARIANT[p.stock]}>{LABEL[p.stock]}</Badge>
                     </TableCell>

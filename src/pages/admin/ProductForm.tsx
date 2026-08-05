@@ -254,8 +254,9 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             </Button>
           </Link>
           {/* Niveau 1 — masquer / désactiver le bouton de suppression si non autorisé. */}
-          {mode === "edit" && existing && (
-            can("delete") ? (
+          {mode === "edit" &&
+            existing &&
+            (can("delete") ? (
               <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
                 <Trash2 className="me-2 h-4 w-4" />
                 Supprimer
@@ -267,8 +268,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   Supprimer
                 </Button>
               </span>
-            )
-          )}
+            ))}
         </div>
       }
     >

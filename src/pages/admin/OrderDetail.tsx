@@ -188,10 +188,7 @@ export default function AdminOrderDetail() {
               <Badge variant="secondary">{STATUS_LABEL[order.status]}</Badge>
               {/* Niveau 1 — affichage. Niveau 3 — le <span> porte l'infobulle
                   car un Select `disabled` a pointer-events-none. */}
-              <span
-                title={denyReason("update") ?? undefined}
-                className="block"
-              >
+              <span title={denyReason("update") ?? undefined} className="block">
                 <Select
                   value={order.status}
                   onValueChange={handleStatusChange}
