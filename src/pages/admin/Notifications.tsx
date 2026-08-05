@@ -32,14 +32,10 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import {
-  useAdminState,
-  addNotification,
-  deleteNotification,
-  updateNotification,
-  markAllNotificationsRead,
-  type NotificationLevel,
-} from "@/lib/admin-store";
+import { useNotificationList, useNotificationMutations, toApiError } from "@/data-provider";
+// addNotification n'est pas encore exposé par le provider (phase 4).
+// Migration douce — DATA-PROVIDER.md §4 : admin-store reste valide pendant phase 2.
+import { addNotification, type NotificationLevel } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 const LEVEL: Record<NotificationLevel, { label: string; Icon: typeof Bell; className: string }> = {
@@ -50,10 +46,12 @@ const LEVEL: Record<NotificationLevel, { label: string; Icon: typeof Bell; class
 };
 
 export default function AdminNotifications() {
-  const { notifications } = useAdminState();
+  const { data: notifications, loading, error } = useNotificationList();
+  const { markRead, markAllRead, remove } = useNotificationMutations();
   const { can, guard, denyReason } = usePermissions();
   const [filter, setFilter] = useState<"all" | "unread" | NotificationLevel>("all");
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [level, setLevel] = useState<NotificationLevel>("info");
@@ -69,24 +67,48 @@ export default function AdminNotifications() {
 
   const unread = notifications.filter((n) => !n.read).length;
 
-  function handleMarkAllRead() {
+  async function handleMarkAllRead() {
     // Niveau 2 — vérification dans l'action.
     if (!guard("update", "Marquer tout lu")) return;
-    markAllNotificationsRead();
-    toast.success("Toutes marquées comme lues");
+    setSaving(true);
+    try {
+      await markAllRead();
+      toast.success("Toutes marquées comme lues");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleMarkRead(id: string) {
+  async function handleMarkRead(id: string) {
     // Niveau 2 — vérification dans l'action.
     if (!guard("update", "Marquer lu")) return;
-    updateNotification(id, { read: true });
+    setSaving(true);
+    try {
+      await markRead(id, true);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     // Niveau 2 — vérification dans l'action.
     if (!guard("delete", "Supprimer la notification")) return;
-    deleteNotification(id);
-    toast.success("Supprimée");
+    setSaving(true);
+    try {
+      await remove(id);
+      toast.success("Supprimée");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function create() {
@@ -95,6 +117,7 @@ export default function AdminNotifications() {
       return;
     }
     // Niveau 2 — vérification dans l'action.
+    // addNotification reste synchrone (pas encore dans le provider — phase 4).
     if (!guard("create", "Créer la notification")) return;
     addNotification({
       title: title.trim(),
@@ -124,7 +147,7 @@ export default function AdminNotifications() {
             <Button
               variant="outline"
               onClick={handleMarkAllRead}
-              disabled={unread === 0 || !can("update")}
+              disabled={unread === 0 || !can("update") || saving}
             >
               <Check className="me-2 h-4 w-4" /> Tout marquer lu
             </Button>
@@ -144,6 +167,16 @@ export default function AdminNotifications() {
         </div>
       }
     >
+      {error && (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
         {[
           { key: "all" as const, label: "Toutes" },
@@ -164,7 +197,14 @@ export default function AdminNotifications() {
         ))}
       </div>
 
-      {rows.length === 0 ? (
+      {loading ? (
+        <div className="space-y-2" aria-busy="true">
+          <span className="sr-only">Chargement…</span>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-card" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-12 text-center text-sm text-muted-foreground">
             <Bell className="h-8 w-8" />
@@ -220,7 +260,7 @@ export default function AdminNotifications() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            disabled={!can("update")}
+                            disabled={!can("update") || saving}
                             onClick={() => handleMarkRead(n.id)}
                           >
                             <Check className="me-1 h-3 w-3" /> Marquer lu
@@ -236,7 +276,7 @@ export default function AdminNotifications() {
                           variant="ghost"
                           size="sm"
                           aria-label="Supprimer"
-                          disabled={!can("delete")}
+                          disabled={!can("delete") || saving}
                           onClick={() => handleDelete(n.id)}
                         >
                           <Trash2 className="me-1 h-3 w-3 text-destructive" /> Supprimer

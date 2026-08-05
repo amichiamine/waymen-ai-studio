@@ -7,7 +7,31 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, RotateCcw, Trash2, Database, Download, Upload } from "lucide-react";
 import {
-  useAdminState,
+  useProductList,
+  useCategoryList,
+  useBrandList,
+  useOrderList,
+  useCustomerList,
+  useCouponList,
+  useReviewList,
+  useUserList,
+  useBlogPostList,
+  useHomeReviewList,
+  useTickerMessageList,
+  useMarqueeBrandList,
+  useAboutValueList,
+  useBuilderStepList,
+  useShippingRateList,
+  usePaymentMethodList,
+  useStockMovementList,
+  useMediaAssetList,
+  useNotificationList,
+  useAuditLogList,
+  useContactMessageList,
+  useSubscriberList,
+  toApiError,
+} from "@/data-provider";
+import {
   resetData,
   clearData,
   exportState,
@@ -106,43 +130,69 @@ type PendingAction =
   | { kind: "import"; json: string; fileName: string };
 
 export default function AdminReset() {
-  const state = useAdminState();
+  // Lecture des listes via le provider — remplace useAdminState() pour les
+  // compteurs. Les hooks sont appelés inconditionnellement (§6 piège conditionnel).
+  const { data: products } = useProductList();
+  const { data: categories } = useCategoryList();
+  const { data: brands } = useBrandList();
+  const { data: orders } = useOrderList();
+  const { data: customers } = useCustomerList();
+  const { data: coupons } = useCouponList();
+  const { data: reviews } = useReviewList();
+  const { data: users } = useUserList();
+  const { data: blogPosts } = useBlogPostList();
+  const { data: homeReviews } = useHomeReviewList();
+  const { data: tickerMessages } = useTickerMessageList();
+  const { data: marqueeBrands } = useMarqueeBrandList();
+  const { data: aboutValues } = useAboutValueList();
+  const { data: builderSteps } = useBuilderStepList();
+  const { data: shippingRates } = useShippingRateList();
+  const { data: paymentMethods } = usePaymentMethodList();
+  const { data: stockMovements } = useStockMovementList();
+  const { data: mediaAssets } = useMediaAssetList();
+  const { data: notifications } = useNotificationList();
+  const { data: auditLogs } = useAuditLogList();
+  const { data: messages } = useContactMessageList();
+  const { data: subscribers } = useSubscriberList();
+
   const { can, guard, denyReason } = usePermissions();
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<PendingAction | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const totals: Record<ResetTarget, number> = {
-    products: state.products.length,
-    categories: state.categories.length,
-    brands: state.brands.length,
-    orders: state.orders.length,
-    customers: state.customers.length,
-    coupons: state.coupons.length,
-    reviews: state.reviews.length,
-    users: state.users.length,
-    blogPosts: state.blogPosts.length,
-    homeReviews: state.homeReviews.length,
-    tickerMessages: state.tickerMessages.length,
-    marqueeBrands: state.marqueeBrands.length,
-    aboutValues: state.aboutValues.length,
-    builderSteps: state.builderSteps.length,
-    shippingRates: state.shippingRates.length,
-    paymentMethods: state.paymentMethods.length,
-    stockMovements: state.stockMovements.length,
-    mediaAssets: state.mediaAssets.length,
-    notifications: state.notifications.length,
-    auditLogs: state.auditLogs.length,
-    messages: state.messages.length,
-    subscribers: state.subscribers.length,
+    products: products.length,
+    categories: categories.length,
+    brands: brands.length,
+    orders: orders.length,
+    customers: customers.length,
+    coupons: coupons.length,
+    reviews: reviews.length,
+    users: users.length,
+    blogPosts: blogPosts.length,
+    homeReviews: homeReviews.length,
+    tickerMessages: tickerMessages.length,
+    marqueeBrands: marqueeBrands.length,
+    aboutValues: aboutValues.length,
+    builderSteps: builderSteps.length,
+    shippingRates: shippingRates.length,
+    paymentMethods: paymentMethods.length,
+    stockMovements: stockMovements.length,
+    mediaAssets: mediaAssets.length,
+    notifications: notifications.length,
+    auditLogs: auditLogs.length,
+    messages: messages.length,
+    subscribers: subscribers.length,
     siteSettings: 1,
     shippingSettings: 1,
   };
 
-  function exec() {
+  async function exec() {
     if (!pending) return;
     // Niveau 2 — vérification impérative dans l'exécuteur, avant toute mutation.
     // Cette page est la plus destructive : la garde s'applique à chaque chemin.
     if (!guard("resetData", "Confirmer l'action")) return;
+    setSaving(true);
     try {
       if (pending.kind === "reset") {
         resetData(pending.key);
@@ -164,8 +214,12 @@ export default function AdminReset() {
         const total = Object.values(res.counts).reduce((s, n) => s + n, 0);
         toast.success(`Import réussi (${total} enregistrements depuis ${pending.fileName})`);
       }
-    } catch (e) {
-      toast.error(`Action échouée : ${e instanceof Error ? e.message : "erreur inconnue"}`);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(`Action échouée : ${err.message}`);
+    } finally {
+      setSaving(false);
+      setPending(null);
     }
   }
 
@@ -285,6 +339,7 @@ export default function AdminReset() {
         <CardContent className="flex flex-wrap gap-3">
           {can("resetData") ? (
             <Button
+              disabled={saving}
               onClick={() => setPending({ kind: "reset", key: "all", label: "toutes les données" })}
             >
               <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser toute la boutique
@@ -297,7 +352,11 @@ export default function AdminReset() {
             </span>
           )}
           {can("resetData") ? (
-            <Button variant="destructive" onClick={() => setPending({ kind: "clearAll" })}>
+            <Button
+              variant="destructive"
+              disabled={saving}
+              onClick={() => setPending({ kind: "clearAll" })}
+            >
               <Trash2 className="me-2 h-4 w-4" /> Tout vider
             </Button>
           ) : (
@@ -335,6 +394,7 @@ export default function AdminReset() {
                   <Button
                     size="sm"
                     variant="outline"
+                    disabled={saving}
                     onClick={() =>
                       setPending({ kind: "reset", key: r.key, label: r.label.toLowerCase() })
                     }
@@ -352,6 +412,7 @@ export default function AdminReset() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    disabled={saving}
                     onClick={() =>
                       setPending({ kind: "clear", key: r.key, label: r.label.toLowerCase() })
                     }
