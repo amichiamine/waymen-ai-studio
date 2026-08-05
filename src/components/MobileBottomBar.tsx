@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { getIcon, type IconName } from "@/lib/site-content";
 import { useLocalize } from "@/lib/i18n";
 
 export function MobileBottomBar() {
   const { user } = useAuth();
   const { cartCount } = useStore();
-  const { siteContent } = useAdminState();
+  // loading inerte en mode mock. En http, data est le repli (contenu vide)
+  // jusqu'au premier aller-retour — la barre reste montée mais sans items.
+  const { data: siteContent } = useSiteContent();
   const L = useLocalize();
   const items = siteContent.mobileBottomBar.items;
 

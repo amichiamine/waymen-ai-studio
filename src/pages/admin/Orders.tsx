@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDZD } from "@/data/products";
-import { useAdminState, type OrderStatus } from "@/lib/admin-store";
+import { useOrderList } from "@/data-provider";
+import type { OrderStatus } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
@@ -33,8 +35,26 @@ const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive
   cancelled: "destructive",
 };
 
+// Squelette d'une ligne de tableau commande.
+function OrderRowSkeleton() {
+  return (
+    <TableRow>
+      {[60, 120, 80, 80, 80, 70, 40].map((w, i) => (
+        <TableCell key={i}>
+          <div
+            className="h-4 animate-pulse rounded bg-muted"
+            style={{ width: `${w}px` }}
+          />
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+}
+
 export default function AdminOrders() {
-  const { orders } = useAdminState();
+  // Lecture via le fournisseur de données — remplace useAdminState().orders.
+  // En mode mock, `loading` est faux dès le premier rendu et `error` reste nul.
+  const { data: orders, loading, error } = useOrderList();
   // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can } = usePermissions();
@@ -64,6 +84,17 @@ export default function AdminOrders() {
 
   return (
     <AdminPageShell title="Commandes" description={`${orders.length} commandes enregistrées.`}>
+      {/* Ordre §5.3 : erreur au-dessus du contenu, sans remplacer la page. */}
+      {error && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <Tabs value={tab} onValueChange={(v) => setTab(v as "all" | OrderStatus)}>
         <TabsList className="flex-wrap">
           <TabsTrigger value="all">Toutes ({counts.all})</TabsTrigger>
@@ -97,40 +128,51 @@ export default function AdminOrders() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((o) => (
-              <TableRow key={o.id}>
-                <TableCell className="font-mono text-xs">{o.id}</TableCell>
-                <TableCell>{o.customerName}</TableCell>
-                <TableCell className="text-sm">{o.wilaya}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(o.createdAt).toLocaleDateString("fr-FR")}
-                </TableCell>
-                <TableCell className="text-end font-medium">{formatDZD(o.total)}</TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
-                </TableCell>
-                <TableCell>
-                  {/* Niveau 1 — la consultation du détail est un `read`, toujours permis. */}
-                  {can("read") ? (
-                    <Link to={`/admin/orders/${o.id}`}>
-                      <Button variant="ghost" size="icon" title="Voir la commande">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Button variant="ghost" size="icon" disabled aria-label="Voir la commande">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-            {rows.length === 0 && (
+            {/* Chargement : squelettes de lignes, même nombre que les données attendues. */}
+            {loading ? (
+              <>
+                <tr className="sr-only" aria-busy="true">
+                  <td>Chargement des commandes…</td>
+                </tr>
+                {Array.from({ length: 6 }, (_, i) => (
+                  <OrderRowSkeleton key={i} />
+                ))}
+              </>
+            ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
                   Aucune commande.
                 </TableCell>
               </TableRow>
+            ) : (
+              rows.map((o) => (
+                <TableRow key={o.id}>
+                  <TableCell className="font-mono text-xs">{o.id}</TableCell>
+                  <TableCell>{o.customerName}</TableCell>
+                  <TableCell className="text-sm">{o.wilaya}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(o.createdAt).toLocaleDateString("fr-FR")}
+                  </TableCell>
+                  <TableCell className="text-end font-medium">{formatDZD(o.total)}</TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {/* Niveau 1 — la consultation du détail est un `read`, toujours permis. */}
+                    {can("read") ? (
+                      <Link to={`/admin/orders/${o.id}`}>
+                        <Button variant="ghost" size="icon" title="Voir la commande">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button variant="ghost" size="icon" disabled aria-label="Voir la commande">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>

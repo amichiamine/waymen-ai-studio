@@ -3,29 +3,36 @@ import { Link } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "./Logo";
-import { useAdminState, addSubscriber } from "@/lib/admin-store";
+import { useSiteContent, useSubscriberMutations } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import { useLocalize } from "@/lib/i18n";
 
 export function Footer() {
-  const { siteContent } = useAdminState();
+  // loading inerte en mode mock. En http, data est le repli (seedSiteContent)
+  // jusqu'au premier aller-retour — le pied de page reste visible avec les
+  // valeurs par défaut. Dégradation gracieuse : un footer vide casserait
+  // toutes les pages.
+  const { data: siteContent } = useSiteContent();
   const f = siteContent.footer;
   const L = useLocalize();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
+  const { subscribe } = useSubscriberMutations();
 
-  function subscribe(e: React.FormEvent) {
+  async function handleSubscribe(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const r = addSubscriber(email, "footer");
-    setBusy(false);
-    if (!r.ok) {
-      toast.error(r.error || "Inscription impossible");
-      return;
+    try {
+      await subscribe(email, "footer");
+      toast.success("Merci pour votre inscription !");
+      setEmail("");
+    } catch {
+      toast.error("Inscription impossible");
+    } finally {
+      setBusy(false);
     }
-    toast.success("Merci pour votre inscription !");
-    setEmail("");
   }
+
   return (
     <footer className="mt-24 border-t border-border bg-card/40 animate-fade-in-up">
       <div className="container-page py-14 grid gap-10 md:grid-cols-5">
@@ -52,7 +59,7 @@ export function Footer() {
               })}
             </div>
           )}
-          <form onSubmit={subscribe} className="pt-3 max-w-sm">
+          <form onSubmit={handleSubscribe} className="pt-3 max-w-sm">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">
               Newsletter
             </label>

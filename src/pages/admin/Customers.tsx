@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Input } from "@/components/ui/input";
@@ -33,13 +34,8 @@ import {
 import { Link } from "react-router-dom";
 import { formatDZD } from "@/data/products";
 import { WILAYAS } from "@/data/wilayas";
-import {
-  useAdminState,
-  upsertCustomer,
-  deleteCustomer,
-  type Customer,
-  type Order,
-} from "@/lib/admin-store";
+import { useCustomerList, useOrderList, useCustomerMutations, toApiError } from "@/data-provider";
+import type { Customer, Order } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 const STATUS_LABEL: Record<Order["status"], string> = {
@@ -79,6 +75,8 @@ type FormProps = {
   existingEmails: string[];
   canSave: boolean;
   onGuardFail: () => boolean;
+  onSave: (customer: Customer) => Promise<void>;
+  saving: boolean;
 };
 
 function CustomerForm({
@@ -88,6 +86,8 @@ function CustomerForm({
   existingEmails,
   canSave,
   onGuardFail,
+  onSave,
+  saving,
 }: FormProps) {
   const [v, setV] = useState<CustomerFormValues>({
     name: initial?.name ?? "",
@@ -110,7 +110,7 @@ function CustomerForm({
     setErr({});
   }
 
-  function save() {
+  async function save() {
     // Niveau 2 — vérification impérative avant toute mutation.
     if (!onGuardFail()) return;
 
@@ -144,8 +144,7 @@ function CustomerForm({
       ordersCount: initial?.ordersCount ?? 0,
       totalSpent: initial?.totalSpent ?? 0,
     };
-    upsertCustomer(customer);
-    toast.success(initial ? `« ${customer.name} » mis à jour` : `Client « ${customer.name} » créé`);
+    await onSave(customer);
     setErr({});
     onOpenChange(false);
   }
@@ -168,7 +167,7 @@ function CustomerForm({
               value={v.name}
               onChange={(e) => setV({ ...v, name: e.target.value })}
               placeholder="Prénom Nom"
-              disabled={!canSave}
+              disabled={!canSave || saving}
             />
             {err.name && <p className="text-xs text-destructive">{err.name}</p>}
           </div>
@@ -182,7 +181,7 @@ function CustomerForm({
               value={v.email}
               onChange={(e) => setV({ ...v, email: e.target.value })}
               placeholder="client@example.dz"
-              disabled={!canSave}
+              disabled={!canSave || saving}
             />
             {err.email && <p className="text-xs text-destructive">{err.email}</p>}
           </div>
@@ -196,7 +195,7 @@ function CustomerForm({
               value={v.phone}
               onChange={(e) => setV({ ...v, phone: e.target.value })}
               placeholder="0XXXXXXXXX"
-              disabled={!canSave}
+              disabled={!canSave || saving}
             />
             {err.phone && <p className="text-xs text-destructive">{err.phone}</p>}
           </div>
@@ -207,7 +206,7 @@ function CustomerForm({
             <Select
               value={v.wilaya}
               onValueChange={(x) => setV({ ...v, wilaya: x })}
-              disabled={!canSave}
+              disabled={!canSave || saving}
             >
               <SelectTrigger id="cf-wilaya">
                 <SelectValue placeholder="Sélectionner une wilaya…" />
@@ -225,11 +224,11 @@ function CustomerForm({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Annuler
           </Button>
-          <Button onClick={save} disabled={!canSave}>
-            Enregistrer
+          <Button onClick={save} disabled={!canSave || saving}>
+            {saving ? "Enregistrement…" : "Enregistrer"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -239,7 +238,11 @@ function CustomerForm({
 
 // ---------- Page principale ----------
 export default function AdminCustomers() {
-  const { customers, orders } = useAdminState();
+  // Lecture via le fournisseur de données — remplace useAdminState().customers.
+  // En mode mock, `loading` est faux dès le premier rendu et `error` reste nul.
+  const { data: customers, loading: loadingCustomers, error: errorCustomers } = useCustomerList();
+  const { data: orders, loading: loadingOrders } = useOrderList();
+  const { upsert, remove } = useCustomerMutations();
   const { can, guard, denyReason } = usePermissions();
 
   const [q, setQ] = useState("");
@@ -247,6 +250,7 @@ export default function AdminCustomers() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | undefined>(undefined);
   const [toDelete, setToDelete] = useState<Customer | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Index email existants pour validation d'unicité
   const existingEmails = useMemo(() => customers.map((c) => c.email.toLowerCase()), [customers]);
@@ -308,7 +312,8 @@ export default function AdminCustomers() {
     };
   }, [detailOrders]);
 
-  // Nombre de commandes actives pour la garde métier de suppression
+  // Nombre de commandes actives pour la garde métier de suppression.
+  // Cette garde métier s'ajoute à la garde de permission `delete`.
   const deleteOrderCount = useMemo(() => {
     if (!toDelete) return 0;
     return orders.filter((o) => o.customerId === toDelete.id && o.status !== "cancelled").length;
@@ -329,16 +334,50 @@ export default function AdminCustomers() {
     return guard(editing ? "update" : "create", editing ? "Modifier le client" : "Créer le client");
   }
 
-  function confirmDelete() {
-    if (!toDelete) return;
-    // Niveau 2 — vérification impérative.
-    if (!guard("delete", "Supprimer le client")) return;
-    deleteCustomer(toDelete.id);
-    toast.success(`Client « ${toDelete.name} » supprimé`);
-    setToDelete(null);
-    // Fermer la vue détail si le client supprimé y était affiché
-    if (selected?.id === toDelete.id) setSelected(null);
+  // Mutation asynchrone — désactive le formulaire pendant l'appel.
+  async function handleSave(customer: Customer) {
+    setSaving(true);
+    try {
+      await upsert(customer);
+      toast.success(
+        editing ? `« ${customer.name} » mis à jour` : `Client « ${customer.name} » créé`,
+      );
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+      throw cause; // Ré-émettre pour que CustomerForm ne ferme pas le Dialog.
+    } finally {
+      setSaving(false);
+    }
   }
+
+  // Mutation asynchrone — désactive le bouton pendant l'appel.
+  async function confirmDelete() {
+    if (!toDelete) return;
+    // Niveau 2 — vérification impérative. Ordre : garde de permission → mutation.
+    if (!guard("delete", "Supprimer le client")) return;
+    // Garde métier : refus si commandes actives. S'ajoute à la garde de permission.
+    if (deleteOrderCount > 0) {
+      setToDelete(null);
+      return;
+    }
+    setSaving(true);
+    try {
+      await remove(toDelete.id);
+      toast.success(`Client « ${toDelete.name} » supprimé`);
+      setToDelete(null);
+      // Fermer la vue détail si le client supprimé y était affiché
+      if (selected?.id === toDelete.id) setSelected(null);
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Squelette de chargement — même structure que le tableau final.
+  const isLoading = loadingCustomers || loadingOrders;
 
   return (
     <AdminPageShell
@@ -359,6 +398,17 @@ export default function AdminCustomers() {
         )
       }
     >
+      {/* Erreur au-dessus du contenu, sans remplacer la page (§5.3). */}
+      {errorCustomers && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {errorCustomers.message}
+        </p>
+      )}
+
       {/* Barre de recherche */}
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -386,73 +436,100 @@ export default function AdminCustomers() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.name}</TableCell>
-                <TableCell className="text-sm">{c.email}</TableCell>
-                <TableCell className="text-sm">{c.phone}</TableCell>
-                <TableCell className="text-sm">{c.wilaya}</TableCell>
-                <TableCell className="text-end">{c.ordersCount}</TableCell>
-                <TableCell className="text-end font-medium">{formatDZD(c.totalSpent)}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {c.lastOrderAt ? new Date(c.lastOrderAt).toLocaleDateString("fr-FR") : "—"}
-                </TableCell>
-                <TableCell className="text-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="me-1"
-                    onClick={() => setSelected(c)}
-                  >
-                    Détails
-                  </Button>
-
-                  {/* Modifier — niveau 1+3 */}
-                  {can("update") ? (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Modifier"
-                      onClick={() => openEdit(c)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <span title={denyReason("update")} className="inline-flex align-middle">
-                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
-                        <Pencil className="h-4 w-4" />
+            {isLoading ? (
+              <>
+                <tr className="sr-only" aria-busy="true">
+                  <td>Chargement des clients…</td>
+                </tr>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <TableRow key={i}>
+                    {[120, 150, 100, 80, 50, 80, 80, 100].map((w, j) => (
+                      <TableCell key={j}>
+                        <div
+                          className="h-4 animate-pulse rounded bg-muted"
+                          style={{ width: `${w}px` }}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </>
+            ) : (
+              <>
+                {rows.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-medium">{c.name}</TableCell>
+                    <TableCell className="text-sm">{c.email}</TableCell>
+                    <TableCell className="text-sm">{c.phone}</TableCell>
+                    <TableCell className="text-sm">{c.wilaya}</TableCell>
+                    <TableCell className="text-end">{c.ordersCount}</TableCell>
+                    <TableCell className="text-end font-medium">
+                      {formatDZD(c.totalSpent)}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {c.lastOrderAt ? new Date(c.lastOrderAt).toLocaleDateString("fr-FR") : "—"}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="me-1"
+                        onClick={() => setSelected(c)}
+                      >
+                        Détails
                       </Button>
-                    </span>
-                  )}
 
-                  {/* Supprimer — niveau 1+3 */}
-                  <span
-                    title={denyReason("delete") ?? "Supprimer"}
-                    className="inline-flex align-middle"
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Supprimer"
-                      disabled={!can("delete")}
-                      onClick={() => setToDelete(c)}
+                      {/* Modifier — niveau 1+3 */}
+                      {can("update") ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Modifier"
+                          onClick={() => openEdit(c)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <span title={denyReason("update")} className="inline-flex align-middle">
+                          <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </span>
+                      )}
+
+                      {/* Supprimer — niveau 1+3 */}
+                      <span
+                        title={denyReason("delete") ?? "Supprimer"}
+                        className="inline-flex align-middle"
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Supprimer"
+                          disabled={!can("delete")}
+                          onClick={() => setToDelete(c)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {/* État vide utile */}
+                {rows.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="h-24 text-center text-sm text-muted-foreground"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-
-            {/* État vide utile */}
-            {rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
-                  {q
-                    ? "Aucun client ne correspond à la recherche."
-                    : "Aucun client enregistré. Créez le premier client avec le bouton ci-dessus."}
-                </TableCell>
-              </TableRow>
+                      {q
+                        ? "Aucun client ne correspond à la recherche."
+                        : "Aucun client enregistré. Créez le premier client avec le bouton ci-dessus."}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
             )}
           </TableBody>
         </Table>
@@ -583,6 +660,8 @@ export default function AdminCustomers() {
         existingEmails={existingEmails}
         canSave={can(editing ? "update" : "create")}
         onGuardFail={guardSave}
+        onSave={handleSave}
+        saving={saving}
       />
 
       {/* Dialog de confirmation de suppression avec garde métier */}

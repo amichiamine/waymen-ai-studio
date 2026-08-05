@@ -21,7 +21,7 @@ import { ThemeToggle, LanguageToggle } from "./ThemeLanguageToggles";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { useAdminRoles } from "@/lib/admin-auth";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import {
   DropdownMenu,
@@ -41,7 +41,10 @@ export function Header() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminRoles();
   const { cartCount, favorites } = useStore();
-  const { siteContent } = useAdminState();
+  // loading inerte en mode mock. En http, data est le repli (seedSiteContent)
+  // jusqu'au premier aller-retour — l'en-tête reste visible avec les valeurs
+  // par défaut. Dégradation gracieuse : un header vide casserait toutes les pages.
+  const { data: siteContent } = useSiteContent();
   const H = siteContent.header;
   const navigate = useNavigate();
 

@@ -1,10 +1,13 @@
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
 export function WhyUs() {
-  const { siteContent } = useAdminState();
+  // loading inerte en mode mock. En http, on rend la section avec les valeurs
+  // de repli (tableau vide) le temps du premier aller-retour — pas de
+  // squelette : la section est secondaire, l'absence de cartes est invisible.
+  const { data: siteContent } = useSiteContent();
   const w = siteContent.whyUs;
   const L = useLocalize();
   return (

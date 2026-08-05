@@ -53,14 +53,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  useAdminState,
-  canPerform,
-  setActiveRole,
-  markAllNotificationsRead,
-  updateNotification,
-  type AdminUserRole,
-} from "@/lib/admin-store";
+import { canPerform, setActiveRole, type AdminUserRole } from "@/lib/admin-store";
+import { useNotificationList, useNotificationMutations } from "@/data-provider";
 import { ADMIN_ROLES, ADMIN_ROLE_LABEL, useEffectiveRole } from "@/lib/admin-auth";
 import { useAuth } from "@/lib/auth";
 
@@ -337,7 +331,10 @@ export function AdminRoleSwitcher() {
 
 // ---------- Notification bell ----------
 export function AdminNotificationBell() {
-  const { notifications } = useAdminState();
+  // loading inerte en mode mock. En http, data vaut [] (repli stable) jusqu'au
+  // premier aller-retour — la cloche reste visible sans badge.
+  const { data: notifications } = useNotificationList();
+  const { markRead, markAllRead } = useNotificationMutations();
   const unread = notifications.filter((n) => !n.read).length;
   const latest = notifications.slice(0, 6);
   return (
@@ -359,7 +356,7 @@ export function AdminNotificationBell() {
             variant="ghost"
             size="sm"
             className="h-7 text-xs"
-            onClick={markAllNotificationsRead}
+            onClick={() => void markAllRead()}
             disabled={unread === 0}
           >
             <Check className="mr-1 h-3 w-3" /> Tout lu
@@ -390,7 +387,7 @@ export function AdminNotificationBell() {
                     {!n.read && (
                       <button
                         className="text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => updateNotification(n.id, { read: true })}
+                        onClick={() => void markRead(n.id, true)}
                       >
                         Marquer lu
                       </button>

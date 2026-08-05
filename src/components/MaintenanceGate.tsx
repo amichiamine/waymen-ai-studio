@@ -1,16 +1,28 @@
 import { Link } from "react-router-dom";
 import { Wrench, LogIn } from "lucide-react";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteSettings } from "@/data-provider";
 import { useI18n } from "@/lib/i18n";
 import { Logo } from "./Logo";
 
 /**
  * Full-page maintenance screen shown when siteSettings.maintenance is true.
  * The App gate skips this for /admin/* and /auth so operators can still work.
+ *
+ * Cas `loading` en mode http : si les réglages ne sont pas encore chargés,
+ * on retourne null et on laisse passer le reste de l'application. Afficher
+ * « site en maintenance » pendant un aller-retour réseau serait pire que
+ * le mal — le visiteur verrait un écran de maintenance pour un site
+ * parfaitement fonctionnel. En mode mock, loading vaut false dès le premier
+ * rendu : ce comportement est complètement inerte.
  */
 export function MaintenanceScreen() {
-  const { siteSettings: s } = useAdminState();
+  const { data: s, loading } = useSiteSettings();
   const { t } = useI18n();
+
+  // On laisse passer tant que les réglages ne sont pas encore connus.
+  // Voir commentaire de fonction ci-dessus.
+  if (loading) return null;
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="max-w-lg w-full text-center space-y-6">
