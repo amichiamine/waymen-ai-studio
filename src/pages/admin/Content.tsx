@@ -17,8 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2, RotateCcw, Save, AlertTriangle } from "lucide-react";
 import { useSiteContent, useSiteContentMutations, toApiError } from "@/data-provider";
-// resetSiteContentSection : pas encore exposé par le provider — migration douce §4.
-import { resetSiteContentSection } from "@/lib/admin-store";
 import type { SiteContent } from "@/lib/site-content";
 import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
@@ -141,7 +139,7 @@ const SECTIONS: { key: keyof SiteContent; label: string }[] = [
 
 export default function AdminContent() {
   const { data: siteContent, loading, error } = useSiteContent();
-  const { update } = useSiteContentMutations();
+  const { update, resetSection } = useSiteContentMutations();
   const perms = usePermissions();
   const [tab, setTab] = useState<keyof SiteContent>("header");
 
@@ -183,6 +181,7 @@ export default function AdminContent() {
                 value={siteContent[s.key]}
                 perms={perms}
                 onSaveSection={update}
+                onResetSection={resetSection}
               />
             </TabsContent>
           ))}
@@ -198,12 +197,14 @@ function SectionEditor<K extends keyof SiteContent>({
   value,
   perms,
   onSaveSection,
+  onResetSection,
 }: {
   sectionKey: K;
   label: string;
   value: SiteContent[K];
   perms: PermissionsApi;
   onSaveSection: (patch: Partial<SiteContent>) => Promise<void>;
+  onResetSection: (section: K) => Promise<void>;
 }) {
   const { can, guard, denyReason } = perms;
   const [draft, setDraft] = useState<SiteContent[K]>(value);
@@ -237,8 +238,7 @@ function SectionEditor<K extends keyof SiteContent>({
     if (!guard("update", "Réinitialiser la section")) return;
     setSaving(true);
     try {
-      // resetSiteContentSection : pas encore exposé par le provider — migration douce §4.
-      resetSiteContentSection(sectionKey);
+      await onResetSection(sectionKey);
       toast.success("Section réinitialisée");
     } catch (cause) {
       const err = toApiError(cause);

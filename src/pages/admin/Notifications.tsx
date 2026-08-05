@@ -33,9 +33,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useNotificationList, useNotificationMutations, toApiError } from "@/data-provider";
-// addNotification n'est pas encore exposé par le provider (phase 4).
-// Migration douce — DATA-PROVIDER.md §4 : admin-store reste valide pendant phase 2.
-import { addNotification, type NotificationLevel } from "@/lib/admin-store";
+import type { NotificationLevel } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 const LEVEL: Record<NotificationLevel, { label: string; Icon: typeof Bell; className: string }> = {
@@ -47,7 +45,7 @@ const LEVEL: Record<NotificationLevel, { label: string; Icon: typeof Bell; class
 
 export default function AdminNotifications() {
   const { data: notifications, loading, error } = useNotificationList();
-  const { markRead, markAllRead, remove } = useNotificationMutations();
+  const { create, markRead, markAllRead, remove } = useNotificationMutations();
   const { can, guard, denyReason } = usePermissions();
   const [filter, setFilter] = useState<"all" | "unread" | NotificationLevel>("all");
   const [open, setOpen] = useState(false);
@@ -111,26 +109,33 @@ export default function AdminNotifications() {
     }
   }
 
-  function create() {
+  async function handleCreate() {
     if (!title.trim()) {
       toast.error("Titre requis");
       return;
     }
     // Niveau 2 — vérification dans l'action.
-    // addNotification reste synchrone (pas encore dans le provider — phase 4).
     if (!guard("create", "Créer la notification")) return;
-    addNotification({
-      title: title.trim(),
-      body: body.trim(),
-      level,
-      link: link.trim() || undefined,
-    });
-    toast.success("Notification créée");
-    setOpen(false);
-    setTitle("");
-    setBody("");
-    setLevel("info");
-    setLink("");
+    setSaving(true);
+    try {
+      await create({
+        title: title.trim(),
+        body: body.trim() || undefined,
+        level,
+        link: link.trim() || undefined,
+      });
+      toast.success("Notification créée");
+      setOpen(false);
+      setTitle("");
+      setBody("");
+      setLevel("info");
+      setLink("");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -335,7 +340,9 @@ export default function AdminNotifications() {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
-            <Button onClick={create}>Créer</Button>
+            <Button onClick={handleCreate} disabled={saving}>
+              Créer
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
