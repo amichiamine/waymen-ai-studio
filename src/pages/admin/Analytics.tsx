@@ -10,12 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
-import {
-  useOrderList,
-  useProductList,
-  useCategoryList,
-  useCustomerList,
-} from "@/data-provider";
+import { useOrderList, useProductList, useCategoryList, useCustomerList } from "@/data-provider";
 import type { OrderStatus } from "@/lib/admin-store";
 import { formatDZD } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
