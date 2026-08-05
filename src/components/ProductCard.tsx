@@ -5,12 +5,13 @@ import { type Product, formatDZD } from "@/data/products";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
-import { useAdminState } from "@/lib/admin-store";
+import { useReviewList, useSiteSettings } from "@/data-provider";
 
 export function ProductCard({ p }: { p: Product }) {
   const { t } = useI18n();
   const { isFavorite, toggleFavorite, addToCart } = useStore();
-  const { reviews, siteSettings } = useAdminState();
+  const { data: reviews } = useReviewList();
+  const { data: siteSettings } = useSiteSettings();
   const liked = isFavorite(p.id);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
   const name = p.name;

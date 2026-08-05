@@ -1,10 +1,13 @@
 import { Star } from "lucide-react";
-import { useAdminState } from "@/lib/admin-store";
+import { useHomeReviewList, useSiteContent } from "@/data-provider";
+import { useProducts } from "@/lib/useProducts";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
 export function Reviews() {
-  const { homeReviews, products, siteContent } = useAdminState();
+  const { data: homeReviews } = useHomeReviewList();
+  const products = useProducts();
+  const { data: siteContent } = useSiteContent();
   const L = useLocalize();
   if (homeReviews.length === 0) return null;
   const cfg = siteContent.reviews;
