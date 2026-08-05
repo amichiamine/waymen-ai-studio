@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Search, ScrollText, Download, Trash2 } from "lucide-react";
 import { useAdminState, clearData } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 import { toast } from "sonner";
 
 function categoryOf(action: string): string {
@@ -38,6 +39,7 @@ function badgeVariant(cat: string): "default" | "secondary" | "destructive" | "o
 
 export default function AdminAudit() {
   const { auditLogs } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
 
@@ -62,6 +64,8 @@ export default function AdminAudit() {
   }, [auditLogs, q, cat]);
 
   const exportCsv = () => {
+    // Export = lecture — `read` suffit. Niveau 2 dans l'action.
+    if (!guard("read", "Exporter le journal")) return;
     const header = ["Date", "Acteur", "Action", "Entité", "Détail"];
     const lines = [
       header,
@@ -70,7 +74,7 @@ export default function AdminAudit() {
     const csv = lines
       .map((r) => r.map((v) => (/[",\n;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)).join(","))
       .join("\n");
-    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `ka-audit-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -80,6 +84,9 @@ export default function AdminAudit() {
   };
 
   const clear = () => {
+    // Vider le journal est une action destructive : clé `delete` (admin minimum).
+    // Niveau 2 — vérification impérative avant la mutation.
+    if (!guard("delete", "Vider le journal d'audit")) return;
     if (!confirm("Vider tout le journal d'audit ?")) return;
     clearData("auditLogs");
     toast.success("Journal vidé");
@@ -91,21 +98,39 @@ export default function AdminAudit() {
       description={`${auditLogs.length} événement${auditLogs.length > 1 ? "s" : ""} journalisé${auditLogs.length > 1 ? "s" : ""} (500 max, roulement).`}
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCsv} disabled={auditLogs.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> CSV
-          </Button>
-          <Button variant="outline" onClick={clear} disabled={auditLogs.length === 0}>
-            <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Vider
-          </Button>
+          {/* Niveau 1 — affichage. Export (lecture) */}
+          {can("read") ? (
+            <Button variant="outline" onClick={exportCsv} disabled={auditLogs.length === 0}>
+              <Download className="me-2 h-4 w-4" /> CSV
+            </Button>
+          ) : (
+            <span title={denyReason("read")} className="inline-flex">
+              <Button variant="outline" disabled>
+                <Download className="me-2 h-4 w-4" /> CSV
+              </Button>
+            </span>
+          )}
+          {/* Niveau 1 — affichage. Vider (delete) */}
+          {can("delete") ? (
+            <Button variant="outline" onClick={clear} disabled={auditLogs.length === 0}>
+              <Trash2 className="me-2 h-4 w-4 text-destructive" /> Vider
+            </Button>
+          ) : (
+            <span title={denyReason("delete")} className="inline-flex">
+              <Button variant="outline" disabled>
+                <Trash2 className="me-2 h-4 w-4 text-destructive" /> Vider
+              </Button>
+            </span>
+          )}
         </div>
       }
     >
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-[240px] flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Rechercher (action, entité, acteur)…"
-            className="pl-9"
+            className="ps-9"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />

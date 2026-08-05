@@ -15,6 +15,11 @@ import {
   ARRAY_KEYS,
   type ArrayKey,
 } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
+
+// Toutes les actions de cette page relèvent de `resetData` (propriétaire
+// uniquement). C'est la page la plus destructive du back-office : chaque
+// mutation — y compris l'import JSON qui écrase l'état — exige le niveau 2.
 
 type ResetTarget = ArrayKey | "siteSettings" | "shippingSettings";
 type Row = { key: ResetTarget; label: string; description: string };
@@ -102,6 +107,7 @@ type PendingAction =
 
 export default function AdminReset() {
   const state = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<PendingAction | null>(null);
 
@@ -134,6 +140,9 @@ export default function AdminReset() {
 
   function exec() {
     if (!pending) return;
+    // Niveau 2 — vérification impérative dans l'exécuteur, avant toute mutation.
+    // Cette page est la plus destructive : la garde s'applique à chaque chemin.
+    if (!guard("resetData", "Confirmer l'action")) return;
     try {
       if (pending.kind === "reset") {
         resetData(pending.key);
@@ -161,6 +170,8 @@ export default function AdminReset() {
   }
 
   function downloadJson() {
+    // Export JSON = lecture — pas de garde `resetData`. Niveau 2 avec `read`.
+    if (!guard("read", "Exporter en JSON")) return;
     try {
       const json = exportState();
       const blob = new Blob([json], { type: "application/json" });
@@ -187,6 +198,8 @@ export default function AdminReset() {
       toast.error("Fichier trop volumineux (>5 Mo)");
       return;
     }
+    // L'import écrase l'état — il demande `resetData`. Le setPending déclenche
+    // la ConfirmDialog, et c'est `exec()` (avec sa garde) qui effectue l'import.
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? "");
@@ -195,6 +208,9 @@ export default function AdminReset() {
     reader.onerror = () => toast.error("Impossible de lire le fichier");
     reader.readAsText(file);
   }
+
+  // Niveau 1 — la page entière est réservée à `resetData`.
+  const disabledReset = !can("resetData");
 
   const dialogTitle = !pending
     ? ""
@@ -225,6 +241,7 @@ export default function AdminReset() {
         </AlertDescription>
       </Alert>
 
+      {/* ── Sauvegarde & restauration ─────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -232,12 +249,22 @@ export default function AdminReset() {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
+          {/* Export JSON = lecture, accessible à tous les rôles admin. */}
           <Button variant="outline" onClick={downloadJson}>
-            <Download className="mr-2 h-4 w-4" /> Exporter en JSON
+            <Download className="me-2 h-4 w-4" /> Exporter en JSON
           </Button>
-          <Button variant="outline" onClick={() => fileRef.current?.click()}>
-            <Upload className="mr-2 h-4 w-4" /> Importer un JSON…
-          </Button>
+          {/* Import = mutation → resetData. Niveau 1 — bouton désactivé. */}
+          {can("resetData") ? (
+            <Button variant="outline" onClick={() => fileRef.current?.click()}>
+              <Upload className="me-2 h-4 w-4" /> Importer un JSON…
+            </Button>
+          ) : (
+            <span title={denyReason("resetData")} className="inline-flex">
+              <Button variant="outline" disabled>
+                <Upload className="me-2 h-4 w-4" /> Importer un JSON…
+              </Button>
+            </span>
+          )}
           <input
             ref={fileRef}
             type="file"
@@ -248,6 +275,7 @@ export default function AdminReset() {
         </CardContent>
       </Card>
 
+      {/* ── Actions globales ──────────────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -255,17 +283,34 @@ export default function AdminReset() {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Button
-            onClick={() => setPending({ kind: "reset", key: "all", label: "toutes les données" })}
-          >
-            <RotateCcw className="mr-2 h-4 w-4" /> Réinitialiser toute la boutique
-          </Button>
-          <Button variant="destructive" onClick={() => setPending({ kind: "clearAll" })}>
-            <Trash2 className="mr-2 h-4 w-4" /> Tout vider
-          </Button>
+          {can("resetData") ? (
+            <Button
+              onClick={() => setPending({ kind: "reset", key: "all", label: "toutes les données" })}
+            >
+              <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser toute la boutique
+            </Button>
+          ) : (
+            <span title={denyReason("resetData")} className="inline-flex">
+              <Button disabled>
+                <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser toute la boutique
+              </Button>
+            </span>
+          )}
+          {can("resetData") ? (
+            <Button variant="destructive" onClick={() => setPending({ kind: "clearAll" })}>
+              <Trash2 className="me-2 h-4 w-4" /> Tout vider
+            </Button>
+          ) : (
+            <span title={denyReason("resetData")} className="inline-flex">
+              <Button variant="destructive" disabled>
+                <Trash2 className="me-2 h-4 w-4" /> Tout vider
+              </Button>
+            </span>
+          )}
         </CardContent>
       </Card>
 
+      {/* ── Par type de données ───────────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <CardTitle>Par type de données</CardTitle>
@@ -276,7 +321,7 @@ export default function AdminReset() {
               <div className="min-w-0">
                 <p className="font-medium">
                   {r.label}
-                  <span className="ml-2 text-xs text-muted-foreground">
+                  <span className="ms-2 text-xs text-muted-foreground">
                     {r.key === "siteSettings" || r.key === "shippingSettings"
                       ? "objet unique"
                       : `${totals[r.key]} enregistrement${totals[r.key] > 1 ? "s" : ""}`}
@@ -285,24 +330,41 @@ export default function AdminReset() {
                 <p className="text-xs text-muted-foreground">{r.description}</p>
               </div>
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    setPending({ kind: "reset", key: r.key, label: r.label.toLowerCase() })
-                  }
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" /> Réinitialiser
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() =>
-                    setPending({ kind: "clear", key: r.key, label: r.label.toLowerCase() })
-                  }
-                >
-                  <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Vider
-                </Button>
+                {/* Niveau 1 — chaque bouton désactivé porte son infobulle. */}
+                {can("resetData") ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      setPending({ kind: "reset", key: r.key, label: r.label.toLowerCase() })
+                    }
+                  >
+                    <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+                  </Button>
+                ) : (
+                  <span title={denyReason("resetData")} className="inline-flex">
+                    <Button size="sm" variant="outline" disabled>
+                      <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+                    </Button>
+                  </span>
+                )}
+                {can("resetData") ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      setPending({ kind: "clear", key: r.key, label: r.label.toLowerCase() })
+                    }
+                  >
+                    <Trash2 className="me-2 h-4 w-4 text-destructive" /> Vider
+                  </Button>
+                ) : (
+                  <span title={denyReason("resetData")} className="inline-flex">
+                    <Button size="sm" variant="ghost" disabled>
+                      <Trash2 className="me-2 h-4 w-4 text-destructive" /> Vider
+                    </Button>
+                  </span>
+                )}
               </div>
             </div>
           ))}
@@ -317,9 +379,26 @@ export default function AdminReset() {
         title={dialogTitle}
         description={dialogDesc}
         confirmLabel={pending?.kind === "import" ? "Importer" : "Confirmer"}
-        destructive={pending?.kind === "clear" || pending?.kind === "clearAll"}
+        destructive={
+          pending?.kind === "clear" ||
+          pending?.kind === "clearAll" ||
+          pending?.kind === "import" ||
+          (pending?.kind === "reset" && pending.key === "all")
+        }
         onConfirm={exec}
       />
+
+      {/* Niveau 1 — bannière informative quand l'accès est refusé. */}
+      {disabledReset && (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Accès restreint</AlertTitle>
+          <AlertDescription>
+            {denyReason("resetData") ??
+              "La réinitialisation des données est réservée au Propriétaire."}
+          </AlertDescription>
+        </Alert>
+      )}
     </AdminPageShell>
   );
 }

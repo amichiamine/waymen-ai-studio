@@ -13,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -38,6 +37,13 @@ import {
   type AdminUser,
   type AdminUserRole,
 } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
+
+// La page est CONSULTABLE par les administrateurs (read), mais toutes les
+// mutations (créer, modifier, supprimer, changer de rôle, changer un mot de
+// passe) sont réservées au propriétaire via `manageUsers`. Sans cela, un
+// `admin` pourrait se promouvoir `owner` en deux clics — élévation de
+// privilèges. Voir docs/PERMISSIONS.md §2 justification 3.
 
 const ROLE_LABEL: Record<AdminUserRole, string> = {
   owner: "Propriétaire",
@@ -58,6 +64,7 @@ type V = z.infer<typeof schema> & { id?: string };
 
 export default function AdminUsers() {
   const { users } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [open, setOpen] = useState(false);
   const [v, setV] = useState<V>({
     name: "",
@@ -69,17 +76,27 @@ export default function AdminUsers() {
   const [err, setErr] = useState<Record<string, string>>({});
 
   function openNew() {
+    // Niveau 1 — l'ouverture de la boîte de création est conditionnée par
+    // `manageUsers`. Le handler `save` revérifie (niveau 2).
+    if (!can("manageUsers")) return;
     setV({ name: "", email: "", role: "editor", active: true, password: "" });
     setErr({});
     setOpen(true);
   }
+
   function openEdit(u: AdminUser) {
+    // Niveau 1 — même garde pour la modification.
+    if (!can("manageUsers")) return;
     setV({ id: u.id, name: u.name, email: u.email, role: u.role, active: u.active, password: "" });
     setErr({});
     setOpen(true);
   }
 
   function save() {
+    // Niveau 2 — vérification impérative dans le handler, avant toute mutation.
+    // Le masquage du bouton ne protège pas contre une invocation directe ou un
+    // état obsolète (rôle changé pendant que la boîte était ouverte).
+    if (!guard("manageUsers", "Enregistrer l'utilisateur")) return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Record<string, string> = {};
@@ -118,10 +135,13 @@ export default function AdminUsers() {
   }
 
   function onDelete(u: AdminUser) {
+    // Garde métier existante conservée — on n'élève pas la permission requise.
     if (u.role === "owner") {
       toast.error("Impossible de supprimer le propriétaire.");
       return;
     }
+    // Niveau 2 — vérification de la permission avant la mutation de suppression.
+    if (!guard("manageUsers", "Supprimer l'utilisateur")) return;
     if (!confirm(`Supprimer ${u.name} ?`)) return;
     deleteUser(u.id);
     toast.success("Utilisateur supprimé");
@@ -132,9 +152,19 @@ export default function AdminUsers() {
       title="Utilisateurs & rôles"
       description={`${users.length} membres de l'équipe.`}
       actions={
-        <Button onClick={openNew}>
-          <Plus className="mr-2 h-4 w-4" /> Inviter
-        </Button>
+        // Niveau 1 — le bouton « Inviter » est masqué (bouton désactivé avec
+        // infobulle) pour les non-propriétaires.
+        can("manageUsers") ? (
+          <Button onClick={openNew}>
+            <Plus className="me-2 h-4 w-4" /> Inviter
+          </Button>
+        ) : (
+          <span title={denyReason("manageUsers")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Inviter
+            </Button>
+          </span>
+        )
       }
     >
       <div className="overflow-hidden rounded-lg border">
@@ -146,7 +176,7 @@ export default function AdminUsers() {
               <TableHead>Rôle</TableHead>
               <TableHead>Dernière connexion</TableHead>
               <TableHead>Statut</TableHead>
-              <TableHead className="w-[100px] text-right">Actions</TableHead>
+              <TableHead className="w-[100px] text-end">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -165,13 +195,32 @@ export default function AdminUsers() {
                 <TableCell>
                   {u.active ? <Badge>Actif</Badge> : <Badge variant="secondary">Désactivé</Badge>}
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(u)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                <TableCell className="text-end">
+                  {/* Niveau 1 — crayon désactivé pour les non-propriétaires.
+                      Niveau 3 — infobulle portée par le <span>. */}
+                  {can("manageUsers") ? (
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <span title={denyReason("manageUsers")} className="inline-flex align-middle">
+                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </span>
+                  )}
+                  {/* Niveau 1 — corbeille désactivée pour les non-propriétaires. */}
+                  {can("manageUsers") ? (
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(u)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  ) : (
+                    <span title={denyReason("manageUsers")} className="inline-flex align-middle">
+                      <Button variant="ghost" size="icon" disabled aria-label="Supprimer">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -188,7 +237,7 @@ export default function AdminUsers() {
             <div>
               <Label>Nom</Label>
               <Input value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} />
-              {err.name && <p className="text-xs text-destructive mt-1">{err.name}</p>}
+              {err.name && <p className="mt-1 text-xs text-destructive">{err.name}</p>}
             </div>
             <div>
               <Label>Email</Label>
@@ -197,7 +246,7 @@ export default function AdminUsers() {
                 value={v.email}
                 onChange={(e) => setV({ ...v, email: e.target.value })}
               />
-              {err.email && <p className="text-xs text-destructive mt-1">{err.email}</p>}
+              {err.email && <p className="mt-1 text-xs text-destructive">{err.email}</p>}
             </div>
             <div>
               <Label>Rôle</Label>
@@ -236,7 +285,7 @@ export default function AdminUsers() {
                 onChange={(e) => setV({ ...v, password: e.target.value })}
                 placeholder={v.id ? "••••••" : "6 caractères minimum"}
               />
-              {err.password && <p className="text-xs text-destructive mt-1">{err.password}</p>}
+              {err.password && <p className="mt-1 text-xs text-destructive">{err.password}</p>}
             </div>
           </div>
           <DialogFooter>
