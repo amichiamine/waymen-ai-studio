@@ -1,0 +1,17 @@
+# Secrets et données locales — jamais versionnés.
+.env
+
+# Dépendances d'outillage de développement uniquement : l'API tourne SANS.
+vendor/
+
+# Bases SQLite et leurs journaux WAL.
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+
+# Dossier de données local (en production il vit HORS de public_html).
+var/
+
+# Témoin d'installation (voir install.php).
+installed.lock
