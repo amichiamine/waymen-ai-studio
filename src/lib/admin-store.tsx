@@ -7,7 +7,7 @@ import {
   type Category,
 } from "@/data/products";
 import { WILAYAS } from "@/data/wilayas";
-import { localize, type Lang } from "@/lib/i18n";
+import { localize, type Lang, type Localized } from "@/lib/i18n";
 import { seedSiteContent, mergeSiteContent, type SiteContent } from "./site-content";
 export type { SiteContent } from "./site-content";
 
@@ -126,9 +126,9 @@ export type Subscriber = {
 export type BlogPost = {
   id: string;
   slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
+  title: Localized<string>;
+  excerpt: Localized<string>;
+  content: Localized<string>;
   cover?: string;
   author: string;
   tags: string[];
