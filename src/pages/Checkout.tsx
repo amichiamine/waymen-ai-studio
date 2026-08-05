@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertTriangle, Tag, MapPin } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 
 const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 const COUPON_KEY = "ka-cart-coupon";
@@ -57,6 +57,7 @@ export default function Checkout() {
   const { cart, clearCart } = useStore();
   const products = useProducts();
   const { t } = useI18n();
+  const L = useLocalize();
 
   // Lectures via le provider — loading/error inertes en mode mock.
   const { data: paymentMethods } = usePaymentMethodList();
@@ -428,7 +429,7 @@ export default function Checkout() {
               <div key={l.product_id} className="flex items-center gap-3 text-sm">
                 <img src={l.product.image} alt="" className="h-12 w-12 rounded object-cover" />
                 <div className="min-w-0 flex-1 text-start">
-                  <p className="truncate">{l.product.name}</p>
+                  <p className="truncate">{L(l.product.name) ?? ""}</p>
                   <p className="text-xs text-muted-foreground">× {l.quantity}</p>
                 </div>
                 <span className="whitespace-nowrap">{fmt(l.product.price * l.quantity)}</span>

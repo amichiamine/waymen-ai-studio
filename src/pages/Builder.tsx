@@ -18,7 +18,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { formatDZD, categoryMeta, isCustomBuild, type Product } from "@/data/products";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import {
@@ -252,6 +252,7 @@ function checkCompatibility(steps: BuilderStep[], picks: Record<string, BuilderP
 
 export default function Builder() {
   const { t } = useI18n();
+  const L = useLocalize();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { addToCart } = useStore();
@@ -352,7 +353,7 @@ export default function Builder() {
     // résoudre la matérialisation côté backend.
     await createProduct(product);
     await addToCart(product.id);
-    toast.success(t("bp.added"), { description: product.specLine });
+    toast.success(t("bp.added"), { description: L(product.specLine) ?? "" });
   }
 
   return (

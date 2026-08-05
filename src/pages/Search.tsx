@@ -3,7 +3,14 @@ import { AlertTriangle, Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { catalogProducts, categoryMeta, type Category } from "@/data/products";
 import { useProductList } from "@/data-provider";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Localized } from "@/lib/i18n";
+
+/** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
+const haystack = (v: Localized<string> | undefined): string =>
+  (typeof v === "object" && v !== null ? [v.fr, v.en, v.ar] : [v])
+    .filter((s): s is string => typeof s === "string")
+    .join(" ")
+    .toLowerCase();
 
 import { ProductCard } from "@/components/ProductCard";
 import { useEffect, useMemo, useState } from "react";
@@ -72,10 +79,10 @@ export default function Search() {
       if (inStock && p.stock === "out") return false;
       if (!term) return true;
       return (
-        p.name.toLowerCase().includes(term) ||
+        haystack(p.name).includes(term) ||
         p.brand.toLowerCase().includes(term) ||
         p.category.includes(term) ||
-        p.specLine.toLowerCase().includes(term)
+        haystack(p.specLine).includes(term)
       );
     });
     if (sort === "low") r = [...r].sort((a, b) => a.price - b.price);

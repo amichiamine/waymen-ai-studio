@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useCouponMutations } from "@/data-provider";
 import type { CouponCheckResult } from "@/api/types";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 
 const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 const COUPON_KEY = "ka-cart-coupon";
@@ -21,6 +21,7 @@ type AppliedCoupon = Extract<CouponCheckResult, { valid: true }>;
 
 export default function Cart() {
   const { t } = useI18n();
+  const L = useLocalize();
   const { cart, updateQty, removeFromCart } = useStore();
   const products = useProducts();
   const { validate: validateCoupon } = useCouponMutations();
@@ -135,12 +136,12 @@ export default function Cart() {
                 <CardContent className="flex items-center gap-4 p-4">
                   <img
                     src={l.product.image}
-                    alt={l.product.name}
+                    alt={L(l.product.name) ?? ""}
                     className="h-20 w-20 rounded object-cover"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{l.product.name}</p>
-                    <p className="text-xs text-muted-foreground">{l.product.specLine}</p>
+                    <p className="truncate font-medium">{L(l.product.name) ?? ""}</p>
+                    <p className="text-xs text-muted-foreground">{L(l.product.specLine)}</p>
                     <div className="mt-1 flex items-center gap-2">
                       <p className="text-sm font-semibold text-primary">{fmt(l.product.price)}</p>
                       {l.product.stock === "out" && (
