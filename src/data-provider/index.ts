@@ -84,7 +84,7 @@ export {
   useNotificationList,
   useNotificationMutations,
 } from "./notifications";
-export type { NotificationMutations } from "./notifications";
+export type { NotificationInput, NotificationMutations } from "./notifications";
 export {
   ORDERS_RESOURCE,
   useMyOrderList,

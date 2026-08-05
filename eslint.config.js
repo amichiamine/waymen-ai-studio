@@ -112,21 +112,5 @@ export default tseslint.config(
     rules: { "@typescript-eslint/no-restricted-imports": "off" },
   },
 
-  {
-    // Content.tsx : resetSiteContentSection — petit manque du provider.
-    // À migrer vers data-provider en phase 3 (ticket : ajouter
-    // resetSiteContentSection au provider de contenu).
-    files: ["src/pages/admin/Content.tsx"],
-    rules: { "@typescript-eslint/no-restricted-imports": "off" },
-  },
-
-  {
-    // Notifications.tsx : addNotification — petit manque du provider.
-    // À migrer vers data-provider en phase 3 (ticket : exposer
-    // addNotification via le provider de notifications).
-    files: ["src/pages/admin/Notifications.tsx"],
-    rules: { "@typescript-eslint/no-restricted-imports": "off" },
-  },
-
   eslintPluginPrettier,
 );
