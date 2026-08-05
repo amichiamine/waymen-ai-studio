@@ -181,8 +181,63 @@ fonctionnel.
 | 0.2-E | minimal                | `package.json`                                                | Purger les 9 dépendances mortes               |
 | 0.2-F | minimal                | `.github/workflows/`                                          | CI : `tsc` + `eslint` + `build`               |
 
-**Validation** : commande de vérité complète + mesure de la chute du bundle initial.
-**Porte humaine** : vérifier en navigateur que le site fonctionne après le code splitting.
+### Phase 0 — LIVRÉE le 5 août 2026
+
+15 commits, 7 agents (2 forts, 2 intermédiaires, 3 minimaux) + 3 commits solo
+d'orchestrateur. Commande de vérité **verte sous bun** : `lint` 0 erreur,
+`tsc --noEmit` 0 erreur, `build` OK.
+
+#### Résultat mesuré sur le bundle
+
+|                                | Avant          | Après                            | Gain      |
+| ------------------------------ | -------------- | -------------------------------- | --------- |
+| Chunks JS                      | **1**          | **81**                           | —         |
+| Chunk initial                  | 1 383 kB       | 608 kB                           | −56 %     |
+| **Premier chargement (gzip)**  | **397,8 kB**   | **210,5 kB**                     | **−47 %** |
+| Recharts dans le chunk initial | oui (109 occ.) | **non** (chunk séparé de 384 kB) | —         |
+
+Recharts n'est plus servi aux visiteurs de la boutique : il ne se charge qu'à
+l'ouverture du Dashboard ou d'Analytics.
+
+#### Incident de sécurité rattrapé à la validation
+
+La vague 0.2-A a retiré les mots de passe de seed du build de production. Cela a
+**activé une faille dormante** dans `src/lib/auth.tsx` : le repli de `signIn`
+accordait une session à tout compte dépourvu de mot de passe, sans vérifier la
+valeur saisie. Les comptes semés n'en ayant plus, `admin@katech.dz` (rôle
+`owner`) devenait accessible avec n'importe quel mot de passe.
+
+Détecté par l'agent 0.2-A (qui l'a signalé au lieu de sortir de son périmètre),
+confirmé par lecture directe du code par l'orchestrateur, corrigé en vague 0.2-G
+(commit `6667c98`) : le repli est désormais conditionné à `import.meta.env.DEV`.
+
+**Leçon pour `AGENTS.md` §6** : retirer une donnée d'un modèle peut activer un
+chemin de code jusque-là inatteignable. Toute suppression doit être suivie de la
+recherche des branches qui testaient l'absence de cette donnée.
+
+#### Deux pièges d'outillage rencontrés
+
+1. **`prettier` n'est pas idempotent** sur `src/lib/admin-store.tsx` : une seule
+   passe laisse des erreurs `prettier/prettier`. Vérifier avec
+   `bunx prettier --check .` après chaque `--write`.
+2. **`bun.lock` doit être régénéré** après toute modification de `package.json`,
+   sinon `bun install --frozen-lockfile` de la CI échoue. Fait en commit `ed0dc78`.
+
+#### Reste à faire — actions humaines
+
+- [ ] **Porte humaine** : vérifier en navigateur que les 56 routes fonctionnent
+      après le code splitting, et que l'`ErrorBoundary` s'affiche correctement.
+- [ ] Copier `.env.example` vers `.env.local` pour retrouver les comptes de
+      démonstration en développement (`VITE_DEV_SEED_CREDENTIALS`).
+- [ ] **Pousser les 15 commits** : le remote n'est pas accessible depuis le
+      sandbox et le PAT fourni a été exposé — générer un token neuf
+      (fine-grained, limité à ce dépôt) avant tout push.
+
+#### Piste identifiée, non traitée
+
+Le chunk initial dépasse encore 500 kB (Vite continue de l'avertir). Un
+découpage `manualChunks` du vendor (React, Radix) le ferait tomber sous
+~150 kB gzip. À arbitrer en phase 1 ou 5.
 
 ---
 
