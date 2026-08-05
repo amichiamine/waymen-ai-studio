@@ -55,6 +55,7 @@ export const endpoints = {
 
   coupons: {
     list: () => `/coupons`,
+    detail: (code: string) => `/coupons/${code}`,
     create: () => `/coupons`,
     update: (code: string) => `/coupons/${code}`,
     remove: (code: string) => `/coupons/${code}`,
@@ -87,7 +88,11 @@ export const endpoints = {
     site: () => `/settings/site`,
     shipping: () => `/settings/shipping`,
     shippingRates: () => `/settings/shipping/rates`,
+    shippingRateUpsert: (wilayaCode: string) => `/settings/shipping/rates/${wilayaCode}`,
+    shippingRateRemove: (wilayaCode: string) => `/settings/shipping/rates/${wilayaCode}`,
     payments: () => `/settings/payments`,
+    paymentMethodUpsert: (id: string) => `/settings/payments/${id}`,
+    paymentMethodRemove: (id: string) => `/settings/payments/${id}`,
   },
 
   inventory: {

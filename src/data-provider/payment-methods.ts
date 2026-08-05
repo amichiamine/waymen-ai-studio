@@ -36,11 +36,11 @@ export type PaymentMethodMutations = {
 };
 
 async function upsertMethodHttp(method: PaymentMethod): Promise<PaymentMethod> {
-  return http.patch<PaymentMethod>(`${E.settings.payments()}/${method.id}`, method);
+  return http.patch<PaymentMethod>(E.settings.paymentMethodUpsert(method.id), method);
 }
 
 async function removeMethodHttp(id: string): Promise<void> {
-  await http.del<void>(`${E.settings.payments()}/${id}`);
+  await http.del<void>(E.settings.paymentMethodRemove(id));
 }
 
 async function upsertMethodMock(method: PaymentMethod): Promise<PaymentMethod> {

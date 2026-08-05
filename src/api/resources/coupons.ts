@@ -27,7 +27,7 @@ export const couponsApi = {
   },
 
   async detail(code: string): Promise<Coupon | undefined> {
-    if (isHttpMode()) return http.get<Coupon>(E.coupons.update(code));
+    if (isHttpMode()) return http.get<Coupon>(E.coupons.detail(code));
     return getAdminSnapshot().coupons.find((c) => c.code === code);
   },
 
