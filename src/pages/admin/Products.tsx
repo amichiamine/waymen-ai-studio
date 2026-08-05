@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatDZD, type Category } from "@/data/products";
+import { formatDZD, isCustomBuild, type Category } from "@/data/products";
 import { useAdminState, deleteProduct } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
@@ -58,6 +58,10 @@ export default function AdminProducts() {
     });
   }, [q, cat, products]);
 
+  // Nombre de configurations client présentes dans la liste : elles gonflent le
+  // total sans être des articles vendus, autant l'annoncer explicitement.
+  const customCount = useMemo(() => products.filter(isCustomBuild).length, [products]);
+
   function confirmDelete() {
     if (!toDelete) return;
     // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le
@@ -75,7 +79,11 @@ export default function AdminProducts() {
   return (
     <AdminPageShell
       title="Produits"
-      description={`${products.length} produits dans le catalogue local.`}
+      description={
+        customCount > 0
+          ? `${products.length - customCount} produits dans le catalogue local, ${customCount} configuration${customCount > 1 ? "s" : ""} client (hors boutique).`
+          : `${products.length} produits dans le catalogue local.`
+      }
       actions={
         // Niveau 1 — affichage. Niveau 3 — un bouton désactivé dit pourquoi :
         // l'infobulle est portée par le <span>, car un bouton `disabled` a
@@ -148,6 +156,15 @@ export default function AdminProducts() {
                   >
                     {p.name}
                   </Link>
+                  {/* Les configurations composées dans /builder restent
+                      visibles ici — l'administrateur doit savoir ce que ses
+                      clients assemblent — mais ne sont pas des articles du
+                      catalogue : le badge évite la confusion. */}
+                  {isCustomBuild(p) && (
+                    <Badge variant="outline" className="ms-2 align-middle">
+                      Config. client
+                    </Badge>
+                  )}
                   <div className="text-xs text-muted-foreground line-clamp-1">{p.specLine}</div>
                 </TableCell>
                 <TableCell className="text-sm">{p.brand}</TableCell>
