@@ -1,25 +1,44 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+
 import {
-  verifyUserCredentials,
-  findUserByEmail,
-  touchUserLogin,
-  upsertUser,
-  type AdminUser,
-} from "@/lib/admin-store";
+  authProvider,
+  type AuthUser,
+  type ResetOutcome,
+  type ResetPasswordInput,
+  type UpdateProfileInput,
+} from "@/data-provider/auth";
 
-// Auth mockée : pas de backend. Les identifiants sont validés contre la
-// table `admin-store.users` (comptes créés/édités depuis /admin/users).
-// La session est persistée en localStorage.
+// Contexte d'authentification. Toute la logique mock / http vit dans
+// `@/data-provider/auth` : ce module ne sait pas dans quel mode il tourne, il
+// ne fait que porter la session en mémoire et la persister en localStorage.
 
-export type MockUser = {
-  id: string;
-  email: string;
-  user_metadata: { name?: string; phone?: string };
+export type { AuthUser };
+
+/**
+ * Session exposée à l'interface.
+ *
+ * Forme alignée sur le contrat (`AuthSession["user"]` : `id`, `email`, `name?`,
+ * `phone?`, `role`). Le champ `user_metadata` est un **alias de compatibilité
+ * déprécié**, hérité de la forme Supabase : il est dérivé de `name` / `phone` et
+ * n'est plus la source de vérité.
+ *
+ * Il subsiste uniquement parce que trois consommateurs le lisent encore, tous
+ * hors du périmètre de cette vague :
+ *   - `src/components/admin/AdminLayout.tsx`
+ *   - `src/pages/Checkout.tsx`
+ *   - `src/pages/Product.tsx`
+ * À supprimer d'un bloc avec ces trois lectures ; aucun code nouveau ne doit
+ * l'utiliser — lire `user.name` / `user.phone`.
+ */
+export type SessionUser = AuthUser & {
+  /** @deprecated Utiliser `name` / `phone`. Alias dérivé, voir `SessionUser`. */
+  user_metadata?: { name?: string; phone?: string };
 };
 
 type AuthCtx = {
-  user: MockUser | null;
-  session: { user: MockUser } | null;
+  user: SessionUser | null;
+  session: { user: SessionUser } | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: null | { message: string } }>;
   signUp: (
@@ -28,9 +47,18 @@ type AuthCtx = {
     meta?: { name?: string; phone?: string },
   ) => Promise<{ error: null | { message: string } }>;
   signOut: () => Promise<void>;
+  /** Met à jour le profil de l'utilisateur connecté et rafraîchit la session. */
+  updateProfile: (input: UpdateProfileInput) => Promise<{ error: null | { message: string } }>;
+  /** Demande l'envoi d'un lien de réinitialisation (sans effet en mock). */
+  forgotPassword: (email: string) => Promise<void>;
+  /** Réinitialise un mot de passe oublié (utilisateur non connecté). */
+  resetPassword: (input: ResetPasswordInput) => Promise<ResetOutcome>;
+  /** Change le mot de passe de l'utilisateur connecté. */
+  changePassword: (currentPassword: string, password: string) => Promise<boolean>;
 };
 
 const STORAGE_KEY = "ka-mock-user";
+
 const Ctx = createContext<AuthCtx>({
   user: null,
   session: null,
@@ -38,104 +66,179 @@ const Ctx = createContext<AuthCtx>({
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null }),
   signOut: async () => {},
+  updateProfile: async () => ({ error: null }),
+  forgotPassword: async () => {},
+  resetPassword: async () => ({ ok: true }),
+  changePassword: async () => false,
 });
 
-function readStored(): MockUser | null {
+/** Attache l'alias déprécié `user_metadata`, dérivé des champs du contrat. */
+function withLegacyMetadata(u: AuthUser): SessionUser {
+  return { ...u, user_metadata: { name: u.name, phone: u.phone } };
+}
+
+/**
+ * Forme historique de la session persistée (avant l'alignement sur le contrat).
+ * Les sessions déjà en localStorage doivent survivre à la mise à jour : sans
+ * cette migration, tout visiteur connecté serait déconnecté silencieusement.
+ */
+type StoredSession = Partial<AuthUser> & {
+  user_metadata?: { name?: string; phone?: string };
+};
+
+function readStored(): SessionUser | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as MockUser) : null;
+    if (!raw) return null;
+    const stored = JSON.parse(raw) as StoredSession;
+    if (!stored.id || !stored.email) return null;
+    return withLegacyMetadata({
+      id: stored.id,
+      email: stored.email,
+      name: stored.name ?? stored.user_metadata?.name,
+      phone: stored.phone ?? stored.user_metadata?.phone,
+      // Sessions historiques : aucun rôle enregistré. `customer` est le moindre
+      // privilège du contrat ; l'autorité admin reste dérivée de la table
+      // `users` par `useAdminRoles()`, jamais de cette valeur.
+      role: stored.role ?? "customer",
+    });
   } catch {
     return null;
   }
 }
 
-function toMock(u: AdminUser): MockUser {
-  return { id: u.id, email: u.email, user_metadata: { name: u.name } };
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<MockUser | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setUser(readStored());
-    setLoading(false);
+  const persist = useCallback((u: AuthUser | null) => {
+    const next = u ? withLegacyMetadata(u) : null;
+    if (typeof window !== "undefined") {
+      if (u) {
+        // On n'écrit que la forme du contrat : l'alias déprécié est recalculé
+        // à la lecture, il n'a pas à être stocké.
+        const { id, email, name, phone, role } = u;
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, email, name, phone, role }));
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+    setUser(next);
+    return next;
   }, []);
 
-  const persist = (u: MockUser | null) => {
-    if (typeof window !== "undefined") {
-      if (u) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-      else window.localStorage.removeItem(STORAGE_KEY);
-    }
-    setUser(u);
-  };
+  useEffect(() => {
+    let cancelled = false;
 
-  const signIn: AuthCtx["signIn"] = async (email, password) => {
-    const found = verifyUserCredentials(email, password);
-    if (!found) {
-      // Commodité de développement uniquement : les comptes semés (seed) n'ont
-      // pas de mot de passe en production (voir import.meta.env.DEV dans
-      // admin-store). En DEV, on autorise l'accès si un compte de même email
-      // existe sans mot de passe, afin que les comptes de démonstration soient
-      // utilisables sans avoir configuré .env.local.
-      // Ce chemin est INTERDIT en production : un compte sans mot de passe ne
-      // doit jamais permettre une connexion, quelle que soit la valeur saisie.
-      if (import.meta.env.DEV) {
-        const known = findUserByEmail(email);
-        if (known && !known.password) {
-          console.warn(
-            "[auth] auth de développement : connexion accordée sans vérification du mot de passe" +
-              " — ce chemin est absent du build de production",
-          );
-          touchUserLogin(known.email);
-          persist(toMock(known));
-          return { error: null };
-        }
+    const restore = async () => {
+      const stored = readStored();
+      if (!cancelled) setUser(stored);
+      try {
+        // En mock, `me()` renvoie `null` : le localStorage reste la source de
+        // vérité. En http, la session serveur prime lorsqu'elle répond.
+        const remote = await authProvider.me();
+        if (!cancelled && remote) setUser(withLegacyMetadata(remote));
+      } catch (e) {
+        // Échec visible plutôt que silencieux (AGENTS.md §7) : on conserve la
+        // session locale au lieu de déconnecter sur un simple aléa réseau.
+        console.warn("[auth] session serveur indisponible, session locale conservée", e);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      return { error: { message: "Identifiants invalides." } };
-    }
-    touchUserLogin(found.email);
-    persist(toMock(found));
-    return { error: null };
-  };
-
-  const signUp: AuthCtx["signUp"] = async (email, password, meta) => {
-    const existing = findUserByEmail(email);
-    if (existing) return { error: { message: "Un compte existe déjà avec cet email." } };
-    const created: AdminUser = {
-      id: `usr_${Date.now()}`,
-      name: meta?.name || email.split("@")[0],
-      email: email.trim(),
-      role: "viewer",
-      active: true,
-      password,
-      createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString(),
     };
-    upsertUser(created);
-    persist({
-      id: created.id,
-      email: created.email,
-      user_metadata: { name: created.name, phone: meta?.phone },
-    });
-    return { error: null };
-  };
 
-  return (
-    <Ctx.Provider
-      value={{
-        user,
-        session: user ? { user } : null,
-        loading,
-        signIn,
-        signUp,
-        signOut: async () => persist(null),
-      }}
-    >
-      {children}
-    </Ctx.Provider>
+    void restore();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const signIn = useCallback<AuthCtx["signIn"]>(
+    async (email, password) => {
+      const outcome = await authProvider.signIn({ email, password });
+      if (!outcome.ok) return { error: { message: outcome.message } };
+      persist(outcome.user);
+      return { error: null };
+    },
+    [persist],
   );
+
+  const signUp = useCallback<AuthCtx["signUp"]>(
+    async (email, password, meta) => {
+      const outcome = await authProvider.signUp({
+        email,
+        password,
+        name: meta?.name,
+        phone: meta?.phone,
+      });
+      if (!outcome.ok) return { error: { message: outcome.message } };
+      persist(outcome.user);
+      return { error: null };
+    },
+    [persist],
+  );
+
+  const signOut = useCallback<AuthCtx["signOut"]>(async () => {
+    await authProvider.signOut();
+    persist(null);
+  }, [persist]);
+
+  const updateProfile = useCallback<AuthCtx["updateProfile"]>(
+    async (input) => {
+      if (!user) return { error: { message: "Aucune session active." } };
+      const updated = await authProvider.updateProfile(user, input);
+      persist(updated);
+      return { error: null };
+    },
+    [persist, user],
+  );
+
+  const forgotPassword = useCallback<AuthCtx["forgotPassword"]>(
+    (email) => authProvider.forgotPassword(email),
+    [],
+  );
+
+  const resetPassword = useCallback<AuthCtx["resetPassword"]>(
+    (input) => authProvider.resetPassword(input),
+    [],
+  );
+
+  const changePassword = useCallback<AuthCtx["changePassword"]>(
+    (currentPassword, password) => {
+      if (!user) return Promise.resolve(false);
+      return authProvider.changePassword(user.email, currentPassword, password);
+    },
+    [user],
+  );
+
+  const value = useMemo<AuthCtx>(
+    () => ({
+      user,
+      session: user ? { user } : null,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      updateProfile,
+      forgotPassword,
+      resetPassword,
+      changePassword,
+    }),
+    [
+      user,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      updateProfile,
+      forgotPassword,
+      resetPassword,
+      changePassword,
+    ],
+  );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export const useAuth = () => useContext(Ctx);
