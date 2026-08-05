@@ -52,7 +52,7 @@ Audit réalisé le 5 août 2026 sur le dépôt complet.
 | ---------------------------- | ------------------------------------------------------ |
 | Runtime                      | PHP 8.2+                                               |
 | Framework API                | Slim 4 (+ Composer)                                    |
-| Persistance transactionnelle | **SQLite** (fichier unique, mode WAL)                  |
+| Persistance transactionnelle | **SQLite OU MySQL** — pilote choisi par `DB_DRIVER`    |
 | Persistance JSON             | Factures figées, contenu éditorial, payloads d'outbox  |
 | Authentification             | Sessions PHP + cookie `httpOnly`, hachage **Argon2id** |
 | Emails                       | PHPMailer en SMTP                                      |
@@ -92,14 +92,49 @@ sinon ils sont téléchargeables par HTTP.
     └── api/                  ← Slim
 ```
 
-### Prérequis hébergeur à vérifier (bloquant phase 4)
+### Double pilote SQLite / MySQL — décision du 5 août 2026
 
-```php
-<?php
-$db = new PDO('sqlite:/home/user/katech-data/test.sqlite');
-var_dump($db->query('PRAGMA journal_mode=WAL')->fetchColumn());
-// attendu : "wal"   |   si "delete" → stockage NFS → basculer sur MySQL
-```
+**Contexte** : l'hébergement n'est pas encore acquis, aucun test préalable n'est
+possible, et l'exigence est un déploiement sans surprise.
+
+SQLite seul reposait sur **trois hypothèses invérifiables à l'avance** :
+`pdo_sqlite` activé, un dossier inscriptible hors de `public_html`, et le mode
+WAL accepté par le système de fichiers. Trois paris.
+
+MySQL seul aurait été garanti — c'est la raison d'être d'un mutualisé, et XAMPP
+le fournit déjà en local — mais aurait fait perdre la portabilité du fichier
+unique.
+
+**Retenu : les deux**, derrière PDO, le pilote étant choisi par la variable
+`DB_DRIVER`. Surcoût estimé à 15 %, en échange d'un déploiement qui fonctionne
+quel que soit l'hébergeur et d'une réversibilité totale.
+
+#### Ce que la double compatibilité impose
+
+| Point                      | Traitement                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Clés primaires             | `AUTOINCREMENT` / `AUTO_INCREMENT` — isolé dans les deux fichiers de schéma                            |
+| Booléens                   | `INTEGER` 0/1 partout : SQLite n'a pas de type booléen                                                 |
+| Dates                      | Chaînes ISO-8601 partout, jamais de type date natif                                                    |
+| JSON                       | Colonne `JSON` en MySQL, `TEXT` en SQLite — `json_encode` des deux côtés                               |
+| Upsert                     | Divergence réelle (`ON CONFLICT` / `ON DUPLICATE KEY`) — **isolée dans un helper unique**              |
+| Transaction d'écriture     | `BEGIN IMMEDIATE` en SQLite, `BEGIN` en MySQL — isolé dans `beginWrite()`                              |
+| Décompte de stock          | `UPDATE … SET stock = stock - ? WHERE id = ? AND stock >= ?` — **identique et atomique dans les deux** |
+| PRAGMA WAL, `busy_timeout` | SQLite uniquement, appliqués à la connexion                                                            |
+
+**Garde-fou** : un script de vérification compare les deux fichiers de schéma
+(tables, colonnes, index) et échoue s'ils divergent. Deux schémas maintenus à la
+main finissent toujours par s'écarter — cette vérification entre dans la CI.
+
+#### Déploiement visé — sans prérequis exotique
+
+1. Téléverser `dist/` dans `public_html/`
+2. Téléverser `api/` avec son `vendor/` **compilé en local** (pas de Composer requis sur le serveur)
+3. Renseigner `api/.env` : `DB_DRIVER` et, pour MySQL, les 4 identifiants du panneau
+4. Ouvrir `/api/install.php` une fois — création des tables, compte propriétaire, puis auto-désactivation
+
+Aucune écriture hors `public_html` n'est requise en mode MySQL. En mode SQLite,
+le dossier de données reste hors racine web.
 
 ---
 
