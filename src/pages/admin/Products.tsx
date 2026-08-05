@@ -6,7 +6,7 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Pencil, Trash2, Eye } from "lucide-react";
+import { AlertTriangle, Plus, Search, Pencil, Trash2, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDZD, isCustomBuild, type Category } from "@/data/products";
-import { useAdminState, deleteProduct } from "@/lib/admin-store";
+import { useProductList, useProductMutations, useCategoryList, toApiError } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
@@ -37,13 +37,16 @@ const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible
 // Les 34 autres écrans admin sont calqués sur celle-ci : toute correction
 // apportée ici doit être reportée dans la recette de réplication.
 export default function AdminProducts() {
-  const { products, categories } = useAdminState();
+  const { data: products, loading, error } = useProductList();
+  const { data: categories } = useCategoryList();
   // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can, guard, denyReason } = usePermissions();
+  const { remove } = useProductMutations();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"all" | Category>("all");
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -62,18 +65,73 @@ export default function AdminProducts() {
   // total sans être des articles vendus, autant l'annoncer explicitement.
   const customCount = useMemo(() => products.filter(isCustomBuild).length, [products]);
 
-  function confirmDelete() {
+  // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le
+  // rendu : le masquage d'un bouton n'est pas une protection (route
+  // directe, état obsolète, rôle changé pendant que la boîte est ouverte).
+  const confirmDelete = async () => {
     if (!toDelete) return;
-    // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le
-    // rendu : le masquage d'un bouton n'est pas une protection (route
-    // directe, état obsolète, rôle changé pendant que la boîte est ouverte).
     if (!guard("delete", "Supprimer le produit")) return;
+    setDeleting(true);
     try {
-      deleteProduct(toDelete.id);
+      await remove(toDelete.id);
       toast.success(`« ${toDelete.name} » supprimé`);
-    } catch {
-      toast.error("Suppression échouée");
+      setToDelete(null);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  // Squelette de tableau — même structure que le contenu final.
+  if (loading) {
+    return (
+      <AdminPageShell title="Produits" description="Chargement…">
+        <div className="overflow-hidden rounded-lg border" aria-busy="true">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[64px]"></TableHead>
+                <TableHead>Produit</TableHead>
+                <TableHead>Marque</TableHead>
+                <TableHead>Catégorie</TableHead>
+                <TableHead className="text-end">Prix</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead className="w-[140px] text-end">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 8 }, (_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <div className="h-10 w-10 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="ms-auto h-4 w-24 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-6 w-20 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="ms-auto h-8 w-24 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </AdminPageShell>
+    );
   }
 
   return (
@@ -103,6 +161,16 @@ export default function AdminProducts() {
         )
       }
     >
+      {error && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
           <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -239,7 +307,7 @@ export default function AdminProducts() {
             </>
           ) : null
         }
-        confirmLabel="Supprimer"
+        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
         destructive
         onConfirm={confirmDelete}
       />

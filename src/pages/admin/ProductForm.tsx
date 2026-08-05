@@ -17,7 +17,15 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Trash2, ArrowLeft } from "lucide-react";
-import { useAdminState, upsertProduct, deleteProduct, getProduct } from "@/lib/admin-store";
+import {
+  useProductList,
+  useProductDetail,
+  useProductMutations,
+  useCategoryList,
+  useBrandList,
+  useMediaAssetList,
+  toApiError,
+} from "@/data-provider";
 import type { Product, Category } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 
@@ -142,16 +150,24 @@ function toForm(p: Product): FormValues {
 }
 
 export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
-  const { products, categories, brands, mediaAssets } = useAdminState();
+  const { data: products } = useProductList();
+  const { data: categories } = useCategoryList();
+  const { data: brands } = useBrandList();
+  const { data: mediaAssets } = useMediaAssetList();
   const { can, guard, denyReason } = usePermissions();
+  const { create, update: updateProduct, remove } = useProductMutations();
 
   const nav = useNavigate();
   const { id } = useParams();
-  const existing = mode === "edit" && id ? getProduct(id) : undefined;
+
+  // useProductDetail reste monté et inactif quand id est undefined — jamais de hook conditionnel.
+  const { data: existing } = useProductDetail(mode === "edit" ? id : undefined);
 
   const [v, setV] = useState<FormValues>(existing ? toForm(existing) : emptyForm());
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (mode === "edit" && id) {
@@ -162,13 +178,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
 
   const brandOptions = useMemo(() => brands.map((b) => b.name).sort(), [brands]);
 
-  function update<K extends keyof FormValues>(k: K, val: FormValues[K]) {
+  function updateField<K extends keyof FormValues>(k: K, val: FormValues[K]) {
     setV((prev) => ({ ...prev, [k]: val }));
     setErrors((e) => ({ ...e, [k]: undefined }));
   }
 
   // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le rendu.
-  function onSubmit(e: React.FormEvent) {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const actionKey = mode === "new" ? "create" : "update";
     if (!guard(actionKey, mode === "new" ? "Créer le produit" : "Modifier le produit")) return;
@@ -192,51 +208,62 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       toast.error("Catégorie inconnue");
       return;
     }
+    const product: Product = {
+      id: data.id,
+      name: data.name,
+      brand: data.brand,
+      category: data.category as Category,
+      use: existing?.use ?? [],
+      specLine: data.specLine,
+      specs: {
+        cpu: data.cpu || undefined,
+        ram: data.ram || undefined,
+        storage: data.storage || undefined,
+        gpu: data.gpu || undefined,
+        screen: data.screen || undefined,
+        os: data.os || undefined,
+      },
+      price: data.price,
+      oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
+      stock: data.stock,
+      stockQty: typeof data.stockQty === "number" ? data.stockQty : existing?.stockQty,
+      image: data.image,
+      bestSeller: data.bestSeller,
+      sale: data.sale,
+    };
+    setSaving(true);
     try {
-      const product: Product = {
-        id: data.id,
-        name: data.name,
-        brand: data.brand,
-        category: data.category as Category,
-        use: existing?.use ?? [],
-        specLine: data.specLine,
-        specs: {
-          cpu: data.cpu || undefined,
-          ram: data.ram || undefined,
-          storage: data.storage || undefined,
-          gpu: data.gpu || undefined,
-          screen: data.screen || undefined,
-          os: data.os || undefined,
-        },
-        price: data.price,
-        oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
-        stock: data.stock,
-        stockQty: typeof data.stockQty === "number" ? data.stockQty : existing?.stockQty,
-        image: data.image,
-        bestSeller: data.bestSeller,
-        sale: data.sale,
-      };
-
-      upsertProduct(product);
+      if (mode === "new") {
+        await create(product);
+      } else {
+        await updateProduct(product.id, product);
+      }
       toast.success(mode === "new" ? "Produit créé" : "Produit mis à jour");
       nav("/admin/products");
-    } catch {
-      toast.error("Enregistrement échoué");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
     }
-  }
+  };
 
   // Niveau 2 — vérification dans le handler de suppression.
-  function doDelete() {
+  const doDelete = async () => {
     if (!existing) return;
     if (!guard("delete", "Supprimer le produit")) return;
+    setDeleting(true);
     try {
-      deleteProduct(existing.id);
+      await remove(existing.id);
       toast.success(`« ${existing.name} » supprimé`);
       nav("/admin/products");
-    } catch {
-      toast.error("Suppression échouée");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setDeleting(false);
     }
-  }
+  };
 
   // Clé applicable au formulaire courant : "create" en mode new, "update" en mode edit.
   const mutateKey = mode === "new" ? "create" : "update";
@@ -285,14 +312,14 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Input
                     value={v.id}
                     disabled={mode === "edit"}
-                    onChange={(e) => update("id", e.target.value)}
+                    onChange={(e) => updateField("id", e.target.value)}
                     placeholder="ex: rog-strix-g16"
                   />
                   {errors.id && <p className="mt-1 text-xs text-destructive">{errors.id}</p>}
                 </div>
                 <div>
                   <Label>Nom</Label>
-                  <Input value={v.name} onChange={(e) => update("name", e.target.value)} />
+                  <Input value={v.name} onChange={(e) => updateField("name", e.target.value)} />
                   {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
                 </div>
                 <div>
@@ -300,7 +327,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Input
                     list="brand-list"
                     value={v.brand}
-                    onChange={(e) => update("brand", e.target.value)}
+                    onChange={(e) => updateField("brand", e.target.value)}
                   />
                   <datalist id="brand-list">
                     {brandOptions.map((b) => (
@@ -313,7 +340,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Label>Catégorie</Label>
                   <Select
                     value={v.category}
-                    onValueChange={(x) => update("category", x as Category)}
+                    onValueChange={(x) => updateField("category", x as Category)}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -332,7 +359,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 <Label>Ligne de specs (résumé)</Label>
                 <Input
                   value={v.specLine}
-                  onChange={(e) => update("specLine", e.target.value)}
+                  onChange={(e) => updateField("specLine", e.target.value)}
                   placeholder="Intel i7 · 16GB · 1TB SSD"
                 />
                 {errors.specLine && (
@@ -342,27 +369,30 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <Label>CPU</Label>
-                  <Input value={v.cpu} onChange={(e) => update("cpu", e.target.value)} />
+                  <Input value={v.cpu} onChange={(e) => updateField("cpu", e.target.value)} />
                 </div>
                 <div>
                   <Label>RAM</Label>
-                  <Input value={v.ram} onChange={(e) => update("ram", e.target.value)} />
+                  <Input value={v.ram} onChange={(e) => updateField("ram", e.target.value)} />
                 </div>
                 <div>
                   <Label>Stockage</Label>
-                  <Input value={v.storage} onChange={(e) => update("storage", e.target.value)} />
+                  <Input
+                    value={v.storage}
+                    onChange={(e) => updateField("storage", e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label>GPU</Label>
-                  <Input value={v.gpu} onChange={(e) => update("gpu", e.target.value)} />
+                  <Input value={v.gpu} onChange={(e) => updateField("gpu", e.target.value)} />
                 </div>
                 <div>
                   <Label>Écran</Label>
-                  <Input value={v.screen} onChange={(e) => update("screen", e.target.value)} />
+                  <Input value={v.screen} onChange={(e) => updateField("screen", e.target.value)} />
                 </div>
                 <div>
                   <Label>OS</Label>
-                  <Input value={v.os} onChange={(e) => update("os", e.target.value)} />
+                  <Input value={v.os} onChange={(e) => updateField("os", e.target.value)} />
                 </div>
               </div>
             </CardContent>
@@ -379,7 +409,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Input
                     type="number"
                     value={v.price}
-                    onChange={(e) => update("price", Number(e.target.value))}
+                    onChange={(e) => updateField("price", Number(e.target.value))}
                   />
                   {errors.price && <p className="mt-1 text-xs text-destructive">{errors.price}</p>}
                 </div>
@@ -389,7 +419,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     type="number"
                     value={v.oldPrice as number | ""}
                     onChange={(e) =>
-                      update(
+                      updateField(
                         "oldPrice",
                         e.target.value === "" ? ("" as unknown as number) : Number(e.target.value),
                       )
@@ -402,7 +432,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     type="number"
                     min={0}
                     value={v.stockQty ?? 0}
-                    onChange={(e) => update("stockQty", Number(e.target.value))}
+                    onChange={(e) => updateField("stockQty", Number(e.target.value))}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
                     Le statut se recalcule selon les seuils définis dans /admin/settings.
@@ -412,7 +442,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Label>État du stock (surcharge)</Label>
                   <Select
                     value={v.stock}
-                    onValueChange={(x) => update("stock", x as "in" | "low" | "out")}
+                    onValueChange={(x) => updateField("stock", x as "in" | "low" | "out")}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -432,14 +462,18 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   <Switch
                     id="bs"
                     checked={!!v.bestSeller}
-                    onCheckedChange={(x) => update("bestSeller", x)}
+                    onCheckedChange={(x) => updateField("bestSeller", x)}
                   />
                 </div>
                 <div className="flex items-center justify-between rounded-md border p-2">
                   <Label htmlFor="sale" className="mb-0">
                     En promotion
                   </Label>
-                  <Switch id="sale" checked={!!v.sale} onCheckedChange={(x) => update("sale", x)} />
+                  <Switch
+                    id="sale"
+                    checked={!!v.sale}
+                    onCheckedChange={(x) => updateField("sale", x)}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -451,7 +485,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 {mediaAssets.length > 0 && (
                   <div>
                     <Label>Depuis la médiathèque</Label>
-                    <Select value="" onValueChange={(src) => update("image", src)}>
+                    <Select value="" onValueChange={(src) => updateField("image", src)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choisir un média…" />
                       </SelectTrigger>
@@ -468,7 +502,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 <Label>URL ou chemin</Label>
                 <Input
                   value={v.image}
-                  onChange={(e) => update("image", e.target.value)}
+                  onChange={(e) => updateField("image", e.target.value)}
                   placeholder="URL ou chemin de l'image"
                 />
                 {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
@@ -495,7 +529,9 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             </Button>
           </Link>
           {can(mutateKey) ? (
-            <Button type="submit">{mode === "new" ? "Créer" : "Enregistrer"}</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Enregistrement…" : mode === "new" ? "Créer" : "Enregistrer"}
+            </Button>
           ) : (
             <span title={denyReason(mutateKey)} className="inline-flex">
               <Button type="submit" disabled>
@@ -517,7 +553,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             </>
           ) : null
         }
-        confirmLabel="Supprimer"
+        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
         destructive
         onConfirm={doDelete}
       />

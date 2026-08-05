@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  AlertTriangle,
   Search,
   PackageCheck,
   PackageX,
-  AlertTriangle,
   PackageMinus,
   PackagePlus,
   History,
@@ -38,11 +38,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  useAdminState,
-  adjustStock,
-  setProductStockLevel,
-  setProductStockQty,
-} from "@/lib/admin-store";
+  useProductList,
+  useStockMovementList,
+  useInventoryMutations,
+  useSiteSettings,
+  toApiError,
+} from "@/data-provider";
 import type { Product } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 
@@ -56,15 +57,21 @@ const VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
 };
 
 export default function AdminInventory() {
-  const { products, stockMovements, siteSettings } = useAdminState();
+  const { data: products, loading: loadingProducts, error: errorProducts } = useProductList();
+  const {
+    data: stockMovements,
+    loading: loadingMovements,
+    error: errorMovements,
+  } = useStockMovementList();
+  const { data: siteSettings } = useSiteSettings();
+  const { adjustStock } = useInventoryMutations();
   const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "in" | "low" | "out">("all");
   const [edit, setEdit] = useState<Product | null>(null);
   const [delta, setDelta] = useState<string>("0");
-  const [qty, setQty] = useState<string>("");
   const [reason, setReason] = useState<string>("");
-  const [level, setLevel] = useState<Product["stock"]>("in");
+  const [saving, setSaving] = useState(false);
 
   const kpi = useMemo(
     () => ({
@@ -120,35 +127,100 @@ export default function AdminInventory() {
     setEdit(p);
     setDelta("0");
     setReason("");
-    setLevel(p.stock);
-    setQty(String(p.stockQty ?? 0));
   };
 
   // Niveau 2 — vérification dans le handler avant toute mutation de stock.
-  const saveAdjust = () => {
+  // La mutation transmet un delta au serveur — jamais de lecture puis écriture
+  // depuis le composant. useInventoryMutations() garantit l'atomicité en phase 4.
+  const saveAdjust = async () => {
     if (!edit) return;
     if (!guard("update", "Ajuster le stock")) return;
     const d = parseInt(delta, 10) || 0;
-    const targetQty = qty === "" ? undefined : Math.max(0, parseInt(qty, 10) || 0);
-    if (d !== 0) {
-      if (!reason.trim()) {
-        toast.error("Indiquez une raison");
-        return;
-      }
-      adjustStock(edit.id, d, reason.trim());
-    } else if (targetQty !== undefined && targetQty !== (edit.stockQty ?? 0)) {
-      setProductStockQty(edit.id, targetQty, reason.trim() || "Ajustement manuel");
+    if (d === 0) {
+      toast.error("Le delta doit être différent de 0");
+      return;
     }
-    if (level !== edit.stock) setProductStockLevel(edit.id, level);
-    toast.success(`Stock mis à jour — ${edit.name}`);
-    setEdit(null);
+    if (!reason.trim()) {
+      toast.error("Indiquez une raison");
+      return;
+    }
+    setSaving(true);
+    try {
+      await adjustStock(edit.id, { delta: d, reason: reason.trim() });
+      toast.success(`Stock mis à jour — ${edit.name}`);
+      setEdit(null);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  // Squelettes de tableau pendant le chargement.
+  if (loadingProducts) {
+    return (
+      <AdminPageShell
+        title="Stock"
+        description="Ajustez les niveaux de stock, journalisez les mouvements et suivez les alertes."
+      >
+        <div className="overflow-hidden rounded-lg border" aria-busy="true">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Produit</TableHead>
+                <TableHead>Marque</TableHead>
+                <TableHead>Catégorie</TableHead>
+                <TableHead className="text-end">Qté</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-end">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 8 }, (_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="ms-auto h-4 w-12 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-6 w-20 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="ms-auto h-8 w-16 animate-pulse rounded bg-muted" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </AdminPageShell>
+    );
+  }
 
   return (
     <AdminPageShell
       title="Stock"
       description="Ajustez les niveaux de stock, journalisez les mouvements et suivez les alertes."
     >
+      {errorProducts && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {errorProducts.message}
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <button
@@ -257,45 +329,87 @@ export default function AdminInventory() {
         </TabsContent>
 
         <TabsContent value="movements">
-          <div className="overflow-hidden rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Produit</TableHead>
-                  <TableHead className="text-end">Delta</TableHead>
-                  <TableHead>Raison</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stockMovements.slice(0, 200).map((m) => (
-                  <TableRow key={m.id}>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(m.createdAt).toLocaleString("fr-FR")}
-                    </TableCell>
-                    <TableCell className="text-sm">{m.productName}</TableCell>
-                    <TableCell
-                      className={`text-end font-mono text-sm ${m.delta < 0 ? "text-destructive" : "text-emerald-600"}`}
-                    >
-                      {m.delta > 0 ? "+" : ""}
-                      {m.delta}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{m.reason}</TableCell>
-                  </TableRow>
-                ))}
-                {stockMovements.length === 0 && (
+          {errorMovements && (
+            <p
+              role="status"
+              className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {errorMovements.message}
+            </p>
+          )}
+          {loadingMovements ? (
+            <div className="overflow-hidden rounded-lg border" aria-busy="true">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="h-24 text-center text-sm text-muted-foreground"
-                    >
-                      Aucun mouvement journalisé.
-                    </TableCell>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Produit</TableHead>
+                    <TableHead className="text-end">Delta</TableHead>
+                    <TableHead>Raison</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="ms-auto h-4 w-12 animate-pulse rounded bg-muted" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Produit</TableHead>
+                    <TableHead className="text-end">Delta</TableHead>
+                    <TableHead>Raison</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stockMovements.slice(0, 200).map((m) => (
+                    <TableRow key={m.id}>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(m.createdAt).toLocaleString("fr-FR")}
+                      </TableCell>
+                      <TableCell className="text-sm">{m.productName}</TableCell>
+                      <TableCell
+                        className={`text-end font-mono text-sm ${m.delta < 0 ? "text-destructive" : "text-emerald-600"}`}
+                      >
+                        {m.delta > 0 ? "+" : ""}
+                        {m.delta}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{m.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                  {stockMovements.length === 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="h-24 text-center text-sm text-muted-foreground"
+                      >
+                        Aucun mouvement journalisé.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -306,28 +420,7 @@ export default function AdminInventory() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium">Quantité en stock (nombre)</label>
-              <Input type="number" value={qty} onChange={(e) => setQty(e.target.value)} min={0} />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Seuils actuels : rupture ≤ {siteSettings.outOfStockThreshold}, faible ≤{" "}
-                {siteSettings.lowStockThreshold}. Le statut sera recalculé automatiquement.
-              </p>
-            </div>
-            <div>
-              <label className="text-xs font-medium">Statut de stock (surcharge manuelle)</label>
-              <Select value={level} onValueChange={(v) => setLevel(v as Product["stock"])}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="in">En stock</SelectItem>
-                  <SelectItem value="low">Stock faible</SelectItem>
-                  <SelectItem value="out">Rupture</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-xs font-medium">Mouvement (delta rapide)</label>
+              <label className="text-xs font-medium">Mouvement (delta)</label>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -353,8 +446,8 @@ export default function AdminInventory() {
                 </Button>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Négatif = sortie (vente, casse), positif = entrée (réappro). Prioritaire sur la
-                quantité ci-dessus.
+                Négatif = sortie (vente, casse), positif = entrée (réappro). Le delta est transmis
+                directement au serveur pour garantir l'atomicité en phase 4.
               </p>
             </div>
             <div>
@@ -366,13 +459,19 @@ export default function AdminInventory() {
                 rows={2}
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Seuils actuels : rupture ≤ {siteSettings.outOfStockThreshold}, faible ≤{" "}
+              {siteSettings.lowStockThreshold}. Le statut sera recalculé automatiquement.
+            </p>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setEdit(null)}>
               Annuler
             </Button>
-            <Button onClick={saveAdjust}>Enregistrer</Button>
+            <Button onClick={saveAdjust} disabled={saving}>
+              {saving ? "Enregistrement…" : "Enregistrer"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
