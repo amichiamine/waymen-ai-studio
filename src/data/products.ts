@@ -42,6 +42,16 @@ export type SpecKey =
  * potentiellement des objets. Passer par `useLocalize()` dans un composant ou
  * par `localize(v, lang)` hors composant — recette complète dans
  * `docs/LOCALIZED-DATA.md`.
+ *
+ * Règle de discernement appliquée en vague 3.3 :
+ *   - Les noms commerciaux et marques (« ASUS ROG Strix G16 », « MacBook Air M3 »)
+ *     sont invariants dans les trois langues — chaîne nue conservée.
+ *   - Les références techniques pures (« Intel Core i9-13980HX », « 32GB DDR5 »,
+ *     « NVIDIA RTX 4070 8GB », « 1TB NVMe SSD », « 90Wh », etc.) ne se
+ *     traduisent pas — chaîne nue conservée.
+ *   - Seul du langage naturel justifie un objet `{ fr, en, ar }` : les noms
+ *     de builds contenant des mots descriptifs français, et les valeurs de
+ *     batterie rédigées en prose française (« Jusqu'à N heures »).
  */
 export type Product = {
   /** Identifiant technique — jamais localisé, jamais traduit, sert de clé. */
@@ -91,6 +101,8 @@ export const catalogProducts = (list: Product[]): Product[] =>
 export const tr = (v: string | undefined): string => v ?? "";
 
 export const products: Product[] = [
+  // ── Lot 1 : produits 1-4 ─────────────────────────────────────────────────
+  // ASUS ROG Strix G16 : nom commercial + références techniques pures → chaînes nues.
   {
     id: "rog-strix-g16",
     name: "ASUS ROG Strix G16",
@@ -115,6 +127,7 @@ export const products: Product[] = [
     bestSeller: true,
     sale: true,
   },
+  // HP Pavilion 15 : nom commercial + références techniques pures → chaînes nues.
   {
     id: "hp-pavilion-15",
     name: "HP Pavilion 15",
@@ -137,6 +150,7 @@ export const products: Product[] = [
     image: pavilion,
     bestSeller: true,
   },
+  // Lenovo ThinkPad X1 Carbon : nom commercial + références pures → chaînes nues.
   {
     id: "thinkpad-x1-carbon",
     name: "Lenovo ThinkPad X1 Carbon",
@@ -159,6 +173,10 @@ export const products: Product[] = [
     image: thinkpad,
     bestSeller: true,
   },
+  // MacBook Air M3 : nom commercial → chaîne nue.
+  // battery « Jusqu'à 18 heures » : prose française → objet Localized.
+  // screen « 13.6" Liquid Retina » : nom de technologie Apple → chaîne nue.
+  // ram « 16GB Unified » : référence technique → chaîne nue.
   {
     id: "macbook-air-m3",
     name: "MacBook Air M3",
@@ -173,7 +191,11 @@ export const products: Product[] = [
       gpu: "10-core GPU",
       screen: '13.6" Liquid Retina',
       os: "macOS Sonoma",
-      battery: "Jusqu'à 18 heures",
+      battery: {
+        fr: "Jusqu'à 18 heures",
+        en: "Up to 18 hours",
+        ar: "حتى 18 ساعة",
+      },
       weight: "1.24 kg",
     },
     price: 245000,
@@ -183,6 +205,9 @@ export const products: Product[] = [
     bestSeller: true,
     sale: true,
   },
+  // ── Lot 2 : produits 5-8 ─────────────────────────────────────────────────
+  // Dell OptiPlex 5000 : nom commercial + références pures → chaînes nues.
+  // form « Mini Tower » : terminologie informatique universelle → chaîne nue.
   {
     id: "dell-optiplex-5000",
     name: "Dell OptiPlex 5000",
@@ -203,6 +228,8 @@ export const products: Product[] = [
     image: optiplex,
     bestSeller: true,
   },
+  // HP Omen 45L : nom commercial + références pures → chaînes nues.
+  // form « Full Tower » : terminologie informatique universelle → chaîne nue.
   {
     id: "hp-omen-45l",
     name: "HP Omen 45L",
@@ -224,9 +251,17 @@ export const products: Product[] = [
     image: omen,
     sale: true,
   },
+  // Configuration Gaming Mid-Range : nom contenant des mots descriptifs français
+  // (« Configuration », « Gaming », « Mid-Range ») → objet Localized.
+  // specLine : références techniques pures → chaîne nue.
+  // specs : toutes références pures → chaînes nues.
   {
     id: "build-mid-gaming",
-    name: "Configuration Gaming Mid-Range",
+    name: {
+      fr: "Configuration Gaming Mid-Range",
+      en: "Mid-Range Gaming Build",
+      ar: "تجميعة ألعاب متوسطة المستوى",
+    },
     brand: "KA Build",
     category: "builds",
     use: ["gaming"],
@@ -244,9 +279,17 @@ export const products: Product[] = [
     image: buildMid,
     bestSeller: true,
   },
+  // Configuration Montage Pro : nom contenant des mots descriptifs français
+  // (« Configuration », « Montage », « Pro ») → objet Localized.
+  // specLine : références techniques pures → chaîne nue.
+  // specs : toutes références pures → chaînes nues.
   {
     id: "build-pro-editing",
-    name: "Configuration Montage Pro",
+    name: {
+      fr: "Configuration Montage Pro",
+      en: "Pro Editing Build",
+      ar: "تجميعة مونتاج احترافية",
+    },
     brand: "KA Build",
     category: "builds",
     use: ["edit", "work"],
@@ -263,6 +306,8 @@ export const products: Product[] = [
     stock: "in",
     image: buildPro,
   },
+  // ── Lot 3 : produits 9-12 ────────────────────────────────────────────────
+  // Samsung Galaxy S25 Ultra : nom commercial + références pures → chaînes nues.
   {
     id: "galaxy-s25-ultra",
     name: "Samsung Galaxy S25 Ultra",
@@ -286,6 +331,9 @@ export const products: Product[] = [
     bestSeller: true,
     sale: true,
   },
+  // iPhone 16 Pro Max : nom commercial → chaîne nue.
+  // battery « Jusqu'à 33h de vidéo » : prose française → objet Localized.
+  // screen « 6.9" Super Retina XDR » : nom de technologie Apple → chaîne nue.
   {
     id: "iphone-16-pro-max",
     name: "iPhone 16 Pro Max",
@@ -299,7 +347,11 @@ export const products: Product[] = [
       storage: "256GB",
       screen: '6.9" Super Retina XDR',
       camera: "48MP + 48MP UW + 12MP",
-      battery: "Jusqu'à 33h de vidéo",
+      battery: {
+        fr: "Jusqu'à 33h de vidéo",
+        en: "Up to 33h video playback",
+        ar: "حتى 33 ساعة تشغيل فيديو",
+      },
       os: "iOS 18",
     },
     price: 175000,
@@ -307,6 +359,7 @@ export const products: Product[] = [
     image: iphone,
     bestSeller: true,
   },
+  // Xiaomi 14T Pro : nom commercial + références pures → chaînes nues.
   {
     id: "xiaomi-14t-pro",
     name: "Xiaomi 14T Pro",
@@ -327,6 +380,7 @@ export const products: Product[] = [
     stock: "in",
     image: xiaomi,
   },
+  // Redmi Note 13 Pro : nom commercial + références pures → chaînes nues.
   {
     id: "redmi-note-13-pro",
     name: "Redmi Note 13 Pro",
@@ -383,7 +437,7 @@ export const formatDZD = (n: number) => {
       ? `${_currency.symbol} ${signed}`
       : `${signed} ${_currency.symbol}`;
   // Isole le prix du contexte bidi (évite l'inversion visuelle en RTL/arabe).
-  return `\u2066${body}\u2069`;
+  return `⁦${body}⁩`;
 };
 
 export const categoryMeta: Record<
