@@ -37,9 +37,28 @@ export const ordersApi = {
     updateOrderStatus(id, status, note);
   },
 
-  async mine(): Promise<Order[]> {
+  /**
+   * Commandes du client connecté.
+   *
+   * En http : le backend filtre via l'identité de session.
+   * En mock : `customerId` est requis pour éviter une fuite de données entre
+   * clients. Si l'identifiant est absent (appelant non authentifié), retourne
+   * un tableau vide plutôt que toutes les commandes.
+   */
+  async mine(customerId?: string): Promise<Order[]> {
     if (isHttpMode()) return http.get<Order[]>(E.orders.mine());
-    return getAdminSnapshot().orders;
+    if (!customerId) return [];
+    return getAdminSnapshot().orders.filter((o) => o.customerId === customerId);
+  },
+
+  async remove(id: string): Promise<void> {
+    if (isHttpMode()) {
+      await http.del<void>(E.orders.remove(id));
+      return;
+    }
+    throw new Error(
+      `ordersApi.remove("${id}") en mode mock : deleteOrder() absent de admin-store. Opération non supportée en mock.`,
+    );
   },
 };
 

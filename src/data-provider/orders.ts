@@ -66,12 +66,10 @@ export function useOrderDetail(id?: string): ResourceState<Order | undefined> {
 /**
  * Commandes du client connecté.
  *
- * ATTENTION — défaut connu dans `ordersApi.mine()` (orders.ts ~ligne 34) :
- * en mode mock, cette méthode renvoie TOUTES les commandes du store sans
- * aucun filtrage par client. C'est une fuite de données entre clients.
- * Ce hook corrige le problème en filtrant côté provider sur l'id de
- * l'utilisateur connecté (`useAuth().user?.id`). La ressource API devra
- * être corrigée pour filtrer côté serveur (et côté mock).
+ * `fromStore` filtre par `customerId` directement sur l'état local.
+ * `fromHttp` délègue à `ordersApi.mine(customerId)` qui, en http, appelle
+ * `GET /me/orders` (filtrage côté serveur) et, en mock, filtre par
+ * `customerId` à la source — aucune fuite de données entre clients.
  */
 export function useMyOrderList(): ResourceState<Order[]> {
   const { user } = useAuth();
@@ -89,7 +87,8 @@ export function useMyOrderList(): ResourceState<Order[]> {
     // En http, le backend filtre lui-même via GET /me/orders ; on ne refiltre
     // pas côté client pour ne pas dépendre d'un champ que le serveur ne renvoie
     // peut-être pas dans la liste.
-    fromHttp: async () => ordersApi.mine(),
+    // En mock, on passe customerId pour que ordersApi.mine() filtre à la source.
+    fromHttp: async () => ordersApi.mine(customerId),
     fallback: NO_ORDERS,
   });
 }
@@ -97,19 +96,19 @@ export function useMyOrderList(): ResourceState<Order[]> {
 export type OrderMutations = {
   create: (input: CreateOrderInput) => Promise<{ id: string }>;
   updateStatus: (id: string, status: OrderStatus, note?: string) => Promise<void>;
+  remove: (id: string) => Promise<void>;
 };
 
 /**
  * Mutations commandes.
  *
- * ATTENTION — défaut connu : `ordersApi.remove()` n'existe pas alors que
- * `DELETE /orders/:id` est déclaré dans `endpoints.ts`. La méthode `remove`
- * n'est donc pas exposée ici jusqu'à correction de `orders.ts`.
+ * `create` : en mode mock, `ordersApi.create()` rejette volontairement (la
+ * création passe par `createOrderLocal()` du store). Ce hook utilise donc
+ * `createOrderLocal` directement en mock.
  *
- * Concernant `create` : en mode mock, `ordersApi.create()` rejette
- * volontairement (la création passe par `createOrderLocal()` du store).
- * Ce hook utilise donc `createOrderLocal` directement en mock, via
- * `createOrderLocal` ré-exporté depuis `orders.ts`.
+ * `remove` : câblé sur `DELETE /orders/:id` en http. En mock, l'opération
+ * n'est pas supportée faute de `deleteOrder()` dans admin-store — une erreur
+ * explicite est levée.
  */
 export function useOrderMutations(): OrderMutations {
   const { user } = useAuth();
@@ -164,5 +163,10 @@ export function useOrderMutations(): OrderMutations {
     [],
   );
 
-  return useMemo(() => ({ create, updateStatus }), [create, updateStatus]);
+  const remove = useCallback(
+    (id: string) => runMutation(ORDERS_RESOURCE, "remove", () => ordersApi.remove(id)),
+    [],
+  );
+
+  return useMemo(() => ({ create, updateStatus, remove }), [create, updateStatus, remove]);
 }
