@@ -1,4 +1,4 @@
-import { useProductDetail, useProductList } from "@/data-provider";
+import { useProductDetail, useProductList } from "@/data-provider/products";
 import type { Product } from "@/data/products";
 
 /**

@@ -1,13 +1,23 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
+// IMPORT PROFOND VOLONTAIRE — ne pas remplacer par le baril `@/data-provider`.
+//
+// `data-provider/orders.ts` importe `useAuth` de ce fichier. Passer par le
+// baril créerait le cycle `index.ts → orders.ts → auth.tsx → index.ts`, que
+// Rollup signale au build et qui « produit une dépendance circulaire entre
+// chunks, susceptible de casser l'ordre d'exécution ». Le défaut a réellement
+// été introduit puis corrigé — voir docs/DATA-PROVIDER.md.
+//
+// Règle générale : tout module dont `src/data-provider/**` dépend doit importer
+// les ressources par leur chemin exact, jamais par le baril.
 import {
   authProvider,
   type AuthUser,
   type ResetOutcome,
   type ResetPasswordInput,
   type UpdateProfileInput,
-} from "@/data-provider";
+} from "@/data-provider/auth";
 
 // Contexte d'authentification. Toute la logique mock / http vit dans
 // `@/data-provider/auth` : ce module ne sait pas dans quel mode il tourne, il

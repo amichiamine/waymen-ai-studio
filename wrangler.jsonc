@@ -1,0 +1,25 @@
+{
+  // Configuration Cloudflare — hébergement PROVISOIRE de la vitrine statique,
+  // pour recette et démonstration.
+  //
+  // Ce que Cloudflare sert ici : uniquement le contenu de `dist/`, c'est-à-dire
+  // le frontend compilé. L'API PHP de `api/` n'y tourne PAS — Cloudflare
+  // n'exécute pas PHP. Le site fonctionne donc en mode `mock`, chaque visiteur
+  // ayant ses propres données dans son navigateur.
+  //
+  // La cible de production reste l'hébergement mutualisé (voir PLAN.md §1),
+  // où `dist/` et `api/` cohabitent.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ka-tech",
+  "compatibility_date": "2026-08-05",
+
+  "assets": {
+    "directory": "./dist",
+
+    // Indispensable pour une application à page unique : sans cette ligne, un
+    // rafraîchissement sur une route profonde (`/product/xyz`, `/admin/orders`)
+    // renverrait une 404 au lieu de servir `index.html`. C'est l'équivalent
+    // Cloudflare du fallback `.htaccess` prévu pour le mutualisé.
+    "not_found_handling": "single-page-application",
+  },
+}
