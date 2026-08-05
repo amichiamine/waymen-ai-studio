@@ -10,6 +10,7 @@ import { MaintenanceScreen } from "@/components/MaintenanceGate";
 import { PageTransition } from "@/components/PageTransition";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DataModeBadge } from "@/components/DataModeBadge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useAdminState } from "@/lib/admin-store";
@@ -259,6 +260,7 @@ export default function App() {
       {!isAdmin && <FloatingWhatsApp />}
       {!isAdmin && <MobileBottomBar />}
       <Toaster />
+      <DataModeBadge />
     </>
   );
 }
