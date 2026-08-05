@@ -138,3 +138,14 @@ export {
 export type { TickerMessageMutations } from "./ticker-messages";
 export { USERS_RESOURCE, useUserDetail, useUserList, useUserMutations } from "./users";
 export type { UserMutations } from "./users";
+
+// Authentification — vague 2.5.
+export { AUTH_RESOURCE, authProvider } from "./auth";
+export type {
+  AuthOutcome,
+  AuthUser,
+  ResetFailure,
+  ResetOutcome,
+  ResetPasswordInput,
+  UpdateProfileInput,
+} from "./auth";

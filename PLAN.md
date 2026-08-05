@@ -435,80 +435,93 @@ mock→http qui est **architecturalement fausse** : aucun fichier UI n'importe
 
 ---
 
-### Phase 2 — EN COURS au 5 août 2026 (branche `chantier/phase-2-provider`)
+### Phase 2 — LIVRÉE le 5 août 2026 (branche `chantier/phase-2-provider`)
 
-**Vagues 2.1 à 2.3 livrées.** 9 commits, 7 agents. Commande de vérité verte :
+**Vagues 2.1 à 2.7 terminées.** ~40 commits, 21 agents. Commande de vérité verte :
 `lint` 0 erreur, `tsc --noEmit` 0 erreur, `prettier --check` vert, `build` sans
 avertissement.
 
-#### Ce qui est fait
+#### Résultat
 
-- **`docs/DATA-PROVIDER.md`** — la spécification : interface, tableau de
-  correspondance `useAdminState().xxx` → hook, recette de migration avec
-  avant/après copiable, pièges, limites connues.
-- **`src/data-provider/`** — 32 fichiers : le socle (mode, cache, types,
-  `useResource`, erreurs, journal) et **24 ressources**, chacune avec son
-  implémentation mock et http.
-- **`src/api/resources/`** — 14 fichiers : les 9 ressources manquantes créées
-  (categories, brands, coupons, customers, users, blog, media, crm, inventory).
-- **`src/pages/Search.tsx`** migrée comme exemplaire, `src/lib/useProducts.ts`
-  réécrit par-dessus le provider à signature publique inchangée.
+|                                              | Avant      | Après              |
+| -------------------------------------------- | ---------- | ------------------ |
+| Fichiers UI important `@/api` ou le provider | **0 / 76** | **62 / 62**        |
+| Ressources provider (mock + http)            | 0          | **24**             |
+| Ressources API                               | 5          | **14**             |
+| Endpoints implémentés                        | 32 / 70    | **63 / 70 (90 %)** |
 
-#### La décision d'architecture structurante
+La promesse de `src/api/config.ts` — « il suffit de passer `VITE_API_MODE=http` » —
+est désormais **vraie**, et verrouillée par une règle ESLint.
 
-Mesure de cadrage : **62 fichiers UI importent `admin-store`, et 60 d'entre eux
-importent `useAdminState()`** — un hook _synchrone_ renvoyant tout l'état d'un
-bloc. Or HTTP est asynchrone. C'est là toute la difficulté de la phase.
+#### La décision d'architecture
 
-Réponse retenue : **une forme de retour uniforme** `{ data, loading, error,
-refetch }` dans les deux modes. En mock, `loading` est `false` dès le premier
-rendu et `data` est immédiat — mais la forme ne change pas. Un composant est
-donc écrit **une seule fois** pour les deux modes et n'a jamais à savoir dans
-lequel il tourne.
+62 fichiers importaient `admin-store`, dont **60 le même hook synchrone
+`useAdminState()`**. Réponse : une **forme de retour uniforme**
+`{ data, loading, error, refetch }` dans les deux modes, avec `loading: false`
+immédiat en mock. Un composant s'écrit une fois et ne sait jamais dans quel mode
+il tourne. `useAdminState()` reste fonctionnel (skill S11) — la migration a donc
+pu se faire fichier par fichier sans jamais casser l'application.
 
-Corollaire de sûreté (skill S11) : `useAdminState()` et les mutations directes
-continuent de fonctionner à l'identique. Le provider s'**ajoute**, il ne
-remplace pas. La migration des 62 fichiers est donc incrémentale : à tout
-moment une partie est migrée, l'autre non, et l'application fonctionne.
+#### L'audit S9 a rattrapé 7 bloquants
 
-#### Défauts corrigés au passage
+La skill S9 existe pour ce moment précis : après un enrichissement mené par
+7 agents en parallèle, vérifier que le tout est cohérent. Elle a produit
+21 constats, dont 7 bloquants, tous corrigés :
 
-- **`ordersApi.mine()` renvoyait toutes les commandes de tous les clients** —
-  fuite de données entre clients. Le filtrage correct est implémenté dans
-  `useMyOrderList()`. La ressource API elle-même reste à corriger.
-- **Champ `password` du type `AdminUser`** : un DTO `Omit<AdminUser,
-"password">` interdit désormais sa transmission ; le changement de mot de
-  passe passe par un chemin dédié.
-- **Ajustement de stock** : la mutation transmet un **delta** au serveur, sans
-  jamais lire puis écrire depuis le client. C'est ce qui permettra à la
-  transaction SQLite `IMMEDIATE` de la phase 4 d'empêcher la survente.
-- **Quota des médias** : la protection ajoutée en phase 1 n'est pas contournée
-  par le provider — un échec d'écriture remonte à l'appelant.
+1. **Repli silencieux vers le store en mode http** (`about-values`,
+   `ticker-messages`, `marquee-brands`) — le défaut le plus grave : basculer en
+   `http` aurait renvoyé des données locales **sans le dire**. Indétectable en
+   recette, il aurait été découvert en production. Remplacé par un échec explicite.
+2. **Lignes de commande corrompues** en mock : `name = productId` et `price = 0`,
+   ce qui cassait factures, récapitulatifs et chiffre d'affaires.
+3. **Divergence de filtrage** entre mock et http sur le filtre `use` : la page
+   Catégorie ne renvoyait pas les mêmes produits selon le mode.
+4. Une **lecture envoyée en `PATCH`** (`couponsApi.detail`).
+5. Une **lecture directe de la variable d'environnement** contournant le point unique.
+6. `ordersApi.remove` déclaré mais absent.
+7. Endpoints de mutation des réglages non déclarés.
 
-#### Ce qui reste — vagues 2.4 à 2.7
+Corrigé en outre à la source : **`ordersApi.mine()` renvoyait toutes les commandes
+de tous les clients** — une fuite entre clients.
 
-- [ ] **2.4 — migrer les 62 fichiers UI** vers le provider (6 agents,
-      périmètres disjoints par dossier). C'est le gros du travail restant.
-- [ ] **2.5 — réécrire `auth.tsx`** sur `authApi` et aligner `MockUser` sur
-      `AuthSession` (supprimer `user_metadata`, héritage de Supabase).
-- [ ] **2.6 — règle ESLint** interdisant l'import direct d'`admin-store` depuis
-      `pages/` et `components/`, plus un indicateur de mode en développement.
-- [ ] **2.7 — audit de cohérence** modèle ↔ API (skill S9).
+#### Autres acquis
 
-#### Limites connues, consignées dans `docs/DATA-PROVIDER.md` §7
+- **`auth.tsx` passe par `authApi`** en mode http ; le type de session est aligné
+  sur le contrat (`{ id, email, name?, phone?, role }`), et l'héritage Supabase
+  `user_metadata` est supprimé — avec une lecture de rétrocompatibilité qui évite
+  de déconnecter les sessions existantes.
+- **Règle ESLint** interdisant l'import direct d'`admin-store` depuis `pages/` et
+  `components/`, avec une liste d'exceptions explicites, chacune commentée et
+  datée de la phase qui la supprimera.
+- **Indicateur de mode** en développement, affichant aussi le nombre d'échecs de
+  ressources journalisés — pour qu'une dégradation gracieuse cesse d'être muette.
 
-1. Pas de métadonnées de pagination dans `ResourceState` — les tableaux admin
-   qui exigeront une pagination serveur demanderont une décision d'architecture.
-2. `applyProductQuery()` duplique `paginateLocal()` de `src/api` : deux filtres
-   qui divergeraient donneraient des résultats différents entre mock et http.
-3. **`useProductDetail()` en http ne résoudra pas les configurations du
-   configurateur** : un `customBuild` n'existe que dans le store local, `GET
-/products/:id` renverra 404. Panier et paiement en dépendent — à traiter en
-   phase 4.
-4. `AbortSignal` non relayé par `src/api/resources/*` (leurs signatures ne
-   l'acceptent pas encore).
-5. **Deux clés i18n manquantes** (« réessayer », « ressource indisponible ») :
-   les bandeaux d'erreur affichent le message serveur brut en attendant.
+#### Incident d'infrastructure
+
+L'agent du groupe M6 est tombé sur une coupure réseau en pleine migration. Son
+lot 1 était committé, son travail sur `Settings.tsx` était sur disque. Un **agent
+de reprise** (`AGENTS.md` §3.6) a repris le fichier en l'état plutôt que de le
+réécrire — et y a d'ailleurs trouvé des noms de méthodes erronés que le
+prédécesseur n'avait pas eu le temps de corriger. Rien n'a été repayé.
+
+#### Chemin critique
+
+**186,2 → 191,2 kB gzip (+5,0 kB)**, le coût du socle du provider. À mettre en
+regard du gain de la phase 4, où le jeu de données mock quittera le bundle.
+
+#### Reste — dette assumée et documentée
+
+- 15 imports de valeurs d'`admin-store` subsistent, tous justifiés et sous
+  exception ESLint commentée : opérations de réinitialisation locale sans
+  équivalent serveur, plomberie de permissions, et deux petits manques du
+  provider (`resetSiteContentSection`, `addNotification`) à combler en phase 3.
+- `sort` / `order` ne sont implémentés dans aucun des deux modes — fonctionnalité
+  manquante commune, pas une divergence.
+- Les 14 constats non bloquants de `docs/AUDIT-MODELE-API.md`.
+- Les limites de `docs/DATA-PROVIDER.md` §7, dont la plus structurante :
+  **les configurations du configurateur ne seront pas résolubles en http**
+  (`customBuild` n'existe que localement). Panier et paiement en dépendent —
+  décision d'architecture à prendre en phase 4.
 
 ---
 

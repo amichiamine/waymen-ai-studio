@@ -7,7 +7,7 @@ import {
   type ResetOutcome,
   type ResetPasswordInput,
   type UpdateProfileInput,
-} from "@/data-provider/auth";
+} from "@/data-provider";
 
 // Contexte d'authentification. Toute la logique mock / http vit dans
 // `@/data-provider/auth` : ce module ne sait pas dans quel mode il tourne, il
