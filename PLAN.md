@@ -316,6 +316,101 @@ naisse du bon côté de la couture.
 
 ---
 
+### Phase 1 — LIVRÉE le 5 août 2026
+
+28 commits, 13 agents (6 forts, 7 intermédiaires) en 5 vagues, sur la branche
+`chantier/phase-1-frontend`. Commande de vérité verte : `lint` 0 erreur,
+`tsc --noEmit` 0 erreur, `prettier --check` vert, `build` sans avertissement,
+`bun install --frozen-lockfile` conforme.
+
+#### Permissions — le défaut de conception rencontré
+
+Le socle existait (`ROLE_RANK`, `canPerform`) mais **n'était appelé nulle part**.
+Pire, `canPerform` se rabattait par défaut sur `getActiveRole()`, qui lit une clé
+localStorage pilotée par un **sélecteur de démonstration** avec `"owner"` comme
+valeur de repli. L'appliquer tel quel aurait produit une sécurité décorative :
+n'importe qui se serait promu propriétaire.
+
+Le pilote (`docs/PERMISSIONS.md` + `usePermissions()`) fonde désormais les
+permissions sur le **rôle réel** issu de `useAdminRoles()`. Le sélecteur de
+démonstration ne peut plus que **rétrograder**, et uniquement en développement.
+
+Couverture finale : **31 des 35 pages** portent `usePermissions`, dont **24 avec
+garde de niveau 2** (vérification dans le handler, pas seulement masquage visuel).
+Les 4 pages restantes sont des enveloppes d'une ligne (`ProductNew`, `ProductEdit`,
+`BlogNew`, `BlogEdit`) dont la garde vit dans le formulaire cible — dupliquer y
+serait une fausse protection.
+
+Arbitrages notables : `manageUsers` réservé au propriétaire (sinon un `admin` se
+promeut `owner`) ; réglages scindés en `manageSettings` et `manageCriticalSettings`
+(mode maintenance et éditeurs JSON bruts au niveau critique).
+
+#### Effet de bord rattrapé à la validation
+
+Le configurateur, rendu ajoutable au panier, matérialisait chaque configuration en
+vrai `Product` via `upsertProduct` — contrainte réelle, le panier ne stockant que
+des `product_id` résolus dans le catalogue. Mais `CategoryDetail` liste
+`products.filter(p => p.category === cat)` : **les configurations privées des
+clients apparaissaient dans la boutique**. Anodin en localStorage, ce serait une
+fuite de données en phase 4 avec un backend partagé.
+
+Corrigé par un champ optionnel `Product.customBuild` et deux helpers
+(`isCustomBuild`, `catalogProducts`), filtrant 5 surfaces publiques tout en
+préservant la résolution par identifiant dont dépendent panier et paiement.
+
+#### Autres livrables
+
+- **Analytics** : l'entonnoir inventé (`visitors = carts * 5.4`) est supprimé au
+  profit de « Traitement des commandes », fondé sur `statusHistory` réel. Le KPI
+  « Conversion » devient « Taux de livraison ».
+- **Customers** : CRUD complet (skill S10), avec `upsertCustomer` / `deleteCustomer`
+  ajoutés à `admin-store` de façon strictement additive, et refus de suppression
+  d'un client ayant des commandes actives.
+- **Coupons** : édition ajoutée, en réutilisant la boîte de dialogue de création.
+- **Account** : `handleSave` persiste réellement le profil (il affichait un succès
+  sans rien enregistrer).
+- **Builder** : ajout au panier, contrôles de compatibilité socket/mémoire
+  (bloquants) et alimentation (avertissement).
+- **SEO** : Helmet sur les 7 pages manquantes, `noindex` cohérent avec `robots.txt`,
+  JSON-LD `Product`, et **11 canoniques passées en URL absolues** (elles étaient
+  toutes relatives, donc inopérantes).
+- **i18n** : 25 clés ajoutées aux trois dictionnaires (**406 clés × 3, parité
+  vérifiée**), écran de maintenance et gardes d'`App.tsx` internationalisés.
+- **Médias** : budget de 3 Mo affiché en permanence, refus explicite au-delà, et
+  **vérification que l'écriture a réussi** — le dépassement de quota était avalé
+  en silence par le `catch {}` de `saveState()`.
+- **Images** : 19 visuels convertis en WebP, 469 → 288 Ko (**−38,5 %**), script
+  réutilisable `scripts/convert-to-webp.ts`, originaux conservés hors du build.
+- **RTL** : classes physiques corrigées dans l'en-tête, le configurateur, la fiche
+  produit et les vues de détail.
+
+#### Chemin critique
+
+**179,5 → 186,2 kB gzip (+6,7 kB).** Hausse assumée : les permissions, 25 clés de
+dictionnaire, la logique de compatibilité et le JSON-LD sont du code neuf. Les
+images, elles, sont hors chemin critique et gagnent 181 Ko.
+
+#### Incident de méthode — à porter dans AGENTS.md §6
+
+L'agent du groupe G3 a committé **trois fichiers appartenant au groupe G1**
+(`ProductForm`, `ProductDetail`, `Inventory`, commit `2d98640`) en utilisant un
+`git add` trop large. Aucun travail n'a été perdu, mais deux de ces fichiers ont
+échappé au contrôle de formatage de leur propriétaire et ont cassé le lint.
+
+**Règle à ajouter** : `git add` ne doit JAMAIS recevoir de répertoire ni de motif —
+uniquement la liste explicite des fichiers du périmètre assigné.
+
+#### Reste à faire — actions humaines
+
+- [ ] **Porte humaine** : tester les permissions en se connectant avec chaque rôle,
+      et vérifier le rendu RTL arabe sur les formulaires.
+- [ ] **Relecture des traductions arabes** par un locuteur, en particulier
+      `bp.compat.*` (terminologie matérielle), `bp.page.title` et `maintenance.admin`.
+- [ ] **Logo en SVG** : la conversion WebP fait passer le logo de 68 à 35 Ko, mais
+      une vectorisation fidèle n'est pas automatisable — à confier à un graphiste.
+
+---
+
 ## 6. Phase 2 — Isolation et commutation des mocks
 
 **Branche dédiée** : `chantier/phase-2-provider`.
