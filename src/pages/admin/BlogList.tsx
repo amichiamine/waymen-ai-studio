@@ -7,15 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Pencil, Trash2, Eye } from "lucide-react";
-import { useAdminState, deleteBlogPost } from "@/lib/admin-store";
+import { Plus, Pencil, Trash2, Eye, AlertTriangle } from "lucide-react";
+import { useBlogPostList, useBlogPostMutations, toApiError } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminBlogList() {
-  const { blogPosts } = useAdminState();
+  const { data: blogPosts, loading, error } = useBlogPostList();
+  const { remove } = useBlogPostMutations();
   const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -32,12 +34,21 @@ export default function AdminBlogList() {
 
   const target = blogPosts.find((p) => p.id === pendingDelete);
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDelete) return;
     // Niveau 2 — la vérification vit dans l'action, pas seulement dans le rendu.
     if (!guard("delete", "Supprimer l'article")) return;
-    deleteBlogPost(pendingDelete);
-    toast.success("Article supprimé");
+    setSaving(true);
+    try {
+      await remove(pendingDelete);
+      toast.success("Article supprimé");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+      setPendingDelete(null);
+    }
   }
 
   return (
@@ -62,6 +73,16 @@ export default function AdminBlogList() {
         )
       }
     >
+      {error && (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <div className="max-w-md">
         <Input
           placeholder="Rechercher un article…"
@@ -70,7 +91,14 @@ export default function AdminBlogList() {
         />
       </div>
 
-      {rows.length === 0 ? (
+      {loading ? (
+        <div className="grid gap-3" aria-busy="true">
+          <span className="sr-only">Chargement…</span>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="h-24 animate-pulse rounded-xl border border-border bg-card" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
         <AdminEmptyState
           label={
             blogPosts.length === 0
@@ -132,7 +160,7 @@ export default function AdminBlogList() {
                       size="sm"
                       variant="ghost"
                       aria-label="Supprimer"
-                      disabled={!can("delete")}
+                      disabled={!can("delete") || saving}
                       onClick={() => setPendingDelete(p.id)}
                     >
                       <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer

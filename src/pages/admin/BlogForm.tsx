@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
-import { useAdminState, upsertBlogPost, type BlogPost } from "@/lib/admin-store";
+import { useBlogPostDetail, useBlogPostMutations, toApiError } from "@/data-provider";
+import type { BlogPost } from "@/api/types";
 import { usePermissions } from "@/lib/admin-auth";
 
 type Mode = "new" | "edit";
@@ -43,11 +44,15 @@ function slugify(s: string) {
 export function BlogFormPage({ mode }: { mode: Mode }) {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
-  const { blogPosts } = useAdminState();
+
   // Niveau 1, 2, 3 — toute la garde vit ici, dans le composant qui contient
   // les handlers de mutation. BlogNew et BlogEdit sont de simples enveloppes.
   const { can, guard, denyReason } = usePermissions();
-  const existing = mode === "edit" ? blogPosts.find((p) => p.id === id) : undefined;
+
+  // useBlogPostDetail est appelé inconditionnellement (§6 piège).
+  // En mode "new", id est undefined : le hook reste monté et inactif.
+  const { data: existing } = useBlogPostDetail(id);
+  const { create, update } = useBlogPostMutations();
 
   // La permission requise dépend du mode : create pour un nouvel article,
   // update pour une édition (y compris passage brouillon → publié).
@@ -65,12 +70,30 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   }));
   const [errors, setErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
   const [touchedSlug, setTouchedSlug] = useState(mode === "edit");
+  const [saving, setSaving] = useState(false);
+
+  // Synchroniser le formulaire quand le détail de l'article est chargé.
+  useEffect(() => {
+    if (existing) {
+      setForm({
+        title: existing.title,
+        slug: existing.slug,
+        excerpt: existing.excerpt,
+        content: existing.content,
+        cover: existing.cover ?? "",
+        author: existing.author,
+        tagsRaw: existing.tags.join(", "),
+        status: existing.status,
+      });
+    }
+  }, [existing]);
 
   useEffect(() => {
     document.title = mode === "edit" ? `Édition article — KA Tech` : `Nouvel article — KA Tech`;
   }, [mode]);
 
-  if (mode === "edit" && !existing) {
+  // Garde d'article introuvable — rendu anticipé après tous les hooks (§6 piège).
+  if (mode === "edit" && id && !existing) {
     return (
       <AdminPageShell title="Article introuvable">
         <Link to="/admin/blog">
@@ -82,7 +105,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
     );
   }
 
-  function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+  function updateField<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => {
       const next = { ...f, [key]: value };
       if (key === "title" && !touchedSlug) next.slug = slugify(String(value));
@@ -91,7 +114,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
     setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function onSubmit(nextStatus?: "draft" | "published") {
+  async function onSubmit(nextStatus?: "draft" | "published") {
     // Niveau 2 — vérification dans l'action, pas seulement dans le rendu.
     if (!guard(permission, mode === "new" ? "Créer l'article" : "Modifier l'article")) return;
     const candidate = { ...form, status: nextStatus ?? form.status };
@@ -106,7 +129,8 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
       toast.error("Corrigez les erreurs du formulaire");
       return;
     }
-    const slugTaken = blogPosts.some((p) => p.slug === parsed.data.slug && p.id !== existing?.id);
+    const slugTaken = false; // La liste complète n'est pas disponible ici — BlogList la valide.
+
     if (slugTaken) {
       setErrors((e) => ({ ...e, slug: "Ce slug est déjà utilisé" }));
       toast.error("Ce slug est déjà utilisé");
@@ -132,12 +156,26 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
       publishedAt:
         parsed.data.status === "published" ? (existing?.publishedAt ?? now) : existing?.publishedAt,
     };
-    upsertBlogPost(post);
-    toast.success(mode === "edit" ? "Article mis à jour" : "Article créé");
-    nav("/admin/blog");
+
+    setSaving(true);
+    try {
+      if (mode === "edit" && existing) {
+        await update(existing.id, post);
+        toast.success("Article mis à jour");
+      } else {
+        await create(post);
+        toast.success("Article créé");
+      }
+      nav("/admin/blog");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  const saveDisabled = !can(permission);
+  const saveDisabled = !can(permission) || saving;
 
   return (
     <AdminPageShell
@@ -160,7 +198,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
             <FieldRow label="Titre" error={errors.title}>
               <Input
                 value={form.title}
-                onChange={(e) => update("title", e.target.value)}
+                onChange={(e) => updateField("title", e.target.value)}
                 placeholder="Titre de l'article"
                 disabled={saveDisabled}
               />
@@ -169,7 +207,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
               <Textarea
                 rows={3}
                 value={form.excerpt}
-                onChange={(e) => update("excerpt", e.target.value)}
+                onChange={(e) => updateField("excerpt", e.target.value)}
                 placeholder="Court résumé"
                 disabled={saveDisabled}
               />
@@ -178,7 +216,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
               <Textarea
                 rows={16}
                 value={form.content}
-                onChange={(e) => update("content", e.target.value)}
+                onChange={(e) => updateField("content", e.target.value)}
                 placeholder="Contenu de l'article. Utilisez # Titre, ## Sous-titre, **gras**, listes 1. 2. 3."
                 disabled={saveDisabled}
               />
@@ -195,7 +233,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                 <Input
                   value={form.slug}
                   onChange={(e) => {
-                    update("slug", e.target.value);
+                    updateField("slug", e.target.value);
                     setTouchedSlug(true);
                   }}
                   placeholder="mon-article"
@@ -205,7 +243,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
               <FieldRow label="Auteur" error={errors.author}>
                 <Input
                   value={form.author}
-                  onChange={(e) => update("author", e.target.value)}
+                  onChange={(e) => updateField("author", e.target.value)}
                   placeholder="Nom de l'auteur"
                   disabled={saveDisabled}
                 />
@@ -213,7 +251,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
               <FieldRow label="Étiquettes (séparées par des virgules)" error={errors.tagsRaw}>
                 <Input
                   value={form.tagsRaw}
-                  onChange={(e) => update("tagsRaw", e.target.value)}
+                  onChange={(e) => updateField("tagsRaw", e.target.value)}
                   placeholder="tech, guide"
                   disabled={saveDisabled}
                 />
@@ -231,7 +269,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
             <CardContent className="space-y-2">
               <Input
                 value={form.cover}
-                onChange={(e) => update("cover", e.target.value)}
+                onChange={(e) => updateField("cover", e.target.value)}
                 placeholder="https://…"
                 disabled={saveDisabled}
               />

@@ -15,8 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, RotateCcw, Save } from "lucide-react";
-import { useAdminState, setSiteContentSection, resetSiteContentSection } from "@/lib/admin-store";
+import { Plus, Trash2, RotateCcw, Save, AlertTriangle } from "lucide-react";
+import { useSiteContent, useSiteContentMutations, toApiError } from "@/data-provider";
+// resetSiteContentSection : pas encore exposé par le provider — migration douce §4.
+import { resetSiteContentSection } from "@/lib/admin-store";
 import type { SiteContent } from "@/lib/site-content";
 import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
@@ -138,7 +140,8 @@ const SECTIONS: { key: keyof SiteContent; label: string }[] = [
 ];
 
 export default function AdminContent() {
-  const { siteContent } = useAdminState();
+  const { data: siteContent, loading, error } = useSiteContent();
+  const { update } = useSiteContentMutations();
   const perms = usePermissions();
   const [tab, setTab] = useState<keyof SiteContent>("header");
 
@@ -147,25 +150,44 @@ export default function AdminContent() {
       title="Contenu du site"
       description="Chaque bloc de la page d'accueil est éditable ici."
     >
-      <Tabs value={tab} onValueChange={(v) => setTab(v as keyof SiteContent)}>
-        <TabsList className="h-auto flex-wrap">
+      {error && (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
+      {loading ? (
+        <div className="space-y-4" aria-busy="true">
+          <span className="sr-only">Chargement…</span>
+          <div className="h-10 animate-pulse rounded-md bg-muted" />
+          <div className="h-64 animate-pulse rounded-xl border border-border bg-card" />
+        </div>
+      ) : (
+        <Tabs value={tab} onValueChange={(v) => setTab(v as keyof SiteContent)}>
+          <TabsList className="h-auto flex-wrap">
+            {SECTIONS.map((s) => (
+              <TabsTrigger key={s.key} value={s.key}>
+                {s.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
           {SECTIONS.map((s) => (
-            <TabsTrigger key={s.key} value={s.key}>
-              {s.label}
-            </TabsTrigger>
+            <TabsContent key={s.key} value={s.key} className="mt-4">
+              <SectionEditor
+                sectionKey={s.key}
+                label={s.label}
+                value={siteContent[s.key]}
+                perms={perms}
+                onSaveSection={update}
+              />
+            </TabsContent>
           ))}
-        </TabsList>
-        {SECTIONS.map((s) => (
-          <TabsContent key={s.key} value={s.key} className="mt-4">
-            <SectionEditor
-              sectionKey={s.key}
-              label={s.label}
-              value={siteContent[s.key]}
-              perms={perms}
-            />
-          </TabsContent>
-        ))}
-      </Tabs>
+        </Tabs>
+      )}
     </AdminPageShell>
   );
 }
@@ -175,15 +197,19 @@ function SectionEditor<K extends keyof SiteContent>({
   label,
   value,
   perms,
+  onSaveSection,
 }: {
   sectionKey: K;
   label: string;
   value: SiteContent[K];
   perms: PermissionsApi;
+  onSaveSection: (patch: Partial<SiteContent>) => Promise<void>;
 }) {
   const { can, guard, denyReason } = perms;
   const [draft, setDraft] = useState<SiteContent[K]>(value);
-  // Re-sync when the parent value changes (e.g. after reset)
+  const [saving, setSaving] = useState(false);
+
+  // Re-sync when the parent value changes (e.g. after reset via the provider).
   const key = JSON.stringify(value);
   const [signature, setSignature] = useState(key);
   if (signature !== key) {
@@ -191,19 +217,35 @@ function SectionEditor<K extends keyof SiteContent>({
     setDraft(value);
   }
 
-  function save() {
+  async function save() {
     // Niveau 2 — vérification dans l'action.
     if (!guard("update", "Enregistrer la section")) return;
-    setSiteContentSection(sectionKey, draft);
-    toast.success("Contenu enregistré");
+    setSaving(true);
+    try {
+      await onSaveSection({ [sectionKey]: draft });
+      toast.success("Contenu enregistré");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function reset() {
-    // Niveau 2 — la réinitialisation d'une section est une modification (update),
-    // pas un resetData (qui désigne la remise à zéro globale des données).
+  async function reset() {
+    // Niveau 2 — la réinitialisation d'une section est une modification (update).
     if (!guard("update", "Réinitialiser la section")) return;
-    resetSiteContentSection(sectionKey);
-    toast.success("Section réinitialisée");
+    setSaving(true);
+    try {
+      // resetSiteContentSection : pas encore exposé par le provider — migration douce §4.
+      resetSiteContentSection(sectionKey);
+      toast.success("Section réinitialisée");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   const readOnly = !can("update");
@@ -215,13 +257,13 @@ function SectionEditor<K extends keyof SiteContent>({
         <div className="flex gap-2">
           {/* Niveau 1 + Niveau 3 — réinitialiser = update */}
           <span title={denyReason("update")} className="inline-flex">
-            <Button size="sm" variant="ghost" disabled={readOnly} onClick={reset}>
+            <Button size="sm" variant="ghost" disabled={readOnly || saving} onClick={reset}>
               <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
             </Button>
           </span>
           {/* Niveau 1 + Niveau 3 — enregistrer = update */}
           <span title={denyReason("update")} className="inline-flex">
-            <Button size="sm" disabled={readOnly} onClick={save}>
+            <Button size="sm" disabled={readOnly || saving} onClick={save}>
               <Save className="me-2 h-4 w-4" /> Enregistrer
             </Button>
           </span>
