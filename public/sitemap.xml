@@ -1,137 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/</loc>
+    <loc>https://katech.dz/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>/about</loc>
+    <loc>https://katech.dz/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/contact</loc>
+    <loc>https://katech.dz/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>/blog</loc>
+    <loc>https://katech.dz/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/category</loc>
+    <loc>https://katech.dz/category</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/category/laptops</loc>
+    <loc>https://katech.dz/category/laptops</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/category/desktops</loc>
+    <loc>https://katech.dz/category/desktops</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/category/builds</loc>
+    <loc>https://katech.dz/category/builds</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/category/phones</loc>
+    <loc>https://katech.dz/category/phones</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>/builder</loc>
+    <loc>https://katech.dz/builder</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/rog-strix-g16</loc>
+    <loc>https://katech.dz/product/rog-strix-g16</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/hp-pavilion-15</loc>
+    <loc>https://katech.dz/product/hp-pavilion-15</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/thinkpad-x1-carbon</loc>
+    <loc>https://katech.dz/product/thinkpad-x1-carbon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/macbook-air-m3</loc>
+    <loc>https://katech.dz/product/macbook-air-m3</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/dell-optiplex-5000</loc>
+    <loc>https://katech.dz/product/dell-optiplex-5000</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/hp-omen-45l</loc>
+    <loc>https://katech.dz/product/hp-omen-45l</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/build-mid-gaming</loc>
+    <loc>https://katech.dz/product/build-mid-gaming</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/build-pro-editing</loc>
+    <loc>https://katech.dz/product/build-pro-editing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/galaxy-s25-ultra</loc>
+    <loc>https://katech.dz/product/galaxy-s25-ultra</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/iphone-16-pro-max</loc>
+    <loc>https://katech.dz/product/iphone-16-pro-max</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/xiaomi-14t-pro</loc>
+    <loc>https://katech.dz/product/xiaomi-14t-pro</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/product/redmi-note-13-pro</loc>
+    <loc>https://katech.dz/product/redmi-note-13-pro</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>/blog/guide-achat-laptop-2026</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>/blog/gaming-pc-vs-console</loc>
+    <loc>https://katech.dz/blog/guide-achat-laptop-2026</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/blog/smartphone-photo-2026</loc>
+    <loc>https://katech.dz/blog/gaming-pc-vs-console</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/blog/monter-son-pc-configurateur</loc>
+    <loc>https://katech.dz/blog/smartphone-photo-2026</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>/blog/livraison-58-wilayas</loc>
+    <loc>https://katech.dz/blog/monter-son-pc-configurateur</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://katech.dz/blog/livraison-58-wilayas</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

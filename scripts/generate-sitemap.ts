@@ -2,8 +2,8 @@
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 
-// TODO: replace with your project URL once a project name or custom domain is set.
-const BASE_URL = "";
+// Get site URL from environment, with fallback to katech.dz domain
+const BASE_URL = (process.env.SITE_URL || "https://katech.dz").replace(/\/$/, "");
 
 type Entry = { path: string; changefreq?: string; priority?: string };
 
