@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { useAdminState, createProductReview, productRatingStats } from "@/lib/admin-store";
+import { useAdminState, createProductReview } from "@/lib/admin-store";
 
 const specKeyMap: Record<SpecKey, TKey> = {
   cpu: "spec.cpu",
@@ -79,7 +79,12 @@ function ProductView({ p }: { p: ProductType }) {
   ];
 
   const { reviews } = useAdminState();
-  const stats = useMemo(() => productRatingStats(p.id), [p.id, reviews]);
+  const stats = useMemo(() => {
+    const approved = reviews.filter((r) => r.productId === p.id && r.status === "approved");
+    const count = approved.length;
+    const avg = count ? approved.reduce((s, r) => s + r.rating, 0) / count : 0;
+    return { avg, count, approved };
+  }, [p.id, reviews]);
   const [rating, setRating] = useState(5);
   const [reviewTitle, setReviewTitle] = useState("");
   const [comment, setComment] = useState("");

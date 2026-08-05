@@ -5,7 +5,7 @@ import { type Product, formatDZD } from "@/data/products";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
-import { productRatingStats, useAdminState } from "@/lib/admin-store";
+import { useAdminState } from "@/lib/admin-store";
 
 export function ProductCard({ p }: { p: Product }) {
   const { t } = useI18n();
@@ -14,7 +14,12 @@ export function ProductCard({ p }: { p: Product }) {
   const liked = isFavorite(p.id);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
   const name = p.name;
-  const stats = useMemo(() => productRatingStats(p.id), [p.id, reviews]);
+  const stats = useMemo(() => {
+    const approved = reviews.filter((r) => r.productId === p.id && r.status === "approved");
+    const count = approved.length;
+    const avg = count ? approved.reduce((s, r) => s + r.rating, 0) / count : 0;
+    return { avg, count, approved };
+  }, [p.id, reviews]);
   const avgRounded = Math.round(stats.avg * 2) / 2; // half-star precision
   const showRating = stats.count > 0 || !siteSettings.hideRatingWhenNoReviews;
 

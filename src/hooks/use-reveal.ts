@@ -10,6 +10,11 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(
   const ref = useRef<T | null>(null);
   const [visible, setVisible] = useState(false);
 
+  // Dépendre des champs primitifs évite la boucle si l'appelant passe un objet littéral à chaque rendu.
+  const rootMargin = options?.rootMargin ?? "0px 0px -10% 0px";
+  const threshold = options?.threshold ?? 0.08;
+  const root = options?.root ?? null;
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -30,11 +35,11 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(
           }
         }
       },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.08, ...options },
+      { rootMargin, threshold, root },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [rootMargin, threshold, root]);
 
   return { ref, visible } as const;
 }
