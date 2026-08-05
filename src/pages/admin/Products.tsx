@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { formatDZD, type Category } from "@/data/products";
 import { useAdminState, deleteProduct } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
@@ -32,8 +33,14 @@ const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
 };
 const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
 
+// Page pilote du motif de permissions — voir `docs/PERMISSIONS.md` §3.
+// Les 34 autres écrans admin sont calqués sur celle-ci : toute correction
+// apportée ici doit être reportée dans la recette de réplication.
 export default function AdminProducts() {
   const { products, categories } = useAdminState();
+  // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
+  // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
+  const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"all" | Category>("all");
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
@@ -53,6 +60,10 @@ export default function AdminProducts() {
 
   function confirmDelete() {
     if (!toDelete) return;
+    // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le
+    // rendu : le masquage d'un bouton n'est pas une protection (route
+    // directe, état obsolète, rôle changé pendant que la boîte est ouverte).
+    if (!guard("delete", "Supprimer le produit")) return;
     try {
       deleteProduct(toDelete.id);
       toast.success(`« ${toDelete.name} » supprimé`);
@@ -66,19 +77,30 @@ export default function AdminProducts() {
       title="Produits"
       description={`${products.length} produits dans le catalogue local.`}
       actions={
-        <Link to="/admin/products/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Nouveau produit
-          </Button>
-        </Link>
+        // Niveau 1 — affichage. Niveau 3 — un bouton désactivé dit pourquoi :
+        // l'infobulle est portée par le <span>, car un bouton `disabled` a
+        // `pointer-events-none` et n'affiche jamais son propre `title`.
+        can("create") ? (
+          <Link to="/admin/products/new">
+            <Button>
+              <Plus className="me-2 h-4 w-4" /> Nouveau produit
+            </Button>
+          </Link>
+        ) : (
+          <span title={denyReason("create")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Nouveau produit
+            </Button>
+          </span>
+        )
       }
     >
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Rechercher (nom, marque, id)…"
-            className="pl-9"
+            className="ps-9"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -106,9 +128,9 @@ export default function AdminProducts() {
               <TableHead>Produit</TableHead>
               <TableHead>Marque</TableHead>
               <TableHead>Catégorie</TableHead>
-              <TableHead className="text-right">Prix</TableHead>
+              <TableHead className="text-end">Prix</TableHead>
               <TableHead>Stock</TableHead>
-              <TableHead className="w-[140px] text-right">Actions</TableHead>
+              <TableHead className="w-[140px] text-end">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -130,29 +152,43 @@ export default function AdminProducts() {
                 </TableCell>
                 <TableCell className="text-sm">{p.brand}</TableCell>
                 <TableCell className="text-sm capitalize">{p.category}</TableCell>
-                <TableCell className="text-right font-medium">{formatDZD(p.price)}</TableCell>
+                <TableCell className="text-end font-medium">{formatDZD(p.price)}</TableCell>
                 <TableCell>
                   <Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-end">
                   <Link to={`/product/${p.id}`} target="_blank" rel="noreferrer">
                     <Button variant="ghost" size="icon" title="Voir la fiche publique">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link to={`/admin/products/${p.id}`}>
-                    <Button variant="ghost" size="icon" title="Modifier">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Supprimer"
-                    onClick={() => setToDelete({ id: p.id, name: p.name })}
+                  {can("update") ? (
+                    <Link to={`/admin/products/${p.id}`}>
+                      <Button variant="ghost" size="icon" title="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  ) : (
+                    <span title={denyReason("update")} className="inline-flex">
+                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </span>
+                  )}
+                  <span
+                    title={denyReason("delete") ?? "Supprimer"}
+                    className="inline-flex align-middle"
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Supprimer"
+                      disabled={!can("delete")}
+                      onClick={() => setToDelete({ id: p.id, name: p.name })}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </span>
                 </TableCell>
               </TableRow>
             ))}

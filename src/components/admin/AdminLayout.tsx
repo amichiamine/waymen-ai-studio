@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -43,12 +43,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
   useAdminState,
-  getActiveRole,
+  canPerform,
   setActiveRole,
   markAllNotificationsRead,
   updateNotification,
   type AdminUserRole,
 } from "@/lib/admin-store";
+import { ADMIN_ROLES, ADMIN_ROLE_LABEL, useEffectiveRole } from "@/lib/admin-auth";
 
 type Item = { to: string; label: string; Icon: typeof LayoutDashboard; minRole?: AdminUserRole };
 
@@ -272,35 +273,47 @@ export function AdminEmptyState({ label = "Aucune donnée pour le moment" }: { l
   );
 }
 
-// ---------- Role switcher (démo) ----------
-const ROLE_LABEL: Record<AdminUserRole, string> = {
-  owner: "Propriétaire",
-  admin: "Administrateur",
-  editor: "Éditeur",
-  viewer: "Lecteur",
-};
+// ---------- Role switcher (simulation, développement uniquement) ----------
+//
+// Ce sélecteur est un outil de démonstration, pas un mécanisme d'autorisation.
+// Il ne peut que RÉTROGRADER le rôle réel (voir `useEffectiveRole` dans
+// `src/lib/admin-auth.tsx` et `docs/PERMISSIONS.md`) : proposer un rôle
+// supérieur laisserait croire à une élévation de droits qui n'a pas lieu.
+// En production, il n'est pas rendu du tout.
 
-function subscribeRole(l: () => void) {
-  window.addEventListener("katech:role-changed", l);
-  return () => window.removeEventListener("katech:role-changed", l);
-}
+/** Rôle qui fait foi dans le chrome admin (navigation comprise). */
 export function useActiveRole(): AdminUserRole {
-  return useSyncExternalStore(subscribeRole, getActiveRole, () => "owner");
+  return useEffectiveRole().role;
 }
 
 export function AdminRoleSwitcher() {
-  const role = useActiveRole();
+  const { role, realRole, simulating } = useEffectiveRole();
+  if (!import.meta.env.DEV) return null;
+
+  // Seuls les rôles inférieurs ou égaux au rôle réel sont proposés.
+  const options = ADMIN_ROLES.filter((r) => canPerform(r, realRole));
+
   return (
     <div className="hidden items-center gap-2 md:flex">
-      <span className="text-xs text-muted-foreground">Rôle actif</span>
+      <span className="text-xs text-muted-foreground">
+        Simuler un rôle
+        {simulating && (
+          <span className="ms-1 font-medium text-amber-600">
+            (réel : {ADMIN_ROLE_LABEL[realRole]})
+          </span>
+        )}
+      </span>
       <Select value={role} onValueChange={(v) => setActiveRole(v as AdminUserRole)}>
-        <SelectTrigger className="h-8 w-[140px] text-xs">
+        <SelectTrigger
+          className={`h-8 w-[150px] text-xs ${simulating ? "border-amber-500 text-amber-700" : ""}`}
+          title="Outil de développement : permet uniquement de rétrograder son propre rôle pour tester l'interface."
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {(Object.keys(ROLE_LABEL) as AdminUserRole[]).map((r) => (
+          {options.map((r) => (
             <SelectItem key={r} value={r} className="text-xs">
-              {ROLE_LABEL[r]}
+              {ADMIN_ROLE_LABEL[r]}
             </SelectItem>
           ))}
         </SelectContent>
