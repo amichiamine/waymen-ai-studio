@@ -1244,7 +1244,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         setLangState(l);
         try {
           window.localStorage.setItem(STORAGE_KEY, l);
-        } catch {}
+        } catch (err) {
+          // localStorage peut être indisponible (navigation privée, quota dépassé) — on continue sans persister.
+          console.warn("[i18n] impossible de persister la langue :", err);
+        }
       },
       t: (k) => dict[k] ?? translations.fr[k] ?? k,
     };
