@@ -435,6 +435,83 @@ mock→http qui est **architecturalement fausse** : aucun fichier UI n'importe
 
 ---
 
+### Phase 2 — EN COURS au 5 août 2026 (branche `chantier/phase-2-provider`)
+
+**Vagues 2.1 à 2.3 livrées.** 9 commits, 7 agents. Commande de vérité verte :
+`lint` 0 erreur, `tsc --noEmit` 0 erreur, `prettier --check` vert, `build` sans
+avertissement.
+
+#### Ce qui est fait
+
+- **`docs/DATA-PROVIDER.md`** — la spécification : interface, tableau de
+  correspondance `useAdminState().xxx` → hook, recette de migration avec
+  avant/après copiable, pièges, limites connues.
+- **`src/data-provider/`** — 32 fichiers : le socle (mode, cache, types,
+  `useResource`, erreurs, journal) et **24 ressources**, chacune avec son
+  implémentation mock et http.
+- **`src/api/resources/`** — 14 fichiers : les 9 ressources manquantes créées
+  (categories, brands, coupons, customers, users, blog, media, crm, inventory).
+- **`src/pages/Search.tsx`** migrée comme exemplaire, `src/lib/useProducts.ts`
+  réécrit par-dessus le provider à signature publique inchangée.
+
+#### La décision d'architecture structurante
+
+Mesure de cadrage : **62 fichiers UI importent `admin-store`, et 60 d'entre eux
+importent `useAdminState()`** — un hook _synchrone_ renvoyant tout l'état d'un
+bloc. Or HTTP est asynchrone. C'est là toute la difficulté de la phase.
+
+Réponse retenue : **une forme de retour uniforme** `{ data, loading, error,
+refetch }` dans les deux modes. En mock, `loading` est `false` dès le premier
+rendu et `data` est immédiat — mais la forme ne change pas. Un composant est
+donc écrit **une seule fois** pour les deux modes et n'a jamais à savoir dans
+lequel il tourne.
+
+Corollaire de sûreté (skill S11) : `useAdminState()` et les mutations directes
+continuent de fonctionner à l'identique. Le provider s'**ajoute**, il ne
+remplace pas. La migration des 62 fichiers est donc incrémentale : à tout
+moment une partie est migrée, l'autre non, et l'application fonctionne.
+
+#### Défauts corrigés au passage
+
+- **`ordersApi.mine()` renvoyait toutes les commandes de tous les clients** —
+  fuite de données entre clients. Le filtrage correct est implémenté dans
+  `useMyOrderList()`. La ressource API elle-même reste à corriger.
+- **Champ `password` du type `AdminUser`** : un DTO `Omit<AdminUser,
+"password">` interdit désormais sa transmission ; le changement de mot de
+  passe passe par un chemin dédié.
+- **Ajustement de stock** : la mutation transmet un **delta** au serveur, sans
+  jamais lire puis écrire depuis le client. C'est ce qui permettra à la
+  transaction SQLite `IMMEDIATE` de la phase 4 d'empêcher la survente.
+- **Quota des médias** : la protection ajoutée en phase 1 n'est pas contournée
+  par le provider — un échec d'écriture remonte à l'appelant.
+
+#### Ce qui reste — vagues 2.4 à 2.7
+
+- [ ] **2.4 — migrer les 62 fichiers UI** vers le provider (6 agents,
+      périmètres disjoints par dossier). C'est le gros du travail restant.
+- [ ] **2.5 — réécrire `auth.tsx`** sur `authApi` et aligner `MockUser` sur
+      `AuthSession` (supprimer `user_metadata`, héritage de Supabase).
+- [ ] **2.6 — règle ESLint** interdisant l'import direct d'`admin-store` depuis
+      `pages/` et `components/`, plus un indicateur de mode en développement.
+- [ ] **2.7 — audit de cohérence** modèle ↔ API (skill S9).
+
+#### Limites connues, consignées dans `docs/DATA-PROVIDER.md` §7
+
+1. Pas de métadonnées de pagination dans `ResourceState` — les tableaux admin
+   qui exigeront une pagination serveur demanderont une décision d'architecture.
+2. `applyProductQuery()` duplique `paginateLocal()` de `src/api` : deux filtres
+   qui divergeraient donneraient des résultats différents entre mock et http.
+3. **`useProductDetail()` en http ne résoudra pas les configurations du
+   configurateur** : un `customBuild` n'existe que dans le store local, `GET
+/products/:id` renverra 404. Panier et paiement en dépendent — à traiter en
+   phase 4.
+4. `AbortSignal` non relayé par `src/api/resources/*` (leurs signatures ne
+   l'acceptent pas encore).
+5. **Deux clés i18n manquantes** (« réessayer », « ressource indisponible ») :
+   les bandeaux d'erreur affichent le message serveur brut en attendant.
+
+---
+
 ## 7. Phase 3 — Solde du travail Lovable
 
 | Vague | Agent                  | Tâche                                                                                         |
