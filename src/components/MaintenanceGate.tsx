@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Wrench, LogIn } from "lucide-react";
 import { useAdminState } from "@/lib/admin-store";
+import { useI18n } from "@/lib/i18n";
 import { Logo } from "./Logo";
 
 /**
@@ -9,6 +10,7 @@ import { Logo } from "./Logo";
  */
 export function MaintenanceScreen() {
   const { siteSettings: s } = useAdminState();
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="max-w-lg w-full text-center space-y-6">
@@ -17,9 +19,9 @@ export function MaintenanceScreen() {
         </div>
         <div>
           <Logo className="h-10 mx-auto text-foreground mb-4" />
-          <h1 className="text-2xl font-bold">Site en maintenance</h1>
+          <h1 className="text-2xl font-bold">{t("maintenance.title")}</h1>
           <p className="mt-3 text-sm text-muted-foreground whitespace-pre-line">
-            {s.maintenanceMessage || "Nous revenons très vite."}
+            {s.maintenanceMessage || t("maintenance.message")}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm">
@@ -43,7 +45,7 @@ export function MaintenanceScreen() {
             className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
           >
             <LogIn className="size-3.5" />
-            Espace administrateur
+            {t("maintenance.admin")}
           </Link>
         </div>
       </div>

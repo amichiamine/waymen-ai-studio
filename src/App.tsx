@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useAdminState } from "@/lib/admin-store";
 import { useAdminRoles } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Home } from "lucide-react";
@@ -95,6 +96,7 @@ const AdminSubscribers = lazy(() => import("@/pages/admin/Subscribers"));
  * le conteneur (pleine page en admin, zone de contenu ailleurs).
  */
 function RouteLoader({ className }: { className?: string }) {
+  const { t } = useI18n();
   return (
     <div
       className={cn(
@@ -102,7 +104,7 @@ function RouteLoader({ className }: { className?: string }) {
         className,
       )}
     >
-      Chargement…
+      {t("app.loading")}
     </div>
   );
 }
@@ -120,6 +122,7 @@ function RequireAuth() {
 function AdminLayout() {
   const { isAdmin, loading, user } = useAdminRoles();
   const location = useLocation();
+  const { t } = useI18n();
   useEffect(() => {
     document.title = "Admin — KA Tech";
   }, []);
@@ -137,14 +140,12 @@ function AdminLayout() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 text-amber-600">
             <ShieldAlert className="h-7 w-7" />
           </div>
-          <h1 className="mt-4 text-xl font-bold">Zone réservée à l'équipe admin</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Vous devez être connecté avec un compte administrateur pour accéder au back-office.
-          </p>
+          <h1 className="mt-4 text-xl font-bold">{t("admin.restricted.title")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("admin.restricted.desc")}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <Link to="/">
               <Button variant="outline">
-                <Home className="mr-2 h-4 w-4" /> Accueil
+                <Home className="mr-2 h-4 w-4" /> {t("common.home")}
               </Button>
             </Link>
           </div>
