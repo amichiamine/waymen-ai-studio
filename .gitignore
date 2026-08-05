@@ -30,3 +30,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Le projet utilise bun
+package-lock.json
+
+# Variables d'environnement
+.env
+.env.*
+!.env.example

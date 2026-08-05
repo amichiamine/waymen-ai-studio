@@ -1,0 +1,311 @@
+# PLAN.md — Plan de complétion KA Tech vers la production
+
+> **Source de vérité du projet.** Ce fichier est citable dans chaque consigne
+> d'agent. Il survit aux redémarrages de session — contrairement à un plan
+> resté dans une conversation (cf. `AGENTS.md` §5).
+>
+> Toute consigne d'agent doit référencer la vague et la tâche concernées.
+
+**Dernière mise à jour** : 5 août 2026
+**Branche de travail** : `main` (phases 0, 1, 3) — branches dédiées (phases 2, 4)
+
+---
+
+## 0. Constat de départ — mesuré, non supposé
+
+Audit réalisé le 5 août 2026 sur le dépôt complet.
+
+| Axe | État vérifié |
+| --- | --- |
+| TypeScript | `npx tsc --noEmit` → **0 erreur** (mode `strict` activé) |
+| Build | Réussi en 5,17 s — mais **un seul chunk de 1 383 kB** (378 kB gzip) |
+| Lint | 2 119 problèmes, dont **2 029 de pur formatage** ; **4 vrais défauts** |
+| Backend | **Inexistant** — zéro appel réseau dans toute l'application |
+| Couche `src/api` | Écrite (425 lignes) mais **0 des 76 fichiers UI ne l'importe** |
+| Lovable Lot 2 | Pages i18n **faites** (381 clés × 3 langues, parité parfaite) ; **données produits/blog non localisées** |
+| Lovable Lot 3 | Fait pour `site-content` ; **absent pour produits et blog** |
+| Tests | **0** — aucun test, aucune CI, aucun `ErrorBoundary` |
+
+### Volumétrie
+
+53 pages (18 visiteur + 35 admin), 56 routes, 23 composants métier,
+44 primitives shadcn, ~13 572 lignes TS/TSX hors `src/components/ui/`.
+
+### Défauts de cadrage identifiés
+
+- `Product` (`src/data/products.ts:20`) et `BlogPost` (`src/lib/admin-store.tsx:113`)
+  ont des champs `string` bruts au lieu de `Localized<string>` — reliquat du Lot 2.
+- `src/data/products.ts:41` : `tr()` mort (`v ?? ""`), vestige de l'ancien i18n.
+- `src/components/Hero.tsx:119-120` : re-export de `Localized` avec le commentaire
+  « to satisfy unused-import checkers » — contournement à supprimer.
+- `.lovable/project.json` déclare le template `tanstack_start_ts_current` alors que
+  le projet est un Vite nu ; d'où la règle `no-restricted-imports` orpheline visant
+  `@tanstack/react-start` dans `eslint.config.js`.
+
+---
+
+## 1. Cible d'architecture
+
+**Hébergement mutualisé** (dossier `public_html`), ce qui exclut Node.js côté serveur.
+
+| Couche | Choix |
+| --- | --- |
+| Runtime | PHP 8.2+ |
+| Framework API | Slim 4 (+ Composer) |
+| Persistance transactionnelle | **SQLite** (fichier unique, mode WAL) |
+| Persistance JSON | Factures figées, contenu éditorial, payloads d'outbox |
+| Authentification | Sessions PHP + cookie `httpOnly`, hachage **Argon2id** |
+| Emails | PHPMailer en SMTP |
+| Médias | Fichiers dans `public_html/uploads/` |
+| Paiement au lancement | **Paiement à la livraison** (SATIM ultérieurement) |
+| SEO | Prérendu au build (le SSR est impossible en mutualisé) |
+
+### Répartition SQLite / JSON
+
+SQLite porte tout le transactionnel : produits, stock, commandes, clients,
+coupons, avis, utilisateurs, blog, tarifs wilayas. Le JSON est réservé à ce
+qu'il fait mieux que SQL : les **snapshots de facture immuables**, le
+**contenu éditorial semi-structuré**, et les **payloads de l'outbox**.
+
+**Justification du choix SQLite plutôt que JSON pour les écritures** : le
+décompte de stock exige l'atomicité. `UPDATE products SET stock = stock - 1
+WHERE id = ? AND stock > 0` empêche la survente ; deux processus écrivant un
+fichier JSON ne l'empêchent pas. Par ailleurs les agrégations du Dashboard
+(CA, graphe 30 jours, top produits, LTV) sont des `GROUP BY` en SQL et des
+parcours de N fichiers en JSON.
+
+### Emplacement des données — critique
+
+Le fichier `.sqlite` et les JSON doivent être **hors de `public_html`**,
+sinon ils sont téléchargeables par HTTP.
+
+```
+/home/user/
+├── katech-data/          ← HORS public_html
+│   ├── katech.sqlite
+│   ├── invoices/
+│   └── backups/
+└── public_html/
+    ├── index.html, assets/   ← contenu de dist/
+    ├── uploads/
+    ├── .htaccess             ← fallback SPA + exclusion de /api
+    └── api/                  ← Slim
+```
+
+### Prérequis hébergeur à vérifier (bloquant phase 4)
+
+```php
+<?php
+$db = new PDO('sqlite:/home/user/katech-data/test.sqlite');
+var_dump($db->query('PRAGMA journal_mode=WAL')->fetchColumn());
+// attendu : "wal"   |   si "delete" → stockage NFS → basculer sur MySQL
+```
+
+---
+
+## 2. Doctrine d'exécution
+
+Application de `AGENTS.md`. Rappels contraignants :
+
+- **Pilote avant réplication** (§1, skill S1) : chaque phase commence par un
+  exemplaire irréprochable produit par un agent **fort**, puis la réplication
+  passe en **intermédiaire**.
+- **Micro-tâches de 5 à 10 minutes**, auto-commit, livrables numérotés à seuil.
+- **Périmètres strictement disjoints** : un fichier n'a qu'un propriétaire par vague.
+- **4 à 6 agents simultanés** maximum ; anti-doublon `git log` systématique.
+- **Validation à froid par l'orchestrateur** : jamais de conclusion sur la foi
+  des rapports d'agents.
+- **Rapports de 4 à 5 lignes** maximum.
+
+### Adaptations propres à ce projet
+
+1. **`npm run format` est un commit solo.** Il réécrit 2 029 lignes sur presque
+   tous les fichiers ; lancé après un fan-out, chaque agent rebase contre le
+   dépôt entier.
+2. **Les agents ne lancent pas `vite build`.** Six builds concurrents dans le
+   même répertoire se disputent `dist/`. Les agents lancent `tsc --noEmit` et
+   `eslint` sur leurs fichiers ; **l'orchestrateur seul** lance le build complet
+   à la validation à froid.
+3. **Aucun force-push, aucun rebase de commits déjà poussés** — le dépôt est
+   synchronisé avec Lovable.
+
+### Commande de vérité
+
+```bash
+npx tsc --noEmit && npx eslint . && npx vite build
+```
+
+Jamais affaiblie. Enrichissement additif uniquement.
+
+---
+
+## 3. Phases
+
+| Phase | Objet | Effort agent | Agents |
+| --- | --- | --- | --- |
+| 0 | Assainissement | 2-3 h | 6 |
+| 1 | Complétion du frontend | 10-14 h | 12 en 3 vagues |
+| 2 | Isolation et commutation des mocks | 16-20 h | 14 en 5 vagues |
+| 3 | Solde du travail Lovable | 6-8 h | 8 en 3 vagues |
+| 4 | Persistance SQLite + JSON | 20-26 h | 16 en 6 vagues |
+| 5 | Mise en production | 6-8 h | 5 |
+| | **Total** | **60-80 h** | **≈ 60** |
+
+### Ce qui ne se comprime pas
+
+Le facteur de compression sur l'écriture de code est de 15 à 25×. Il est de
+**1×** sur quatre points, qui fixent le calendrier réel :
+
+1. **Contrat marchand SATIM** — délai bancaire de plusieurs semaines. Hors
+   périmètre du lancement (paiement à la livraison retenu).
+2. **Relecture des traductions AR/EN** — production par agent, validation par
+   un locuteur.
+3. **Tests humains** — rendu RTL, ergonomie, interactions réelles en navigateur.
+4. **Accès hébergeur** — test WAL, déploiement, identifiants.
+
+---
+
+## 4. Phase 0 — Assainissement
+
+**Objectif** : rendre le dépôt sain avant toute construction. Aucun changement
+fonctionnel.
+
+| Vague | Agent | Périmètre | Tâche |
+| --- | --- | --- | --- |
+| 0.0 | orchestrateur | `PLAN.md`, `AGENTS.md` | Plan versionné dans le dépôt |
+| 0.1 | orchestrateur **solo** | tout le dépôt | `npm run format` — 2 029 corrections |
+| 0.2-A | **fort** (S13) | `src/lib/admin-store.tsx` | Retirer les 5 mots de passe en dur (L437-441) |
+| 0.2-B | **fort** (S1) | `src/App.tsx`, `src/components/ErrorBoundary.tsx` | ErrorBoundary + `React.lazy` sur 56 routes |
+| 0.2-C | minimal | `use-reveal.ts`, `ProductCard.tsx`, `Product.tsx`, `i18n.tsx` | 4 défauts de lint réels |
+| 0.2-D | minimal | `scripts/generate-sitemap.ts`, `public/robots.txt` | `BASE_URL` absolu + ligne `Sitemap:` |
+| 0.2-E | minimal | `package.json` | Purger les 9 dépendances mortes |
+| 0.2-F | minimal | `.github/workflows/` | CI : `tsc` + `eslint` + `build` |
+
+**Validation** : commande de vérité complète + mesure de la chute du bundle initial.
+**Porte humaine** : vérifier en navigateur que le site fonctionne après le code splitting.
+
+---
+
+## 5. Phase 1 — Complétion du frontend
+
+**Note d'ordonnancement** : la vague 2.1 (conception de l'interface du
+fournisseur de données) doit précéder la vague 1.3, pour que tout code neuf
+naisse du bon côté de la couture.
+
+| Vague | Agent | Tâche |
+| --- | --- | --- |
+| 1.1 | **fort** (S1) | Pilote de permissions : `canPerform` appliqué à `admin/Products.tsx` |
+| 1.2 | 5 × intermédiaire (S2) | Répliquer le pilote sur les 34 autres pages admin, groupes de 7 |
+| 1.3 | **fort** | Builder : ajout au panier + contrôles de compatibilité |
+| 1.3 | **fort** | Analytics : remplacer l'entonnoir inventé (L63-75) par du réel ou une mention |
+| 1.3 | intermédiaire (S10) | `admin/Customers.tsx` : CRUD complet |
+| 1.3 | intermédiaire | Édition de coupon manquante + `Account.tsx:49` (`handleSave` n'enregistre rien) |
+| 1.3 | intermédiaire | Helmet sur les 7 pages manquantes + JSON-LD `Product` |
+| 1.3 | intermédiaire | 6 classes RTL (`Builder`, `Product`, `Header:116`) + i18n de `MaintenanceGate` et des gardes d'`App.tsx` |
+| 1.3 | minimal | Images en WebP, logo en SVG, attributs `alt` |
+| 1.3 | intermédiaire | Garde de quota + message visible sur l'upload de médias |
+
+---
+
+## 6. Phase 2 — Isolation et commutation des mocks
+
+**Branche dédiée** : `chantier/phase-2-provider`.
+
+**Clé de voûte du projet.** `src/api/config.ts` promet aujourd'hui une bascule
+mock→http qui est **architecturalement fausse** : aucun fichier UI n'importe
+`@/api`. Cette phase rend la promesse vraie.
+
+| Vague | Agent | Tâche |
+| --- | --- | --- |
+| 2.1 | orchestrateur **fort** | Concevoir l'interface du fournisseur de données, la consigner dans `docs/` |
+| 2.2 | **fort** (S1) | Pilote de bout en bout sur les produits : provider mock + http + une page migrée |
+| 2.2 | **fort** (S3) | Dégradation gracieuse + journal des échecs |
+| 2.3 | 5 × intermédiaire (S2) | Créer les 10 ressources manquantes (categories, brands, coupons, blog, media, users, analytics, inventory, crm, customers) |
+| 2.3 | intermédiaire | 3 endpoints déclarés non implémentés : stock produit, suppression commande, avis accueil |
+| 2.3 | intermédiaire | Corriger `ordersApi.mine()` qui retourne toutes les commandes de tous les clients |
+| 2.4 | 6 × intermédiaire (S2) | Migrer les 65 fichiers UI, périmètres disjoints par dossier |
+| 2.5 | **fort**, solo | Réécrire `auth.tsx` sur `authApi` ; aligner `MockUser` sur `AuthSession` (supprimer `user_metadata`) |
+| 2.6 | minimal | Règle ESLint interdisant l'import direct d'`admin-store` depuis `pages/` et `components/` |
+| 2.6 | intermédiaire | Rendre `VITE_API_MODE` effectif + indicateur de mode en développement |
+| 2.7 | intermédiaire (S9) | Audit de cohérence : chaque champ des types ↔ chaque porte d'entrée de l'API |
+
+---
+
+## 7. Phase 3 — Solde du travail Lovable
+
+| Vague | Agent | Tâche |
+| --- | --- | --- |
+| 3.1 | **fort** (S1, S11) | `Product.name`, `.specLine`, `.specs` en `Localized` + migration douce |
+| 3.2 | intermédiaire (S11) | `BlogPost.title`, `.excerpt`, `.content` en `Localized` |
+| 3.2 | 2 × intermédiaire (S2) | Éditeurs admin produits et blog en 3 onglets FR/EN/AR — pilote existant : `admin/Content.tsx` |
+| 3.3 | 3 × intermédiaire (S7) | Traductions EN/AR des 12 produits et 5 articles seed |
+| 3.3 | minimal | Supprimer `tr()` (`products.ts:41`) et le re-export de `Hero.tsx:119-120` |
+| 3.3 | minimal | Nettoyer la règle ESLint TanStack orpheline + `project.json` |
+
+**Porte humaine** : relecture des traductions par un locuteur + test visuel RTL.
+
+---
+
+## 8. Phase 4 — Persistance SQLite et JSON
+
+**Branche dédiée** : `chantier/phase-4-api`.
+**Prérequis bloquant** : test WAL chez l'hébergeur (cf. §1).
+
+| Vague | Agent | Tâche |
+| --- | --- | --- |
+| 4.1 | orchestrateur **fort** | Schéma des 16 tables + `outbox` ; note d'architecture |
+| 4.2 | **fort** (S1) | Pilote Slim complet sur les produits : PDO, PRAGMA WAL, `busy_timeout`, stock atomique en transaction `IMMEDIATE` |
+| 4.3 | 5 × intermédiaire (S2) | Répliquer les endpoints des autres ressources |
+| 4.4 | **fort** (S13) | Sessions PHP, cookie `httpOnly`, Argon2id |
+| 4.5 | intermédiaire | Outbox + CRON d'émission (Telegram, Notion) |
+| 4.5 | intermédiaire | Snapshots de facture en JSON immuable |
+| 4.5 | intermédiaire | Stockage des images en fichiers (abandon du base64) |
+| 4.5 | intermédiaire | Emails transactionnels SMTP (PHPMailer) |
+| 4.6 | intermédiaire (S7) | Script de migration des données seed vers SQLite |
+| 4.7 | **fort** | Emplacement hors `public_html`, `.htaccess`, fallback SPA, CRON de sauvegarde |
+| 4.8 | intermédiaire (S14) | Documentation de déploiement et d'exploitation |
+
+### Transactions — règle absolue
+
+Aucun appel réseau à l'intérieur d'une transaction. Les intégrations passent
+par l'outbox, qui est précisément ce qui garde les transactions courtes.
+
+```php
+$db->beginTransaction();
+  creerCommande();
+  $db->prepare('INSERT INTO outbox (event, payload) VALUES (?, ?)')
+     ->execute(['order.created', json_encode($data)]);
+$db->commit();
+// l'émission vers Telegram/Notion se fait hors transaction, par CRON
+```
+
+---
+
+## 9. Phase 5 — Mise en production
+
+| Vague | Agent | Tâche |
+| --- | --- | --- |
+| — | humain | Démarches SATIM (à lancer en parallèle, hors chemin critique) |
+| 5.1 | **fort** | Prérendu au build pour l'indexabilité sans SSR |
+| 5.2 | intermédiaire | Paiement à la livraison comme mode principal |
+| 5.3 | minimal | CI (avancée en phase 0) |
+| — | humain | Déploiement sur sous-domaine de recette, recette du tunnel d'achat, test de sauvegarde et restauration |
+
+---
+
+## 10. Décisions prises
+
+| Décision | Choix | Date |
+| --- | --- | --- |
+| Base de données | SQLite (transactionnel) + JSON (immuable et semi-structuré) | 5 août 2026 |
+| Backend | PHP 8.2 + Slim 4, contrainte du mutualisé | 5 août 2026 |
+| Authentification | Sessions PHP + cookie `httpOnly` (déjà anticipé par `VITE_API_AUTH=cookie`) | 5 août 2026 |
+| Branches | Phases 2 et 4 sur branche dédiée, fusion après commande de vérité | 5 août 2026 |
+| Paiement au lancement | Paiement à la livraison seul ; SATIM ultérieurement | 5 août 2026 |
+
+## 11. Décisions ouvertes
+
+- Rester connecté à Lovable pendant les refontes des phases 2 et 4 ?
+- Admin en français uniquement, ou internationaliser les 35 pages (+2-3 h agent) ?
+- Sortir le back-office du bundle visiteur (au-delà du code splitting) ?
+- Volumétrie cible à 12 mois — confirme SQLite ou impose MySQL.
