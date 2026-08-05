@@ -8,7 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAdminState } from "@/lib/admin-store";
+import { Link } from "react-router-dom";
+import { useAdminState, type OrderStatus } from "@/lib/admin-store";
 import { formatDZD } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 import {
@@ -94,26 +95,47 @@ export default function AdminAnalytics() {
       .filter((x) => x.value > 0);
   }, [orders, products, categories]);
 
+  // Entonnoir strictement mesuré : chaque étage correspond à une étape du cycle de
+  // vie des commandes réellement enregistrée dans `statusHistory`.
+  // Les étages amont d'un entonnoir e-commerce (visiteurs, paniers) ne sont PAS
+  // mesurables ici : la SPA n'embarque aucun outil de mesure d'audience et il
+  // n'existe pas de backend pour en collecter. Ils étaient auparavant extrapolés
+  // du nombre de commandes par des coefficients arbitraires, ce qui les rendait
+  // indiscernables de chiffres réels — ils ont donc été retirés.
+  // Une mesure d'audience réelle relève de la phase 4 du PLAN.md (§8, persistance
+  // et API) ; ne pas réintroduire d'estimation d'ici là.
   const funnel = useMemo(() => {
-    // simulated funnel derived from real orders
-    const delivered = orders.filter((o) => o.status === "delivered").length;
-    const paid = orders.filter((o) => o.status !== "cancelled").length;
-    const carts = Math.round(paid * 2.6);
-    const visitors = Math.round(carts * 5.4);
-    return [
-      { step: "Visiteurs", value: visitors },
-      { step: "Paniers", value: carts },
-      { step: "Commandes", value: paid },
-      { step: "Livrées", value: delivered },
-    ];
+    const flow: OrderStatus[] = ["pending", "processing", "shipped", "delivered"];
+    const labels = ["Commandes reçues", "En préparation", "Expédiées", "Livrées"];
+    const reached = flow.map(() => 0);
+    let cancelled = 0;
+    for (const o of orders) {
+      if (o.status === "cancelled") cancelled += 1;
+      const seen = new Set<OrderStatus>([
+        o.status,
+        ...(o.statusHistory ?? []).map((e) => e.status),
+      ]);
+      // Toute commande enregistrée a franchi l'étape « reçue ».
+      let last = 0;
+      flow.forEach((s, i) => {
+        if (seen.has(s) && i > last) last = i;
+      });
+      for (let i = 0; i <= last; i++) reached[i] += 1;
+    }
+    return {
+      steps: labels.map((step, i) => ({ step, value: reached[i] })),
+      cancelled,
+    };
   }, [orders]);
 
   const kpis = useMemo(() => {
     const active = orders.filter((o) => o.status !== "cancelled");
     const revenue = active.reduce((s, o) => s + o.total, 0);
     const aov = active.length ? Math.round(revenue / active.length) : 0;
-    const conv = funnel[0].value ? ((funnel[2].value / funnel[0].value) * 100).toFixed(1) : "0";
-    return { revenue, count: active.length, aov, conv, customers: customers.length };
+    const received = funnel.steps[0].value;
+    const delivered = funnel.steps[3].value;
+    const delivery = received ? ((delivered / received) * 100).toFixed(1) : "0";
+    return { revenue, count: active.length, aov, delivery, customers: customers.length };
   }, [orders, funnel, customers]);
 
   // Écran de lecture — seul `read` est requis, toujours accordé dans le back-office.
@@ -122,7 +144,7 @@ export default function AdminAnalytics() {
   return (
     <AdminPageShell
       title="Analytique"
-      description="Tendances de trafic et de ventes (données locales)."
+      description="Tendances de ventes calculées sur les commandes enregistrées (données locales)."
     >
       <div className="flex items-center justify-between gap-3">
         <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -130,7 +152,7 @@ export default function AdminAnalytics() {
             { label: "Chiffre d'affaires", value: formatDZD(kpis.revenue) },
             { label: "Commandes", value: kpis.count.toString() },
             { label: "Panier moyen", value: formatDZD(kpis.aov) },
-            { label: "Conversion", value: `${kpis.conv}%` },
+            { label: "Taux de livraison", value: `${kpis.delivery}%` },
             { label: "Clients", value: kpis.customers.toString() },
           ].map((k) => (
             <Card key={k.label}>
@@ -247,28 +269,59 @@ export default function AdminAnalytics() {
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">Entonnoir de conversion</h2>
-            <div className="space-y-3">
-              {funnel.map((f, i) => {
-                const pct = funnel[0].value ? (f.value / funnel[0].value) * 100 : 0;
-                return (
-                  <div key={f.step}>
-                    <div className="mb-1 flex items-center justify-between text-sm">
-                      <span>{f.step}</span>
-                      <span className="text-muted-foreground">
-                        {f.value.toLocaleString("fr-FR")} · {pct.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="h-3 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: `${pct}%`, background: COLORS[i % COLORS.length] }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <h2 className="text-sm font-semibold">Traitement des commandes</h2>
+            <p className="mb-4 mt-1 text-xs text-muted-foreground">
+              Étapes réellement enregistrées sur les commandes. Les étapes amont (visiteurs,
+              paniers) ne sont pas affichées : aucune mesure d&apos;audience n&apos;est en place sur
+              le site.
+            </p>
+            {funnel.steps[0].value ? (
+              <>
+                <div className="space-y-3">
+                  {funnel.steps.map((f, i) => {
+                    const pct = (f.value / funnel.steps[0].value) * 100;
+                    return (
+                      <div key={f.step}>
+                        <div className="mb-1 flex items-center justify-between text-sm">
+                          <span>{f.step}</span>
+                          <span className="text-muted-foreground">
+                            {f.value.toLocaleString("fr-FR")} · {pct.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="h-3 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ width: `${pct}%`, background: COLORS[i % COLORS.length] }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {funnel.cancelled > 0 && (
+                  <p className="mt-4 text-xs text-muted-foreground">
+                    Dont {funnel.cancelled.toLocaleString("fr-FR")} commande
+                    {funnel.cancelled > 1 ? "s" : ""} annulée{funnel.cancelled > 1 ? "s" : ""}, hors
+                    parcours de livraison.
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="rounded-lg border border-dashed p-6 text-sm">
+                <p className="font-medium">Aucune commande à suivre</p>
+                <p className="mt-1 text-muted-foreground">
+                  Ce suivi se construit à partir des changements de statut des commandes. Il se
+                  remplira dès la première commande enregistrée, puis à chaque passage en
+                  préparation, expédition et livraison.
+                </p>
+                <Link
+                  to="/admin/orders"
+                  className="mt-3 inline-block text-sm font-medium text-primary underline underline-offset-4"
+                >
+                  Ouvrir les commandes
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
