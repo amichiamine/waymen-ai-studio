@@ -14,14 +14,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, RotateCcw } from "lucide-react";
+import { Save, RotateCcw, AlertTriangle } from "lucide-react";
 import {
-  useAdminState,
-  updateSiteSettings,
-  setTickerMessages,
-  setMarqueeBrands,
-  setAboutValues,
-  setBuilderSteps,
+  useSiteSettings,
+  useSiteSettingsMutations,
+  useTickerMessageList,
+  useTickerMessageMutations,
+  useMarqueeBrandList,
+  useMarqueeBrandMutations,
+  useAboutValueList,
+  useAboutValueMutations,
+  useBuilderStepList,
+  useBuilderStepMutations,
+  toApiError,
+} from "@/data-provider";
+import {
   resetData,
   type SiteSettings,
   type TickerMessage,
@@ -53,15 +60,30 @@ import { formatDZD } from "@/data/products";
 // risquent qu'un problème d'affichage cosmétique, `manageSettings` suffit.
 
 export default function AdminSettings() {
-  const state = useAdminState();
+  const { data: siteSettings, loading: lSettings, error: eSettings } = useSiteSettings();
+  const { update: updateSettings } = useSiteSettingsMutations();
+
+  const { data: tickerMessages } = useTickerMessageList();
+  const { set: setTickers } = useTickerMessageMutations();
+
+  const { data: marqueeBrands } = useMarqueeBrandList();
+  const { set: setMarquee } = useMarqueeBrandMutations();
+
+  const { data: aboutValues } = useAboutValueList();
+  const { set: setAbout } = useAboutValueMutations();
+
+  const { data: builderSteps } = useBuilderStepList();
+  const { replace: replaceBuilder } = useBuilderStepMutations();
+
   const { can, guard, denyReason } = usePermissions();
-  const [form, setForm] = useState<SiteSettings>(state.siteSettings);
+  const [form, setForm] = useState<SiteSettings>(siteSettings);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setForm(state.siteSettings);
-  }, [state.siteSettings]);
+    setForm(siteSettings);
+  }, [siteSettings]);
 
-  function saveSettings() {
+  async function saveSettings() {
     // Niveau 2 — vérification dans l'action avant toute mutation.
     if (!guard("manageSettings", "Enregistrer les paramètres")) return;
     if (form.contactEmail && !/^\S+@\S+\.\S+$/.test(form.contactEmail)) {
@@ -72,15 +94,33 @@ export default function AdminSettings() {
       toast.error("WhatsApp : chiffres uniquement (avec l'indicatif pays, ex. 213555000000)");
       return;
     }
-    updateSiteSettings(form);
-    toast.success("Paramètres enregistrés");
+    setSaving(true);
+    try {
+      await updateSettings(form);
+      toast.success("Paramètres enregistrés");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function resetSettings() {
+  async function resetSettings() {
     // Réinitialiser les réglages courants — même niveau que saveSettings.
     if (!guard("manageSettings", "Réinitialiser les paramètres")) return;
-    resetData("siteSettings");
-    toast.success("Paramètres réinitialisés");
+    setSaving(true);
+    try {
+      // Le provider ne propose pas de reset vers les valeurs seed ; on passe
+      // par la primitive du store (migration douce — DATA-PROVIDER.md §4).
+      resetData("siteSettings");
+      toast.success("Paramètres réinitialisés");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function set<K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) {
@@ -95,295 +135,314 @@ export default function AdminSettings() {
       title="Paramètres"
       description="Configuration générale de la boutique et contenu du site."
     >
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* ── Boutique ── manageSettings ─────────────────────────────────── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Boutique</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Nom</Label>
-              <Input
-                value={form.storeName}
-                onChange={(e) => set("storeName", e.target.value)}
-                disabled={disabledSettings}
-              />
-            </div>
-            <div>
-              <Label>E-mail de contact</Label>
-              <Input
-                type="email"
-                value={form.contactEmail}
-                onChange={(e) => set("contactEmail", e.target.value)}
-                disabled={disabledSettings}
-              />
-            </div>
-            <div>
-              <Label>Téléphone</Label>
-              <Input
-                value={form.contactPhone}
-                onChange={(e) => set("contactPhone", e.target.value)}
-                placeholder="+213…"
-                disabled={disabledSettings}
-              />
-            </div>
-            <div>
-              <Label>WhatsApp (chiffres seulement)</Label>
-              <Input
-                value={form.whatsapp}
-                onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))}
-                placeholder="213555000000"
-                disabled={disabledSettings}
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Utilisé pour les liens wa.me sur tout le site.
-              </p>
-            </div>
-            <div>
-              <Label>Adresse</Label>
-              <Textarea
-                rows={2}
-                value={form.address}
-                onChange={(e) => set("address", e.target.value)}
-                placeholder="Adresse du siège"
-                disabled={disabledSettings}
-              />
-            </div>
-            <div>
-              <Label>Horaires</Label>
-              <Input
-                value={form.hours}
-                onChange={(e) => set("hours", e.target.value)}
-                placeholder="Dim → Jeu, 9h – 19h"
-                disabled={disabledSettings}
-              />
-            </div>
-          </CardContent>
-        </Card>
+      {eSettings && (
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {eSettings.message}
+        </p>
+      )}
 
-        {/* ── Options ── manageSettings ───────────────────────────────────── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Options</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Notifications e-mail</Label>
-              {/* Niveau 3 — infobulle sur le Switch quand désactivé. */}
-              <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
-                <Switch
-                  checked={form.emailNotifications}
-                  onCheckedChange={(v) => set("emailNotifications", v)}
-                  disabled={disabledSettings}
-                />
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>Sélecteur de langue (FR / AR / EN)</Label>
-              <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
-                <Switch
-                  checked={form.languageSelectorEnabled}
-                  onCheckedChange={(v) => set("languageSelectorEnabled", v)}
-                  disabled={disabledSettings}
-                />
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>Masquer la note produit sans avis</Label>
-              <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
-                <Switch
-                  checked={form.hideRatingWhenNoReviews}
-                  onCheckedChange={(v) => set("hideRatingWhenNoReviews", v)}
-                  disabled={disabledSettings}
-                />
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+      {lSettings ? (
+        <div className="grid gap-6 lg:grid-cols-2" aria-busy="true">
+          <span className="sr-only">Chargement…</span>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="h-64 animate-pulse rounded-xl border border-border bg-card" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* ── Boutique ── manageSettings ─────────────────────────────────── */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Boutique</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <Label>Seuil « stock faible » (≤)</Label>
+                <Label>Nom</Label>
                 <Input
-                  type="number"
-                  min={0}
-                  value={form.lowStockThreshold}
-                  onChange={(e) => set("lowStockThreshold", Number(e.target.value) || 0)}
+                  value={form.storeName}
+                  onChange={(e) => set("storeName", e.target.value)}
                   disabled={disabledSettings}
                 />
               </div>
               <div>
-                <Label>Seuil « rupture » (≤)</Label>
+                <Label>E-mail de contact</Label>
                 <Input
-                  type="number"
-                  min={0}
-                  value={form.outOfStockThreshold}
-                  onChange={(e) => set("outOfStockThreshold", Number(e.target.value) || 0)}
+                  type="email"
+                  value={form.contactEmail}
+                  onChange={(e) => set("contactEmail", e.target.value)}
                   disabled={disabledSettings}
                 />
               </div>
-              <p className="col-span-2 text-xs text-muted-foreground">
-                Les statuts « en stock / faible / rupture » sont recalculés sur toute la vitrine à
-                l'enregistrement.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── Mode maintenance ── manageCriticalSettings ─────────────────── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Mode maintenance</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
               <div>
-                <Label>Activer le mode maintenance</Label>
-                <p className="text-xs text-muted-foreground">
-                  Bloque l'accès public au site. L'admin et /auth restent accessibles.
+                <Label>Téléphone</Label>
+                <Input
+                  value={form.contactPhone}
+                  onChange={(e) => set("contactPhone", e.target.value)}
+                  placeholder="+213…"
+                  disabled={disabledSettings}
+                />
+              </div>
+              <div>
+                <Label>WhatsApp (chiffres seulement)</Label>
+                <Input
+                  value={form.whatsapp}
+                  onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))}
+                  placeholder="213555000000"
+                  disabled={disabledSettings}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Utilisé pour les liens wa.me sur tout le site.
                 </p>
               </div>
-              <span title={disabledCritical ? denyReason("manageCriticalSettings") : undefined}>
-                <Switch
-                  checked={form.maintenance}
-                  onCheckedChange={(v) => set("maintenance", v)}
+              <div>
+                <Label>Adresse</Label>
+                <Textarea
+                  rows={2}
+                  value={form.address}
+                  onChange={(e) => set("address", e.target.value)}
+                  placeholder="Adresse du siège"
+                  disabled={disabledSettings}
+                />
+              </div>
+              <div>
+                <Label>Horaires</Label>
+                <Input
+                  value={form.hours}
+                  onChange={(e) => set("hours", e.target.value)}
+                  placeholder="Dim → Jeu, 9h – 19h"
+                  disabled={disabledSettings}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Options ── manageSettings ───────────────────────────────────── */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Options</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Notifications e-mail</Label>
+                {/* Niveau 3 — infobulle sur le Switch quand désactivé. */}
+                <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
+                  <Switch
+                    checked={form.emailNotifications}
+                    onCheckedChange={(v) => set("emailNotifications", v)}
+                    disabled={disabledSettings}
+                  />
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Sélecteur de langue (FR / AR / EN)</Label>
+                <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
+                  <Switch
+                    checked={form.languageSelectorEnabled}
+                    onCheckedChange={(v) => set("languageSelectorEnabled", v)}
+                    disabled={disabledSettings}
+                  />
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Masquer la note produit sans avis</Label>
+                <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
+                  <Switch
+                    checked={form.hideRatingWhenNoReviews}
+                    onCheckedChange={(v) => set("hideRatingWhenNoReviews", v)}
+                    disabled={disabledSettings}
+                  />
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+                <div>
+                  <Label>Seuil « stock faible » (≤)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.lowStockThreshold}
+                    onChange={(e) => set("lowStockThreshold", Number(e.target.value) || 0)}
+                    disabled={disabledSettings}
+                  />
+                </div>
+                <div>
+                  <Label>Seuil « rupture » (≤)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.outOfStockThreshold}
+                    onChange={(e) => set("outOfStockThreshold", Number(e.target.value) || 0)}
+                    disabled={disabledSettings}
+                  />
+                </div>
+                <p className="col-span-2 text-xs text-muted-foreground">
+                  Les statuts « en stock / faible / rupture » sont recalculés sur toute la vitrine à
+                  l'enregistrement.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Mode maintenance ── manageCriticalSettings ─────────────────── */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Mode maintenance</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Activer le mode maintenance</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Bloque l'accès public au site. L'admin et /auth restent accessibles.
+                  </p>
+                </div>
+                <span title={disabledCritical ? denyReason("manageCriticalSettings") : undefined}>
+                  <Switch
+                    checked={form.maintenance}
+                    onCheckedChange={(v) => set("maintenance", v)}
+                    disabled={disabledCritical}
+                  />
+                </span>
+              </div>
+              <div>
+                <Label>Message affiché</Label>
+                <Textarea
+                  rows={3}
+                  value={form.maintenanceMessage}
+                  onChange={(e) => set("maintenanceMessage", e.target.value)}
                   disabled={disabledCritical}
                 />
-              </span>
-            </div>
-            <div>
-              <Label>Message affiché</Label>
-              <Textarea
-                rows={3}
-                value={form.maintenanceMessage}
-                onChange={(e) => set("maintenanceMessage", e.target.value)}
-                disabled={disabledCritical}
-              />
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* ── Bandeau promotionnel ── manageSettings ─────────────────────── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Bandeau promotionnel</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Afficher le bandeau promo</Label>
-              <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
-                <Switch
-                  checked={form.showPromoBanner}
-                  onCheckedChange={(v) => set("showPromoBanner", v)}
-                  disabled={disabledSettings}
-                />
-              </span>
-            </div>
-            <div>
-              <Label>Message du bandeau</Label>
-              <Input
-                value={form.promoBannerText}
-                onChange={(e) => set("promoBannerText", e.target.value)}
-                disabled={disabledSettings}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+          {/* ── Bandeau promotionnel ── manageSettings ─────────────────────── */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Bandeau promotionnel</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Afficher le bandeau promo</Label>
+                <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
+                  <Switch
+                    checked={form.showPromoBanner}
+                    onCheckedChange={(v) => set("showPromoBanner", v)}
+                    disabled={disabledSettings}
+                  />
+                </span>
+              </div>
               <div>
-                <Label>Libellé du bouton</Label>
+                <Label>Message du bandeau</Label>
                 <Input
-                  value={form.promoBannerLabel}
-                  onChange={(e) => set("promoBannerLabel", e.target.value)}
+                  value={form.promoBannerText}
+                  onChange={(e) => set("promoBannerText", e.target.value)}
                   disabled={disabledSettings}
                 />
               </div>
-              <div>
-                <Label>Lien du bouton</Label>
-                <Input
-                  value={form.promoBannerHref}
-                  onChange={(e) => set("promoBannerHref", e.target.value)}
-                  placeholder="/category/laptops"
-                  disabled={disabledSettings}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Libellé du bouton</Label>
+                  <Input
+                    value={form.promoBannerLabel}
+                    onChange={(e) => set("promoBannerLabel", e.target.value)}
+                    disabled={disabledSettings}
+                  />
+                </div>
+                <div>
+                  <Label>Lien du bouton</Label>
+                  <Input
+                    value={form.promoBannerHref}
+                    onChange={(e) => set("promoBannerHref", e.target.value)}
+                    placeholder="/category/laptops"
+                    disabled={disabledSettings}
+                  />
+                </div>
               </div>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Le bandeau réapparaît automatiquement dès qu'on modifie son texte, son libellé ou son
-              lien.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* ── Devise & format ── manageSettings ──────────────────────────── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Devise & format des prix</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Symbole</Label>
-                <Input
-                  value={form.currencySymbol}
-                  onChange={(e) => set("currencySymbol", e.target.value)}
-                  placeholder="DA"
-                  disabled={disabledSettings}
-                />
-              </div>
-              <div>
-                <Label>Position</Label>
-                <Select
-                  value={form.currencyPosition}
-                  onValueChange={(v) =>
-                    set("currencyPosition", v as SiteSettings["currencyPosition"])
-                  }
-                  disabled={disabledSettings}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="suffix">Suffixe (12 000 DA)</SelectItem>
-                    <SelectItem value="prefix">Préfixe (DA 12 000)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2">
-                <Label>Séparateur de milliers</Label>
-                <Select
-                  value={form.currencyThousandSeparator || "none"}
-                  onValueChange={(v) =>
-                    set(
-                      "currencyThousandSeparator",
-                      (v === "none" ? "" : v) as SiteSettings["currencyThousandSeparator"],
-                    )
-                  }
-                  disabled={disabledSettings}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value=" ">Espace (12 000)</SelectItem>
-                    <SelectItem value=",">Virgule (12,000)</SelectItem>
-                    <SelectItem value=".">Point (12.000)</SelectItem>
-                    <SelectItem value="'">Apostrophe (12'000)</SelectItem>
-                    <SelectItem value="none">Aucun (12000)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="rounded-md border border-dashed p-3 text-sm">
-              Aperçu : <strong>{formatDZD(123456)}</strong> · <strong>{formatDZD(7500)}</strong>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Enregistrez pour appliquer les changements à tout le site.
+              <p className="text-xs text-muted-foreground">
+                Le bandeau réapparaît automatiquement dès qu'on modifie son texte, son libellé ou
+                son lien.
               </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Devise & format ── manageSettings ──────────────────────────── */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Devise & format des prix</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Symbole</Label>
+                  <Input
+                    value={form.currencySymbol}
+                    onChange={(e) => set("currencySymbol", e.target.value)}
+                    placeholder="DA"
+                    disabled={disabledSettings}
+                  />
+                </div>
+                <div>
+                  <Label>Position</Label>
+                  <Select
+                    value={form.currencyPosition}
+                    onValueChange={(v) =>
+                      set("currencyPosition", v as SiteSettings["currencyPosition"])
+                    }
+                    disabled={disabledSettings}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="suffix">Suffixe (12 000 DA)</SelectItem>
+                      <SelectItem value="prefix">Préfixe (DA 12 000)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2">
+                  <Label>Séparateur de milliers</Label>
+                  <Select
+                    value={form.currencyThousandSeparator || "none"}
+                    onValueChange={(v) =>
+                      set(
+                        "currencyThousandSeparator",
+                        (v === "none" ? "" : v) as SiteSettings["currencyThousandSeparator"],
+                      )
+                    }
+                    disabled={disabledSettings}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value=" ">Espace (12 000)</SelectItem>
+                      <SelectItem value=",">Virgule (12,000)</SelectItem>
+                      <SelectItem value=".">Point (12.000)</SelectItem>
+                      <SelectItem value="'">Apostrophe (12'000)</SelectItem>
+                      <SelectItem value="none">Aucun (12000)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="rounded-md border border-dashed p-3 text-sm">
+                Aperçu : <strong>{formatDZD(123456)}</strong> · <strong>{formatDZD(7500)}</strong>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Enregistrez pour appliquer les changements à tout le site.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="flex justify-end gap-2">
         {/* Niveau 1 — affichage des boutons globaux. */}
         {can("manageSettings") ? (
-          <Button variant="outline" onClick={resetSettings}>
+          <Button variant="outline" onClick={resetSettings} disabled={saving}>
             <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
           </Button>
         ) : (
@@ -394,7 +453,7 @@ export default function AdminSettings() {
           </span>
         )}
         {can("manageSettings") ? (
-          <Button onClick={saveSettings}>
+          <Button onClick={saveSettings} disabled={saving}>
             <Save className="me-2 h-4 w-4" /> Enregistrer
           </Button>
         ) : (
@@ -412,12 +471,12 @@ export default function AdminSettings() {
       <JsonEditorCard<TickerMessage[]>
         title="Bandeau défilant (messages)"
         description="Liste des messages du ruban en haut de page."
-        value={state.tickerMessages}
+        value={tickerMessages}
         permission="manageCriticalSettings"
-        onSave={(v) => {
-          setTickerMessages(v);
+        onSave={async (v) => {
+          await setTickers(v);
         }}
-        onReset={() => {
+        onReset={async () => {
           resetData("tickerMessages");
         }}
         validate={(v) =>
@@ -433,12 +492,12 @@ export default function AdminSettings() {
       <JsonEditorCard<string[]>
         title="Marques défilantes (carrousel)"
         description="Liste de noms de marques affichés en défilement horizontal."
-        value={state.marqueeBrands}
+        value={marqueeBrands}
         permission="manageSettings"
-        onSave={(v) => {
-          setMarqueeBrands(v);
+        onSave={async (v) => {
+          await setMarquee(v);
         }}
-        onReset={() => {
+        onReset={async () => {
           resetData("marqueeBrands");
         }}
         validate={(v) => Array.isArray(v) && v.every((x) => typeof x === "string")}
@@ -451,12 +510,12 @@ export default function AdminSettings() {
       <JsonEditorCard<AboutValue[]>
         title="Valeurs — page À propos"
         description="4 cartes affichées sur /about. icon ∈ shield | truck | headphones | award | star | heart."
-        value={state.aboutValues}
+        value={aboutValues}
         permission="manageSettings"
-        onSave={(v) => {
-          setAboutValues(v);
+        onSave={async (v) => {
+          await setAbout(v);
         }}
-        onReset={() => {
+        onReset={async () => {
           resetData("aboutValues");
         }}
         validate={(v) =>
@@ -481,12 +540,12 @@ export default function AdminSettings() {
       <JsonEditorCard<BuilderStep[]>
         title="Étapes du configurateur PC"
         description="Composants du builder. icon ∈ case | mb | cpu | ram | ssd | gpu | psu | cool."
-        value={state.builderSteps}
+        value={builderSteps}
         permission="manageCriticalSettings"
-        onSave={(v) => {
-          setBuilderSteps(v);
+        onSave={async (v) => {
+          await replaceBuilder(v);
         }}
-        onReset={() => {
+        onReset={async () => {
           resetData("builderSteps");
         }}
         validate={(v) =>
@@ -535,47 +594,65 @@ function JsonEditorCard<T>({
   description: string;
   value: T;
   permission: AdminPermission;
-  onSave: (v: T) => void;
-  onReset: () => void;
+  onSave: (v: T) => Promise<void>;
+  onReset: () => Promise<void>;
   validate: (v: unknown) => boolean;
   can: (r: PermissionRequirement) => boolean;
   guard: (r: PermissionRequirement, action?: string) => boolean;
   denyReason: (r: PermissionRequirement) => string | undefined;
 }) {
   const [text, setText] = useState(() => JSON.stringify(value, null, 2));
-  const [error, setError] = useState<string | null>(null);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const disabled = !can(permission);
 
   useEffect(() => {
     setText(JSON.stringify(value, null, 2));
-    setError(null);
+    setParseError(null);
   }, [value]);
 
-  function commit() {
+  async function commit() {
     // Niveau 2 — vérification dans l'action avant toute mutation.
     if (!guard(permission, `Sauvegarder ${title}`)) return;
     let parsed: unknown;
     try {
       parsed = JSON.parse(text);
     } catch {
-      setError("JSON invalide");
+      setParseError("JSON invalide");
       toast.error("JSON invalide");
       return;
     }
     if (!validate(parsed)) {
-      setError("Structure invalide");
+      setParseError("Structure invalide");
       toast.error("Structure invalide");
       return;
     }
-    setError(null);
-    onSave(parsed as T);
-    toast.success(`${title} — sauvegardé`);
+    setParseError(null);
+    setSaving(true);
+    try {
+      await onSave(parsed as T);
+      toast.success(`${title} — sauvegardé`);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleReset() {
+  async function handleReset() {
     // Niveau 2 — même garde que commit.
     if (!guard(permission, `Réinitialiser ${title}`)) return;
-    onReset();
+    setSaving(true);
+    try {
+      await onReset();
+      toast.success(`${title} — réinitialisé`);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -593,10 +670,10 @@ function JsonEditorCard<T>({
           spellCheck={false}
           disabled={disabled}
         />
-        {error && <p className="text-xs text-destructive">{error}</p>}
+        {parseError && <p className="text-xs text-destructive">{parseError}</p>}
         <div className="flex justify-end gap-2">
           {can(permission) ? (
-            <Button variant="outline" size="sm" onClick={handleReset}>
+            <Button variant="outline" size="sm" onClick={handleReset} disabled={saving}>
               <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
             </Button>
           ) : (
@@ -607,7 +684,7 @@ function JsonEditorCard<T>({
             </span>
           )}
           {can(permission) ? (
-            <Button size="sm" onClick={commit}>
+            <Button size="sm" onClick={commit} disabled={saving}>
               <Save className="me-2 h-4 w-4" /> Sauvegarder
             </Button>
           ) : (
