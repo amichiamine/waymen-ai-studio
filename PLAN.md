@@ -540,6 +540,89 @@ regard du gain de la phase 4, où le jeu de données mock quittera le bundle.
 
 ---
 
+### Phase 3 — LIVRÉE le 5 août 2026 (branche `chantier/phase-3-i18n`)
+
+**14 commits, 13 agents en 4 vagues.** Commande de vérité verte : `lint`
+0 erreur, `tsc --noEmit` 0 erreur, `prettier --check` vert, `build` sans
+avertissement.
+
+#### Le reliquat Lovable est soldé
+
+`.lovable/plan.md` (Lot 2) prévoyait des données produits et blog multilingues,
+et le Lot 3 des éditeurs à trois onglets. Les deux sont faits :
+
+- `Product.name`, `.specLine` et les valeurs de `.specs` en `Localized<string>`.
+- `BlogPost.title`, `.excerpt`, `.content` idem.
+- Traductions EN/AR produites pour les 12 produits et les 5 articles.
+- Éditeurs **FR / EN / AR** dans la fiche produit et l'article, copiés du pilote
+  `admin/Content.tsx`, avec point ambré signalant une traduction manquante.
+
+#### La propriété qui a rendu la migration sûre
+
+`Localized<T> = T | { fr; en?; ar? }` **inclut le type nu**. Changer
+`name: string` en `name: Localized<string>` n'a donc invalidé **aucune donnée
+existante** — migration douce, skill S11. Et `tsc --noEmit` a **énuméré
+lui-même les 37 sites de rendu à corriger, sur 14 fichiers** : la liste de
+tâches n'a pas eu à être établie à la main.
+
+#### Décisions d'architecture prises
+
+**Recherche et tri.** Chercher dans **les trois variantes**, afficher dans la
+langue active, trier sur la valeur affichée. Un client algérien tape
+indifféremment en français, en arabe ou en anglais ; un « aucun résultat »
+injustifié est une vente perdue.
+
+**Empreintes historiques.** Les commandes, mouvements de stock et avis figent le
+nom du produit dans un champ `string` **nu**, la langue étant résolue **à
+l'écriture**. Ces champs n'ont volontairement pas été élargis en `Localized` :
+une facture doit conserver le libellé du moment de l'achat, et ne pas changer
+rétroactivement si le commerçant ajoute une traduction six mois plus tard. En
+phase 4, ce sont de simples colonnes SQL et des snapshots JSON immuables.
+
+**Ce qui ne se traduit pas.** Seul le langage naturel est traduit : 4 champs
+sur ~100 côté produits. « Intel Core i9-13980HX » ou « 32GB DDR5 » restent des
+chaînes nues — en fabriquer trois copies identiques serait du bruit.
+
+**Formulaires non destructifs.** Avant même les onglets, `ProductForm` et
+`BlogForm` ont reçu `mergeLocalized()` : une chaîne nue ne peut jamais écraser
+un objet multilingue existant. C'est ce qui a garanti que la vague des onglets
+ne trouverait pas des traductions déjà détruites.
+
+#### Deux bugs attrapés au passage
+
+1. `logAudit(\`produit ${p.name}\`)`dans`adjustStock` aurait écrit
+**`[object Object]`\*\* dans le journal d'audit dès qu'un produit reçoit une
+   traduction.
+2. Le JSON-LD `Product` et `Article` recevait des objets au lieu de chaînes —
+   les données structurées seraient devenues invalides pour Google.
+
+#### Nettoyage
+
+Vestiges supprimés : le re-export de contournement dans `Hero.tsx` et la règle
+ESLint orpheline visant TanStack Start. `.lovable/project.json` a été laissé
+intact volontairement : sa valeur `template` est fausse, mais elle est lue par
+un outil externe et une valeur inventée risquerait de casser la synchronisation.
+
+Les deux manques du provider sont comblés (`resetSection`, `create` de
+notification), et **les deux exceptions ESLint correspondantes retirées** — le
+lint reste vert sans elles, ce qui prouve la disparition des imports directs.
+Il ne reste que **9 imports de valeurs** d'`admin-store` dans l'UI, tous
+justifiés : réinitialisation locale et plomberie de permissions.
+
+#### Chemin critique
+
+**191,2 → 192,6 kB gzip (+1,4 kB)** — le coût des traductions embarquées.
+
+#### Reste — action humaine
+
+- [ ] **Relecture arabe** : `docs/RELECTURE-TRADUCTIONS.md` couvre désormais
+      l'interface (22 clés), le catalogue et les 5 articles. Un arbitrage
+      éditorial y est signalé : la version arabe de l'article
+      `livraison-58-wilayas` est **plus riche** que les versions française et
+      anglaise.
+
+---
+
 ## 8. Phase 4 — Persistance SQLite et JSON
 
 **Branche dédiée** : `chantier/phase-4-api`.
