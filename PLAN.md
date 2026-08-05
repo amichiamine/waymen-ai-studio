@@ -698,10 +698,12 @@ exigent aucun.
   téléchargeable à volonté, sans dépendance ni abonnement.
 - Coût récurrent nul.
 
-Le TypeScript serveur (Hono + Drizzle) serait préférable **si et seulement si**
-l'hébergeur propose Node.js — l'argument décisif étant le partage des types
-entre front et back. À vérifier dans le cPanel (« Setup Node.js App ») avant
-d'écrire la première ligne de la phase 4.
+**TypeScript serveur : écarté définitivement (5 août 2026).** L'hébergeur
+déclare Node.js « supporté mais **non garanti** ». Pour un backend — le
+programme qui doit tourner en permanence et détenir les commandes — un runtime
+non garanti est disqualifiant : c'est un risque de panne sans recours sur la
+partie la plus critique. Le bénéfice des types partagés entre front et back ne
+compense pas ce risque. **La question est close, ne pas la rouvrir.**
 
 ### Écartées, et pourquoi
 
@@ -730,16 +732,16 @@ serveur. Le frontend ne change pas d'une ligne.
 
 ## 10. Décisions prises
 
-| Décision              | Choix                                                                       | Date        |
-| --------------------- | --------------------------------------------------------------------------- | ----------- |
-| Base de données       | SQLite (transactionnel) + JSON (immuable et semi-structuré)                 | 5 août 2026 |
-| Backend               | PHP 8.2 + Slim 4, contrainte du mutualisé                                   | 5 août 2026 |
-| Authentification      | Sessions PHP + cookie `httpOnly` (déjà anticipé par `VITE_API_AUTH=cookie`) | 5 août 2026 |
-| Branches              | Phases 2 et 4 sur branche dédiée, fusion après commande de vérité           | 5 août 2026 |
-| Paiement au lancement | Paiement à la livraison seul ; SATIM ultérieurement                         | 5 août 2026 |
-| Backend               | PHP 8.2 + Slim + SQLite serveur ; TypeScript si l'hébergeur propose Node    | 5 août 2026 |
-| Canaux de vente       | Boutique complète prioritaire, WhatsApp complémentaire                      | 5 août 2026 |
-| SQLite navigateur     | Écarté : 400 kB de moteur pour 9 kB de données                              | 5 août 2026 |
+| Décision              | Choix                                                                                                | Date        |
+| --------------------- | ---------------------------------------------------------------------------------------------------- | ----------- |
+| Base de données       | SQLite (transactionnel) + JSON (immuable et semi-structuré)                                          | 5 août 2026 |
+| Backend               | PHP 8.2 + Slim 4, contrainte du mutualisé                                                            | 5 août 2026 |
+| Authentification      | Sessions PHP + cookie `httpOnly` (déjà anticipé par `VITE_API_AUTH=cookie`)                          | 5 août 2026 |
+| Branches              | Phases 2 et 4 sur branche dédiée, fusion après commande de vérité                                    | 5 août 2026 |
+| Paiement au lancement | Paiement à la livraison seul ; SATIM ultérieurement                                                  | 5 août 2026 |
+| Backend               | **PHP 8.2 + Slim + SQLite serveur — définitif.** Node « supporté mais non garanti » chez l'hébergeur | 5 août 2026 |
+| Canaux de vente       | Boutique complète prioritaire, WhatsApp complémentaire                                               | 5 août 2026 |
+| SQLite navigateur     | Écarté : 400 kB de moteur pour 9 kB de données                                                       | 5 août 2026 |
 
 ## 11. Décisions ouvertes
 
