@@ -1502,7 +1502,8 @@ export function deleteCoupon(code: string) {
 }
 
 export type CouponValidation =
-  { ok: true; coupon: Coupon; discount: number } | { ok: false; error: string };
+  | { ok: true; coupon: Coupon; discount: number }
+  | { ok: false; error: string };
 
 export function validateCoupon(code: string, subtotal: number): CouponValidation {
   const c = state.coupons.find((x) => x.code.toUpperCase() === code.trim().toUpperCase());
