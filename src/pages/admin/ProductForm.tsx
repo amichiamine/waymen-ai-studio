@@ -28,6 +28,7 @@ import {
 } from "@/data-provider";
 import type { Product, Category } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
+import { localize, useLocalize } from "@/lib/i18n";
 
 const imageField = z
   .string()
@@ -126,13 +127,29 @@ function emptyForm(): FormValues {
   };
 }
 
+/**
+ * Convertit un `Product` en valeurs de formulaire.
+ *
+ * Les champs `name`, `specLine` et les valeurs de `specs` sont des
+ * `Localized<string>` depuis la vague 3.1. On les résout ici en français
+ * (langue de référence du back-office) avec `localize(v, "fr")` afin que le
+ * formulaire n'édite que la variante française — les variantes anglaise et
+ * arabe sont préservées dans `existing` et réinjectées lors de l'enregistrement
+ * (voir la logique `mergeLocalized` dans `onSubmit`).
+ *
+ * IMPORTANT : ne jamais écrire directement `name: data.name` (string) dans
+ * l'objet `Product` transmis à l'API — cela écraserait l'objet multilingue
+ * par une chaîne nue et détruirait silencieusement les traductions anglaise
+ * et arabe. La vague des onglets FR/EN/AR (pilote : Content.tsx) pourra
+ * exposer les trois champs sans risque car les données ne seront jamais perdues.
+ */
 function toForm(p: Product): FormValues {
   return {
     id: p.id,
-    name: p.name,
+    name: localize(p.name, "fr") ?? "",
     brand: p.brand,
     category: p.category,
-    specLine: p.specLine,
+    specLine: localize(p.specLine, "fr") ?? "",
     price: p.price,
     oldPrice: (p.oldPrice ?? "") as number,
     stock: p.stock,
@@ -140,13 +157,35 @@ function toForm(p: Product): FormValues {
     image: p.image,
     bestSeller: !!p.bestSeller,
     sale: !!p.sale,
-    cpu: p.specs.cpu ?? "",
-    ram: p.specs.ram ?? "",
-    storage: p.specs.storage ?? "",
-    gpu: p.specs.gpu ?? "",
-    screen: p.specs.screen ?? "",
-    os: p.specs.os ?? "",
+    cpu: localize(p.specs.cpu, "fr") ?? "",
+    ram: localize(p.specs.ram, "fr") ?? "",
+    storage: localize(p.specs.storage, "fr") ?? "",
+    gpu: localize(p.specs.gpu, "fr") ?? "",
+    screen: localize(p.specs.screen, "fr") ?? "",
+    os: localize(p.specs.os, "fr") ?? "",
   };
+}
+
+/**
+ * Fusionne une valeur française éditée dans le formulaire avec un champ
+ * `Localized<string>` existant, pour ne pas écraser les variantes non éditées.
+ *
+ * Règle : si l'original était un objet multilingue `{ fr, en?, ar? }`, on
+ * remplace uniquement la variante `fr` et on conserve `en` et `ar` telles
+ * quelles. Si l'original était une chaîne simple (monolingue), la valeur
+ * française éditée la remplace directement — le type `Localized` le permet.
+ *
+ * Retourne `undefined` si la valeur éditée est vide (champ optionnel absent).
+ */
+function mergeLocalized(
+  edited: string | undefined,
+  original: { fr: string; en?: string; ar?: string } | string | undefined,
+): { fr: string; en?: string; ar?: string } | string | undefined {
+  if (!edited) return undefined;
+  if (original !== undefined && typeof original === "object" && original !== null) {
+    return { ...original, fr: edited };
+  }
+  return edited;
 }
 
 export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
@@ -156,6 +195,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const { data: mediaAssets } = useMediaAssetList();
   const { can, guard, denyReason } = usePermissions();
   const { create, update: updateProduct, remove } = useProductMutations();
+  const L = useLocalize();
 
   const nav = useNavigate();
   const { id } = useParams();
@@ -208,20 +248,33 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       toast.error("Catégorie inconnue");
       return;
     }
+    /**
+     * Préservation des traductions non éditées (piège multilingue, vague 3.2).
+     *
+     * Le formulaire n'expose qu'un seul champ texte par propriété localisée :
+     * il édite la variante française. Si le produit possédait déjà des
+     * variantes anglaise et arabe (`existing.name = { fr, en, ar }`), écrire
+     * `name: data.name` (string) les détruirait silencieusement.
+     *
+     * `mergeLocalized` réinjecte la valeur française dans l'objet d'origine,
+     * en conservant les autres langues intactes. Pour un nouveau produit
+     * (`existing` est undefined), la valeur française est utilisée directement
+     * (chaîne simple, compatible avec `Localized<string>`).
+     */
     const product: Product = {
       id: data.id,
-      name: data.name,
+      name: mergeLocalized(data.name, existing?.name) ?? data.name,
       brand: data.brand,
       category: data.category as Category,
       use: existing?.use ?? [],
-      specLine: data.specLine,
+      specLine: mergeLocalized(data.specLine, existing?.specLine) ?? data.specLine,
       specs: {
-        cpu: data.cpu || undefined,
-        ram: data.ram || undefined,
-        storage: data.storage || undefined,
-        gpu: data.gpu || undefined,
-        screen: data.screen || undefined,
-        os: data.os || undefined,
+        cpu: mergeLocalized(data.cpu, existing?.specs.cpu),
+        ram: mergeLocalized(data.ram, existing?.specs.ram),
+        storage: mergeLocalized(data.storage, existing?.specs.storage),
+        gpu: mergeLocalized(data.gpu, existing?.specs.gpu),
+        screen: mergeLocalized(data.screen, existing?.specs.screen),
+        os: mergeLocalized(data.os, existing?.specs.os),
       },
       price: data.price,
       oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
@@ -253,9 +306,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
     if (!existing) return;
     if (!guard("delete", "Supprimer le produit")) return;
     setDeleting(true);
+    // Résoudre le nom pour l'affichage dans le toast (jamais interpoler un Localized brut).
+    const existingName = L(existing.name) ?? "";
     try {
       await remove(existing.id);
-      toast.success(`« ${existing.name} » supprimé`);
+      toast.success(`« ${existingName} » supprimé`);
       nav("/admin/products");
     } catch (cause) {
       const err = toApiError(cause);
@@ -267,6 +322,9 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
 
   // Clé applicable au formulaire courant : "create" en mode new, "update" en mode edit.
   const mutateKey = mode === "new" ? "create" : "update";
+
+  // Nom résolu pour l'affichage dans la boîte de confirmation de suppression.
+  const existingName = L(existing?.name) ?? "";
 
   return (
     <AdminPageShell
@@ -548,8 +606,8 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         description={
           existing ? (
             <>
-              Le produit « <strong>{existing.name}</strong> » sera supprimé du catalogue local.
-              Cette action est irréversible.
+              Le produit « <strong>{existingName}</strong> » sera supprimé du catalogue local. Cette
+              action est irréversible.
             </>
           ) : null
         }
