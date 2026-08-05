@@ -40,6 +40,7 @@ import {
   markAllNotificationsRead,
   type NotificationLevel,
 } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const LEVEL: Record<NotificationLevel, { label: string; Icon: typeof Bell; className: string }> = {
   info: { label: "Info", Icon: Info, className: "text-primary bg-primary/10" },
@@ -50,6 +51,7 @@ const LEVEL: Record<NotificationLevel, { label: string; Icon: typeof Bell; class
 
 export default function AdminNotifications() {
   const { notifications } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [filter, setFilter] = useState<"all" | "unread" | NotificationLevel>("all");
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -67,11 +69,33 @@ export default function AdminNotifications() {
 
   const unread = notifications.filter((n) => !n.read).length;
 
-  const create = () => {
+  function handleMarkAllRead() {
+    // Niveau 2 — vérification dans l'action.
+    if (!guard("update", "Marquer tout lu")) return;
+    markAllNotificationsRead();
+    toast.success("Toutes marquées comme lues");
+  }
+
+  function handleMarkRead(id: string) {
+    // Niveau 2 — vérification dans l'action.
+    if (!guard("update", "Marquer lu")) return;
+    updateNotification(id, { read: true });
+  }
+
+  function handleDelete(id: string) {
+    // Niveau 2 — vérification dans l'action.
+    if (!guard("delete", "Supprimer la notification")) return;
+    deleteNotification(id);
+    toast.success("Supprimée");
+  }
+
+  function create() {
     if (!title.trim()) {
       toast.error("Titre requis");
       return;
     }
+    // Niveau 2 — vérification dans l'action.
+    if (!guard("create", "Créer la notification")) return;
     addNotification({
       title: title.trim(),
       body: body.trim(),
@@ -84,7 +108,7 @@ export default function AdminNotifications() {
     setBody("");
     setLevel("info");
     setLink("");
-  };
+  }
 
   return (
     <AdminPageShell
@@ -92,19 +116,31 @@ export default function AdminNotifications() {
       description={`${notifications.length} notifications · ${unread} non lue${unread > 1 ? "s" : ""}. Générées automatiquement lors des événements clés (commandes, stock).`}
       actions={
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              markAllNotificationsRead();
-              toast.success("Toutes marquées comme lues");
-            }}
-            disabled={unread === 0}
+          {/* Niveau 1 + Niveau 3 — marquer tout lu = update */}
+          <span
+            title={unread === 0 ? undefined : (denyReason("update") ?? "Marquer toutes comme lues")}
+            className="inline-flex"
           >
-            <Check className="mr-2 h-4 w-4" /> Tout marquer lu
-          </Button>
-          <Button onClick={() => setOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Nouvelle
-          </Button>
+            <Button
+              variant="outline"
+              onClick={handleMarkAllRead}
+              disabled={unread === 0 || !can("update")}
+            >
+              <Check className="me-2 h-4 w-4" /> Tout marquer lu
+            </Button>
+          </span>
+          {/* Niveau 1 + Niveau 3 — créer une notification */}
+          {can("create") ? (
+            <Button onClick={() => setOpen(true)}>
+              <Plus className="me-2 h-4 w-4" /> Nouvelle
+            </Button>
+          ) : (
+            <span title={denyReason("create")} className="inline-flex">
+              <Button disabled>
+                <Plus className="me-2 h-4 w-4" /> Nouvelle
+              </Button>
+            </span>
+          )}
         </div>
       }
     >
@@ -176,24 +212,36 @@ export default function AdminNotifications() {
                         </Link>
                       )}
                       {!n.read && (
+                        // Niveau 1 + Niveau 3 — marquer lu = update
+                        <span
+                          title={denyReason("update") ?? "Marquer comme lu"}
+                          className="inline-flex"
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={!can("update")}
+                            onClick={() => handleMarkRead(n.id)}
+                          >
+                            <Check className="me-1 h-3 w-3" /> Marquer lu
+                          </Button>
+                        </span>
+                      )}
+                      {/* Niveau 1 + Niveau 3 — supprimer = delete */}
+                      <span
+                        title={denyReason("delete") ?? "Supprimer"}
+                        className="inline-flex align-middle"
+                      >
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => updateNotification(n.id, { read: true })}
+                          aria-label="Supprimer"
+                          disabled={!can("delete")}
+                          onClick={() => handleDelete(n.id)}
                         >
-                          <Check className="mr-1 h-3 w-3" /> Marquer lu
+                          <Trash2 className="me-1 h-3 w-3 text-destructive" /> Supprimer
                         </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          deleteNotification(n.id);
-                          toast.success("Supprimée");
-                        }}
-                      >
-                        <Trash2 className="mr-1 h-3 w-3 text-destructive" /> Supprimer
-                      </Button>
+                      </span>
                     </div>
                   </div>
                 </CardContent>

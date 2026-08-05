@@ -22,6 +22,7 @@ import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
 import type { Localized } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { usePermissions, type PermissionsApi } from "@/lib/admin-auth";
 
 type LangCode = "fr" | "en" | "ar";
 const LANGS: LangCode[] = ["fr", "en", "ar"];
@@ -41,7 +42,7 @@ function LangTabs({ lang, onChange }: { lang: LangCode; onChange: (l: LangCode) 
           type="button"
           onClick={() => onChange(l)}
           className={cn(
-            "px-2 py-0.5 rounded-sm transition-colors",
+            "rounded-sm px-2 py-0.5 transition-colors",
             lang === l
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground",
@@ -59,24 +60,27 @@ function LInput({
   onChange,
   placeholder,
   label,
+  disabled,
 }: {
   value: Localized<string> | undefined;
   onChange: (next: Localized<string>) => void;
   placeholder?: string;
   label?: string;
+  disabled?: boolean;
 }) {
   const [lang, setLang] = useState<LangCode>("fr");
   const map = toMap(value);
   const isAr = lang === "ar";
   return (
     <div className="space-y-1.5" dir={isAr ? "rtl" : "ltr"}>
-      {label && <Label className={cn(isAr && "text-right block")}>{label}</Label>}
+      {label && <Label className={cn(isAr && "block text-right")}>{label}</Label>}
       <LangTabs lang={lang} onChange={setLang} />
       <Input
         dir={isAr ? "rtl" : "ltr"}
         className={cn(isAr && "text-right")}
         value={map[lang]}
         placeholder={placeholder}
+        disabled={disabled}
         onChange={(e) => onChange({ ...map, [lang]: e.target.value })}
       />
     </div>
@@ -88,24 +92,27 @@ function LTextarea({
   onChange,
   rows,
   label,
+  disabled,
 }: {
   value: Localized<string> | undefined;
   onChange: (next: Localized<string>) => void;
   rows?: number;
   label?: string;
+  disabled?: boolean;
 }) {
   const [lang, setLang] = useState<LangCode>("fr");
   const map = toMap(value);
   const isAr = lang === "ar";
   return (
     <div className="space-y-1.5" dir={isAr ? "rtl" : "ltr"}>
-      {label && <Label className={cn(isAr && "text-right block")}>{label}</Label>}
+      {label && <Label className={cn(isAr && "block text-right")}>{label}</Label>}
       <LangTabs lang={lang} onChange={setLang} />
       <Textarea
         rows={rows}
         dir={isAr ? "rtl" : "ltr"}
         className={cn(isAr && "text-right")}
         value={map[lang]}
+        disabled={disabled}
         onChange={(e) => onChange({ ...map, [lang]: e.target.value })}
       />
     </div>
@@ -132,6 +139,7 @@ const SECTIONS: { key: keyof SiteContent; label: string }[] = [
 
 export default function AdminContent() {
   const { siteContent } = useAdminState();
+  const perms = usePermissions();
   const [tab, setTab] = useState<keyof SiteContent>("header");
 
   return (
@@ -140,7 +148,7 @@ export default function AdminContent() {
       description="Chaque bloc de la page d'accueil est éditable ici."
     >
       <Tabs value={tab} onValueChange={(v) => setTab(v as keyof SiteContent)}>
-        <TabsList className="flex-wrap h-auto">
+        <TabsList className="h-auto flex-wrap">
           {SECTIONS.map((s) => (
             <TabsTrigger key={s.key} value={s.key}>
               {s.label}
@@ -149,7 +157,12 @@ export default function AdminContent() {
         </TabsList>
         {SECTIONS.map((s) => (
           <TabsContent key={s.key} value={s.key} className="mt-4">
-            <SectionEditor sectionKey={s.key} label={s.label} value={siteContent[s.key]} />
+            <SectionEditor
+              sectionKey={s.key}
+              label={s.label}
+              value={siteContent[s.key]}
+              perms={perms}
+            />
           </TabsContent>
         ))}
       </Tabs>
@@ -161,11 +174,14 @@ function SectionEditor<K extends keyof SiteContent>({
   sectionKey,
   label,
   value,
+  perms,
 }: {
   sectionKey: K;
   label: string;
   value: SiteContent[K];
+  perms: PermissionsApi;
 }) {
+  const { can, guard, denyReason } = perms;
   const [draft, setDraft] = useState<SiteContent[K]>(value);
   // Re-sync when the parent value changes (e.g. after reset)
   const key = JSON.stringify(value);
@@ -176,28 +192,42 @@ function SectionEditor<K extends keyof SiteContent>({
   }
 
   function save() {
+    // Niveau 2 — vérification dans l'action.
+    if (!guard("update", "Enregistrer la section")) return;
     setSiteContentSection(sectionKey, draft);
     toast.success("Contenu enregistré");
   }
+
   function reset() {
+    // Niveau 2 — la réinitialisation d'une section est une modification (update),
+    // pas un resetData (qui désigne la remise à zéro globale des données).
+    if (!guard("update", "Réinitialiser la section")) return;
     resetSiteContentSection(sectionKey);
     toast.success("Section réinitialisée");
   }
+
+  const readOnly = !can("update");
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
         <CardTitle className="text-base">{label}</CardTitle>
         <div className="flex gap-2">
-          <Button size="sm" variant="ghost" onClick={reset}>
-            <RotateCcw className="mr-2 h-4 w-4" /> Réinitialiser
-          </Button>
-          <Button size="sm" onClick={save}>
-            <Save className="mr-2 h-4 w-4" /> Enregistrer
-          </Button>
+          {/* Niveau 1 + Niveau 3 — réinitialiser = update */}
+          <span title={denyReason("update")} className="inline-flex">
+            <Button size="sm" variant="ghost" disabled={readOnly} onClick={reset}>
+              <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+            </Button>
+          </span>
+          {/* Niveau 1 + Niveau 3 — enregistrer = update */}
+          <span title={denyReason("update")} className="inline-flex">
+            <Button size="sm" disabled={readOnly} onClick={save}>
+              <Save className="me-2 h-4 w-4" /> Enregistrer
+            </Button>
+          </span>
         </div>
       </CardHeader>
-      <CardContent>{renderForm(sectionKey, draft, (v) => setDraft(v))}</CardContent>
+      <CardContent>{renderForm(sectionKey, draft, (v) => setDraft(v), readOnly)}</CardContent>
     </Card>
   );
 }
@@ -206,6 +236,7 @@ function renderForm<K extends keyof SiteContent>(
   key: K,
   draft: SiteContent[K],
   onChange: (v: SiteContent[K]) => void,
+  readOnly: boolean,
 ): React.ReactNode {
   switch (key) {
     case "header":
@@ -213,6 +244,7 @@ function renderForm<K extends keyof SiteContent>(
         <HeaderForm
           value={draft as SiteContent["header"]}
           onChange={onChange as (v: SiteContent["header"]) => void}
+          readOnly={readOnly}
         />
       );
     case "footer":
@@ -220,6 +252,7 @@ function renderForm<K extends keyof SiteContent>(
         <FooterForm
           value={draft as SiteContent["footer"]}
           onChange={onChange as (v: SiteContent["footer"]) => void}
+          readOnly={readOnly}
         />
       );
     case "hero":
@@ -227,6 +260,7 @@ function renderForm<K extends keyof SiteContent>(
         <HeroForm
           value={draft as SiteContent["hero"]}
           onChange={onChange as (v: SiteContent["hero"]) => void}
+          readOnly={readOnly}
         />
       );
     case "flashSale":
@@ -234,6 +268,7 @@ function renderForm<K extends keyof SiteContent>(
         <FlashSaleForm
           value={draft as SiteContent["flashSale"]}
           onChange={onChange as (v: SiteContent["flashSale"]) => void}
+          readOnly={readOnly}
         />
       );
     case "categories":
@@ -241,6 +276,7 @@ function renderForm<K extends keyof SiteContent>(
         <CategoriesForm
           value={draft as SiteContent["categories"]}
           onChange={onChange as (v: SiteContent["categories"]) => void}
+          readOnly={readOnly}
         />
       );
     case "useChips":
@@ -249,6 +285,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as { title: Localized<string> }}
           onChange={onChange as (v: { title: Localized<string> }) => void}
           titleLabel="Titre de la section"
+          readOnly={readOnly}
         />
       );
     case "bestSellers":
@@ -258,6 +295,7 @@ function renderForm<K extends keyof SiteContent>(
           onChange={
             onChange as (v: { title: Localized<string>; subtitle: Localized<string> }) => void
           }
+          readOnly={readOnly}
         />
       );
     case "featuredTabs":
@@ -265,6 +303,7 @@ function renderForm<K extends keyof SiteContent>(
         <FeaturedTabsForm
           value={draft as SiteContent["featuredTabs"]}
           onChange={onChange as (v: SiteContent["featuredTabs"]) => void}
+          readOnly={readOnly}
         />
       );
     case "brandsMarquee":
@@ -273,6 +312,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as { title: Localized<string> }}
           onChange={onChange as (v: { title: Localized<string> }) => void}
           titleLabel="Kicker au-dessus du défilement"
+          readOnly={readOnly}
         />
       );
     case "whyUs":
@@ -280,6 +320,7 @@ function renderForm<K extends keyof SiteContent>(
         <WhyUsForm
           value={draft as SiteContent["whyUs"]}
           onChange={onChange as (v: SiteContent["whyUs"]) => void}
+          readOnly={readOnly}
         />
       );
     case "builderTeaser":
@@ -287,6 +328,7 @@ function renderForm<K extends keyof SiteContent>(
         <BuilderTeaserForm
           value={draft as SiteContent["builderTeaser"]}
           onChange={onChange as (v: SiteContent["builderTeaser"]) => void}
+          readOnly={readOnly}
         />
       );
     case "reviews":
@@ -296,6 +338,7 @@ function renderForm<K extends keyof SiteContent>(
           onChange={
             onChange as (v: { title: Localized<string>; subtitle: Localized<string> }) => void
           }
+          readOnly={readOnly}
         />
       );
     case "contactCta":
@@ -303,6 +346,7 @@ function renderForm<K extends keyof SiteContent>(
         <ContactCtaForm
           value={draft as SiteContent["contactCta"]}
           onChange={onChange as (v: SiteContent["contactCta"]) => void}
+          readOnly={readOnly}
         />
       );
     case "floatingWhatsApp":
@@ -310,6 +354,7 @@ function renderForm<K extends keyof SiteContent>(
         <FloatingWaForm
           value={draft as SiteContent["floatingWhatsApp"]}
           onChange={onChange as (v: SiteContent["floatingWhatsApp"]) => void}
+          readOnly={readOnly}
         />
       );
     case "mobileBottomBar":
@@ -317,6 +362,7 @@ function renderForm<K extends keyof SiteContent>(
         <MobileBarForm
           value={draft as SiteContent["mobileBottomBar"]}
           onChange={onChange as (v: SiteContent["mobileBottomBar"]) => void}
+          readOnly={readOnly}
         />
       );
     default:
@@ -333,14 +379,22 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
-function IconPicker({ value, onChange }: { value: IconName; onChange: (n: IconName) => void }) {
+function IconPicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: IconName;
+  onChange: (n: IconName) => void;
+  disabled?: boolean;
+}) {
   const Current = getIcon(value);
   return (
     <div className="flex items-center gap-2">
-      <div className="size-9 rounded-md border border-border inline-flex items-center justify-center bg-card">
+      <div className="inline-flex size-9 items-center justify-center rounded-md border border-border bg-card">
         <Current className="size-4" />
       </div>
-      <Select value={value} onValueChange={(v) => onChange(v as IconName)}>
+      <Select value={value} onValueChange={(v) => onChange(v as IconName)} disabled={disabled}>
         <SelectTrigger className="h-9">
           <SelectValue />
         </SelectTrigger>
@@ -361,23 +415,31 @@ function SimpleTitleForm({
   value,
   onChange,
   titleLabel,
+  readOnly,
 }: {
   value: { title: Localized<string> };
   onChange: (v: { title: Localized<string> }) => void;
   titleLabel: string;
+  readOnly: boolean;
 }) {
   return (
     <Field label={titleLabel}>
-      <LInput value={value.title} onChange={(next) => onChange({ ...value, title: next })} />
+      <LInput
+        value={value.title}
+        onChange={(next) => onChange({ ...value, title: next })}
+        disabled={readOnly}
+      />
     </Field>
   );
 }
 function TitleSubForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: { title: Localized<string>; subtitle: Localized<string> };
   onChange: (v: { title: Localized<string>; subtitle: Localized<string> }) => void;
+  readOnly: boolean;
 }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
@@ -385,11 +447,13 @@ function TitleSubForm({
         label="Titre"
         value={value.title}
         onChange={(next) => onChange({ ...value, title: next })}
+        disabled={readOnly}
       />
       <LInput
         label="Sous-titre"
         value={value.subtitle}
         onChange={(next) => onChange({ ...value, subtitle: next })}
+        disabled={readOnly}
       />
     </div>
   );
@@ -398,29 +462,42 @@ function TitleSubForm({
 function HeroForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["hero"];
   onChange: (v: SiteContent["hero"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <LInput label="Badge" value={v.badge} onChange={(next) => onChange({ ...v, badge: next })} />
-      <div className="md:col-span-2 flex items-center justify-between rounded-md border p-3">
+      <LInput
+        label="Badge"
+        value={v.badge}
+        onChange={(next) => onChange({ ...v, badge: next })}
+        disabled={readOnly}
+      />
+      <div className="flex items-center justify-between rounded-md border p-3 md:col-span-2">
         <div>
           <p className="text-sm font-medium">Afficher l'image du hero</p>
         </div>
-        <Switch checked={v.showImage} onCheckedChange={(c) => onChange({ ...v, showImage: c })} />
+        <Switch
+          checked={v.showImage}
+          disabled={readOnly}
+          onCheckedChange={(c) => onChange({ ...v, showImage: c })}
+        />
       </div>
       <LInput
         label="Titre ligne 1"
         value={v.title1}
         onChange={(next) => onChange({ ...v, title1: next })}
+        disabled={readOnly}
       />
       <LInput
         label="Titre ligne 2 (accent)"
         value={v.title2}
         onChange={(next) => onChange({ ...v, title2: next })}
+        disabled={readOnly}
       />
       <div className="md:col-span-2">
         <LTextarea
@@ -428,16 +505,19 @@ function HeroForm({
           rows={2}
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
+          disabled={readOnly}
         />
       </div>
       <LInput
         label="CTA principal — libellé"
         value={v.primaryCta.label}
         onChange={(next) => onChange({ ...v, primaryCta: { ...v.primaryCta, label: next } })}
+        disabled={readOnly}
       />
       <Field label="CTA principal — lien">
         <Input
           value={v.primaryCta.href}
+          disabled={readOnly}
           onChange={(e) =>
             onChange({ ...v, primaryCta: { ...v.primaryCta, href: e.target.value } })
           }
@@ -447,22 +527,25 @@ function HeroForm({
         label="CTA secondaire — libellé"
         value={v.secondaryCta.label}
         onChange={(next) => onChange({ ...v, secondaryCta: { ...v.secondaryCta, label: next } })}
+        disabled={readOnly}
       />
       <Field label="CTA secondaire — lien">
         <Input
           value={v.secondaryCta.href}
+          disabled={readOnly}
           onChange={(e) =>
             onChange({ ...v, secondaryCta: { ...v.secondaryCta, href: e.target.value } })
           }
         />
       </Field>
-      <div className="md:col-span-2 space-y-2">
+      <div className="space-y-2 md:col-span-2">
         <div className="flex items-center justify-between">
           <Label>Indicateurs (KPI)</Label>
           <Button
             type="button"
             size="sm"
             variant="outline"
+            disabled={readOnly}
             onClick={() =>
               onChange({
                 ...v,
@@ -470,17 +553,18 @@ function HeroForm({
               })
             }
           >
-            <Plus className="mr-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> Ajouter
           </Button>
         </div>
         {v.kpis.map((k, i) => (
           <div
             key={k.id}
-            className="grid gap-2 md:grid-cols-[160px_1fr_1fr_auto] items-end rounded-md border p-3"
+            className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_1fr_auto]"
           >
             <Field label="Icône">
               <IconPicker
                 value={k.icon}
+                disabled={readOnly}
                 onChange={(n) => {
                   const kpis = v.kpis.slice();
                   kpis[i] = { ...k, icon: n };
@@ -491,6 +575,7 @@ function HeroForm({
             <LInput
               label="Valeur"
               value={k.value}
+              disabled={readOnly}
               onChange={(next) => {
                 const kpis = v.kpis.slice();
                 kpis[i] = { ...k, value: next };
@@ -500,6 +585,7 @@ function HeroForm({
             <LInput
               label="Libellé"
               value={k.label}
+              disabled={readOnly}
               onChange={(next) => {
                 const kpis = v.kpis.slice();
                 kpis[i] = { ...k, label: next };
@@ -510,6 +596,7 @@ function HeroForm({
               type="button"
               size="icon"
               variant="ghost"
+              disabled={readOnly}
               onClick={() => onChange({ ...v, kpis: v.kpis.filter((_, j) => j !== i) })}
               aria-label="Supprimer"
             >
@@ -525,23 +612,37 @@ function HeroForm({
 function FlashSaleForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["flashSale"];
   onChange: (v: SiteContent["flashSale"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <LInput label="Badge" value={v.badge} onChange={(next) => onChange({ ...v, badge: next })} />
-      <LInput label="Titre" value={v.title} onChange={(next) => onChange({ ...v, title: next })} />
+      <LInput
+        label="Badge"
+        value={v.badge}
+        onChange={(next) => onChange({ ...v, badge: next })}
+        disabled={readOnly}
+      />
+      <LInput
+        label="Titre"
+        value={v.title}
+        onChange={(next) => onChange({ ...v, title: next })}
+        disabled={readOnly}
+      />
       <LInput
         label="Libellé « voir tout »"
         value={v.viewAllLabel}
         onChange={(next) => onChange({ ...v, viewAllLabel: next })}
+        disabled={readOnly}
       />
       <Field label="Lien « voir tout »">
         <Input
           value={v.viewAllHref}
+          disabled={readOnly}
           onChange={(e) => onChange({ ...v, viewAllHref: e.target.value })}
         />
       </Field>
@@ -550,6 +651,7 @@ function FlashSaleForm({
           type="number"
           min={1}
           value={v.countdownHours}
+          disabled={readOnly}
           onChange={(e) =>
             onChange({ ...v, countdownHours: Math.max(1, Number(e.target.value) || 1) })
           }
@@ -562,9 +664,11 @@ function FlashSaleForm({
 function CategoriesForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["categories"];
   onChange: (v: SiteContent["categories"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
@@ -574,16 +678,19 @@ function CategoriesForm({
           label="Titre"
           value={v.title}
           onChange={(next) => onChange({ ...v, title: next })}
+          disabled={readOnly}
         />
         <LInput
           label="Sous-titre"
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
+          disabled={readOnly}
         />
         <LInput
           label="Libellé « parcourir »"
           value={v.browseLabel}
           onChange={(next) => onChange({ ...v, browseLabel: next })}
+          disabled={readOnly}
         />
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
@@ -596,9 +703,11 @@ function CategoriesForm({
 function FeaturedTabsForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["featuredTabs"];
   onChange: (v: SiteContent["featuredTabs"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   const cats: Category[] = ["laptops", "desktops", "builds", "phones"];
@@ -609,11 +718,13 @@ function FeaturedTabsForm({
           label="Titre"
           value={v.title}
           onChange={(next) => onChange({ ...v, title: next })}
+          disabled={readOnly}
         />
         <LInput
           label="Sous-titre"
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
+          disabled={readOnly}
         />
       </div>
       <div className="flex items-center justify-between">
@@ -622,6 +733,7 @@ function FeaturedTabsForm({
           type="button"
           size="sm"
           variant="outline"
+          disabled={readOnly}
           onClick={() =>
             onChange({
               ...v,
@@ -632,17 +744,18 @@ function FeaturedTabsForm({
             })
           }
         >
-          <Plus className="mr-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> Ajouter
         </Button>
       </div>
       {v.tabs.map((tb, i) => (
         <div
           key={tb.id}
-          className="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end rounded-md border p-3"
+          className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[1fr_1fr_auto]"
         >
           <Field label="Catégorie">
             <Select
               value={tb.categorySlug}
+              disabled={readOnly}
               onValueChange={(x) => {
                 const tabs = v.tabs.slice();
                 tabs[i] = { ...tb, categorySlug: x as Category };
@@ -664,6 +777,7 @@ function FeaturedTabsForm({
           <LInput
             label="Libellé"
             value={tb.label}
+            disabled={readOnly}
             onChange={(next) => {
               const tabs = v.tabs.slice();
               tabs[i] = { ...tb, label: next };
@@ -674,6 +788,7 @@ function FeaturedTabsForm({
             type="button"
             size="icon"
             variant="ghost"
+            disabled={readOnly}
             onClick={() => onChange({ ...v, tabs: v.tabs.filter((_, j) => j !== i) })}
             aria-label="Supprimer"
           >
@@ -688,9 +803,11 @@ function FeaturedTabsForm({
 function WhyUsForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["whyUs"];
   onChange: (v: SiteContent["whyUs"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
@@ -700,21 +817,25 @@ function WhyUsForm({
           label="Kicker"
           value={v.kicker}
           onChange={(next) => onChange({ ...v, kicker: next })}
+          disabled={readOnly}
         />
         <LInput
           label="Sous-titre"
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
+          disabled={readOnly}
         />
         <LInput
           label="Titre ligne 1"
           value={v.title1}
           onChange={(next) => onChange({ ...v, title1: next })}
+          disabled={readOnly}
         />
         <LInput
           label="Titre ligne 2"
           value={v.title2}
           onChange={(next) => onChange({ ...v, title2: next })}
+          disabled={readOnly}
         />
       </div>
       <div className="flex items-center justify-between">
@@ -723,6 +844,7 @@ function WhyUsForm({
           type="button"
           size="sm"
           variant="outline"
+          disabled={readOnly}
           onClick={() =>
             onChange({
               ...v,
@@ -733,17 +855,18 @@ function WhyUsForm({
             })
           }
         >
-          <Plus className="mr-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> Ajouter
         </Button>
       </div>
       {v.items.map((it, i) => (
         <div
           key={it.id}
-          className="grid gap-2 md:grid-cols-[160px_1fr_2fr_auto] items-end rounded-md border p-3"
+          className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_2fr_auto]"
         >
           <Field label="Icône">
             <IconPicker
               value={it.icon}
+              disabled={readOnly}
               onChange={(n) => {
                 const items = v.items.slice();
                 items[i] = { ...it, icon: n };
@@ -754,6 +877,7 @@ function WhyUsForm({
           <LInput
             label="Titre"
             value={it.title}
+            disabled={readOnly}
             onChange={(next) => {
               const items = v.items.slice();
               items[i] = { ...it, title: next };
@@ -763,6 +887,7 @@ function WhyUsForm({
           <LInput
             label="Description"
             value={it.description}
+            disabled={readOnly}
             onChange={(next) => {
               const items = v.items.slice();
               items[i] = { ...it, description: next };
@@ -773,6 +898,7 @@ function WhyUsForm({
             type="button"
             size="icon"
             variant="ghost"
+            disabled={readOnly}
             onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })}
             aria-label="Supprimer"
           >
@@ -787,9 +913,11 @@ function WhyUsForm({
 function BuilderTeaserForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["builderTeaser"];
   onChange: (v: SiteContent["builderTeaser"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
@@ -799,11 +927,13 @@ function BuilderTeaserForm({
           label="Badge"
           value={v.badge}
           onChange={(next) => onChange({ ...v, badge: next })}
+          disabled={readOnly}
         />
         <LInput
           label="Titre"
           value={v.title}
           onChange={(next) => onChange({ ...v, title: next })}
+          disabled={readOnly}
         />
         <div className="md:col-span-2">
           <LTextarea
@@ -811,16 +941,19 @@ function BuilderTeaserForm({
             rows={2}
             value={v.subtitle}
             onChange={(next) => onChange({ ...v, subtitle: next })}
+            disabled={readOnly}
           />
         </div>
         <LInput
           label="CTA — libellé"
           value={v.cta.label}
           onChange={(next) => onChange({ ...v, cta: { ...v.cta, label: next } })}
+          disabled={readOnly}
         />
         <Field label="CTA — lien">
           <Input
             value={v.cta.href}
+            disabled={readOnly}
             onChange={(e) => onChange({ ...v, cta: { ...v.cta, href: e.target.value } })}
           />
         </Field>
@@ -831,6 +964,7 @@ function BuilderTeaserForm({
           type="button"
           size="sm"
           variant="outline"
+          disabled={readOnly}
           onClick={() =>
             onChange({
               ...v,
@@ -838,17 +972,18 @@ function BuilderTeaserForm({
             })
           }
         >
-          <Plus className="mr-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> Ajouter
         </Button>
       </div>
       {v.items.map((it, i) => (
         <div
           key={it.id}
-          className="grid gap-2 md:grid-cols-[160px_1fr_1fr_auto] items-end rounded-md border p-3"
+          className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_1fr_auto]"
         >
           <Field label="Icône">
             <IconPicker
               value={it.icon}
+              disabled={readOnly}
               onChange={(n) => {
                 const items = v.items.slice();
                 items[i] = { ...it, icon: n };
@@ -859,6 +994,7 @@ function BuilderTeaserForm({
           <LInput
             label="Titre"
             value={it.title}
+            disabled={readOnly}
             onChange={(next) => {
               const items = v.items.slice();
               items[i] = { ...it, title: next };
@@ -868,6 +1004,7 @@ function BuilderTeaserForm({
           <LInput
             label="Sous-titre"
             value={it.subtitle}
+            disabled={readOnly}
             onChange={(next) => {
               const items = v.items.slice();
               items[i] = { ...it, subtitle: next };
@@ -878,6 +1015,7 @@ function BuilderTeaserForm({
             type="button"
             size="icon"
             variant="ghost"
+            disabled={readOnly}
             onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })}
             aria-label="Supprimer"
           >
@@ -892,18 +1030,26 @@ function BuilderTeaserForm({
 function ContactCtaForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["contactCta"];
   onChange: (v: SiteContent["contactCta"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      <LInput label="Titre" value={v.title} onChange={(next) => onChange({ ...v, title: next })} />
+      <LInput
+        label="Titre"
+        value={v.title}
+        onChange={(next) => onChange({ ...v, title: next })}
+        disabled={readOnly}
+      />
       <LInput
         label="Libellé WhatsApp"
         value={v.whatsappLabel}
         onChange={(next) => onChange({ ...v, whatsappLabel: next })}
+        disabled={readOnly}
       />
       <div className="md:col-span-2">
         <LTextarea
@@ -911,9 +1057,10 @@ function ContactCtaForm({
           rows={2}
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
+          disabled={readOnly}
         />
       </div>
-      <p className="md:col-span-2 text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground md:col-span-2">
         Le numéro WhatsApp est configuré dans <strong>Paramètres</strong>.
       </p>
     </div>
@@ -923,9 +1070,11 @@ function ContactCtaForm({
 function FloatingWaForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["floatingWhatsApp"];
   onChange: (v: SiteContent["floatingWhatsApp"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
@@ -937,12 +1086,17 @@ function FloatingWaForm({
             Visible seulement si un numéro est configuré dans Paramètres.
           </p>
         </div>
-        <Switch checked={v.enabled} onCheckedChange={(c) => onChange({ ...v, enabled: c })} />
+        <Switch
+          checked={v.enabled}
+          disabled={readOnly}
+          onCheckedChange={(c) => onChange({ ...v, enabled: c })}
+        />
       </div>
       <LInput
         label="Label d'accessibilité"
         value={v.ariaLabel}
         onChange={(next) => onChange({ ...v, ariaLabel: next })}
+        disabled={readOnly}
       />
     </div>
   );
@@ -951,9 +1105,11 @@ function FloatingWaForm({
 function MobileBarForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["mobileBottomBar"];
   onChange: (v: SiteContent["mobileBottomBar"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
@@ -964,7 +1120,7 @@ function MobileBarForm({
           type="button"
           size="sm"
           variant="outline"
-          disabled={v.items.length >= 5}
+          disabled={readOnly || v.items.length >= 5}
           onClick={() =>
             onChange({
               ...v,
@@ -975,17 +1131,18 @@ function MobileBarForm({
             })
           }
         >
-          <Plus className="mr-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> Ajouter
         </Button>
       </div>
       {v.items.map((it, i) => (
         <div
           key={it.id}
-          className="grid gap-2 md:grid-cols-[140px_1fr_1fr_auto_auto_auto] items-end rounded-md border p-3"
+          className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[140px_1fr_1fr_auto_auto_auto]"
         >
           <Field label="Icône">
             <IconPicker
               value={it.icon}
+              disabled={readOnly}
               onChange={(n) => {
                 const items = v.items.slice();
                 items[i] = { ...it, icon: n };
@@ -996,6 +1153,7 @@ function MobileBarForm({
           <LInput
             label="Libellé"
             value={it.label}
+            disabled={readOnly}
             onChange={(next) => {
               const items = v.items.slice();
               items[i] = { ...it, label: next };
@@ -1005,6 +1163,7 @@ function MobileBarForm({
           <Field label="Lien">
             <Input
               value={it.href}
+              disabled={readOnly}
               onChange={(e) => {
                 const items = v.items.slice();
                 items[i] = { ...it, href: e.target.value };
@@ -1016,6 +1175,7 @@ function MobileBarForm({
             <Label className="text-xs">Primaire</Label>
             <Switch
               checked={!!it.primary}
+              disabled={readOnly}
               onCheckedChange={(c) => {
                 const items = v.items.slice();
                 items[i] = { ...it, primary: c };
@@ -1027,6 +1187,7 @@ function MobileBarForm({
             <Label className="text-xs">Auth</Label>
             <Switch
               checked={!!it.requiresAuth}
+              disabled={readOnly}
               onCheckedChange={(c) => {
                 const items = v.items.slice();
                 items[i] = { ...it, requiresAuth: c };
@@ -1038,6 +1199,7 @@ function MobileBarForm({
             type="button"
             size="icon"
             variant="ghost"
+            disabled={readOnly}
             onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })}
             aria-label="Supprimer"
           >
@@ -1053,9 +1215,11 @@ function MobileBarForm({
 function HeaderForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["header"];
   onChange: (v: SiteContent["header"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
@@ -1065,6 +1229,7 @@ function HeaderForm({
           label="Placeholder du champ de recherche"
           value={v.searchPlaceholder}
           onChange={(next) => onChange({ ...v, searchPlaceholder: next })}
+          disabled={readOnly}
         />
         <div className="flex items-center justify-between rounded-md border p-3">
           <div>
@@ -1072,6 +1237,7 @@ function HeaderForm({
           </div>
           <Switch
             checked={v.showSearch}
+            disabled={readOnly}
             onCheckedChange={(c) => onChange({ ...v, showSearch: c })}
           />
         </div>
@@ -1079,10 +1245,12 @@ function HeaderForm({
           label="Bouton principal — libellé"
           value={v.builderCta.label}
           onChange={(next) => onChange({ ...v, builderCta: { ...v.builderCta, label: next } })}
+          disabled={readOnly}
         />
         <Field label="Bouton principal — lien">
           <Input
             value={v.builderCta.href}
+            disabled={readOnly}
             onChange={(e) =>
               onChange({ ...v, builderCta: { ...v.builderCta, href: e.target.value } })
             }
@@ -1090,7 +1258,7 @@ function HeaderForm({
         </Field>
       </div>
 
-      <div className="rounded-md border p-3 space-y-3">
+      <div className="space-y-3 rounded-md border p-3">
         <p className="text-sm font-semibold">Menu « Catégories »</p>
         <div className="grid gap-3 md:grid-cols-2">
           <LInput
@@ -1099,6 +1267,7 @@ function HeaderForm({
             onChange={(next) =>
               onChange({ ...v, categoryMenu: { ...v.categoryMenu, label: next } })
             }
+            disabled={readOnly}
           />
           <LInput
             label="Titre à l'intérieur du menu"
@@ -1106,6 +1275,7 @@ function HeaderForm({
             onChange={(next) =>
               onChange({ ...v, categoryMenu: { ...v.categoryMenu, title: next } })
             }
+            disabled={readOnly}
           />
           <LInput
             label="Libellé « voir toutes »"
@@ -1113,10 +1283,12 @@ function HeaderForm({
             onChange={(next) =>
               onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseLabel: next } })
             }
+            disabled={readOnly}
           />
           <Field label="Lien « voir toutes »">
             <Input
               value={v.categoryMenu.browseHref}
+              disabled={readOnly}
               onChange={(e) =>
                 onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseHref: e.target.value } })
               }
@@ -1129,6 +1301,7 @@ function HeaderForm({
             type="button"
             size="sm"
             variant="outline"
+            disabled={readOnly}
             onClick={() =>
               onChange({
                 ...v,
@@ -1142,17 +1315,18 @@ function HeaderForm({
               })
             }
           >
-            <Plus className="mr-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> Ajouter
           </Button>
         </div>
         {v.categoryMenu.items.map((it, i) => (
           <div
             key={it.id}
-            className="grid gap-2 md:grid-cols-[140px_1fr_1fr_auto_auto] items-end rounded-md border p-3"
+            className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[140px_1fr_1fr_auto_auto]"
           >
             <Field label="Icône">
               <IconPicker
                 value={(it.icon ?? "tag") as IconName}
+                disabled={readOnly}
                 onChange={(n) => {
                   const items = v.categoryMenu.items.slice();
                   items[i] = { ...it, icon: n };
@@ -1163,6 +1337,7 @@ function HeaderForm({
             <LInput
               label="Libellé"
               value={it.label}
+              disabled={readOnly}
               onChange={(next) => {
                 const items = v.categoryMenu.items.slice();
                 items[i] = { ...it, label: next };
@@ -1172,6 +1347,7 @@ function HeaderForm({
             <Field label="Lien">
               <Input
                 value={it.href}
+                disabled={readOnly}
                 onChange={(e) => {
                   const items = v.categoryMenu.items.slice();
                   items[i] = { ...it, href: e.target.value };
@@ -1183,6 +1359,7 @@ function HeaderForm({
               <Label className="text-xs">Accent</Label>
               <Switch
                 checked={!!it.accent}
+                disabled={readOnly}
                 onCheckedChange={(c) => {
                   const items = v.categoryMenu.items.slice();
                   items[i] = { ...it, accent: c };
@@ -1194,6 +1371,7 @@ function HeaderForm({
               type="button"
               size="icon"
               variant="ghost"
+              disabled={readOnly}
               onClick={() =>
                 onChange({
                   ...v,
@@ -1211,13 +1389,14 @@ function HeaderForm({
         ))}
       </div>
 
-      <div className="rounded-md border p-3 space-y-3">
+      <div className="space-y-3 rounded-md border p-3">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold">Liens de navigation principaux</p>
           <Button
             type="button"
             size="sm"
             variant="outline"
+            disabled={readOnly}
             onClick={() =>
               onChange({
                 ...v,
@@ -1228,17 +1407,18 @@ function HeaderForm({
               })
             }
           >
-            <Plus className="mr-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> Ajouter
           </Button>
         </div>
         {v.primaryNav.map((n, i) => (
           <div
             key={n.id}
-            className="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end rounded-md border p-3"
+            className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[1fr_1fr_auto]"
           >
             <LInput
               label="Libellé"
               value={n.label}
+              disabled={readOnly}
               onChange={(next) => {
                 const arr = v.primaryNav.slice();
                 arr[i] = { ...n, label: next };
@@ -1248,6 +1428,7 @@ function HeaderForm({
             <Field label="Lien">
               <Input
                 value={n.href}
+                disabled={readOnly}
                 onChange={(e) => {
                   const arr = v.primaryNav.slice();
                   arr[i] = { ...n, href: e.target.value };
@@ -1259,6 +1440,7 @@ function HeaderForm({
               type="button"
               size="icon"
               variant="ghost"
+              disabled={readOnly}
               onClick={() => onChange({ ...v, primaryNav: v.primaryNav.filter((_, j) => j !== i) })}
               aria-label="Supprimer"
             >
@@ -1275,9 +1457,11 @@ function HeaderForm({
 function FooterForm({
   value,
   onChange,
+  readOnly,
 }: {
   value: SiteContent["footer"];
   onChange: (v: SiteContent["footer"]) => void;
+  readOnly: boolean;
 }) {
   const v = value;
   return (
@@ -1288,28 +1472,32 @@ function FooterForm({
           rows={2}
           value={v.tagline}
           onChange={(next) => onChange({ ...v, tagline: next })}
+          disabled={readOnly}
         />
         <div className="grid gap-3 md:grid-cols-2">
           <LInput
             label="Copyright"
             value={v.copyright}
             onChange={(next) => onChange({ ...v, copyright: next })}
+            disabled={readOnly}
           />
           <LInput
             label="Mention « fait à… »"
             value={v.madeIn}
             onChange={(next) => onChange({ ...v, madeIn: next })}
+            disabled={readOnly}
           />
         </div>
       </div>
 
-      <div className="rounded-md border p-3 space-y-3">
+      <div className="space-y-3 rounded-md border p-3">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold">Réseaux sociaux</p>
           <Button
             type="button"
             size="sm"
             variant="outline"
+            disabled={readOnly}
             onClick={() =>
               onChange({
                 ...v,
@@ -1320,17 +1508,18 @@ function FooterForm({
               })
             }
           >
-            <Plus className="mr-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> Ajouter
           </Button>
         </div>
         {v.socials.map((s, i) => (
           <div
             key={s.id}
-            className="grid gap-2 md:grid-cols-[160px_1fr_1fr_auto] items-end rounded-md border p-3"
+            className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_1fr_auto]"
           >
             <Field label="Icône">
               <IconPicker
                 value={s.icon}
+                disabled={readOnly}
                 onChange={(n) => {
                   const arr = v.socials.slice();
                   arr[i] = { ...s, icon: n };
@@ -1341,6 +1530,7 @@ function FooterForm({
             <LInput
               label="Libellé (a11y)"
               value={s.label}
+              disabled={readOnly}
               onChange={(next) => {
                 const arr = v.socials.slice();
                 arr[i] = { ...s, label: next };
@@ -1350,6 +1540,7 @@ function FooterForm({
             <Field label="Lien">
               <Input
                 value={s.href}
+                disabled={readOnly}
                 onChange={(e) => {
                   const arr = v.socials.slice();
                   arr[i] = { ...s, href: e.target.value };
@@ -1361,6 +1552,7 @@ function FooterForm({
               type="button"
               size="icon"
               variant="ghost"
+              disabled={readOnly}
               onClick={() => onChange({ ...v, socials: v.socials.filter((_, j) => j !== i) })}
               aria-label="Supprimer"
             >
@@ -1370,13 +1562,14 @@ function FooterForm({
         ))}
       </div>
 
-      <div className="rounded-md border p-3 space-y-3">
+      <div className="space-y-3 rounded-md border p-3">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold">Colonnes de liens</p>
           <Button
             type="button"
             size="sm"
             variant="outline"
+            disabled={readOnly}
             onClick={() =>
               onChange({
                 ...v,
@@ -1387,16 +1580,17 @@ function FooterForm({
               })
             }
           >
-            <Plus className="mr-2 h-4 w-4" /> Ajouter une colonne
+            <Plus className="me-2 h-4 w-4" /> Ajouter une colonne
           </Button>
         </div>
         {v.columns.map((col, ci) => (
-          <div key={col.id} className="rounded-md border p-3 space-y-2">
+          <div key={col.id} className="space-y-2 rounded-md border p-3">
             <div className="flex items-end gap-2">
               <div className="flex-1">
                 <LInput
                   label="Titre de la colonne"
                   value={col.title}
+                  disabled={readOnly}
                   onChange={(next) => {
                     const arr = v.columns.slice();
                     arr[ci] = { ...col, title: next };
@@ -1408,6 +1602,7 @@ function FooterForm({
                 type="button"
                 size="sm"
                 variant="outline"
+                disabled={readOnly}
                 onClick={() => {
                   const arr = v.columns.slice();
                   arr[ci] = {
@@ -1417,12 +1612,13 @@ function FooterForm({
                   onChange({ ...v, columns: arr });
                 }}
               >
-                <Plus className="mr-2 h-4 w-4" /> Lien
+                <Plus className="me-2 h-4 w-4" /> Lien
               </Button>
               <Button
                 type="button"
                 size="icon"
                 variant="ghost"
+                disabled={readOnly}
                 onClick={() => onChange({ ...v, columns: v.columns.filter((_, j) => j !== ci) })}
                 aria-label="Supprimer la colonne"
               >
@@ -1432,11 +1628,12 @@ function FooterForm({
             {col.links.map((l, li) => (
               <div
                 key={l.id}
-                className="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end rounded-md border p-2"
+                className="grid items-end gap-2 rounded-md border p-2 md:grid-cols-[1fr_1fr_auto]"
               >
                 <LInput
                   label="Libellé"
                   value={l.label}
+                  disabled={readOnly}
                   onChange={(next) => {
                     const arr = v.columns.slice();
                     const links = col.links.slice();
@@ -1448,6 +1645,7 @@ function FooterForm({
                 <Field label="Lien">
                   <Input
                     value={l.href}
+                    disabled={readOnly}
                     onChange={(e) => {
                       const arr = v.columns.slice();
                       const links = col.links.slice();
@@ -1461,6 +1659,7 @@ function FooterForm({
                   type="button"
                   size="icon"
                   variant="ghost"
+                  disabled={readOnly}
                   onClick={() => {
                     const arr = v.columns.slice();
                     arr[ci] = { ...col, links: col.links.filter((_, j) => j !== li) };
