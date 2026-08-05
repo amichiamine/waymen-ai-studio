@@ -233,11 +233,65 @@ recherche des branches qui testaient l'absence de cette donnée.
       sandbox et le PAT fourni a été exposé — générer un token neuf
       (fine-grained, limité à ce dépôt) avant tout push.
 
-#### Piste identifiée, non traitée
+#### Vague 0.3 — optimisation du chemin critique (5 août 2026)
 
-Le chunk initial dépasse encore 500 kB (Vite continue de l'avertir). Un
-découpage `manualChunks` du vendor (React, Radix) le ferait tomber sous
-~150 kB gzip. À arbitrer en phase 1 ou 5.
+Traitement de la piste identifiée. 6 commits, 5 agents (4 forts, 1 intermédiaire).
+
+| Étape                                                      | Premier chargement (gzip) |
+| ---------------------------------------------------------- | ------------------------- |
+| Départ phase 0                                             | 397,8 kB                  |
+| Après `React.lazy` (vague 0.2)                             | 210,5 kB                  |
+| Dictionnaires EN/AR en `import()` + retrait de react-query | 192,4 kB                  |
+| Chrome admin sorti du shell (`AdminShell` paresseux)       | 184,3 kB                  |
+| Recalibrage des chunks Radix                               | **179,5 kB**              |
+
+**Gain total : −55 %.**
+
+Détail du chemin critique final : `vendor-react` 59,2 · shell applicatif 65,0 ·
+`vendor-radix-shell` 27,8 · `vendor-router` 7,7 · CSS 19,1 · HTML 0,8.
+
+#### Ce qui a réellement produit le gain
+
+1. **Les 3 dictionnaires FR/EN/AR étaient dans le chunk d'entrée.** `en` et `ar`
+   passent en `import()` dynamique, `fr` reste statique comme repli. Parité
+   vérifiée : 381 clés dans chacun des 3 modules, corps identiques à l'octet près.
+2. **React Query était monté sans être utilisé** — zéro `useQuery`/`useMutation`
+   dans tout le projet. Retiré (peut être réintroduit délibérément en phase 2).
+3. **Le chrome du back-office était importé statiquement par `App.tsx`** :
+   `AdminLayout` (386 lignes) et `ui/sidebar` (744 lignes) étaient servis à chaque
+   client de la boutique. Extrait en `AdminShell` paresseux — la garde
+   d'authentification reste en amont, un visiteur non admin ne télécharge rien.
+4. **Recalibrage des chunks Radix** : une fois le chrome admin parti, seuls
+   `dialog`, `dropdown-menu` et `slot` restent nécessaires au shell.
+
+#### Enseignement à retenir sur `manualChunks`
+
+`manualChunks` **déplace** du code, il ne le rend pas paresseux : une librairie
+importée par le shell est téléchargée au premier rendu quoi qu'il arrive, dans une
+requête parallèle. Mesuré sur ce projet : le regroupement Radix seul a coûté
++0,4 kB au premier chargement pour un gain de cache. **Le volume ne baisse que
+lorsque du code quitte réellement le graphe d'imports statiques du shell** — ce
+qu'ont fait les points 1, 2 et 3.
+
+Corollaire de méthode : ne jamais mesurer le seul chunk d'entrée. La mesure
+valable est la somme gzip de tous les fichiers référencés par `index.html`
+(entrée + `modulepreload` + CSS).
+
+#### Pourquoi la cible de 150 kB n'est pas atteinte
+
+Il manque 29,5 kB, et ils ne sont pas accessibles à ce stade :
+
+- `vendor-react` 59,2 kB est incompressible sans changer de framework.
+- Le shell applicatif de 65,0 kB contient **l'intégralité du jeu de données mock**
+  (`admin-store.tsx` : 24 clients, 32 commandes, 5 articles, pièces du
+  configurateur, 58 wilayas, modes de paiement). Dans une architecture sans
+  backend, le navigateur DOIT recevoir ce jeu de données pour afficher la boutique.
+- Le CSS Tailwind de 19,1 kB est déjà purgé.
+
+**La cible de 150 kB devient atteignable en phase 4**, quand les données viendront
+de l'API SQLite au lieu du bundle : le shell devrait alors tomber sous 40 kB, soit
+environ 155 kB au total, puis sous 150 avec un allègement du `sheet` mobile de
+l'en-tête. À reprendre comme critère de recette de la phase 4.
 
 ---
 
