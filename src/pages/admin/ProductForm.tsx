@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trash2, ArrowLeft } from "lucide-react";
 import {
   useProductList,
@@ -28,7 +29,115 @@ import {
 } from "@/data-provider";
 import type { Product, Category } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
-import { localize, useLocalize } from "@/lib/i18n";
+import type { Localized } from "@/lib/i18n";
+import { useLocalize } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Helpers pour les champs localisés (même recette que Content.tsx)
+// ---------------------------------------------------------------------------
+
+type LangCode = "fr" | "en" | "ar";
+const LANGS: LangCode[] = ["fr", "en", "ar"];
+
+/** Normalise n'importe quel `Localized<string>` en objet à trois clés. */
+function toMap(v: Localized<string> | undefined): Record<LangCode, string> {
+  if (v == null) return { fr: "", en: "", ar: "" };
+  if (typeof v === "string") return { fr: v, en: "", ar: "" };
+  return { fr: v.fr ?? "", en: v.en ?? "", ar: v.ar ?? "" };
+}
+
+/**
+ * Construit le `Localized<string>` à persister depuis la map d'édition.
+ * - Si fr vide → undefined (champ optionnel absent).
+ * - Si en et ar vides → chaîne nue (rétrocompatible avec les données seed).
+ * - Sinon → objet `{ fr, en?, ar? }` ne contenant que les variantes non vides.
+ */
+function fromMap(map: Record<LangCode, string>): Localized<string> | undefined {
+  if (!map.fr.trim()) return undefined;
+  if (!map.en.trim() && !map.ar.trim()) return map.fr;
+  const result: { fr: string; en?: string; ar?: string } = { fr: map.fr };
+  if (map.en.trim()) result.en = map.en;
+  if (map.ar.trim()) result.ar = map.ar;
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// LField — champ Input avec onglets FR / EN / AR
+// ---------------------------------------------------------------------------
+
+function MissingDot() {
+  return (
+    <span
+      aria-label="traduction manquante"
+      className="ms-1 inline-block size-1.5 rounded-full bg-amber-400 align-middle"
+    />
+  );
+}
+
+function LField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  required,
+}: {
+  label: string;
+  value: Localized<string> | undefined;
+  onChange: (next: Localized<string> | undefined) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  required?: boolean;
+}) {
+  const [lang, setLang] = useState<LangCode>("fr");
+  const map = toMap(value);
+  const isAr = lang === "ar";
+
+  function handleChange(text: string) {
+    onChange(fromMap({ ...map, [lang]: text }));
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <Label className={cn(isAr && "block text-end")}>{label}</Label>
+      {/* Onglets langue */}
+      <div className="inline-flex rounded-md border border-border bg-muted/40 p-0.5 text-[10px] font-semibold uppercase">
+        {LANGS.map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLang(l)}
+            className={cn(
+              "rounded-sm px-2 py-0.5 transition-colors",
+              lang === l
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {l}
+            {l !== "fr" && !map[l].trim() && <MissingDot />}
+          </button>
+        ))}
+      </div>
+      <div dir={isAr ? "rtl" : "ltr"}>
+        <Input
+          dir={isAr ? "rtl" : "ltr"}
+          className={cn(isAr && "text-end")}
+          value={map[lang]}
+          placeholder={lang === "fr" ? placeholder : undefined}
+          disabled={disabled}
+          required={lang === "fr" && required}
+          onChange={(e) => handleChange(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Schéma Zod — seul le français est obligatoire
+// ---------------------------------------------------------------------------
 
 const imageField = z
   .string()
@@ -45,6 +154,13 @@ const imageField = z
     { message: "URL ou chemin d'image invalide" },
   );
 
+/** Schéma d'un champ localisé : seule la variante `fr` est obligatoire. */
+const localizedStringSchema = z.object({
+  fr: z.string().trim(),
+  en: z.string().optional(),
+  ar: z.string().optional(),
+});
+
 const schema = z
   .object({
     id: z
@@ -53,12 +169,18 @@ const schema = z
       .min(2, "ID trop court (min 2 caractères)")
       .max(60, "ID trop long (max 60)")
       .regex(/^[a-z0-9-]+$/, "Lettres minuscules, chiffres et tirets uniquement"),
-    name: z.string().trim().min(2, "Nom requis (min 2 caractères)").max(120, "Nom trop long"),
+    name: localizedStringSchema.refine((v) => v.fr.length >= 2, {
+      path: ["fr"],
+      message: "Nom requis (min 2 caractères)",
+    }),
     brand: z.string().trim().min(1, "Marque requise").max(60),
     category: z.enum(["laptops", "desktops", "builds", "phones"], {
       message: "Catégorie invalide",
     }),
-    specLine: z.string().trim().min(3, "Ligne de specs requise (min 3 caractères)").max(200),
+    specLine: localizedStringSchema.refine((v) => v.fr.length >= 3, {
+      path: ["fr"],
+      message: "Ligne de specs requise (min 3 caractères)",
+    }),
     price: z.coerce
       .number({ message: "Prix requis" })
       .int("Nombre entier requis")
@@ -70,12 +192,12 @@ const schema = z
     image: imageField,
     bestSeller: z.boolean().optional(),
     sale: z.boolean().optional(),
-    cpu: z.string().max(120).optional(),
-    ram: z.string().max(60).optional(),
-    storage: z.string().max(80).optional(),
-    gpu: z.string().max(120).optional(),
-    screen: z.string().max(80).optional(),
-    os: z.string().max(80).optional(),
+    cpu: localizedStringSchema.optional(),
+    ram: localizedStringSchema.optional(),
+    storage: localizedStringSchema.optional(),
+    gpu: localizedStringSchema.optional(),
+    screen: localizedStringSchema.optional(),
+    os: localizedStringSchema.optional(),
   })
   .superRefine((v, ctx) => {
     if (
@@ -104,13 +226,21 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>;
 
+// ---------------------------------------------------------------------------
+// Valeurs initiales
+// ---------------------------------------------------------------------------
+
+function emptyLocalized(): Record<LangCode, string> {
+  return { fr: "", en: "", ar: "" };
+}
+
 function emptyForm(): FormValues {
   return {
     id: "",
-    name: "",
+    name: emptyLocalized(),
     brand: "",
     category: "laptops",
-    specLine: "",
+    specLine: emptyLocalized(),
     price: 0,
     oldPrice: "" as unknown as number,
     stock: "in",
@@ -118,38 +248,27 @@ function emptyForm(): FormValues {
     image: "",
     bestSeller: false,
     sale: false,
-    cpu: "",
-    ram: "",
-    storage: "",
-    gpu: "",
-    screen: "",
-    os: "",
+    cpu: emptyLocalized(),
+    ram: emptyLocalized(),
+    storage: emptyLocalized(),
+    gpu: emptyLocalized(),
+    screen: emptyLocalized(),
+    os: emptyLocalized(),
   };
 }
 
 /**
  * Convertit un `Product` en valeurs de formulaire.
- *
- * Les champs `name`, `specLine` et les valeurs de `specs` sont des
- * `Localized<string>` depuis la vague 3.1. On les résout ici en français
- * (langue de référence du back-office) avec `localize(v, "fr")` afin que le
- * formulaire n'édite que la variante française — les variantes anglaise et
- * arabe sont préservées dans `existing` et réinjectées lors de l'enregistrement
- * (voir la logique `mergeLocalized` dans `onSubmit`).
- *
- * IMPORTANT : ne jamais écrire directement `name: data.name` (string) dans
- * l'objet `Product` transmis à l'API — cela écraserait l'objet multilingue
- * par une chaîne nue et détruirait silencieusement les traductions anglaise
- * et arabe. La vague des onglets FR/EN/AR (pilote : Content.tsx) pourra
- * exposer les trois champs sans risque car les données ne seront jamais perdues.
+ * Les champs `Localized<string>` sont normalisés en objet `{ fr, en, ar }` via
+ * `toMap()` pour permettre l'édition des trois langues.
  */
 function toForm(p: Product): FormValues {
   return {
     id: p.id,
-    name: localize(p.name, "fr") ?? "",
+    name: toMap(p.name),
     brand: p.brand,
     category: p.category,
-    specLine: localize(p.specLine, "fr") ?? "",
+    specLine: toMap(p.specLine),
     price: p.price,
     oldPrice: (p.oldPrice ?? "") as number,
     stock: p.stock,
@@ -157,36 +276,33 @@ function toForm(p: Product): FormValues {
     image: p.image,
     bestSeller: !!p.bestSeller,
     sale: !!p.sale,
-    cpu: localize(p.specs.cpu, "fr") ?? "",
-    ram: localize(p.specs.ram, "fr") ?? "",
-    storage: localize(p.specs.storage, "fr") ?? "",
-    gpu: localize(p.specs.gpu, "fr") ?? "",
-    screen: localize(p.specs.screen, "fr") ?? "",
-    os: localize(p.specs.os, "fr") ?? "",
+    cpu: toMap(p.specs.cpu),
+    ram: toMap(p.specs.ram),
+    storage: toMap(p.specs.storage),
+    gpu: toMap(p.specs.gpu),
+    screen: toMap(p.specs.screen),
+    os: toMap(p.specs.os),
   };
 }
 
 /**
- * Fusionne une valeur française éditée dans le formulaire avec un champ
- * `Localized<string>` existant, pour ne pas écraser les variantes non éditées.
+ * Convertit un objet `{ fr, en?, ar? }` du formulaire en `Localized<string>`
+ * ou `undefined` pour les champs de specs optionnels.
  *
- * Règle : si l'original était un objet multilingue `{ fr, en?, ar? }`, on
- * remplace uniquement la variante `fr` et on conserve `en` et `ar` telles
- * quelles. Si l'original était une chaîne simple (monolingue), la valeur
- * française éditée la remplace directement — le type `Localized` le permet.
- *
- * Retourne `undefined` si la valeur éditée est vide (champ optionnel absent).
+ * - fr vide → undefined (champ optionnel absent).
+ * - en et ar vides → chaîne nue (rétrocompatible avec les données seed).
+ * - sinon → `{ fr, en?, ar? }` avec seulement les variantes non vides.
  */
-function mergeLocalized(
-  edited: string | undefined,
-  original: { fr: string; en?: string; ar?: string } | string | undefined,
-): { fr: string; en?: string; ar?: string } | string | undefined {
-  if (!edited) return undefined;
-  if (original !== undefined && typeof original === "object" && original !== null) {
-    return { ...original, fr: edited };
-  }
-  return edited;
+function mapToLocalized(
+  map: { fr: string; en?: string; ar?: string } | undefined,
+): Localized<string> | undefined {
+  if (!map) return undefined;
+  return fromMap({ fr: map.fr, en: map.en ?? "", ar: map.ar ?? "" });
 }
+
+// ---------------------------------------------------------------------------
+// Composant principal
+// ---------------------------------------------------------------------------
 
 export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const { data: products } = useProductList();
@@ -204,7 +320,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const { data: existing } = useProductDetail(mode === "edit" ? id : undefined);
 
   const [v, setV] = useState<FormValues>(existing ? toForm(existing) : emptyForm());
-  const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -230,9 +346,15 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
     if (!guard(actionKey, mode === "new" ? "Créer le produit" : "Modifier le produit")) return;
     const parsed = schema.safeParse(v);
     if (!parsed.success) {
-      const errs: Partial<Record<keyof FormValues, string>> = {};
-      for (const issue of parsed.error.issues)
-        errs[issue.path[0] as keyof FormValues] = issue.message;
+      const errs: Partial<Record<string, string>> = {};
+      for (const issue of parsed.error.issues) {
+        const path = issue.path.join(".");
+        errs[path] = issue.message;
+        // Remonte aussi sur la clé de premier niveau pour l'affichage inline.
+        if (issue.path.length > 0) {
+          errs[issue.path[0] as string] ??= issue.message;
+        }
+      }
       setErrors(errs);
       toast.error("Certains champs sont invalides — corrigez les erreurs en rouge.");
       return;
@@ -248,33 +370,21 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       toast.error("Catégorie inconnue");
       return;
     }
-    /**
-     * Préservation des traductions non éditées (piège multilingue, vague 3.2).
-     *
-     * Le formulaire n'expose qu'un seul champ texte par propriété localisée :
-     * il édite la variante française. Si le produit possédait déjà des
-     * variantes anglaise et arabe (`existing.name = { fr, en, ar }`), écrire
-     * `name: data.name` (string) les détruirait silencieusement.
-     *
-     * `mergeLocalized` réinjecte la valeur française dans l'objet d'origine,
-     * en conservant les autres langues intactes. Pour un nouveau produit
-     * (`existing` est undefined), la valeur française est utilisée directement
-     * (chaîne simple, compatible avec `Localized<string>`).
-     */
+
     const product: Product = {
       id: data.id,
-      name: mergeLocalized(data.name, existing?.name) ?? data.name,
+      name: mapToLocalized(data.name) ?? data.name.fr,
       brand: data.brand,
       category: data.category as Category,
       use: existing?.use ?? [],
-      specLine: mergeLocalized(data.specLine, existing?.specLine) ?? data.specLine,
+      specLine: mapToLocalized(data.specLine) ?? data.specLine.fr,
       specs: {
-        cpu: mergeLocalized(data.cpu, existing?.specs.cpu),
-        ram: mergeLocalized(data.ram, existing?.specs.ram),
-        storage: mergeLocalized(data.storage, existing?.specs.storage),
-        gpu: mergeLocalized(data.gpu, existing?.specs.gpu),
-        screen: mergeLocalized(data.screen, existing?.specs.screen),
-        os: mergeLocalized(data.os, existing?.specs.os),
+        cpu: mapToLocalized(data.cpu),
+        ram: mapToLocalized(data.ram),
+        storage: mapToLocalized(data.storage),
+        gpu: mapToLocalized(data.gpu),
+        screen: mapToLocalized(data.screen),
+        os: mapToLocalized(data.os),
       },
       price: data.price,
       oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
@@ -364,6 +474,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
               <CardTitle>Informations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Champs non localisés */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label>ID (slug unique)</Label>
@@ -374,11 +485,6 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     placeholder="ex: rog-strix-g16"
                   />
                   {errors.id && <p className="mt-1 text-xs text-destructive">{errors.id}</p>}
-                </div>
-                <div>
-                  <Label>Nom</Label>
-                  <Input value={v.name} onChange={(e) => updateField("name", e.target.value)} />
-                  {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
                 </div>
                 <div>
                   <Label>Marque</Label>
@@ -413,46 +519,156 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   </Select>
                 </div>
               </div>
-              <div>
-                <Label>Ligne de specs (résumé)</Label>
-                <Input
-                  value={v.specLine}
-                  onChange={(e) => updateField("specLine", e.target.value)}
-                  placeholder="Intel i7 · 16GB · 1TB SSD"
-                />
-                {errors.specLine && (
-                  <p className="mt-1 text-xs text-destructive">{errors.specLine}</p>
-                )}
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <Label>CPU</Label>
-                  <Input value={v.cpu} onChange={(e) => updateField("cpu", e.target.value)} />
-                </div>
-                <div>
-                  <Label>RAM</Label>
-                  <Input value={v.ram} onChange={(e) => updateField("ram", e.target.value)} />
-                </div>
-                <div>
-                  <Label>Stockage</Label>
-                  <Input
-                    value={v.storage}
-                    onChange={(e) => updateField("storage", e.target.value)}
+
+              {/* Onglets de traduction FR / EN / AR */}
+              <Tabs defaultValue="fr">
+                <TabsList>
+                  <TabsTrigger value="fr">FR</TabsTrigger>
+                  <TabsTrigger value="en">
+                    EN
+                    {!v.name?.en?.trim() && <MissingDot />}
+                  </TabsTrigger>
+                  <TabsTrigger value="ar">
+                    AR
+                    {!v.name?.ar?.trim() && <MissingDot />}
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Onglet FR — obligatoire */}
+                <TabsContent value="fr" className="space-y-4 pt-2">
+                  <div>
+                    <Label>Nom</Label>
+                    <Input
+                      value={v.name.fr}
+                      onChange={(e) => updateField("name", { ...v.name, fr: e.target.value })}
+                    />
+                    {errors["name.fr"] && (
+                      <p className="mt-1 text-xs text-destructive">{errors["name.fr"]}</p>
+                    )}
+                    {errors.name && !errors["name.fr"] && (
+                      <p className="mt-1 text-xs text-destructive">{errors.name}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>Ligne de specs (résumé)</Label>
+                    <Input
+                      value={v.specLine.fr}
+                      onChange={(e) =>
+                        updateField("specLine", { ...v.specLine, fr: e.target.value })
+                      }
+                      placeholder="Intel i7 · 16GB · 1TB SSD"
+                    />
+                    {errors["specLine.fr"] && (
+                      <p className="mt-1 text-xs text-destructive">{errors["specLine.fr"]}</p>
+                    )}
+                    {errors.specLine && !errors["specLine.fr"] && (
+                      <p className="mt-1 text-xs text-destructive">{errors.specLine}</p>
+                    )}
+                  </div>
+                  <SpecsGrid
+                    values={{
+                      cpu: v.cpu,
+                      ram: v.ram,
+                      storage: v.storage,
+                      gpu: v.gpu,
+                      screen: v.screen,
+                      os: v.os,
+                    }}
+                    lang="fr"
+                    onChange={(k, map) =>
+                      updateField(k as keyof FormValues, map as FormValues[typeof k])
+                    }
                   />
-                </div>
-                <div>
-                  <Label>GPU</Label>
-                  <Input value={v.gpu} onChange={(e) => updateField("gpu", e.target.value)} />
-                </div>
-                <div>
-                  <Label>Écran</Label>
-                  <Input value={v.screen} onChange={(e) => updateField("screen", e.target.value)} />
-                </div>
-                <div>
-                  <Label>OS</Label>
-                  <Input value={v.os} onChange={(e) => updateField("os", e.target.value)} />
-                </div>
-              </div>
+                </TabsContent>
+
+                {/* Onglet EN — facultatif */}
+                <TabsContent value="en" className="space-y-4 pt-2">
+                  <p className="text-xs text-muted-foreground">
+                    Traductions facultatives. Un produit sans traduction reste valide.
+                  </p>
+                  <div>
+                    <Label>
+                      Nom <span className="text-muted-foreground">(EN)</span>
+                    </Label>
+                    <Input
+                      dir="ltr"
+                      value={v.name.en ?? ""}
+                      onChange={(e) => updateField("name", { ...v.name, en: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>
+                      Ligne de specs <span className="text-muted-foreground">(EN)</span>
+                    </Label>
+                    <Input
+                      dir="ltr"
+                      value={v.specLine.en ?? ""}
+                      onChange={(e) =>
+                        updateField("specLine", { ...v.specLine, en: e.target.value })
+                      }
+                    />
+                  </div>
+                  <SpecsGrid
+                    values={{
+                      cpu: v.cpu,
+                      ram: v.ram,
+                      storage: v.storage,
+                      gpu: v.gpu,
+                      screen: v.screen,
+                      os: v.os,
+                    }}
+                    lang="en"
+                    onChange={(k, map) =>
+                      updateField(k as keyof FormValues, map as FormValues[typeof k])
+                    }
+                  />
+                </TabsContent>
+
+                {/* Onglet AR — facultatif */}
+                <TabsContent value="ar" className="space-y-4 pt-2">
+                  <p className="text-xs text-muted-foreground">
+                    Traductions facultatives. Un produit sans traduction reste valide.
+                  </p>
+                  <div>
+                    <Label className="block text-end">
+                      <span className="text-muted-foreground">(AR)</span> الاسم
+                    </Label>
+                    <Input
+                      dir="rtl"
+                      className="text-end"
+                      value={v.name.ar ?? ""}
+                      onChange={(e) => updateField("name", { ...v.name, ar: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="block text-end">
+                      <span className="text-muted-foreground">(AR)</span> سطر المواصفات
+                    </Label>
+                    <Input
+                      dir="rtl"
+                      className="text-end"
+                      value={v.specLine.ar ?? ""}
+                      onChange={(e) =>
+                        updateField("specLine", { ...v.specLine, ar: e.target.value })
+                      }
+                    />
+                  </div>
+                  <SpecsGrid
+                    values={{
+                      cpu: v.cpu,
+                      ram: v.ram,
+                      storage: v.storage,
+                      gpu: v.gpu,
+                      screen: v.screen,
+                      os: v.os,
+                    }}
+                    lang="ar"
+                    onChange={(k, map) =>
+                      updateField(k as keyof FormValues, map as FormValues[typeof k])
+                    }
+                  />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
@@ -483,6 +699,9 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                       )
                     }
                   />
+                  {errors.oldPrice && (
+                    <p className="mt-1 text-xs text-destructive">{errors.oldPrice}</p>
+                  )}
                 </div>
                 <div>
                   <Label>Quantité (unités)</Label>
@@ -616,5 +835,59 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         onConfirm={doDelete}
       />
     </AdminPageShell>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SpecsGrid — grille des specs pour un onglet de langue donné
+// ---------------------------------------------------------------------------
+
+type SpecEntry = { fr: string; en?: string; ar?: string } | undefined;
+
+type SpecsMap = {
+  cpu: SpecEntry;
+  ram: SpecEntry;
+  storage: SpecEntry;
+  gpu: SpecEntry;
+  screen: SpecEntry;
+  os: SpecEntry;
+};
+
+function SpecsGrid({
+  values,
+  lang,
+  onChange,
+}: {
+  values: SpecsMap;
+  lang: LangCode;
+  onChange: (key: keyof SpecsMap, map: Record<LangCode, string>) => void;
+}) {
+  const isAr = lang === "ar";
+  const dir = isAr ? "rtl" : "ltr";
+
+  function field(label: string, key: keyof SpecsMap) {
+    const map = toMap(values[key]);
+    return (
+      <div key={key}>
+        <Label className={cn(isAr && "block text-end")}>{label}</Label>
+        <Input
+          dir={dir}
+          className={cn(isAr && "text-end")}
+          value={map[lang]}
+          onChange={(e) => onChange(key, { ...map, [lang]: e.target.value })}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {field("CPU", "cpu")}
+      {field("RAM", "ram")}
+      {field("Stockage", "storage")}
+      {field("GPU", "gpu")}
+      {field("Écran", "screen")}
+      {field("OS", "os")}
+    </div>
   );
 }
