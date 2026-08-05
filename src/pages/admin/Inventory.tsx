@@ -209,7 +209,12 @@ export default function AdminInventory() {
                   <TableRow key={p.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img src={p.image} alt="" className="h-8 w-8 rounded object-cover" />
+                        <img
+                          src={p.image}
+                          alt=""
+                          loading="lazy"
+                          className="h-8 w-8 rounded object-cover"
+                        />
                         <span className="font-medium">{p.name}</span>
                       </div>
                     </TableCell>

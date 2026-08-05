@@ -146,7 +146,12 @@ export default function AdminProducts() {
               <TableRow key={p.id}>
                 <TableCell>
                   <Link to={`/admin/products/${p.id}/view`}>
-                    <img src={p.image} alt="" className="h-10 w-10 rounded object-cover" />
+                    <img
+                      src={p.image}
+                      alt=""
+                      loading="lazy"
+                      className="h-10 w-10 rounded object-cover"
+                    />
                   </Link>
                 </TableCell>
                 <TableCell>

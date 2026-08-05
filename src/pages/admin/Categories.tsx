@@ -79,7 +79,8 @@ export default function AdminCategories() {
               {c.cover ? (
                 <img
                   src={c.cover}
-                  alt=""
+                  alt={c.label}
+                  loading="lazy"
                   className="h-full w-full object-cover transition group-hover:scale-105"
                 />
               ) : (

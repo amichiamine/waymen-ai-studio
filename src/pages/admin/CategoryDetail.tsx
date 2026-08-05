@@ -79,7 +79,12 @@ export default function AdminCategoryDetail() {
         <Card className="overflow-hidden">
           {category.cover ? (
             <div className="aspect-[16/10] bg-muted">
-              <img src={category.cover} alt="" className="h-full w-full object-cover" />
+              <img
+                src={category.cover}
+                alt={category.label}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
             </div>
           ) : (
             <div className="aspect-[16/10] flex items-center justify-center bg-muted text-xs text-muted-foreground">
@@ -155,7 +160,12 @@ export default function AdminCategoryDetail() {
                 <ul className="divide-y">
                   {items.map((p) => (
                     <li key={p.id} className="flex items-center gap-3 py-3">
-                      <img src={p.image} alt="" className="h-12 w-12 rounded object-cover" />
+                      <img
+                        src={p.image}
+                        alt=""
+                        loading="lazy"
+                        className="h-12 w-12 rounded object-cover"
+                      />
                       <div className="min-w-0 flex-1">
                         <Link
                           to={`/admin/products/${p.id}/view`}

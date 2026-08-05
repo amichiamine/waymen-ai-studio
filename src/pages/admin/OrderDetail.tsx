@@ -89,7 +89,12 @@ export default function AdminOrderDetail() {
                   className="flex items-center gap-3 border-b pb-3 last:border-none last:pb-0"
                 >
                   {it.image && (
-                    <img src={it.image} alt="" className="h-14 w-14 rounded object-cover" />
+                    <img
+                      src={it.image}
+                      alt=""
+                      loading="lazy"
+                      className="h-14 w-14 rounded object-cover"
+                    />
                   )}
                   <div className="min-w-0 flex-1">
                     <Link

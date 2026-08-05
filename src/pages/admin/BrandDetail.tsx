@@ -158,7 +158,12 @@ export default function AdminBrandDetail() {
                 <ul className="divide-y">
                   {items.map((p) => (
                     <li key={p.id} className="flex items-center gap-3 py-3">
-                      <img src={p.image} alt="" className="h-12 w-12 rounded object-cover" />
+                      <img
+                        src={p.image}
+                        alt=""
+                        loading="lazy"
+                        className="h-12 w-12 rounded object-cover"
+                      />
                       <div className="min-w-0 flex-1">
                         <Link
                           to={`/admin/products/${p.id}/view`}
