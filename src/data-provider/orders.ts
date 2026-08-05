@@ -2,7 +2,9 @@ import { useCallback, useMemo } from "react";
 
 import { ordersApi, createOrderLocal } from "@/api/resources/orders";
 import { useAuth } from "@/lib/auth";
+import { getAdminSnapshot } from "@/lib/admin-store";
 import type { CreateOrderInput, Order, OrderQuery, OrderStatus } from "@/api/types";
+import { isHttpData } from "./mode";
 
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
@@ -110,22 +112,33 @@ export type OrderMutations = {
  * `createOrderLocal` ré-exporté depuis `orders.ts`.
  */
 export function useOrderMutations(): OrderMutations {
+  const { user } = useAuth();
   const create = useCallback(
     (input: CreateOrderInput) =>
       runMutation(ORDERS_RESOURCE, "create", async () => {
         // En http, le backend renvoie { id }. En mock, createOrderLocal
-        // retourne l'Order complet ; on renvoyons { id } pour uniformité.
-        if (typeof import.meta !== "undefined" && import.meta.env.VITE_API_MODE === "http") {
+        // retourne l'Order complet ; on renvoie { id } pour uniformité.
+        if (isHttpData()) {
           return ordersApi.create(input);
         }
         // Mode mock : on adapte CreateOrderInput -> paramètres de createOrder.
+        const products = getAdminSnapshot().products;
         const order = createOrderLocal({
-          items: input.items.map((it) => ({
-            productId: it.productId,
-            name: it.productId,
-            price: 0,
-            qty: it.qty,
-          })),
+          items: input.items.map((it) => {
+            const product = products.find((p) => p.id === it.productId);
+            if (!product) {
+              throw new Error(
+                `Produit introuvable en mode mock : productId="${it.productId}". Vérifiez le catalogue.`,
+              );
+            }
+            return {
+              productId: it.productId,
+              name: product.name,
+              price: product.price,
+              qty: it.qty,
+            };
+          }),
+          customerId: user?.id,
           customerName: input.customer.name,
           customerEmail: input.customer.email,
           subtotal: 0,
@@ -142,7 +155,7 @@ export function useOrderMutations(): OrderMutations {
         });
         return { id: order.id };
       }),
-    [],
+    [user],
   );
 
   const updateStatus = useCallback(
