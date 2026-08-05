@@ -13,6 +13,7 @@ import {
   useReviewList,
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useLocalize } from "@/lib/i18n";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
@@ -29,6 +30,15 @@ export default function AdminProductDetail() {
   const { data: orders } = useOrderList();
   const { data: reviews } = useReviewList();
   const { can, denyReason } = usePermissions();
+  /**
+   * Localisation faite une seule fois par champ en tête de composant.
+   * `name` et `specLine` sont des `string` garantis : ils peuvent être
+   * utilisés dans les attributs HTML, les titres et le JSX sans risque
+   * de rendre un objet `Localized` brut.
+   */
+  const L = useLocalize();
+  const name = L(product?.name) ?? "";
+  const specLine = L(product?.specLine) ?? "";
 
   if (loading) {
     return (
@@ -119,7 +129,7 @@ export default function AdminProductDetail() {
 
   return (
     <AdminPageShell
-      title={product.name}
+      title={name}
       description={`ID : ${product.id} · ${product.brand}`}
       actions={
         <div className="flex gap-2">
@@ -158,7 +168,7 @@ export default function AdminProductDetail() {
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <Card className="overflow-hidden">
           <div className="aspect-square bg-muted">
-            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+            <img src={product.image} alt={name} className="h-full w-full object-cover" />
           </div>
           <CardContent className="space-y-2 p-5">
             <div className="flex items-baseline gap-2">
@@ -183,14 +193,14 @@ export default function AdminProductDetail() {
               <CardTitle>Résumé</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <p>{product.specLine}</p>
+              <p>{specLine}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {Object.entries(product.specs)
                   .filter(([, val]) => val)
                   .map(([k, val]) => (
                     <div key={k} className="rounded-md border p-2">
                       <p className="text-xs uppercase text-muted-foreground">{k}</p>
-                      <p className="font-medium">{val}</p>
+                      <p className="font-medium">{L(val)}</p>
                     </div>
                   ))}
               </div>
