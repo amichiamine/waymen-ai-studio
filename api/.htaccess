@@ -1,0 +1,47 @@
+# =====================================================================
+# api/.htaccess — routage et protection des fichiers sensibles
+# =====================================================================
+# À déposer dans public_html/api/. Un second .htaccess, à la racine de
+# public_html, gère le repli SPA et exclut /api (voir docs/BACKEND.md).
+# =====================================================================
+
+# --- Interdiction de lister le contenu du dossier --------------------
+Options -Indexes
+
+# --- Fichiers qui ne doivent JAMAIS être servis ----------------------
+# Secrets, base SQLite, schémas, journaux, témoin d'installation.
+<FilesMatch "(^\.env|^\.env\..*|\.sqlite$|\.sqlite-wal$|\.sqlite-shm$|\.db$|\.sql$|\.lock$|\.log$|^composer\.(json|lock)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# --- Dossiers de code et de données ----------------------------------
+# Aucun fichier de src/, schema/, tools/ ou var/ ne doit être accessible :
+# seul index.php (et install.php, temporairement) est un point d'entrée.
+RewriteEngine On
+
+RewriteRule ^(src|schema|tools|var|vendor)/ - [F,L]
+
+# --- Routage : tout ce qui n'est pas un fichier réel va à index.php ---
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# --- En-têtes de sécurité --------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "same-origin"
+</IfModule>
+
+# --- Ne pas divulguer la version de PHP ------------------------------
+<IfModule mod_php.c>
+  php_flag expose_php off
+  php_flag display_errors off
+  php_flag log_errors on
+</IfModule>
