@@ -587,6 +587,64 @@ $db->commit();
 
 ---
 
+## 9 bis. Décision d'architecture backend — 5 août 2026
+
+### Objectif retenu
+
+**Les deux canaux, priorité à la boutique complète.**
+
+1. **Boutique réelle** (prioritaire) : comptes clients, historique et suivi de
+   commandes, back-office alimenté par de vraies données.
+2. **WhatsApp** (complémentaire) : canal de commande alternatif, déjà présent
+   dans le configurateur, à étendre au tunnel d'achat comme second bouton.
+
+### Le fait qui a tranché
+
+Un navigateur **ne peut pas écrire sur le serveur** — c'est la nature de HTTP,
+pas une limitation contournable. Toute écriture (commande, compte, stock,
+message) exige un programme qui tourne côté serveur. Les lectures, elles, n'en
+exigent aucun.
+
+### Retenu
+
+**PHP 8.2 + Slim 4 + SQLite côté serveur**, pour trois raisons :
+
+- Le moteur PHP est **déjà installé** chez l'hébergeur mutualisé : rien à
+  démarrer, rien à maintenir, aucun risque de déploiement.
+- Les données restent **la propriété du commerçant** : un fichier `.sqlite`
+  téléchargeable à volonté, sans dépendance ni abonnement.
+- Coût récurrent nul.
+
+Le TypeScript serveur (Hono + Drizzle) serait préférable **si et seulement si**
+l'hébergeur propose Node.js — l'argument décisif étant le partage des types
+entre front et back. À vérifier dans le cPanel (« Setup Node.js App ») avant
+d'écrire la première ligne de la phase 4.
+
+### Écartées, et pourquoi
+
+**SQLite lu dans le navigateur** (`sql.js` / WebAssembly). Techniquement
+valide, mais disproportionné ici : le moteur pèse **~400 kB gzip** pour
+interroger un catalogue de **9 kB**. Un `catalogue.json` statique rend le même
+service pour quelques kilo-octets. La phase 0 a fait tomber le premier
+chargement à 179 kB gzip — cette option l'aurait plus que doublé.
+**Seuil de reconsidération : plusieurs milliers de produits**, quand un index
+SQL bat un `Array.filter()` et qu'on ne veut plus tout charger.
+
+**Backend externe** (Supabase, PocketBase…). Écarté : les données quitteraient
+l'hébergement, avec dépendance à un tiers et coût récurrent.
+
+**Vitrine WhatsApp seule.** Écartée comme cible unique : elle rendrait sans
+objet une bonne partie des 35 pages d'administration déjà construites. Conservée
+comme canal complémentaire.
+
+### Conséquence sur les phases 0 à 2
+
+**Aucune.** Le contrat (`docs/API-CONTRACT.md`), `src/api/endpoints.ts`, le
+client HTTP et la couche `src/data-provider` sont agnostiques du langage
+serveur. Le frontend ne change pas d'une ligne.
+
+---
+
 ## 10. Décisions prises
 
 | Décision              | Choix                                                                       | Date        |
