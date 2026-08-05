@@ -1,11 +1,12 @@
 import { Suspense, type ReactNode } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import {
   AdminSidebar,
   AdminMobileNav,
   AdminBreadcrumbs,
   AdminRoleSwitcher,
   AdminNotificationBell,
+  AdminUserMenu,
 } from "@/components/admin/AdminLayout";
 
 /**
@@ -29,12 +30,10 @@ export default function AdminShell({ pageFallback }: { pageFallback: ReactNode }
         <header className="flex h-14 items-center gap-3 border-b border-border/60 bg-card/50 px-3 lg:px-8">
           <AdminMobileNav />
           <AdminBreadcrumbs />
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ms-auto flex items-center gap-2">
             <AdminRoleSwitcher />
             <AdminNotificationBell />
-            <Link to="/" className="text-sm text-primary hover:underline">
-              ← Boutique
-            </Link>
+            <AdminUserMenu />
           </div>
         </header>
         <main className="min-w-0 flex-1 p-4 lg:p-8">

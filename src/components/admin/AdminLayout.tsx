@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 import {
   LayoutDashboard,
@@ -28,6 +28,9 @@ import {
   Palette,
   Mail,
   Send,
+  LogOut,
+  Store,
+  User,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
@@ -42,6 +45,15 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
   useAdminState,
   canPerform,
   setActiveRole,
@@ -50,6 +62,7 @@ import {
   type AdminUserRole,
 } from "@/lib/admin-store";
 import { ADMIN_ROLES, ADMIN_ROLE_LABEL, useEffectiveRole } from "@/lib/admin-auth";
+import { useAuth } from "@/lib/auth";
 
 type Item = { to: string; label: string; Icon: typeof LayoutDashboard; minRole?: AdminUserRole };
 
@@ -395,5 +408,71 @@ export function AdminNotificationBell() {
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+// ---------- Menu utilisateur ----------
+
+function initiales(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
+export function AdminUserMenu() {
+  const { user, signOut } = useAuth();
+  const { role, realRole, simulating } = useEffectiveRole();
+  const navigate = useNavigate();
+
+  const name: string = user?.user_metadata?.name ?? user?.email ?? "Compte";
+  const email: string = user?.email ?? "";
+  const fallback = initiales(name) || <User className="h-4 w-4" />;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Menu utilisateur">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs">{fallback}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="font-normal">
+          <p className="truncate font-medium text-sm">{name}</p>
+          <p className="truncate text-xs text-muted-foreground">{email}</p>
+          {simulating ? (
+            <p className="mt-1 text-xs">
+              <span className="text-muted-foreground">Rôle simulé : </span>
+              <span className="font-medium text-amber-600">{ADMIN_ROLE_LABEL[role]}</span>
+              <span className="text-muted-foreground"> — réel : </span>
+              <span className="font-medium">{ADMIN_ROLE_LABEL[realRole]}</span>
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Rôle : <span className="font-medium text-foreground">{ADMIN_ROLE_LABEL[role]}</span>
+            </p>
+          )}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => navigate("/")}>
+          <Store className="h-4 w-4 me-2" />
+          Retour à la boutique
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={async () => {
+            await signOut();
+            navigate("/");
+          }}
+        >
+          <LogOut className="h-4 w-4 me-2" />
+          Se déconnecter
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
