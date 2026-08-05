@@ -742,42 +742,97 @@ function seedBlogPosts(): BlogPost[] {
   const base = [
     {
       slug: "guide-achat-laptop-2026",
-      title: "Guide d'achat : bien choisir son ordinateur portable en 2026",
-      excerpt: "CPU, GPU, RAM, écran — les critères qui comptent vraiment selon votre usage.",
-      content:
-        "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez KA Tech, tous nos laptops sont sous garantie officielle.",
+      title: {
+        fr: "Guide d'achat : bien choisir son ordinateur portable en 2026",
+        en: "Buying guide: how to choose the right laptop in 2026",
+        ar: "دليل الشراء: كيف تختار حاسوبك المحمول في 2026",
+      },
+      excerpt: {
+        fr: "CPU, GPU, RAM, écran — les critères qui comptent vraiment selon votre usage.",
+        en: "CPU, GPU, RAM, screen — the criteria that truly matter for your use case.",
+        ar: "CPU، GPU، RAM، الشاشة — المعايير التي تهم فعلاً حسب استخدامك.",
+      },
+      content: {
+        fr: "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez KA Tech, tous nos laptops sont sous garantie officielle.",
+        en: "# Choosing the right laptop in 2026\n\nIn 2026, the laptop market is richer than ever. Here are the 5 criteria you should not overlook:\n\n1. **The processor**: go for an Intel Core Ultra or an AMD Ryzen 7000+.\n2. **RAM**: 16 GB minimum, 32 GB for creative work.\n3. **The SSD**: NVMe Gen4, 512 GB minimum.\n4. **The screen**: IPS or OLED panel, 100% sRGB for accurate colour.\n5. **The warranty**: at KA Tech, all our laptops come with an official warranty.",
+        ar: "# كيف تختار حاسوبك المحمول في 2026\n\nفي 2026، سوق الحواسيب المحمولة أثرى من أي وقت مضى. إليك 5 معايير لا ينبغي إغفالها:\n\n1. **المعالج**: اختر Intel Core Ultra أو AMD Ryzen 7000+.\n2. **الذاكرة RAM**: 16 غيغابايت كحد أدنى، و32 غيغابايت للإبداع والمونتاج.\n3. **القرص SSD**: NVMe Gen4، 512 غيغابايت كحد أدنى.\n4. **الشاشة**: لوحة IPS أو OLED، 100% sRGB لدقة الألوان.\n5. **الضمان**: في KA Tech، جميع حواسيبنا المحمولة تأتي مع ضمان رسمي.",
+      },
       tags: ["laptop", "guide"],
     },
     {
       slug: "gaming-pc-vs-console",
-      title: "PC gaming vs console : le match 2026",
-      excerpt: "Prix, catalogue, mods, longévité — on compare les deux univers.",
-      content:
-        "Le débat PC vs console revient chaque génération. En 2026, le PC prend l'avantage sur la modularité, le catalogue Steam et la longévité — mais la console reste imbattable sur le plug-and-play.",
+      title: {
+        fr: "PC gaming vs console : le match 2026",
+        en: "Gaming PC vs console: the 2026 showdown",
+        ar: "PC للألعاب مقابل الكونسول: مقارنة 2026",
+      },
+      excerpt: {
+        fr: "Prix, catalogue, mods, longévité — on compare les deux univers.",
+        en: "Price, game library, mods, longevity — we compare both worlds.",
+        ar: "السعر، مكتبة الألعاب، الإضافات، العمر الافتراضي — نقارن بين العالمين.",
+      },
+      content: {
+        fr: "Le débat PC vs console revient chaque génération. En 2026, le PC prend l'avantage sur la modularité, le catalogue Steam et la longévité — mais la console reste imbattable sur le plug-and-play.",
+        en: "The PC vs console debate comes back every generation. In 2026, the PC has the edge on modularity, the Steam library and longevity — but the console remains unbeatable for plug-and-play simplicity.",
+        ar: "نقاش PC مقابل الكونسول يعود مع كل جيل. في 2026، يتفوق PC على صعيد المرونة ومكتبة Steam والعمر الافتراضي — لكن الكونسول يبقى لا يُضاهى في سهولة التشغيل الفوري.",
+      },
       tags: ["gaming", "comparatif"],
     },
     {
       slug: "smartphone-photo-2026",
-      title: "Top 3 smartphones photo début 2026",
-      excerpt: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro : notre verdict.",
-      content:
-        "Trois flagships, trois philosophies photo. L'iPhone mise sur la constance vidéo, le Samsung sur la polyvalence zoom, le Xiaomi sur la signature Leica. À vous de choisir.",
+      title: {
+        fr: "Top 3 smartphones photo début 2026",
+        en: "Top 3 camera smartphones of early 2026",
+        ar: "أفضل 3 هواتف للتصوير في مطلع 2026",
+      },
+      excerpt: {
+        fr: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro : notre verdict.",
+        en: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro: our verdict.",
+        ar: "iPhone 16 Pro Max، Galaxy S25 Ultra، Xiaomi 14T Pro: حكمنا النهائي.",
+      },
+      content: {
+        fr: "Trois flagships, trois philosophies photo. L'iPhone mise sur la constance vidéo, le Samsung sur la polyvalence zoom, le Xiaomi sur la signature Leica. À vous de choisir.",
+        en: "Three flagships, three photography philosophies. The iPhone bets on video consistency, Samsung on zoom versatility, and Xiaomi on the Leica signature. The choice is yours.",
+        ar: "ثلاثة هواتف رائدة، ثلاث فلسفات تصوير. iPhone يراهن على ثبات الفيديو، Samsung على تعدد استخدامات الزووم، Xiaomi على توقيع Leica. لك أن تختار.",
+      },
       tags: ["smartphone", "photo", "top"],
     },
     {
       slug: "monter-son-pc-configurateur",
-      title: "Monter son PC : nos conseils du configurateur KA Tech",
-      excerpt: "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.",
-      content:
-        "Notre configurateur PC vous guide étape par étape. Avant de valider votre config, vérifiez : la compatibilité socket CPU/carte-mère, le TDP de l'alim (+30 % de marge), et la ventilation du boîtier.",
+      title: {
+        fr: "Monter son PC : nos conseils du configurateur KA Tech",
+        en: "Building your PC: tips from the KA Tech configurator",
+        ar: "تجميع حاسوبك: نصائح من مُجمِّع KA Tech",
+      },
+      excerpt: {
+        fr: "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.",
+        en: "Why go for a custom-built PC and how to avoid the classic pitfalls.",
+        ar: "لماذا تختار حاسوباً مخصصاً وكيف تتجنب الأخطاء الشائعة.",
+      },
+      content: {
+        fr: "Notre configurateur PC vous guide étape par étape. Avant de valider votre config, vérifiez : la compatibilité socket CPU/carte-mère, le TDP de l'alim (+30 % de marge), et la ventilation du boîtier.",
+        en: "Our PC configurator walks you through every step. Before confirming your build, check: CPU/motherboard socket compatibility, the PSU TDP (+30% headroom), and the case airflow.",
+        ar: "يرشدك مُجمِّع PC الخاص بنا خطوة بخطوة. قبل تأكيد تجميعتك، تحقق من: توافق socket المعالج مع اللوحة الأم، TDP مزود الطاقة (+30% هامش)، وتهوية الصندوق.",
+      },
       tags: ["pc-sur-mesure", "conseil"],
     },
     {
       slug: "livraison-58-wilayas",
-      title: "Livraison en Algérie : ce qu'il faut savoir",
-      excerpt: "Délais, tarifs, paiement à la livraison — on répond à vos questions.",
-      content:
-        "KA Tech livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
+      title: {
+        fr: "Livraison en Algérie : ce qu'il faut savoir",
+        en: "Delivery across Algeria: what you need to know",
+        ar: "التوصيل في الجزائر: ما تحتاج معرفته",
+      },
+      excerpt: {
+        fr: "Délais, tarifs, paiement à la livraison — on répond à vos questions.",
+        en: "Lead times, rates, cash on delivery — we answer your questions.",
+        ar: "آجال التسليم، التعريفات، الدفع عند الاستلام — نجيب على أسئلتك.",
+      },
+      content: {
+        fr: "KA Tech livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
+        en: "KA Tech delivers to all 58 wilayas. Allow 2 to 5 business days depending on your region. Cash on delivery is available for the majority of products.",
+        ar: "KA Tech يوصّل إلى جميع الولايات الـ58. توقع من 2 إلى 5 أيام عمل حسب منطقتك: الجزائر، وهران، قسنطينة، عنابة، سطيف، تيزي وزو، البليدة، باتنة، وجميع الولايات الأخرى. الدفع عند الاستلام متاح لغالبية المنتجات.",
+      },
       tags: ["livraison", "faq"],
     },
   ];
