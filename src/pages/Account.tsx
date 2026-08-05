@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
-import { useAdminState, type OrderStatus } from "@/lib/admin-store";
+import { useAdminState, upsertUser, findUserByEmail, type OrderStatus } from "@/lib/admin-store";
 import { useAddresses, newAddressId, type UserAddress } from "@/lib/addresses";
 import { WILAYAS } from "@/data/wilayas";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,34 @@ export default function Account() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    // Persister le nom dans la table users de admin-store.
+    // Note : AdminUser ne contient pas de champ phone — seul le nom est
+    // persisté dans la table ; le téléphone est conservé dans la session
+    // localStorage uniquement.
+    const existing = findUserByEmail(user.email);
+    if (existing) {
+      upsertUser({ ...existing, name: name.trim() });
+    }
+    // Mettre à jour la session localStorage pour que le nom soit cohérent
+    // après rechargement. Le state React en mémoire (user) reste inchangé
+    // jusqu'au prochain rechargement car auth.tsx n'expose pas de setter de
+    // session : c'est la limite hors périmètre signalée dans le rapport.
+    try {
+      const raw = window.localStorage.getItem("ka-mock-user");
+      if (raw) {
+        const stored = JSON.parse(raw) as {
+          id: string;
+          email: string;
+          user_metadata: { name?: string; phone?: string };
+        };
+        stored.user_metadata = { ...stored.user_metadata, name: name.trim(), phone: phone.trim() };
+        window.localStorage.setItem("ka-mock-user", JSON.stringify(stored));
+      }
+    } catch {
+      // localStorage indisponible — la modification est quand même enregistrée
+      // dans admin-store.
+    }
     toast.success(t("account.savedToast"));
   };
 
