@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { categoryMeta, type Category } from "@/data/products";
+import { catalogProducts, categoryMeta, type Category } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
 import { useI18n } from "@/lib/i18n";
 
@@ -43,7 +43,11 @@ export default function Search() {
     setSearchParams(p, { replace: true });
   }, [q, cat, brand, maxPrice, sort, inStock, setSearchParams]);
 
-  const products = useProducts();
+  // Base de recherche = catalogue seul. Les configurations composées dans
+  // /builder vivent dans la même liste (elles doivent rester résolubles par le
+  // panier) mais ne sont ni indexables ni affichables ici.
+  const allProducts = useProducts();
+  const products = useMemo(() => catalogProducts(allProducts), [allProducts]);
   const brands = useMemo(
     () => Array.from(new Set(products.map((p) => p.brand))).sort(),
     [products],

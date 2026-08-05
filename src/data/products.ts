@@ -42,7 +42,28 @@ export type Product = {
   image: string;
   bestSeller?: boolean;
   sale?: boolean;
+  /**
+   * Configuration assemblée par un visiteur dans /builder, matérialisée en
+   * `Product` uniquement pour que le panier et le paiement puissent la
+   * résoudre par identifiant. Ce n'est PAS un article du catalogue : elle doit
+   * rester hors de toutes les surfaces publiques de listing (catégorie,
+   * recherche, accueil). Champ optionnel et additif — un produit sans ce
+   * marqueur est un produit de catalogue ordinaire.
+   */
+  customBuild?: boolean;
 };
+
+/** Vrai pour une configuration client, jamais catalogable. */
+export const isCustomBuild = (p: Product): boolean => p.customBuild === true;
+
+/**
+ * Restreint une liste aux produits réellement vendus en boutique.
+ * À appliquer sur toute surface publique qui *liste* des produits ; la
+ * résolution par identifiant (fiche produit, panier, paiement) doit au
+ * contraire continuer de voir la liste complète.
+ */
+export const catalogProducts = (list: Product[]): Product[] =>
+  list.filter((p) => !isCustomBuild(p));
 
 // Compatibilité avec l'appel `tr(value, lang)` de la version originale.
 export const tr = (v: string | undefined): string => v ?? "";

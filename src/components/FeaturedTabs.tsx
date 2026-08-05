@@ -4,6 +4,7 @@ import { SectionHead } from "./CategoryCards";
 import { useProducts } from "@/lib/useProducts";
 import { useAdminState } from "@/lib/admin-store";
 import { useLocalize } from "@/lib/i18n";
+import { catalogProducts } from "@/data/products";
 
 export function FeaturedTabs() {
   const products = useProducts();
@@ -12,8 +13,12 @@ export function FeaturedTabs() {
   const L = useLocalize();
   const first = cfg.tabs[0]?.categorySlug ?? "laptops";
   const [active, setActive] = useState<string>(first);
+  // L'onglet « builds » listerait sinon les configurations des visiteurs.
   const list = useMemo(
-    () => products.filter((p) => p.category === active).slice(0, 4),
+    () =>
+      catalogProducts(products)
+        .filter((p) => p.category === active)
+        .slice(0, 4),
     [products, active],
   );
   return (

@@ -17,7 +17,7 @@ import {
   AlertTriangle,
   AlertCircle,
 } from "lucide-react";
-import { formatDZD, categoryMeta, type Product } from "@/data/products";
+import { formatDZD, categoryMeta, isCustomBuild, type Product } from "@/data/products";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
@@ -308,7 +308,9 @@ export default function Builder() {
       if (key) specs[key] = part.name;
     }
     const headline = [byIconName(ordered, "cpu"), byIconName(ordered, "gpu")].filter(Boolean);
-    const cover = products.find((p) => p.category === "builds")?.image ?? "";
+    // Visuel emprunté à un assemblage du *catalogue* : une configuration
+    // client n'est pas une source d'illustration valable.
+    const cover = products.find((p) => p.category === "builds" && !isCustomBuild(p))?.image ?? "";
     return {
       id,
       name: `${t(categoryMeta.builds.labelKey)} — ${headline.join(" · ")}`,
@@ -320,6 +322,9 @@ export default function Builder() {
       price: total,
       stock: "in",
       image: cover,
+      // Marque la ligne comme privée : résoluble par identifiant (panier,
+      // paiement, fiche produit) mais exclue de tous les listings publics.
+      customBuild: true,
     };
   }
 

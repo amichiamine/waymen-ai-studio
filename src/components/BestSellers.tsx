@@ -5,13 +5,21 @@ import { useAdminState } from "@/lib/admin-store";
 import { useMemo } from "react";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
+import { catalogProducts } from "@/data/products";
 
 export function BestSellers() {
   const products = useProducts();
   const { siteContent } = useAdminState();
   const cfg = siteContent.bestSellers;
   const L = useLocalize();
-  const list = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
+  // Vitrine publique : jamais de configuration client (voir `catalogProducts`).
+  const list = useMemo(
+    () =>
+      catalogProducts(products)
+        .filter((p) => p.bestSeller)
+        .slice(0, 4),
+    [products],
+  );
   return (
     <section className="container-page py-16">
       <Reveal variant="up">

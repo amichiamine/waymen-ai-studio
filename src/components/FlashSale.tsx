@@ -6,6 +6,7 @@ import { useI18n, useLocalize } from "@/lib/i18n";
 import { useProducts } from "@/lib/useProducts";
 import { useAdminState } from "@/lib/admin-store";
 import { Reveal } from "@/components/Reveal";
+import { catalogProducts } from "@/data/products";
 
 function useCountdown(targetMs: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -30,7 +31,14 @@ export function FlashSale() {
   const { t: tr } = useI18n();
   const L = useLocalize();
   const products = useProducts();
-  const sale = useMemo(() => products.filter((p) => p.sale).slice(0, 4), [products]);
+  // Vitrine publique : jamais de configuration client (voir `catalogProducts`).
+  const sale = useMemo(
+    () =>
+      catalogProducts(products)
+        .filter((p) => p.sale)
+        .slice(0, 4),
+    [products],
+  );
 
   return (
     <section className="py-16" style={{ background: "#0f172a" }}>

@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { categoryMeta, type Category } from "@/data/products";
+import { catalogProducts, categoryMeta, type Category } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
 
 import { ProductCard } from "@/components/ProductCard";
@@ -50,7 +50,13 @@ function CategoryView({ cat }: { cat: Category }) {
   const [visible, setVisible] = useState(PAGE);
 
   const products = useProducts();
-  const all = useMemo(() => products.filter((p) => p.category === cat), [products, cat]);
+  // `catalogProducts` écarte les configurations composées dans /builder : elles
+  // sont stockées dans la même liste que le catalogue pour rester résolubles au
+  // panier, mais n'ont rien à faire dans la catégorie « builds » de la boutique.
+  const all = useMemo(
+    () => catalogProducts(products).filter((p) => p.category === cat),
+    [products, cat],
+  );
   const brands = useMemo(() => Array.from(new Set(all.map((p) => p.brand))), [all]);
 
   const list = useMemo(() => {
