@@ -74,13 +74,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn: AuthCtx["signIn"] = async (email, password) => {
     const found = verifyUserCredentials(email, password);
     if (!found) {
-      // Fallback : compte client (hors table admin) — on autorise l'accès si
-      // un compte de même email existe sans mot de passe, sinon on refuse.
-      const known = findUserByEmail(email);
-      if (known && !known.password) {
-        touchUserLogin(known.email);
-        persist(toMock(known));
-        return { error: null };
+      // Commodité de développement uniquement : les comptes semés (seed) n'ont
+      // pas de mot de passe en production (voir import.meta.env.DEV dans
+      // admin-store). En DEV, on autorise l'accès si un compte de même email
+      // existe sans mot de passe, afin que les comptes de démonstration soient
+      // utilisables sans avoir configuré .env.local.
+      // Ce chemin est INTERDIT en production : un compte sans mot de passe ne
+      // doit jamais permettre une connexion, quelle que soit la valeur saisie.
+      if (import.meta.env.DEV) {
+        const known = findUserByEmail(email);
+        if (known && !known.password) {
+          console.warn(
+            "[auth] auth de développement : connexion accordée sans vérification du mot de passe" +
+              " — ce chemin est absent du build de production",
+          );
+          touchUserLogin(known.email);
+          persist(toMock(known));
+          return { error: null };
+        }
       }
       return { error: { message: "Identifiants invalides." } };
     }
