@@ -7,6 +7,7 @@ import { AlertTriangle, ArrowLeft, Pencil, Plus } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useCategoryDetail, useProductList, useBrandList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useLocalize } from "@/lib/i18n";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
@@ -21,6 +22,7 @@ export default function AdminCategoryDetail() {
   const { data: products } = useProductList();
   const { data: brands } = useBrandList();
   const { can, denyReason } = usePermissions();
+  const L = useLocalize();
 
   if (loading) {
     return (
@@ -219,10 +221,10 @@ export default function AdminCategoryDetail() {
                           to={`/admin/products/${p.id}/view`}
                           className="font-medium hover:text-primary hover:underline"
                         >
-                          {p.name}
+                          {L(p.name) ?? ""}
                         </Link>
                         <p className="text-xs text-muted-foreground">
-                          {p.brand} · {p.specLine}
+                          {p.brand} · {L(p.specLine) ?? ""}
                         </p>
                       </div>
                       <Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge>
