@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Trash2, ArrowLeft } from "lucide-react";
 import { useAdminState, upsertProduct, deleteProduct, getProduct } from "@/lib/admin-store";
 import type { Product, Category } from "@/data/products";
+import { usePermissions } from "@/lib/admin-auth";
 
 const imageField = z
   .string()
@@ -142,6 +143,7 @@ function toForm(p: Product): FormValues {
 
 export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const { products, categories, brands, mediaAssets } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
 
   const nav = useNavigate();
   const { id } = useParams();
@@ -165,8 +167,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
     setErrors((e) => ({ ...e, [k]: undefined }));
   }
 
+  // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le rendu.
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const actionKey = mode === "new" ? "create" : "update";
+    if (!guard(actionKey, mode === "new" ? "Créer le produit" : "Modifier le produit")) return;
     const parsed = schema.safeParse(v);
     if (!parsed.success) {
       const errs: Partial<Record<keyof FormValues, string>> = {};
@@ -220,8 +225,10 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
     }
   }
 
+  // Niveau 2 — vérification dans le handler de suppression.
   function doDelete() {
     if (!existing) return;
+    if (!guard("delete", "Supprimer le produit")) return;
     try {
       deleteProduct(existing.id);
       toast.success(`« ${existing.name} » supprimé`);
@@ -231,6 +238,9 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
     }
   }
 
+  // Clé applicable au formulaire courant : "create" en mode new, "update" en mode edit.
+  const mutateKey = mode === "new" ? "create" : "update";
+
   return (
     <AdminPageShell
       title={mode === "new" ? "Nouveau produit" : "Modifier le produit"}
@@ -239,15 +249,25 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         <div className="flex gap-2">
           <Link to="/admin/products">
             <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="me-2 h-4 w-4" />
               Retour
             </Button>
           </Link>
+          {/* Niveau 1 — masquer / désactiver le bouton de suppression si non autorisé. */}
           {mode === "edit" && existing && (
-            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </Button>
+            can("delete") ? (
+              <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
+                <Trash2 className="me-2 h-4 w-4" />
+                Supprimer
+              </Button>
+            ) : (
+              <span title={denyReason("delete")} className="inline-flex">
+                <Button variant="destructive" disabled>
+                  <Trash2 className="me-2 h-4 w-4" />
+                  Supprimer
+                </Button>
+              </span>
+            )
           )}
         </div>
       }
@@ -466,13 +486,23 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             </Card>
           </div>
         </div>
+        {/* Niveau 1 — désactiver le bouton de soumission si l'action est interdite. */}
+        {/* Niveau 3 — expliquer pourquoi via le <span> porteur du title.          */}
         <div className="flex justify-end gap-2">
           <Link to="/admin/products">
             <Button variant="outline" type="button">
               Annuler
             </Button>
           </Link>
-          <Button type="submit">{mode === "new" ? "Créer" : "Enregistrer"}</Button>
+          {can(mutateKey) ? (
+            <Button type="submit">{mode === "new" ? "Créer" : "Enregistrer"}</Button>
+          ) : (
+            <span title={denyReason(mutateKey)} className="inline-flex">
+              <Button type="submit" disabled>
+                {mode === "new" ? "Créer" : "Enregistrer"}
+              </Button>
+            </span>
+          )}
         </div>
       </form>
       <ConfirmDialog

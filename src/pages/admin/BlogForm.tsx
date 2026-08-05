@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
 import { useAdminState, upsertBlogPost, type BlogPost } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 type Mode = "new" | "edit";
 
@@ -33,7 +34,7 @@ function slugify(s: string) {
   return s
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
     .slice(0, 120);
@@ -43,7 +44,14 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
   const { blogPosts } = useAdminState();
+  // Niveau 1, 2, 3 — toute la garde vit ici, dans le composant qui contient
+  // les handlers de mutation. BlogNew et BlogEdit sont de simples enveloppes.
+  const { can, guard, denyReason } = usePermissions();
   const existing = mode === "edit" ? blogPosts.find((p) => p.id === id) : undefined;
+
+  // La permission requise dépend du mode : create pour un nouvel article,
+  // update pour une édition (y compris passage brouillon → publié).
+  const permission = mode === "new" ? "create" : "update";
 
   const [form, setForm] = useState(() => ({
     title: existing?.title ?? "",
@@ -67,7 +75,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
       <AdminPageShell title="Article introuvable">
         <Link to="/admin/blog">
           <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+            <ArrowLeft className="me-2 h-4 w-4" /> Retour
           </Button>
         </Link>
       </AdminPageShell>
@@ -84,6 +92,8 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   }
 
   function onSubmit(nextStatus?: "draft" | "published") {
+    // Niveau 2 — vérification dans l'action, pas seulement dans le rendu.
+    if (!guard(permission, mode === "new" ? "Créer l'article" : "Modifier l'article")) return;
     const candidate = { ...form, status: nextStatus ?? form.status };
     const parsed = schema.safeParse(candidate);
     if (!parsed.success) {
@@ -127,6 +137,8 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
     nav("/admin/blog");
   }
 
+  const saveDisabled = !can(permission);
+
   return (
     <AdminPageShell
       title={mode === "edit" ? "Éditer l'article" : "Nouvel article"}
@@ -134,7 +146,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
       actions={
         <Link to="/admin/blog">
           <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+            <ArrowLeft className="me-2 h-4 w-4" /> Retour
           </Button>
         </Link>
       }
@@ -150,6 +162,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                 value={form.title}
                 onChange={(e) => update("title", e.target.value)}
                 placeholder="Titre de l'article"
+                disabled={saveDisabled}
               />
             </FieldRow>
             <FieldRow label="Extrait" error={errors.excerpt}>
@@ -158,6 +171,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                 value={form.excerpt}
                 onChange={(e) => update("excerpt", e.target.value)}
                 placeholder="Court résumé"
+                disabled={saveDisabled}
               />
             </FieldRow>
             <FieldRow label="Corps (Markdown simple)" error={errors.content}>
@@ -166,6 +180,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                 value={form.content}
                 onChange={(e) => update("content", e.target.value)}
                 placeholder="Contenu de l'article. Utilisez # Titre, ## Sous-titre, **gras**, listes 1. 2. 3."
+                disabled={saveDisabled}
               />
             </FieldRow>
           </CardContent>
@@ -184,6 +199,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                     setTouchedSlug(true);
                   }}
                   placeholder="mon-article"
+                  disabled={saveDisabled}
                 />
               </FieldRow>
               <FieldRow label="Auteur" error={errors.author}>
@@ -191,6 +207,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                   value={form.author}
                   onChange={(e) => update("author", e.target.value)}
                   placeholder="Nom de l'auteur"
+                  disabled={saveDisabled}
                 />
               </FieldRow>
               <FieldRow label="Étiquettes (séparées par des virgules)" error={errors.tagsRaw}>
@@ -198,6 +215,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                   value={form.tagsRaw}
                   onChange={(e) => update("tagsRaw", e.target.value)}
                   placeholder="tech, guide"
+                  disabled={saveDisabled}
                 />
               </FieldRow>
               <div className="pt-2 text-xs text-muted-foreground">
@@ -215,6 +233,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                 value={form.cover}
                 onChange={(e) => update("cover", e.target.value)}
                 placeholder="https://…"
+                disabled={saveDisabled}
               />
               {errors.cover && <p className="text-xs text-destructive">{errors.cover}</p>}
               {form.cover ? (
@@ -236,13 +255,18 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
         </div>
       </div>
 
+      {/* Niveau 1 — affichage + Niveau 3 — infobulle sur le <span> */}
       <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="outline" onClick={() => onSubmit("draft")}>
-          <Save className="mr-2 h-4 w-4" /> Enregistrer en brouillon
-        </Button>
-        <Button onClick={() => onSubmit("published")}>
-          <Save className="mr-2 h-4 w-4" /> Publier
-        </Button>
+        <span title={denyReason(permission)} className="inline-flex">
+          <Button variant="outline" disabled={saveDisabled} onClick={() => onSubmit("draft")}>
+            <Save className="me-2 h-4 w-4" /> Enregistrer en brouillon
+          </Button>
+        </span>
+        <span title={denyReason(permission)} className="inline-flex">
+          <Button disabled={saveDisabled} onClick={() => onSubmit("published")}>
+            <Save className="me-2 h-4 w-4" /> Publier
+          </Button>
+        </span>
       </div>
     </AdminPageShell>
   );

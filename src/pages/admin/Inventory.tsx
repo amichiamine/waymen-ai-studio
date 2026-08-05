@@ -44,6 +44,7 @@ import {
   setProductStockQty,
 } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
+import { usePermissions } from "@/lib/admin-auth";
 
 import { toast } from "sonner";
 
@@ -56,6 +57,7 @@ const VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
 
 export default function AdminInventory() {
   const { products, stockMovements, siteSettings } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "in" | "low" | "out">("all");
   const [edit, setEdit] = useState<Product | null>(null);
@@ -122,8 +124,10 @@ export default function AdminInventory() {
     setQty(String(p.stockQty ?? 0));
   };
 
+  // Niveau 2 — vérification dans le handler avant toute mutation de stock.
   const saveAdjust = () => {
     if (!edit) return;
+    if (!guard("update", "Ajuster le stock")) return;
     const d = parseInt(delta, 10) || 0;
     const targetQty = qty === "" ? undefined : Math.max(0, parseInt(qty, 10) || 0);
     if (d !== 0) {
@@ -151,7 +155,7 @@ export default function AdminInventory() {
             key={c.label}
             type="button"
             onClick={() => setStatusFilter(c.filter)}
-            className={`text-left ${statusFilter === c.filter ? "ring-2 ring-primary rounded-lg" : ""}`}
+            className={`text-start ${statusFilter === c.filter ? "ring-2 ring-primary rounded-lg" : ""}`}
           >
             <Card>
               <CardContent className="flex items-center gap-4 p-5">
@@ -171,19 +175,19 @@ export default function AdminInventory() {
       <Tabs defaultValue="stock">
         <TabsList>
           <TabsTrigger value="stock">
-            <PackageCheck className="mr-2 h-4 w-4" /> Produits
+            <PackageCheck className="me-2 h-4 w-4" /> Produits
           </TabsTrigger>
           <TabsTrigger value="movements">
-            <History className="mr-2 h-4 w-4" /> Mouvements ({stockMovements.length})
+            <History className="me-2 h-4 w-4" /> Mouvements ({stockMovements.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="stock" className="space-y-4">
           <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Rechercher un produit…"
-              className="pl-9"
+              className="ps-9"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -195,9 +199,9 @@ export default function AdminInventory() {
                   <TableHead>Produit</TableHead>
                   <TableHead>Marque</TableHead>
                   <TableHead>Catégorie</TableHead>
-                  <TableHead className="text-right">Qté</TableHead>
+                  <TableHead className="text-end">Qté</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead className="text-end">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -211,16 +215,26 @@ export default function AdminInventory() {
                     </TableCell>
                     <TableCell className="text-sm">{p.brand}</TableCell>
                     <TableCell className="text-sm capitalize">{p.category}</TableCell>
-                    <TableCell className="text-right font-mono text-sm">
+                    <TableCell className="text-end font-mono text-sm">
                       {p.stockQty ?? 0}
                     </TableCell>
                     <TableCell>
                       <Badge variant={VARIANT[p.stock]}>{LABEL[p.stock]}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
-                        Ajuster
-                      </Button>
+                    {/* Niveau 1 — désactiver le bouton Ajuster si update est interdit. */}
+                    {/* Niveau 3 — infobulle portée par le <span>.                      */}
+                    <TableCell className="text-end">
+                      {can("update") ? (
+                        <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
+                          Ajuster
+                        </Button>
+                      ) : (
+                        <span title={denyReason("update")} className="inline-flex">
+                          <Button variant="outline" size="sm" disabled>
+                            Ajuster
+                          </Button>
+                        </span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -246,7 +260,7 @@ export default function AdminInventory() {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Produit</TableHead>
-                  <TableHead className="text-right">Delta</TableHead>
+                  <TableHead className="text-end">Delta</TableHead>
                   <TableHead>Raison</TableHead>
                 </TableRow>
               </TableHeader>
@@ -258,7 +272,7 @@ export default function AdminInventory() {
                     </TableCell>
                     <TableCell className="text-sm">{m.productName}</TableCell>
                     <TableCell
-                      className={`text-right font-mono text-sm ${m.delta < 0 ? "text-destructive" : "text-emerald-600"}`}
+                      className={`text-end font-mono text-sm ${m.delta < 0 ? "text-destructive" : "text-emerald-600"}`}
                     >
                       {m.delta > 0 ? "+" : ""}
                       {m.delta}

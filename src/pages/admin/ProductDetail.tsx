@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Eye, Pencil, Tag, Boxes, Package } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
@@ -17,6 +18,7 @@ const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible
 export default function AdminProductDetail() {
   const { id } = useParams();
   const { products, categories, brands, orders, reviews } = useAdminState();
+  const { can, denyReason } = usePermissions();
   const product = products.find((p) => p.id === id);
 
   if (!product) {
@@ -26,7 +28,7 @@ export default function AdminProductDetail() {
         actions={
           <Link to="/admin/products">
             <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="me-2 h-4 w-4" />
               Retour
             </Button>
           </Link>
@@ -66,22 +68,33 @@ export default function AdminProductDetail() {
         <div className="flex gap-2">
           <Link to="/admin/products">
             <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="me-2 h-4 w-4" />
               Retour
             </Button>
           </Link>
           <Link to={`/product/${product.id}`} target="_blank" rel="noreferrer">
             <Button variant="outline">
-              <Eye className="mr-2 h-4 w-4" />
+              <Eye className="me-2 h-4 w-4" />
               Fiche publique
             </Button>
           </Link>
-          <Link to={`/admin/products/${product.id}`}>
-            <Button>
-              <Pencil className="mr-2 h-4 w-4" />
-              Modifier
-            </Button>
-          </Link>
+          {/* Niveau 1 — désactiver le bouton Modifier si update est interdit.    */}
+          {/* Niveau 3 — le <span> porte l'infobulle (pointer-events-none sinon). */}
+          {can("update") ? (
+            <Link to={`/admin/products/${product.id}`}>
+              <Button>
+                <Pencil className="me-2 h-4 w-4" />
+                Modifier
+              </Button>
+            </Link>
+          ) : (
+            <span title={denyReason("update")} className="inline-flex">
+              <Button disabled>
+                <Pencil className="me-2 h-4 w-4" />
+                Modifier
+              </Button>
+            </span>
+          )}
         </div>
       }
     >

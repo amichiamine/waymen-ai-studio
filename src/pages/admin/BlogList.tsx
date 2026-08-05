@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { useAdminState, deleteBlogPost } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminBlogList() {
   const { blogPosts } = useAdminState();
+  const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
@@ -30,16 +32,34 @@ export default function AdminBlogList() {
 
   const target = blogPosts.find((p) => p.id === pendingDelete);
 
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    // Niveau 2 — la vérification vit dans l'action, pas seulement dans le rendu.
+    if (!guard("delete", "Supprimer l'article")) return;
+    deleteBlogPost(pendingDelete);
+    toast.success("Article supprimé");
+  }
+
   return (
     <AdminPageShell
       title="Blog"
       description={`${blogPosts.length} article${blogPosts.length > 1 ? "s" : ""} · ${blogPosts.filter((p) => p.status === "published").length} publié(s).`}
       actions={
-        <Link to="/admin/blog/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Nouvel article
-          </Button>
-        </Link>
+        // Niveau 1 — affichage. Niveau 3 — infobulle sur le <span> car un bouton
+        // disabled a pointer-events-none et n'affiche jamais son propre title.
+        can("create") ? (
+          <Link to="/admin/blog/new">
+            <Button>
+              <Plus className="me-2 h-4 w-4" /> Nouvel article
+            </Button>
+          </Link>
+        ) : (
+          <span title={denyReason("create")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Nouvel article
+            </Button>
+          </span>
+        )
       }
     >
       <div className="max-w-md">
@@ -87,18 +107,37 @@ export default function AdminBlogList() {
                   {p.status === "published" && (
                     <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer">
                       <Button size="sm" variant="ghost">
-                        <Eye className="mr-2 h-4 w-4" /> Voir
+                        <Eye className="me-2 h-4 w-4" /> Voir
                       </Button>
                     </a>
                   )}
-                  <Link to={`/admin/blog/${p.id}`}>
-                    <Button size="sm" variant="outline">
-                      <Pencil className="mr-2 h-4 w-4" /> Éditer
+                  {can("update") ? (
+                    <Link to={`/admin/blog/${p.id}`}>
+                      <Button size="sm" variant="outline">
+                        <Pencil className="me-2 h-4 w-4" /> Éditer
+                      </Button>
+                    </Link>
+                  ) : (
+                    <span title={denyReason("update")} className="inline-flex">
+                      <Button size="sm" variant="outline" disabled aria-label="Éditer">
+                        <Pencil className="me-2 h-4 w-4" /> Éditer
+                      </Button>
+                    </span>
+                  )}
+                  <span
+                    title={denyReason("delete") ?? "Supprimer"}
+                    className="inline-flex align-middle"
+                  >
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      aria-label="Supprimer"
+                      disabled={!can("delete")}
+                      onClick={() => setPendingDelete(p.id)}
+                    >
+                      <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer
                     </Button>
-                  </Link>
-                  <Button size="sm" variant="ghost" onClick={() => setPendingDelete(p.id)}>
-                    <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Supprimer
-                  </Button>
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -114,12 +153,7 @@ export default function AdminBlogList() {
         title={target ? `Supprimer « ${target.title} » ?` : "Supprimer l'article ?"}
         description="Cette action est irréversible."
         destructive
-        onConfirm={() => {
-          if (pendingDelete) {
-            deleteBlogPost(pendingDelete);
-            toast.success("Article supprimé");
-          }
-        }}
+        onConfirm={confirmDelete}
       />
     </AdminPageShell>
   );
