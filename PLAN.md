@@ -693,6 +693,65 @@ $db->commit();
 
 ---
 
+### Phase 4 — EN COURS (branche `chantier/phase-4-api`)
+
+#### Vague 4.1 — LIVRÉE : la fondation
+
+3 commits, 1 agent fort. **21 tables, 172 colonnes, 22 index**, installées pour
+de vrai sur les **deux pilotes**.
+
+Validé à froid par l'orchestrateur, pas sur rapport : `install.php` exécuté sur
+SQLite et sur MySQL, seed appliqué, serveur lancé, et `GET /products` interrogé
+en HTTP réel sur les deux. **Résultats rigoureusement identiques** — même
+enveloppe, même pagination, même tri, y compris sur une recherche en arabe dans
+les champs `Localized`. `/health` confirme le pilote actif, 404 et 405 sont bien
+enveloppés.
+
+Le vérificateur de parité des schémas passe, et il a été **testé en négatif** :
+en modifiant une nullabilité et en retirant un index, il signale les deux écarts
+et échoue. Il entrera dans la CI.
+
+#### Décision : aucune dépendance Composer
+
+Ni Slim, ni `vendor/`. Un routeur maison couvre les 70 routes du contrat.
+Motif : l'hébergement n'est pas acquis, et téléverser plusieurs mégaoctets de
+dépendances dont la compatibilité avec la version PHP de l'hébergeur est
+inconnue est exactement la surprise que le commanditaire veut éviter. Déployer
+revient à copier le dossier `api/`.
+
+#### Le piège trouvé en exécution, pas en raisonnement
+
+Avec `ATTR_EMULATE_PREPARES=false`, **MySQL refuse un paramètre nommé réutilisé**
+là où SQLite l'accepte sans broncher. Le filtre de recherche fonctionnait donc
+en SQLite et échouait en MySQL. Corrigé, et consigné comme piège n°1 de
+`docs/BACKEND.md`.
+
+C'est la justification concrète du double pilote : ce défaut n'aurait été
+découvert qu'en production sur un hébergeur MySQL. Avoir les deux moteurs
+installés en développement l'a fait apparaître immédiatement.
+
+#### Trois écarts assumés, consignés dans `docs/BACKEND.md` §9
+
+1. `home_reviews` n'est pas une table mais une section JSON de `site_content` —
+   contenu éditorial semi-structuré, conforme à la répartition SQLite/JSON.
+2. `categories.label` et `.description` restent en TEXTE et non en JSON :
+   `AdminCategory` les déclare en `string` nu, les passer en `Localized`
+   exigerait de toucher au frontend. À arbitrer avec la vague `/categories`.
+3. Les `DEFAULT ''` sur colonnes TEXT ont été retirés des deux schémas, MySQL
+   les interdisant.
+
+#### Reste — vagues 4.2 à 4.8
+
+- [ ] 4.2 — répliquer les contrôleurs des autres ressources sur le pilote `/products`
+- [ ] 4.3 — authentification : sessions PHP, cookie `httpOnly`, Argon2id avec repli bcrypt
+- [ ] 4.4 — décompte de stock atomique branché sur le tunnel d'achat
+- [ ] 4.5 — outbox et CRON d'émission, snapshots de facture, téléversement de médias, emails SMTP
+- [ ] 4.6 — script de migration des données seed
+- [ ] 4.7 — durcissement : emplacement des fichiers, `.htaccess`, sauvegarde
+- [ ] 4.8 — bascule `VITE_API_MODE=http` et recette de bout en bout
+
+---
+
 ## 9. Phase 5 — Mise en production
 
 | Vague | Agent         | Tâche                                                                                                  |
