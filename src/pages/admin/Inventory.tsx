@@ -46,6 +46,15 @@ import {
 } from "@/data-provider";
 import type { Product } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
+import { useLocalize, localize, type Localized } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+
+/** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
+const haystack = (v: Localized<string> | undefined): string =>
+  (typeof v === "object" && v !== null ? [v.fr, v.en, v.ar] : [v])
+    .filter((s): s is string => typeof s === "string")
+    .join(" ")
+    .toLowerCase();
 
 import { toast } from "sonner";
 
@@ -66,6 +75,8 @@ export default function AdminInventory() {
   const { data: siteSettings } = useSiteSettings();
   const { adjustStock } = useInventoryMutations();
   const { can, guard, denyReason } = usePermissions();
+  const { lang } = useI18n();
+  const L = useLocalize();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "in" | "low" | "out">("all");
   const [edit, setEdit] = useState<Product | null>(null);
@@ -88,7 +99,8 @@ export default function AdminInventory() {
     return products.filter(
       (p) =>
         (statusFilter === "all" || p.stock === statusFilter) &&
-        (!n || p.name.toLowerCase().includes(n) || p.brand.toLowerCase().includes(n)),
+        // Recherche dans toutes les variantes linguistiques — recette LOCALIZED-DATA §4.
+        (!n || haystack(p.name).includes(n) || p.brand.toLowerCase().includes(n)),
     );
   }, [q, statusFilter, products]);
 
@@ -147,7 +159,7 @@ export default function AdminInventory() {
     setSaving(true);
     try {
       await adjustStock(edit.id, { delta: d, reason: reason.trim() });
-      toast.success(`Stock mis à jour — ${edit.name}`);
+      toast.success(`Stock mis à jour — ${localize(edit.name, lang) ?? ""}`);
       setEdit(null);
     } catch (cause) {
       const err = toApiError(cause);
@@ -287,7 +299,7 @@ export default function AdminInventory() {
                           loading="lazy"
                           className="h-8 w-8 rounded object-cover"
                         />
-                        <span className="font-medium">{p.name}</span>
+                        <span className="font-medium">{L(p.name) ?? ""}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{p.brand}</TableCell>
@@ -416,7 +428,7 @@ export default function AdminInventory() {
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ajuster le stock — {edit?.name}</DialogTitle>
+            <DialogTitle>Ajuster le stock — {localize(edit?.name, lang) ?? ""}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>

@@ -25,6 +25,15 @@ import {
 import { formatDZD, isCustomBuild, type Category } from "@/data/products";
 import { useProductList, useProductMutations, useCategoryList, toApiError } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useLocalize, localize, type Localized } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+
+/** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
+const haystack = (v: Localized<string> | undefined): string =>
+  (typeof v === "object" && v !== null ? [v.fr, v.en, v.ar] : [v])
+    .filter((s): s is string => typeof s === "string")
+    .join(" ")
+    .toLowerCase();
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
@@ -43,6 +52,8 @@ export default function AdminProducts() {
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can, guard, denyReason } = usePermissions();
   const { remove } = useProductMutations();
+  const { lang } = useI18n();
+  const L = useLocalize();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"all" | Category>("all");
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
@@ -53,8 +64,9 @@ export default function AdminProducts() {
     return products.filter((p) => {
       if (cat !== "all" && p.category !== cat) return false;
       if (!needle) return true;
+      // Recherche dans toutes les variantes linguistiques — recette LOCALIZED-DATA §4.
       return (
-        p.name.toLowerCase().includes(needle) ||
+        haystack(p.name).includes(needle) ||
         p.brand.toLowerCase().includes(needle) ||
         p.id.toLowerCase().includes(needle)
       );
@@ -227,7 +239,7 @@ export default function AdminProducts() {
                     to={`/admin/products/${p.id}/view`}
                     className="font-medium hover:text-primary hover:underline"
                   >
-                    {p.name}
+                    {L(p.name) ?? ""}
                   </Link>
                   {/* Les configurations composées dans /builder restent
                       visibles ici — l'administrateur doit savoir ce que ses
@@ -238,7 +250,9 @@ export default function AdminProducts() {
                       Config. client
                     </Badge>
                   )}
-                  <div className="text-xs text-muted-foreground line-clamp-1">{p.specLine}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-1">
+                    {L(p.specLine) ?? ""}
+                  </div>
                 </TableCell>
                 <TableCell className="text-sm">{p.brand}</TableCell>
                 <TableCell className="text-sm capitalize">{p.category}</TableCell>
@@ -274,7 +288,7 @@ export default function AdminProducts() {
                       size="icon"
                       aria-label="Supprimer"
                       disabled={!can("delete")}
-                      onClick={() => setToDelete({ id: p.id, name: p.name })}
+                      onClick={() => setToDelete({ id: p.id, name: localize(p.name, lang) ?? "" })}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>

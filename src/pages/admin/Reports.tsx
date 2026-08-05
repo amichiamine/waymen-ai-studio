@@ -23,6 +23,7 @@ import {
 } from "@/data-provider";
 import { formatDZD } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
+import { localize } from "@/lib/i18n";
 import { toast } from "sonner";
 
 // Les exports CSV sont des opérations de LECTURE : ils ne mutent aucune donnée.
@@ -177,7 +178,10 @@ export default function AdminReports() {
     for (const p of products)
       rows.push([
         p.id,
-        p.name,
+        // Export CSV : pas de langue active dans un fichier tabulaire.
+        // On choisit le français, langue de référence du back-office, avec repli
+        // sur la première variante disponible via localize(v, "fr").
+        localize(p.name, "fr") ?? "",
         p.brand,
         p.category,
         p.price,
