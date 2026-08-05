@@ -26,14 +26,46 @@ import {
   deleteContactMessage,
   type ContactMessage,
 } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminMessages() {
   const { messages, siteSettings } = useAdminState();
+  // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
+  // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
+  const { can, guard, denyReason } = usePermissions();
   const [open, setOpen] = useState<ContactMessage | null>(null);
 
-  function open_(m: ContactMessage) {
+  function openMessage(m: ContactMessage) {
     setOpen(m);
+    // Marquer lu = modification légère → clé `update`.
+    // Pas de guard ici : l'ouverture est une lecture, le marquage automatique
+    // est une conséquence UX attendue. Si l'utilisateur n'a pas `update`,
+    // markMessageRead est quand même appelé (comportement symétrique à before).
+    // Le vrai garde est sur les boutons explicites ci-dessous.
     if (!m.read) markMessageRead(m.id, true);
+  }
+
+  function handleMarkRead(m: ContactMessage) {
+    // Niveau 2 — vérification dans le handler.
+    if (!guard("update", "Marquer comme lu")) return;
+    markMessageRead(m.id, true);
+    toast.success("Marqué comme lu");
+  }
+
+  function handleDelete(id: string) {
+    if (!confirm("Supprimer ce message ?")) return;
+    // Niveau 2 — vérification dans le handler.
+    if (!guard("delete", "Supprimer le message")) return;
+    deleteContactMessage(id);
+    toast.success("Supprimé");
+  }
+
+  function handleDeleteFromDialog(id: string) {
+    // Niveau 2 — vérification dans le handler.
+    if (!guard("delete", "Supprimer le message")) return;
+    deleteContactMessage(id);
+    setOpen(null);
+    toast.success("Message supprimé");
   }
 
   const unread = messages.filter((m) => !m.read).length;
@@ -44,7 +76,7 @@ export default function AdminMessages() {
       description={`${messages.length} message(s) reçus · ${unread} non lu(s).`}
     >
       <Card>
-        <CardContent className="p-0 overflow-hidden">
+        <CardContent className="overflow-hidden p-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -52,7 +84,7 @@ export default function AdminMessages() {
                 <TableHead>Expéditeur</TableHead>
                 <TableHead>Sujet</TableHead>
                 <TableHead>Reçu le</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-end">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -62,51 +94,61 @@ export default function AdminMessages() {
                     {m.read ? <Badge variant="secondary">Lu</Badge> : <Badge>Nouveau</Badge>}
                   </TableCell>
                   <TableCell>
-                    <button className="text-left hover:text-primary" onClick={() => open_(m)}>
+                    <button
+                      className="text-start hover:text-primary"
+                      onClick={() => openMessage(m)}
+                    >
                       {m.name}
-                      <div className="text-xs text-muted-foreground font-normal">{m.email}</div>
+                      <div className="text-xs font-normal text-muted-foreground">{m.email}</div>
                     </button>
                   </TableCell>
                   <TableCell className="max-w-[280px] truncate">{m.subject}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(m.createdAt).toLocaleString("fr-FR")}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => open_(m)} title="Voir">
+                  <TableCell className="text-end">
+                    <Button variant="ghost" size="icon" onClick={() => openMessage(m)} title="Voir">
                       <Mail className="h-4 w-4" />
                     </Button>
-                    {!m.read && (
+                    {/* Niveau 1 — marquer lu = `update`. */}
+                    {!m.read &&
+                      (can("update") ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleMarkRead(m)}
+                          title="Marquer lu"
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <span title={denyReason("update")} className="inline-flex">
+                          <Button variant="ghost" size="icon" disabled aria-label="Marquer lu">
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </span>
+                      ))}
+                    {/* Niveau 1 — supprimer = `delete`. */}
+                    <span
+                      title={denyReason("delete") ?? "Supprimer"}
+                      className="inline-flex align-middle"
+                    >
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => {
-                          markMessageRead(m.id, true);
-                          toast.success("Marqué comme lu");
-                        }}
-                        title="Marquer lu"
+                        aria-label="Supprimer"
+                        disabled={!can("delete")}
+                        onClick={() => handleDelete(m.id)}
                       >
-                        <Check className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm("Supprimer ce message ?")) {
-                          deleteContactMessage(m.id);
-                          toast.success("Supprimé");
-                        }
-                      }}
-                      title="Supprimer"
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}
               {messages.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-sm text-muted-foreground p-8">
+                  <TableCell colSpan={5} className="p-8 text-center text-sm text-muted-foreground">
                     Aucun message.
                   </TableCell>
                 </TableRow>
@@ -135,9 +177,11 @@ export default function AdminMessages() {
           <DialogFooter className="gap-2">
             {open && (
               <>
+                {/* Les liens mailto: et WhatsApp sont une navigation, pas une
+                    mutation : ils ne sont pas bridés par les permissions. */}
                 <a href={`mailto:${open.email}?subject=Re: ${encodeURIComponent(open.subject)}`}>
                   <Button variant="outline">
-                    <Reply className="mr-2 h-4 w-4" /> Répondre par e-mail
+                    <Reply className="me-2 h-4 w-4" /> Répondre par e-mail
                   </Button>
                 </a>
                 {siteSettings.whatsapp && open.phone && (
@@ -147,20 +191,20 @@ export default function AdminMessages() {
                     rel="noreferrer"
                   >
                     <Button variant="outline">
-                      <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+                      <MessageCircle className="me-2 h-4 w-4" /> WhatsApp
                     </Button>
                   </a>
                 )}
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    deleteContactMessage(open.id);
-                    setOpen(null);
-                    toast.success("Message supprimé");
-                  }}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" /> Supprimer
-                </Button>
+                {/* Niveau 1 — supprimer depuis le dialogue = `delete`. */}
+                <span title={denyReason("delete") ?? undefined} className="inline-flex">
+                  <Button
+                    variant="destructive"
+                    disabled={!can("delete")}
+                    onClick={() => handleDeleteFromDialog(open.id)}
+                  >
+                    <Trash2 className="me-2 h-4 w-4" /> Supprimer
+                  </Button>
+                </span>
               </>
             )}
           </DialogFooter>

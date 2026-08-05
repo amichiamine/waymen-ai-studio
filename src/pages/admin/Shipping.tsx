@@ -28,7 +28,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Trash2, Pencil, Search } from "lucide-react";
 import { WILAYAS } from "@/data/wilayas";
@@ -39,11 +38,22 @@ import {
   updateShippingSettings,
   type ShippingRate,
 } from "@/lib/admin-store";
+import { usePermissions } from "@/lib/admin-auth";
 
-const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
+// Les tarifs par wilaya, le franco de port et les modes de livraison sont des
+// réglages commerciaux de boutique. Toutes les mutations utilisent
+// `manageSettings` (rôle minimum : admin), conformément à la matrice
+// PERMISSIONS.md §2 et §3.3 : « Écran /admin/settings, livraison, paiements. »
+// On n'utilise PAS `create`/`update`/`delete` génériques qui ciblent le
+// contenu éditorial, pas les réglages.
+
+const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 
 export default function AdminShipping() {
   const { shippingRates, shippingSettings } = useAdminState();
+  // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
+  // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
+  const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ShippingRate | null>(null);
@@ -79,6 +89,8 @@ export default function AdminShipping() {
     setOpen(true);
   }
   function save() {
+    // Niveau 2 — vérification dans le handler avant toute mutation.
+    if (!guard("manageSettings", editing ? "Modifier le tarif" : "Ajouter un tarif")) return;
     if (!form.wilayaCode) {
       toast.error("Choisissez une wilaya");
       return;
@@ -101,8 +113,27 @@ export default function AdminShipping() {
       return;
     }
     if (!confirm(`Supprimer le tarif pour ${wilayaLabel(code)} ?`)) return;
+    // Niveau 2 — vérification dans le handler.
+    if (!guard("manageSettings", "Supprimer le tarif")) return;
     deleteShippingRate(code);
     toast.success("Tarif supprimé");
+  }
+  function handleFreeShippingChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // Niveau 2 — vérification dans le handler.
+    if (!guard("manageSettings", "Modifier le franco de port")) return;
+    updateShippingSettings({
+      freeShippingThreshold: Math.max(0, Number(e.target.value) || 0),
+    });
+  }
+  function handleHomeToggle(v: boolean) {
+    // Niveau 2 — vérification dans le handler.
+    if (!guard("manageSettings", "Activer / désactiver la livraison à domicile")) return;
+    updateShippingSettings({ homeEnabled: v });
+  }
+  function handleDeskToggle(v: boolean) {
+    // Niveau 2 — vérification dans le handler.
+    if (!guard("manageSettings", "Activer / désactiver le retrait bureau")) return;
+    updateShippingSettings({ deskEnabled: v });
   }
 
   const availableWilayas = WILAYAS.filter(
@@ -114,9 +145,18 @@ export default function AdminShipping() {
       title="Livraison"
       description="Tarifs par wilaya et règles de livraison."
       actions={
-        <Button onClick={openNew}>
-          <Plus className="mr-2 h-4 w-4" /> Ajouter un tarif
-        </Button>
+        // Niveau 1 — affichage. Niveau 3 — le <span> porte l'infobulle.
+        can("manageSettings") ? (
+          <Button onClick={openNew}>
+            <Plus className="me-2 h-4 w-4" /> Ajouter un tarif
+          </Button>
+        ) : (
+          <span title={denyReason("manageSettings")} className="inline-flex">
+            <Button disabled>
+              <Plus className="me-2 h-4 w-4" /> Ajouter un tarif
+            </Button>
+          </span>
+        )
       }
     >
       <div className="grid gap-4 lg:grid-cols-3">
@@ -126,15 +166,16 @@ export default function AdminShipping() {
           </CardHeader>
           <CardContent className="space-y-2">
             <Label className="text-xs">Livraison offerte à partir de (DA)</Label>
-            <Input
-              type="number"
-              value={shippingSettings.freeShippingThreshold}
-              onChange={(e) =>
-                updateShippingSettings({
-                  freeShippingThreshold: Math.max(0, Number(e.target.value) || 0),
-                })
-              }
-            />
+            {/* Niveau 3 — le <span> porte l'infobulle car un Input disabled
+                a pointer-events-none. */}
+            <span title={denyReason("manageSettings") ?? undefined} className="block">
+              <Input
+                type="number"
+                value={shippingSettings.freeShippingThreshold}
+                disabled={!can("manageSettings")}
+                onChange={handleFreeShippingChange}
+              />
+            </span>
             <p className="text-xs text-muted-foreground">
               Mettre 0 pour désactiver la livraison offerte.
             </p>
@@ -146,10 +187,14 @@ export default function AdminShipping() {
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <Label>Activée</Label>
-            <Switch
-              checked={shippingSettings.homeEnabled}
-              onCheckedChange={(v) => updateShippingSettings({ homeEnabled: v })}
-            />
+            {/* Niveau 3 — le <span> porte l'infobulle. */}
+            <span title={denyReason("manageSettings") ?? undefined} className="inline-flex">
+              <Switch
+                checked={shippingSettings.homeEnabled}
+                disabled={!can("manageSettings")}
+                onCheckedChange={handleHomeToggle}
+              />
+            </span>
           </CardContent>
         </Card>
         <Card>
@@ -158,19 +203,22 @@ export default function AdminShipping() {
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <Label>Activé</Label>
-            <Switch
-              checked={shippingSettings.deskEnabled}
-              onCheckedChange={(v) => updateShippingSettings({ deskEnabled: v })}
-            />
+            <span title={denyReason("manageSettings") ?? undefined} className="inline-flex">
+              <Switch
+                checked={shippingSettings.deskEnabled}
+                disabled={!can("manageSettings")}
+                onCheckedChange={handleDeskToggle}
+              />
+            </span>
           </CardContent>
         </Card>
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher une wilaya…"
-          className="pl-9"
+          className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -182,8 +230,8 @@ export default function AdminShipping() {
             <TableRow>
               <TableHead>Code</TableHead>
               <TableHead>Wilaya</TableHead>
-              <TableHead className="text-right">Domicile</TableHead>
-              <TableHead className="text-right">Bureau</TableHead>
+              <TableHead className="text-end">Domicile</TableHead>
+              <TableHead className="text-end">Bureau</TableHead>
               <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -194,16 +242,42 @@ export default function AdminShipping() {
                   {r.wilayaCode === "*" ? <Badge>défaut</Badge> : r.wilayaCode}
                 </TableCell>
                 <TableCell>{wilayaLabel(r.wilayaCode)}</TableCell>
-                <TableCell className="text-right">{fmt(r.home)}</TableCell>
-                <TableCell className="text-right">{fmt(r.desk)}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(r)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  {r.wilayaCode !== "*" && (
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(r.wilayaCode)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                <TableCell className="text-end">{fmt(r.home)}</TableCell>
+                <TableCell className="text-end">{fmt(r.desk)}</TableCell>
+                <TableCell className="text-end">
+                  {/* Niveau 1 — bouton modifier. */}
+                  {can("manageSettings") ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEdit(r)}
+                      title="Modifier"
+                    >
+                      <Pencil className="h-4 w-4" />
                     </Button>
+                  ) : (
+                    <span title={denyReason("manageSettings")} className="inline-flex">
+                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </span>
+                  )}
+                  {r.wilayaCode !== "*" && (
+                    /* Niveau 1 — bouton supprimer. */
+                    <span
+                      title={denyReason("manageSettings") ?? "Supprimer"}
+                      className="inline-flex align-middle"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Supprimer"
+                        disabled={!can("manageSettings")}
+                        onClick={() => onDelete(r.wilayaCode)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </span>
                   )}
                 </TableCell>
               </TableRow>
