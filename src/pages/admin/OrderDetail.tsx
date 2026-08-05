@@ -296,9 +296,7 @@ export default function AdminOrderDetail() {
                   </SelectContent>
                 </Select>
               </span>
-              {saving && (
-                <p className="text-xs text-muted-foreground">Mise à jour en cours…</p>
-              )}
+              {saving && <p className="text-xs text-muted-foreground">Mise à jour en cours…</p>}
             </CardContent>
           </Card>
           <Card>

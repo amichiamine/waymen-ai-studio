@@ -41,10 +41,7 @@ function OrderRowSkeleton() {
     <TableRow>
       {[60, 120, 80, 80, 80, 70, 40].map((w, i) => (
         <TableCell key={i}>
-          <div
-            className="h-4 animate-pulse rounded bg-muted"
-            style={{ width: `${w}px` }}
-          />
+          <div className="h-4 animate-pulse rounded bg-muted" style={{ width: `${w}px` }} />
         </TableCell>
       ))}
     </TableRow>
