@@ -40,33 +40,52 @@ export default defineConfig({
         // invalidait tout le cache du navigateur. Desormais les dependances
         // stables sont isolees derriere leur propre hash : un deploiement qui
         // ne touche que `src/` laisse `vendor-react` (59,0 kB gzip),
-        // `vendor-radix-shell` (33,8 kB) et `vendor-router` (7,7 kB) intacts
-        // en cache, soit ~100 des 188 kB gzip qui ne repartent plus.
+        // `vendor-radix-shell` (27,7 kB) et `vendor-router` (7,7 kB) intacts
+        // en cache, soit ~94 des 178 kB gzip qui ne repartent plus.
         //
         // Regroupement par FAMILLE, pas par paquet : un chunk par dependance
         // donnerait 90 requetes, dont le surcout annulerait le benefice.
         //
-        // MAIS un regroupement trop large a un cout reel, mesure en 0.3-D sur
-        // le poids du chemin critique COMPLET (chunk d'entree + modulepreload
-        // + CSS, et non le seul chunk d'entree) :
+        // Le perimetre de `vendor-radix-shell` a ete recalibre en 0.3-F. La
+        // liste de 0.3-D avait ete calibree quand `AdminLayout` et sa barre
+        // laterale etaient encore en import statique ; depuis que le chrome du
+        // back-office est en `React.lazy`, la cloture des imports STATIQUES de
+        // `src/App.tsx` (Header, Footer, Ticker, FloatingWhatsApp,
+        // MobileBottomBar, PromoBanner, MaintenanceScreen, PageTransition,
+        // Toaster, ErrorBoundary, Button, NotFound) n'atteint plus que trois
+        // paquets Radix :
         //
-        //   A. `vendor-radix` = tout `@radix-ui/*`      191,1 kB gzip
-        //   B. aucun regroupement Radix                 190,9 kB gzip
-        //   C. liste large des primitives du shell      188,5 kB gzip
-        //   D. liste stricte des primitives du shell    188,3 kB gzip  <- retenu
+        //   @radix-ui/react-dialog        <- ui/sheet, via Header (menu mobile)
+        //   @radix-ui/react-dropdown-menu <- ui/dropdown-menu, via Header
+        //   @radix-ui/react-slot          <- ui/button
         //
-        // Lecture : regrouper TOUT Radix (A) tirait dans le chemin critique
-        // ~2,8 kB gzip de primitives (accordion, tabs, switch, checkbox...)
-        // que seules des pages paresseuses utilisent et que Rollup rattachait
-        // sinon a leurs chunks. Ce n'est pas le doublement redoute — le shell
-        // a bel et bien besoin de ~34 kB de Radix, pas de 18, via Header,
-        // MobileBottomBar et AdminLayout/sidebar (select, dropdown-menu,
-        // popover, tooltip, sheet=dialog, separator, Floating UI) — mais
-        // c'est une regression nette. Ne rien regrouper (B) ne recupere rien :
-        // Rollup remonte alors ces modules partages dans le chunk d'entree,
-        // et on perd en plus les 34 kB de cache.
+        // `select`, `popover`, `tooltip` et `separator` ne sont plus atteints
+        // que par des pages paresseuses : les maintenir dans la liste les
+        // clouait dans le chemin critique au lieu de les laisser suivre le
+        // chunk admin.
         //
-        // Arbitrage volume / granularite : D reduit le volume ET conserve le
+        // Mesures 0.3-F sur le chemin critique COMPLET (chunk d'entree +
+        // modulepreload + CSS, et non le recapitulatif de Vite) :
+        //
+        //   R1. liste 0.3-D, perimee                    184,3 kB gzip
+        //   R2. liste recalibree sur le shell reel      178,3 kB gzip  <- retenu
+        //   R3. aucun regroupement Radix                179,6 kB gzip
+        //   R4. R2 sans la clause `@floating-ui`        178,3 kB gzip
+        //   R5. R2 + les internes Radix partages        178,5 kB gzip
+        //
+        // Lecture : la seule correction du perimetre rend 6,0 kB gzip (le
+        // chunk passe de 33,7 a 27,7 kB) sans deplacer une ligne de `src/`.
+        // Ne rien regrouper (R3) reste moins bon : Rollup remonte alors ces
+        // modules partages dans le chunk d'entree, ce qui coute 1,3 kB de plus
+        // ET fait perdre les 27,7 kB de cache. Elargir aux internes partages
+        // (R5) recoute 0,2 kB pour un gain de cache marginal.
+        //
+        // R4 produit un build octet pour octet identique a R2 : Rollup place
+        // deja Floating UI dans ce chunk, puisque `react-dropdown-menu` y est
+        // son unique importateur cote shell. La clause est conservee pour
+        // rendre l'intention explicite et figer ce placement.
+        //
+        // Arbitrage volume / granularite : R2 reduit le volume ET conserve le
         // cache sur le coeur React, il n'y a donc pas de conflit ici. Si un
         // tel conflit apparaissait, la regle du chantier tranche en faveur du
         // volume au premier chargement.
@@ -93,16 +112,24 @@ export default defineConfig({
             return "vendor-router";
 
           // Primitives Radix reellement atteignables depuis le shell, et
-          // elles seules, plus le moteur de positionnement Floating UI dont
-          // select/dropdown-menu/popover/tooltip dependent.
+          // elles seules : `dialog` (ui/sheet), `dropdown-menu` — avec
+          // `react-menu` dont il n'est qu'une facade — et `slot` (ui/button),
+          // plus le moteur de positionnement Floating UI dont `react-menu`
+          // depend via `react-popper`.
           //
           // La liste est volontairement stricte : toute primitive ajoutee ici
           // qui n'est pas utilisee par le shell entre dans le chemin critique
-          // au lieu de suivre la page paresseuse qui l'importe. Les modules
-          // internes partages (@radix-ui/react-primitive, react-context...)
-          // sont laisses a Rollup, qui les place la ou ils servent.
+          // au lieu de suivre la page paresseuse qui l'importe. C'est
+          // exactement ce qui s'etait produit avec `select`, `popover`,
+          // `tooltip` et `separator` apres la mise en paresseux du chrome
+          // admin. A REVALIDER a chaque fois qu'un composant entre ou sort des
+          // imports statiques de `src/App.tsx`.
+          //
+          // Les modules internes partages (@radix-ui/react-primitive,
+          // react-context...) sont laisses a Rollup, qui les place la ou ils
+          // servent : les forcer ici s'est mesure plus couteux (variante R5).
           if (
-            /[\\/]node_modules[\\/](@radix-ui[\\/]react-(select|dropdown-menu|menu|popover|tooltip|separator|dialog|slot)[^\\/]*|@floating-ui)[\\/]/.test(
+            /[\\/]node_modules[\\/](@radix-ui[\\/]react-(dropdown-menu|menu|dialog|slot)[^\\/]*|@floating-ui)[\\/]/.test(
               id,
             )
           )
