@@ -21,6 +21,7 @@ import {
 import type { HomeReview } from "@/api/types";
 import type { ReviewStatus } from "@/api/types";
 import { usePermissions } from "@/lib/admin-auth";
+import { useLocalize } from "@/lib/i18n";
 
 export default function AdminReviews() {
   const { data: reviews, loading: loadingReviews, error: errorReviews } = useReviewList();
@@ -29,6 +30,7 @@ export default function AdminReviews() {
   const { moderate, remove: removeReview } = useReviewMutations();
   const { upsert: upsertHomeReview, remove: removeHomeReview } = useHomeReviewMutations();
   const { can, guard, denyReason } = usePermissions();
+  const L = useLocalize();
   const [tab, setTab] = useState<"product" | "home">("product");
   const [statusTab, setStatusTab] = useState<"all" | ReviewStatus>("all");
   const [pendingDelete, setPendingDelete] = useState<{
@@ -37,6 +39,15 @@ export default function AdminReviews() {
     label: string;
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Libellés du sélecteur de produit, résolus une seule fois dans la langue
+  // active. `HomeReviewsEditor` ne reçoit donc que des `string` : il affiche le
+  // nom et l'écrit tel quel s'il devient une empreinte, sans jamais manipuler un
+  // `Localized`.
+  const productOptions = useMemo(
+    () => products.map((p) => ({ id: p.id, name: L(p.name) ?? "" })),
+    [products, L],
+  );
 
   const rows = useMemo(() => {
     return reviews
@@ -241,7 +252,7 @@ export default function AdminReviews() {
           </p>
           <HomeReviewsEditor
             reviews={homeReviews}
-            products={products.map((p) => ({ id: p.id, name: p.name }))}
+            products={productOptions}
             onDeleteRequest={(r) => setPendingDelete({ kind: "home", id: r.id, label: r.name })}
             canUpdate={can("update")}
             canCreate={can("create")}

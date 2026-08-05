@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { ordersApi, createOrderLocal } from "@/api/resources/orders";
 import { useAuth } from "@/lib/auth";
+import { useI18n, localize } from "@/lib/i18n";
 import { getAdminSnapshot } from "@/lib/admin-store";
 import type { CreateOrderInput, Order, OrderQuery, OrderStatus } from "@/api/types";
 import { isHttpData } from "./mode";
@@ -112,6 +113,10 @@ export type OrderMutations = {
  */
 export function useOrderMutations(): OrderMutations {
   const { user } = useAuth();
+  // Langue de la commande : celle dans laquelle le client passe commande. Elle
+  // est figée dans les lignes au moment de la création (empreinte historique) —
+  // `localize` est appelé à l'écriture, jamais à la relecture de la facture.
+  const { lang } = useI18n();
   const create = useCallback(
     (input: CreateOrderInput) =>
       runMutation(ORDERS_RESOURCE, "create", async () => {
@@ -132,7 +137,10 @@ export function useOrderMutations(): OrderMutations {
             }
             return {
               productId: it.productId,
-              name: product.name,
+              // Correctif phase 2 conservé : nom et prix viennent du catalogue,
+              // pas de l'entrée client. Le nom est résolu ici, dans la langue de
+              // la commande, et reste une chaîne nue dans la ligne enregistrée.
+              name: localize(product.name, lang) ?? "",
               price: product.price,
               qty: it.qty,
             };
@@ -154,7 +162,7 @@ export function useOrderMutations(): OrderMutations {
         });
         return { id: order.id };
       }),
-    [user],
+    [user, lang],
   );
 
   const updateStatus = useCallback(

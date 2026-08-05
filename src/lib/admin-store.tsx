@@ -7,6 +7,7 @@ import {
   type Category,
 } from "@/data/products";
 import { WILAYAS } from "@/data/wilayas";
+import { localize, type Lang } from "@/lib/i18n";
 import { seedSiteContent, mergeSiteContent, type SiteContent } from "./site-content";
 export type { SiteContent } from "./site-content";
 
@@ -413,6 +414,36 @@ function seedCustomers(): Customer[] {
   return list;
 }
 
+/*
+ * ---------- Empreintes historiques ----------
+ *
+ * Pourquoi `OrderItem.name`, `StockMovement.productName` et `Review.productName`
+ * restent des `string` nues alors que `Product.name` est devenu
+ * `Localized<string>`.
+ *
+ * Ces champs ne sont pas un rendu du catalogue : ce sont des copies figées du
+ * libellé tel qu'il était au moment de l'écriture, dans la langue de l'opération.
+ * Une facture, un mouvement de stock ou un avis déjà enregistré ne doit pas
+ * changer rétroactivement parce que le commerçant a renommé le produit ou ajouté
+ * une traduction six mois plus tard. Les élargir en `Localized<string>` les
+ * rendrait au contraire dépendants du catalogue courant.
+ *
+ * Conséquence : la langue est résolue à l'écriture, avec `localize(v, lang)`, au
+ * moment exact où l'empreinte est créée. En phase 4, ces lignes deviennent de
+ * simples colonnes SQL et des snapshots JSON immuables, sans conversion.
+ */
+
+/**
+ * Langue de référence des empreintes créées hors session utilisateur.
+ *
+ * Les seeds s'exécutent à l'initialisation du module : aucune langue « active »
+ * n'existe encore (pas de composant monté, pas de contexte i18n). `"fr"` est la
+ * langue de référence du catalogue et le repli garanti de `localize` — les douze
+ * produits seed étant monolingues, le libellé obtenu est identique à celui
+ * d'avant la migration.
+ */
+const FOOTPRINT_SEED_LANG: Lang = "fr";
+
 function seedOrders(customers: Customer[]): Order[] {
   const orders: Order[] = [];
   for (let i = 0; i < 32; i++) {
@@ -423,7 +454,8 @@ function seedOrders(customers: Customer[]): Order[] {
       const p = pick(seedProducts, i * 5 + j * 2);
       items.push({
         productId: p.id,
-        name: p.name,
+        // Empreinte : libellé figé à la création de la commande.
+        name: localize(p.name, FOOTPRINT_SEED_LANG) ?? "",
         price: p.price,
         qty: 1 + ((i + j) % 2),
         image: p.image,
@@ -587,7 +619,8 @@ function seedReviews(): Review[] {
     list.push({
       id: `rev_${2000 + i}`,
       productId: p.id,
-      productName: p.name,
+      // Empreinte : libellé figé au dépôt de l'avis.
+      productName: localize(p.name, FOOTPRINT_SEED_LANG) ?? "",
       customerName: `${fn} ${ln}`,
       rating: s.rating,
       title: s.title,
@@ -1741,13 +1774,32 @@ export function deletePaymentMethod(id: string) {
 }
 
 // Stock
-export function adjustStock(productId: string, delta: number, reason: string) {
+/**
+ * Ajuste le stock d'un produit et enregistre le mouvement correspondant.
+ *
+ * `lang` est la langue de l'opérateur au moment de l'ajustement : elle sert
+ * uniquement à résoudre l'empreinte `productName` (voir la note sur les
+ * empreintes historiques plus haut). Le paramètre est optionnel et replie sur la
+ * langue de référence, car la chaîne d'appel actuelle
+ * (`admin/Inventory.tsx` → `data-provider/stock-movements.ts` →
+ * `api/resources/inventory.ts`) ne transporte pas encore la langue ; c'est la
+ * couture prévue pour qu'elle la transmette sans changer ce type.
+ */
+export function adjustStock(
+  productId: string,
+  delta: number,
+  reason: string,
+  lang: Lang = FOOTPRINT_SEED_LANG,
+) {
   const p = state.products.find((x) => x.id === productId);
   if (!p) return;
+  // Résolu une seule fois : sert à l'empreinte ET au libellé du journal d'audit,
+  // deux emplacements en texte brut qui n'acceptent pas un objet `Localized`.
+  const productName = localize(p.name, lang) ?? "";
   const mov: StockMovement = {
     id: `mov_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     productId,
-    productName: p.name,
+    productName,
     delta,
     reason,
     createdAt: new Date().toISOString(),
@@ -1761,7 +1813,7 @@ export function adjustStock(productId: string, delta: number, reason: string) {
   state = { ...state, stockMovements: [mov, ...state.stockMovements], products };
   emit();
   logAudit(
-    `produit ${p.name}`,
+    `produit ${productName}`,
     "stock.adjust",
     `${delta > 0 ? "+" : ""}${delta} — ${reason} (→ ${nextQty})`,
   );
