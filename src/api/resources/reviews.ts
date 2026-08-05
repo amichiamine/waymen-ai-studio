@@ -20,7 +20,10 @@ export const reviewsApi = {
     return getAdminSnapshot().reviews;
   },
 
-  async create(productId: string, input: { author: string; rating: number; comment: string }) {
+  async create(
+    productId: string,
+    input: { productName: string; customerName: string; rating: number; title: string; body: string },
+  ) {
     if (isHttpMode()) return http.post<Review>(E.reviews.create(productId), input);
     return createProductReview({ productId, ...input });
   },
