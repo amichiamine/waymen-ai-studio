@@ -6,7 +6,13 @@ import { useStore } from "@/lib/store";
 import { useProducts } from "@/lib/useProducts";
 import { WILAYAS } from "@/data/wilayas";
 import { useAuth } from "@/lib/auth";
-import { useAdminState, validateCoupon, computeShipping, createOrder } from "@/lib/admin-store";
+import {
+  usePaymentMethodList,
+  useShippingSettings,
+  useShippingRateList,
+  useOrderMutations,
+  useCouponMutations,
+} from "@/data-provider";
 import { useAddresses } from "@/lib/addresses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,15 +31,41 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertTriangle, Tag, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
+const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 const COUPON_KEY = "ka-cart-coupon";
+
+/**
+ * Calcule les frais de livraison à partir des données du provider.
+ * Remplace l'appel direct à `computeShipping()` de admin-store.
+ */
+function calcShipping(
+  wilayaCode: string,
+  kind: "home" | "desk",
+  subtotalAfterDiscount: number,
+  freeThreshold: number,
+  rates: { wilayaCode: string; home: number; desk: number }[],
+): number {
+  if (freeThreshold > 0 && subtotalAfterDiscount >= freeThreshold) return 0;
+  const rate =
+    rates.find((r) => r.wilayaCode === wilayaCode) ?? rates.find((r) => r.wilayaCode === "*");
+  if (!rate) return 0;
+  return kind === "home" ? rate.home : rate.desk;
+}
 
 export default function Checkout() {
   const { user } = useAuth();
   const { cart, clearCart } = useStore();
-  const { paymentMethods, shippingSettings } = useAdminState();
   const products = useProducts();
   const { t } = useI18n();
+
+  // Lectures via le provider — loading/error inertes en mode mock.
+  const { data: paymentMethods } = usePaymentMethodList();
+  const { data: shippingSettings } = useShippingSettings();
+  const { data: shippingRates } = useShippingRateList();
+
+  // Mutations via le provider — toujours asynchrones.
+  const { create: createOrder } = useOrderMutations();
+  const { validate: validateCoupon } = useCouponMutations();
 
   const { list: addresses, defaultAddress } = useAddresses(user?.id);
   const navigate = useNavigate();
@@ -51,6 +83,12 @@ export default function Checkout() {
   const [paymentId, setPaymentId] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  // Erreur de soumission visible par le client (pas silencieuse — cf. instructions).
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // État du coupon résolu de façon asynchrone depuis localStorage.
+  const [couponCode, setCouponCode] = useState<string | undefined>(undefined);
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     if (!paymentId && activePayments.length) setPaymentId(activePayments[0].id);
@@ -76,12 +114,36 @@ export default function Checkout() {
 
   const subtotal = lines.reduce((a, l) => a + l.product.price * l.quantity, 0);
 
-  const storedCode = typeof window !== "undefined" ? window.localStorage.getItem(COUPON_KEY) : null;
-  const couponEval = storedCode ? validateCoupon(storedCode, subtotal) : null;
-  const discount = couponEval && couponEval.ok ? couponEval.discount : 0;
-  const couponCode = couponEval && couponEval.ok ? couponEval.coupon.code : undefined;
+  // Lecture du coupon stocké : on le résout de façon asynchrone au montage.
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? window.localStorage.getItem(COUPON_KEY) : null;
+    if (!stored || subtotal === 0) return;
+    validateCoupon(stored, subtotal)
+      .then((result) => {
+        if (result.valid) {
+          setCouponCode(result.code);
+          setDiscount(result.discount);
+        } else {
+          window.localStorage.removeItem(COUPON_KEY);
+        }
+      })
+      .catch(() => {
+        // Échec réseau au chargement : on garde le coupon affiché et on
+        // réessaiera à la soumission.
+      });
+    // Seul le montage nous intéresse pour la restauration initiale.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const shipping = wilaya ? computeShipping(wilaya, delivery, subtotal - discount) : 0;
+  const shipping = wilaya
+    ? calcShipping(
+        wilaya,
+        delivery,
+        subtotal - discount,
+        shippingSettings.freeShippingThreshold,
+        shippingRates,
+      )
+    : 0;
   const total = Math.max(0, subtotal - discount) + shipping;
 
   const outOfStock = lines.filter((l) => l.product.stock === "out");
@@ -89,6 +151,7 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     if (outOfStock.length > 0) {
       toast.error(t("checkout.err.oos"));
       return;
@@ -98,34 +161,37 @@ export default function Checkout() {
       return;
     }
     setBusy(true);
-    const pm = activePayments.find((p) => p.id === paymentId);
-    const order = createOrder({
-      customerName: name,
-      customerEmail: user?.email,
-      customerId: user?.id,
-      items: lines.map((l) => ({
-        productId: l.product_id,
-        name: l.product.name,
-        price: l.product.price,
-        qty: l.quantity,
-        image: l.product.image,
-      })),
-      subtotal,
-      discount,
-      couponCode,
-      shipping,
-      total,
-      paymentMethod: paymentId,
-      paymentLabel: pm?.label,
-      wilaya,
-      deliveryKind: delivery,
-      address,
-      phone,
-      note: notes || undefined,
-    });
-    if (couponCode) window.localStorage.removeItem(COUPON_KEY);
-    await clearCart();
-    navigate(`/checkout/success?id=${order.id}`);
+    try {
+      const pm = activePayments.find((p) => p.id === paymentId);
+      const result = await createOrder({
+        items: lines.map((l) => ({ productId: l.product_id, qty: l.quantity })),
+        customer: {
+          name,
+          phone,
+          email: user?.email,
+        },
+        shipping: {
+          wilayaCode: wilaya,
+          address,
+          method: delivery,
+        },
+        couponCode,
+        paymentMethodId: pm?.id,
+        note: notes || undefined,
+      });
+      if (couponCode) window.localStorage.removeItem(COUPON_KEY);
+      await clearCart();
+      navigate(`/checkout/success?id=${result.id}`);
+    } catch (cause) {
+      // L'erreur est toujours visible et exploitable par le client — jamais
+      // silencieuse (instructions Checkout). Elle est journalisée par le
+      // provider et affichée inline.
+      const msg = cause instanceof Error ? cause.message : t("checkout.err.pm");
+      setSubmitError(msg);
+      toast.error(msg);
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (lines.length === 0) {
@@ -148,6 +214,18 @@ export default function Checkout() {
         <meta name="robots" content="noindex" />
       </Helmet>
       <h1 className="mb-6 text-2xl font-bold">{t("checkout.title")}</h1>
+
+      {/* Erreur de soumission — visible et exploitable par le client. */}
+      {submitError && (
+        <div
+          role="alert"
+          className="mb-6 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span>{submitError}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
           {addresses.length > 0 && (
@@ -251,7 +329,15 @@ export default function Checkout() {
                     </div>
                     <span className="text-sm text-muted-foreground">
                       {wilaya
-                        ? fmt(computeShipping(wilaya, "home", subtotal - discount))
+                        ? fmt(
+                            calcShipping(
+                              wilaya,
+                              "home",
+                              subtotal - discount,
+                              shippingSettings.freeShippingThreshold,
+                              shippingRates,
+                            ),
+                          )
                         : t("checkout.wilaya.choose")}
                     </span>
                   </label>
@@ -264,7 +350,15 @@ export default function Checkout() {
                     </div>
                     <span className="text-sm text-muted-foreground">
                       {wilaya
-                        ? fmt(computeShipping(wilaya, "desk", subtotal - discount))
+                        ? fmt(
+                            calcShipping(
+                              wilaya,
+                              "desk",
+                              subtotal - discount,
+                              shippingSettings.freeShippingThreshold,
+                              shippingRates,
+                            ),
+                          )
                         : t("checkout.wilaya.choose")}
                     </span>
                   </label>

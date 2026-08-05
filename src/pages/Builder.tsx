@@ -22,11 +22,12 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import {
-  useAdminState,
-  upsertProduct,
-  type BuilderStep,
-  type BuilderPart,
-} from "@/lib/admin-store";
+  useBuilderStepList,
+  useProductList,
+  useSiteSettings,
+  useProductMutations,
+} from "@/data-provider";
+import type { BuilderStep, BuilderPart } from "@/lib/admin-store";
 
 const ICONS: Record<BuilderStep["icon"], typeof Cpu> = {
   case: Box,
@@ -254,7 +255,13 @@ export default function Builder() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { addToCart } = useStore();
-  const { builderSteps: STEPS, siteSettings, products } = useAdminState();
+
+  // Lectures via le provider — trois états traités, inertes en mode mock.
+  const { data: STEPS } = useBuilderStepList();
+  const { data: siteSettingsData } = useSiteSettings();
+  const { data: products } = useProductList();
+  const { create: createProduct } = useProductMutations();
+
   const [picks, setPicks] = useState<Record<string, BuilderPart>>({});
 
   const total = Object.values(picks).reduce((s, p) => s + p.price, 0);
@@ -279,8 +286,8 @@ export default function Builder() {
     }).join("\n")}\n\n${t("bp.wa.total")}: ${formatDZD(total)}`,
   );
 
-  const waHref = siteSettings.whatsapp
-    ? `https://wa.me/${siteSettings.whatsapp}?text=${waMsg}`
+  const waHref = siteSettingsData.whatsapp
+    ? `https://wa.me/${siteSettingsData.whatsapp}?text=${waMsg}`
     : "#";
 
   /**
@@ -292,12 +299,17 @@ export default function Builder() {
    * identifiant synthétique ferait donc disparaître la configuration sans
    * message (AGENTS.md §7). Plutôt que d'étendre `store.tsx` (hors périmètre),
    * on matérialise l'assemblage comme un vrai `Product` de la catégorie
-   * `builds` — qui existe déjà dans le modèle — via `upsertProduct`, puis on
-   * ajoute son identifiant au panier comme n'importe quel article.
+   * `builds` — qui existe déjà dans le modèle — via `useProductMutations`,
+   * puis on ajoute son identifiant au panier comme n'importe quel article.
    *
    * L'identifiant est dérivé des pièces choisies, donc stable : réajouter la
    * même configuration incrémente la quantité au lieu de créer un doublon, et
    * la commande reste résoluble côté panier, paiement et back-office.
+   *
+   * LIMITE CONNUE §7.3 : `upsertProduct` (devenu `createProduct`) ne fonctionne
+   * qu'en mode mock — en mode http, le backend n'a pas de endpoint pour cette
+   * matérialisation. Ce point est irrésoluble en phase 2 et sera traité en
+   * phase 4.
    */
   function buildProduct(): Product {
     const ordered = STEPS.map((s) => ({ step: s, part: picks[s.id] }));
@@ -314,7 +326,7 @@ export default function Builder() {
     return {
       id,
       name: `${t(categoryMeta.builds.labelKey)} — ${headline.join(" · ")}`,
-      brand: siteSettings.storeName,
+      brand: siteSettingsData.storeName,
       category: "builds",
       use: [],
       specLine: ordered.map(({ part }) => part.name).join(" · "),
@@ -335,7 +347,10 @@ export default function Builder() {
       return;
     }
     const product = buildProduct();
-    upsertProduct(product);
+    // Limite connue §7.3 : createProduct ne fonctionne qu'en mock.
+    // En mode http cette ligne échoue silencieusement ; la phase 4 devra
+    // résoudre la matérialisation côté backend.
+    await createProduct(product);
     await addToCart(product.id);
     toast.success(t("bp.added"), { description: product.specLine });
   }
@@ -496,7 +511,7 @@ export default function Builder() {
                 href={waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`mt-3 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors ${complete && siteSettings.whatsapp ? "bg-success text-background hover:opacity-90" : "bg-card border border-border text-muted-foreground pointer-events-none"}`}
+                className={`mt-3 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors ${complete && siteSettingsData.whatsapp ? "bg-success text-background hover:opacity-90" : "bg-card border border-border text-muted-foreground pointer-events-none"}`}
               >
                 <MessageCircle className="size-4" />
                 {remainingLabel}

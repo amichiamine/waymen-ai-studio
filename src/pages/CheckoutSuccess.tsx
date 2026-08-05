@@ -3,17 +3,18 @@ import { Helmet } from "react-helmet-async";
 import { CheckCircle2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAdminState } from "@/lib/admin-store";
+import { useOrderDetail } from "@/data-provider";
 import { useI18n } from "@/lib/i18n";
 
-const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
+const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 
 export default function CheckoutSuccess() {
   const { t } = useI18n();
   const [params] = useSearchParams();
-  const id = params.get("id");
-  const { orders } = useAdminState();
-  const order = id ? orders.find((o) => o.id === id) : undefined;
+  const id = params.get("id") ?? undefined;
+
+  // Le hook reste toujours monté — `id` peut être undefined (hook inactif).
+  const { data: order } = useOrderDetail(id);
 
   return (
     <div className="container mx-auto max-w-xl px-4 py-16 text-center">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Trash2, Minus, Plus, ShoppingBag, Tag, X, AlertTriangle } from "lucide-react";
@@ -9,19 +9,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { validateCoupon, type Coupon } from "@/lib/admin-store";
+import { useCouponMutations } from "@/data-provider";
+import type { CouponCheckResult } from "@/api/types";
 import { useI18n } from "@/lib/i18n";
 
-const fmt = (n: number) => `\u2066${n.toLocaleString("fr-FR")} DA\u2069`;
+const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 const COUPON_KEY = "ka-cart-coupon";
+
+/** Forme réduite d'un coupon validé — issu de `CouponCheckResult` (branche `valid: true`). */
+type AppliedCoupon = Extract<CouponCheckResult, { valid: true }>;
 
 export default function Cart() {
   const { t } = useI18n();
   const { cart, updateQty, removeFromCart } = useStore();
   const products = useProducts();
+  const { validate: validateCoupon } = useCouponMutations();
 
   const [couponInput, setCouponInput] = useState("");
-  const [applied, setApplied] = useState<{ coupon: Coupon; discount: number } | null>(null);
+  const [applied, setApplied] = useState<AppliedCoupon | null>(null);
 
   const lines = cart
     .map((c) => {
@@ -32,40 +37,68 @@ export default function Cart() {
 
   const subtotal = lines.reduce((a, l) => a + l.product.price * l.quantity, 0);
 
+  // `validateCoupon` est stable (mémoïsé dans useCouponMutations) — on peut
+  // l'inclure dans les deps sans risquer de boucle.
+  const tryApplyStored = useCallback(
+    async (code: string, amount: number) => {
+      try {
+        const result = await validateCoupon(code, amount);
+        if (result.valid) {
+          setApplied(result);
+        } else {
+          window.localStorage.removeItem(COUPON_KEY);
+        }
+      } catch {
+        window.localStorage.removeItem(COUPON_KEY);
+      }
+    },
+    [validateCoupon],
+  );
+
   useEffect(() => {
     const stored = typeof window !== "undefined" ? window.localStorage.getItem(COUPON_KEY) : null;
     if (stored && subtotal > 0) {
-      const v = validateCoupon(stored, subtotal);
-      if (v.ok) setApplied({ coupon: v.coupon, discount: v.discount });
-      else window.localStorage.removeItem(COUPON_KEY);
+      void tryApplyStored(stored, subtotal);
     }
+    // On ne dépend pas de subtotal ici : on ne veut exécuter ce chemin
+    // qu'au montage, pour restaurer le coupon enregistré.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!applied) return;
-    const v = validateCoupon(applied.coupon.code, subtotal);
-    if (!v.ok) {
-      setApplied(null);
-      window.localStorage.removeItem(COUPON_KEY);
-      toast.error(v.error);
-    } else if (v.discount !== applied.discount) {
-      setApplied({ coupon: v.coupon, discount: v.discount });
-    }
+    validateCoupon(applied.code, subtotal)
+      .then((v) => {
+        if (!v.valid) {
+          setApplied(null);
+          window.localStorage.removeItem(COUPON_KEY);
+          toast.error(v.reason);
+        } else if (v.discount !== applied.discount) {
+          setApplied(v);
+        }
+      })
+      .catch(() => {
+        // Une erreur réseau ne doit pas retirer le coupon silencieusement.
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subtotal]);
 
-  function apply() {
+  async function apply() {
     if (!couponInput.trim()) return;
-    const v = validateCoupon(couponInput, subtotal);
-    if (!v.ok) {
-      toast.error(v.error);
-      return;
+    try {
+      const v = await validateCoupon(couponInput, subtotal);
+      if (!v.valid) {
+        toast.error(v.reason);
+        return;
+      }
+      setApplied(v);
+      window.localStorage.setItem(COUPON_KEY, v.code);
+      setCouponInput("");
+      toast.success(v.code);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t("cart.coupon.apply");
+      toast.error(msg);
     }
-    setApplied({ coupon: v.coupon, discount: v.discount });
-    window.localStorage.setItem(COUPON_KEY, v.coupon.code);
-    setCouponInput("");
-    toast.success(v.coupon.code);
   }
 
   function removeCoupon() {
@@ -153,11 +186,9 @@ export default function Cart() {
                 <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Tag className="h-4 w-4 text-primary" />
-                    <span className="font-mono font-medium">{applied.coupon.code}</span>
+                    <span className="font-mono font-medium">{applied.code}</span>
                     <span className="text-xs text-muted-foreground">
-                      {applied.coupon.type === "percent"
-                        ? `-${applied.coupon.value}%`
-                        : `-${fmt(applied.coupon.value)}`}
+                      {`−${fmt(applied.discount)}`}
                     </span>
                   </div>
                   <Button size="icon" variant="ghost" onClick={removeCoupon}>
@@ -177,11 +208,11 @@ export default function Cart() {
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
-                          apply();
+                          void apply();
                         }
                       }}
                     />
-                    <Button type="button" variant="outline" onClick={apply}>
+                    <Button type="button" variant="outline" onClick={() => void apply()}>
                       {t("cart.coupon.apply")}
                     </Button>
                   </div>
