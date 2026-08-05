@@ -255,177 +255,21 @@ final class ControleurContenu
         return Reponse::ok($this->mettreAJourReglage('shipping', $r->corps));
     }
 
-    /**
-     * GET /settings/shipping/rates
-     * → { data: { items, total, page, perPage } }
-     *
-     * Retourne tous les tarifs de livraison par wilaya.
-     * Le tarif par défaut a `wilaya_code = '*'`.
-     */
-    public function lireTarifsLivraison(Requete $r): Reponse
-    {
-        $lignes = $this->db->tous('SELECT * FROM shipping_rates ORDER BY wilaya_code ASC');
-        $items = array_map([$this, 'enDtoTarifLivraison'], $lignes);
-
-        return Reponse::page($items, count($items), 1, max(count($items), 1));
-    }
-
-    /**
-     * PUT /settings/shipping/rates/:wilayaCode
-     * Corps : { home, desk }
-     * → 200 { data: ShippingRate }
-     *
-     * Crée ou met à jour un tarif pour une wilaya donnée.
-     * Le code `*` est réservé au tarif par défaut.
-     */
-    public function upsertTarifLivraison(Requete $r): Reponse
-    {
-        $wilayaCode = $r->param('wilayaCode');
-        if ($wilayaCode === '') {
-            throw ApiException::validation('Code wilaya invalide.', [
-                'wilayaCode' => ['Champ obligatoire.'],
-            ]);
-        }
-
-        $home = $r->corps('home');
-        $desk = $r->corps('desk');
-
-        if ($home === null || $desk === null) {
-            throw ApiException::validation('Tarif invalide.', [
-                'home' => $home === null ? ['Champ obligatoire.'] : [],
-                'desk' => $desk === null ? ['Champ obligatoire.'] : [],
-            ]);
-        }
-
-        $maintenant = gmdate('c');
-        $this->db->upsert(
-            'shipping_rates',
-            [
-                'wilaya_code' => $wilayaCode,
-                'home'        => (int) $home,
-                'desk'        => (int) $desk,
-                'updated_at'  => $maintenant,
-            ],
-            ['wilaya_code'],
-            ['home', 'desk', 'updated_at'],
-        );
-
-        $ligne = (array) $this->db->un(
-            'SELECT * FROM shipping_rates WHERE wilaya_code = :wilayaCode',
-            [':wilayaCode' => $wilayaCode],
-        );
-
-        return Reponse::ok($this->enDtoTarifLivraison($ligne));
-    }
-
-    /**
-     * DELETE /settings/shipping/rates/:wilayaCode
-     * → 204
-     */
-    public function supprimerTarifLivraison(Requete $r): Reponse
-    {
-        $wilayaCode = $r->param('wilayaCode');
-
-        $n = $this->db->run(
-            'DELETE FROM shipping_rates WHERE wilaya_code = :wilayaCode',
-            [':wilayaCode' => $wilayaCode],
-        )->rowCount();
-
-        if ($n === 0) {
-            throw ApiException::introuvable("Tarif pour la wilaya « {$wilayaCode} » introuvable.");
-        }
-
-        return Reponse::vide();
-    }
-
-    /**
-     * GET /settings/payments
-     * → { data: { items, total, page, perPage } }
-     *
-     * Liste les modes de paiement, triés par position.
-     */
-    public function lireModesPayment(Requete $r): Reponse
-    {
-        $lignes = $this->db->tous('SELECT * FROM payment_methods ORDER BY position ASC, id ASC');
-        $items = array_map([$this, 'enDtoModePayment'], $lignes);
-
-        return Reponse::page($items, count($items), 1, max(count($items), 1));
-    }
-
-    /**
-     * PUT /settings/payments/:id
-     * Corps : { label, instructions, active?, position? }
-     * → 200 { data: PaymentMethod }
-     *
-     * Crée ou met à jour un mode de paiement.
-     */
-    public function upsertModePayment(Requete $r): Reponse
-    {
-        $id = $r->param('id');
-        if ($id === '') {
-            throw ApiException::validation('Identifiant invalide.', [
-                'id' => ['Champ obligatoire.'],
-            ]);
-        }
-
-        $label        = trim((string) $r->corps('label', ''));
-        $instructions = (string) $r->corps('instructions', '');
-
-        if ($label === '') {
-            throw ApiException::validation('Mode de paiement invalide.', [
-                'label' => ['Champ obligatoire.'],
-            ]);
-        }
-
-        $actif    = $r->corps('active') !== null ? ($r->corps('active') ? 1 : 0) : 1;
-        $position = $r->corps('position') !== null ? (int) $r->corps('position') : 0;
-
-        $maintenant = gmdate('c');
-        $this->db->upsert(
-            'payment_methods',
-            [
-                'id'           => $id,
-                'label'        => $label,
-                'instructions' => $instructions,
-                'active'       => $actif,
-                'position'     => $position,
-                'updated_at'   => $maintenant,
-            ],
-            ['id'],
-            ['label', 'instructions', 'active', 'position', 'updated_at'],
-        );
-
-        $ligne = (array) $this->db->un(
-            'SELECT * FROM payment_methods WHERE id = :id',
-            [':id' => $id],
-        );
-
-        return Reponse::ok($this->enDtoModePayment($ligne));
-    }
-
-    /**
-     * DELETE /settings/payments/:id
-     * → 204
-     */
-    public function supprimerModePayment(Requete $r): Reponse
-    {
-        $id = $r->param('id');
-
-        $n = $this->db->run(
-            'DELETE FROM payment_methods WHERE id = :id',
-            [':id' => $id],
-        )->rowCount();
-
-        if ($n === 0) {
-            throw ApiException::introuvable("Mode de paiement « {$id} » introuvable.");
-        }
-
-        return Reponse::vide();
-    }
-
-    // =====================================================================
-    // Utilitaires internes
-    // =====================================================================
+    // ---------------------------------------------------------------
+    // ARBITRAGE DE L'ORCHESTRATEUR — vague 4.2
+    //
+    // Les tarifs de livraison et les modes de paiement étaient implémentés
+    // ici ET dans ControleurLivraison / ControleurPaiements : deux agents
+    // travaillant en parallèle ont couvert le même périmètre.
+    //
+    // Le routage désigne les contrôleurs DÉDIÉS, plus cohérents que des
+    // méthodes noyées dans le contenu éditorial. Les doublons ont été retirés
+    // d'ici pour qu'aucune divergence ne puisse s'installer entre deux
+    // implémentations de la même règle.
+    //
+    // Ce contrôleur conserve les RÉGLAGES de livraison (franco de port,
+    // modes activables), qui sont bien du contenu de configuration.
+    // ---------------------------------------------------------------
 
     /**
      * Lit le payload d'une portée de réglage.
@@ -521,37 +365,4 @@ final class ControleurContenu
         return $base;
     }
 
-    // -----------------------------------------------------------------------
-    // Mappers DTO
-    // -----------------------------------------------------------------------
-
-    /**
-     * @param array<string,mixed> $l
-     * @return array<string,mixed>
-     */
-    private function enDtoTarifLivraison(array $l): array
-    {
-        return [
-            'wilayaCode' => (string) $l['wilaya_code'],
-            'home'       => (int) $l['home'],
-            'desk'       => (int) $l['desk'],
-            'updatedAt'  => (string) $l['updated_at'],
-        ];
-    }
-
-    /**
-     * @param array<string,mixed> $l
-     * @return array<string,mixed>
-     */
-    private function enDtoModePayment(array $l): array
-    {
-        return [
-            'id'           => (string) $l['id'],
-            'label'        => (string) $l['label'],
-            'instructions' => (string) $l['instructions'],
-            'active'       => (bool) (int) $l['active'],
-            'position'     => (int) $l['position'],
-            'updatedAt'    => (string) $l['updated_at'],
-        ];
-    }
 }
