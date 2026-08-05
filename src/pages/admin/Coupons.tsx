@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -66,12 +66,40 @@ export default function AdminCoupons() {
   const { coupons } = useAdminState();
   const { can, guard, denyReason } = usePermissions();
   const [open, setOpen] = useState(false);
+  // editTarget est null en mode création, contient le coupon à modifier en mode édition.
+  const [editTarget, setEditTarget] = useState<Coupon | null>(null);
   const [v, setV] = useState(empty());
   const [err, setErr] = useState<Record<string, string>>({});
 
+  function openNew() {
+    setEditTarget(null);
+    setV(empty());
+    setErr({});
+    setOpen(true);
+  }
+
+  function openEdit(c: Coupon) {
+    // Niveau 1 — l'ouverture de la boîte d'édition est conditionnée par `update`.
+    if (!can("update")) return;
+    setEditTarget(c);
+    setV({
+      code: c.code,
+      type: c.type,
+      value: c.value,
+      minPurchase: c.minPurchase,
+      usageLimit: c.usageLimit,
+      expiresAt: c.expiresAt.slice(0, 10),
+      active: c.active,
+    });
+    setErr({});
+    setOpen(true);
+  }
+
   function save() {
     // Niveau 2 — vérification dans le handler avant toute mutation.
-    if (!guard("create", "Créer le coupon")) return;
+    const permission = editTarget ? "update" : "create";
+    const label = editTarget ? "Modifier le coupon" : "Créer le coupon";
+    if (!guard(permission, label)) return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Record<string, string> = {};
@@ -87,13 +115,15 @@ export default function AdminCoupons() {
       value: p.data.value,
       minPurchase: p.data.minPurchase,
       usageLimit: p.data.usageLimit,
-      usageCount: 0,
+      // En édition on conserve le compteur d'usage existant.
+      usageCount: editTarget ? editTarget.usageCount : 0,
       expiresAt: new Date(p.data.expiresAt).toISOString(),
       active: p.data.active,
     };
     upsertCoupon(c);
-    toast.success("Coupon créé");
+    toast.success(editTarget ? "Coupon modifié" : "Coupon créé");
     setOpen(false);
+    setEditTarget(null);
     setV(empty());
     setErr({});
   }
@@ -110,6 +140,8 @@ export default function AdminCoupons() {
     navigator.clipboard.writeText(code).then(() => toast.success(`${code} copié`));
   }
 
+  const isEditing = editTarget !== null;
+
   return (
     <AdminPageShell
       title="Coupons"
@@ -119,13 +151,13 @@ export default function AdminCoupons() {
         // éviter que le DialogTrigger l'ouvre quand la permission est refusée.
         can("create") ? (
           <>
-            <Button onClick={() => setOpen(true)}>
+            <Button onClick={openNew}>
               <Plus className="me-2 h-4 w-4" /> Nouveau coupon
             </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Nouveau coupon</DialogTitle>
+                  <DialogTitle>{isEditing ? "Modifier le coupon" : "Nouveau coupon"}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
@@ -134,6 +166,9 @@ export default function AdminCoupons() {
                       value={v.code}
                       onChange={(e) => setV({ ...v, code: e.target.value.toUpperCase() })}
                       placeholder="BIENVENUE10"
+                      // Le code est l'identifiant — il ne peut pas être modifié en édition.
+                      readOnly={isEditing}
+                      className={isEditing ? "bg-muted" : ""}
                     />
                     {err.code && <p className="text-xs text-destructive mt-1">{err.code}</p>}
                   </div>
@@ -203,7 +238,7 @@ export default function AdminCoupons() {
                   <Button variant="outline" onClick={() => setOpen(false)}>
                     Annuler
                   </Button>
-                  <Button onClick={save}>Créer</Button>
+                  <Button onClick={save}>{isEditing ? "Enregistrer" : "Créer"}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -228,7 +263,7 @@ export default function AdminCoupons() {
               <TableHead>Usage</TableHead>
               <TableHead>Expire</TableHead>
               <TableHead>Statut</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
+              <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -262,6 +297,21 @@ export default function AdminCoupons() {
                     <Button variant="ghost" size="icon" onClick={() => copy(c.code)}>
                       <Copy className="h-4 w-4" />
                     </Button>
+                    {/* Niveau 1+3 : bouton Modifier */}
+                    <span
+                      title={denyReason("update") ?? "Modifier"}
+                      className="inline-flex align-middle"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Modifier"
+                        disabled={!can("update")}
+                        onClick={() => openEdit(c)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </span>
                     {/* Niveau 1+3 : bouton Supprimer */}
                     <span
                       title={denyReason("delete") ?? "Supprimer"}
