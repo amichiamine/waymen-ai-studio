@@ -1,11 +1,18 @@
 import { MessageCircle } from "lucide-react";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteSettings, useSiteContent } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 
 export function FloatingWhatsApp() {
-  const { siteSettings, siteContent } = useAdminState();
+  // loading inerte en mode mock. En http, on n'affiche rien le temps du
+  // premier aller-retour : un bouton fantôme qui ne pointe nulle part serait
+  // pire que son absence.
+  const { data: siteSettings, loading: loadingSettings } = useSiteSettings();
+  const { data: siteContent, loading: loadingContent } = useSiteContent();
   const L = useLocalize();
+
+  if (loadingSettings || loadingContent) return null;
   if (!siteContent.floatingWhatsApp.enabled || !siteSettings.whatsapp) return null;
+
   return (
     <a
       href={`https://wa.me/${siteSettings.whatsapp}`}

@@ -1,8 +1,13 @@
-import { useAdminState } from "@/lib/admin-store";
+import { useTickerMessageList } from "@/data-provider";
 
 export function Ticker() {
-  const { tickerMessages } = useAdminState();
-  if (tickerMessages.length === 0) return null;
+  // loading est inerte en mode mock (false dès le premier rendu).
+  // En http, si les messages ne sont pas encore chargés on rend null —
+  // absence de bandeau défilant vaut mieux que contenu fantôme.
+  const { data: tickerMessages, loading } = useTickerMessageList();
+
+  if (loading || tickerMessages.length === 0) return null;
+
   const items = tickerMessages.map((m) => m.text);
   return (
     <div className="bg-announcement-bg text-announcement-fg marquee-viewport">

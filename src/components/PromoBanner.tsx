@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteSettings } from "@/data-provider";
 
 const DISMISS_KEY = "katech.promo.dismissed.v1";
 
 export function PromoBanner() {
-  const { siteSettings: s } = useAdminState();
+  // loading inerte en mode mock. En http, on n'affiche rien pendant l'aller-
+  // retour : un bandeau vide provoquerait un saut de mise en page à l'arrivée.
+  const { data: s, loading } = useSiteSettings();
   const [dismissed, setDismissed] = useState(false);
 
   // Signature so re-editing text in admin re-shows the banner.
@@ -21,7 +23,7 @@ export function PromoBanner() {
     }
   }, [sig]);
 
-  if (!s.showPromoBanner || !s.promoBannerText || dismissed) return null;
+  if (loading || !s.showPromoBanner || !s.promoBannerText || dismissed) return null;
 
   function dismiss() {
     try {

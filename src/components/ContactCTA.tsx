@@ -1,10 +1,11 @@
 import { MessageCircle } from "lucide-react";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
 export function ContactCTA() {
-  const { siteSettings, siteContent } = useAdminState();
+  const { data: siteSettings } = useSiteSettings();
+  const { data: siteContent } = useSiteContent();
   const c = siteContent.contactCta;
   const L = useLocalize();
   return (

@@ -1,8 +1,9 @@
-import { useAdminState } from "@/lib/admin-store";
+import { useMarqueeBrandList, useSiteContent } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 
 export function BrandsMarquee() {
-  const { marqueeBrands, siteContent } = useAdminState();
+  const { data: marqueeBrands } = useMarqueeBrandList();
+  const { data: siteContent } = useSiteContent();
   const L = useLocalize();
   if (marqueeBrands.length === 0) return null;
   return (

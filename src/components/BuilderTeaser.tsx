@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Cpu } from "lucide-react";
 import banner from "@/assets/builder-banner.webp";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
 export function BuilderTeaser() {
-  const { siteContent } = useAdminState();
+  const { data: siteContent } = useSiteContent();
   const b = siteContent.builderTeaser;
   const L = useLocalize();
   return (

@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Flame } from "lucide-react";
 import heroImg from "@/assets/hero-laptop.webp";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteContent } from "@/data-provider";
 import { getIcon, type IconName } from "@/lib/site-content";
 import { useLocalize, type Localized } from "@/lib/i18n";
 
 export function Hero() {
-  const { siteContent } = useAdminState();
+  const { data: siteContent } = useSiteContent();
   const h = siteContent.hero;
   const L = useLocalize();
   return (
