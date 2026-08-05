@@ -424,7 +424,7 @@ export function AdminUserMenu() {
   const { role, realRole, simulating } = useEffectiveRole();
   const navigate = useNavigate();
 
-  const name: string = user?.user_metadata?.name ?? user?.email ?? "Compte";
+  const name: string = user?.name ?? user?.email ?? "Compte";
   const email: string = user?.email ?? "";
   const fallback = initiales(name) || <User className="h-4 w-4" />;
 

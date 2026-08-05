@@ -128,7 +128,7 @@ function ProductView({ p }: { p: ProductType }) {
     try {
       await createProductReview(p.id, {
         productName: p.name,
-        customerName: user.user_metadata?.name ?? user.email ?? "Client",
+        customerName: user.name ?? user.email ?? "Client",
         rating,
         title: reviewTitle.trim() || "Avis client",
         body: comment.trim(),

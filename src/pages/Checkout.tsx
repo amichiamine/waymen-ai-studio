@@ -73,8 +73,8 @@ export default function Checkout() {
   const activePayments = useMemo(() => paymentMethods.filter((p) => p.active), [paymentMethods]);
 
   const [addressId, setAddressId] = useState<string>(defaultAddress?.id ?? "new");
-  const [name, setName] = useState(defaultAddress?.fullName ?? user?.user_metadata?.name ?? "");
-  const [phone, setPhone] = useState(defaultAddress?.phone ?? user?.user_metadata?.phone ?? "");
+  const [name, setName] = useState(defaultAddress?.fullName ?? user?.name ?? "");
+  const [phone, setPhone] = useState(defaultAddress?.phone ?? user?.phone ?? "");
   const [wilaya, setWilaya] = useState(defaultAddress?.wilaya ?? "");
   const [address, setAddress] = useState(defaultAddress?.address ?? "");
   const [delivery, setDelivery] = useState<"home" | "desk">(
