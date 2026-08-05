@@ -61,6 +61,12 @@ katech.dz {
 }
 ```
 
+## Comptes de démonstration
+
+Les comptes de démonstration (admin, owner, viewer…) sont semés uniquement en mode développement (`import.meta.env.DEV`). Pour les utiliser, copiez `.env.example` vers `.env.local` ; la variable `VITE_DEV_SEED_CREDENTIALS` y définit les identifiants des comptes semés.
+
+En production, aucun compte n'est semé et aucun compte sans mot de passe ne peut se connecter. L'authentification réelle (backend + base de données) sera introduite en phase 4 du `PLAN.md` ; jusque-là, aucune connexion n'est fonctionnelle sur un build de production.
+
 ## Architecture
 
 - **React 19** + **Vite 7** + **React Router v6** (SPA)
