@@ -1,3 +1,5 @@
+import type { Localized } from "@/lib/i18n";
+
 import rog from "@/assets/p-rog.webp";
 import pavilion from "@/assets/p-pavilion.webp";
 import thinkpad from "@/assets/p-thinkpad.webp";
@@ -27,14 +29,34 @@ export type SpecKey =
   | "psu"
   | "camera";
 
+/**
+ * Champs textuels du produit exprimés en `Localized<string>` (phase 3).
+ *
+ * `Localized<T> = T | { fr: T; en?: T; ar?: T }` **inclut le type nu** : les
+ * douze produits seed ci-dessous restent donc valides sans une seule
+ * modification, et un champ resté en chaîne simple est traité comme du
+ * français avec repli automatique. C'est la migration douce de la skill S11 —
+ * on élargit le type, on ne casse aucune donnée existante.
+ *
+ * Côté rendu, ne jamais interpoler ces champs directement : ce sont
+ * potentiellement des objets. Passer par `useLocalize()` dans un composant ou
+ * par `localize(v, lang)` hors composant — recette complète dans
+ * `docs/LOCALIZED-DATA.md`.
+ */
 export type Product = {
+  /** Identifiant technique — jamais localisé, jamais traduit, sert de clé. */
   id: string;
-  name: string;
+  name: Localized<string>;
+  /** Marque commerciale : nom propre, identique dans les trois langues. */
   brand: string;
   category: Category;
   use: UseTag[];
-  specLine: string;
-  specs: Partial<Record<SpecKey, string>>;
+  specLine: Localized<string>;
+  /**
+   * Les **clés** restent techniques (`SpecKey`, traduites par `t()` via le
+   * dictionnaire), seules les **valeurs** sont localisées.
+   */
+  specs: Partial<Record<SpecKey, Localized<string>>>;
   price: number;
   oldPrice?: number;
   stock: "in" | "low" | "out";
