@@ -1,23 +1,31 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { z } from "zod";
-import { findUserByEmail, setUserPassword } from "@/lib/admin-store";
+import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 
 const emailSchema = z.string().trim().email().max(255);
 const passwordSchema = z.string().min(6).max(72);
 
+/** Latence simulée du parcours mock — conservée à l'identique. */
+const SUBMIT_DELAY_MS = 400;
+
 export default function ResetPassword() {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { resetPassword } = useAuth();
+  // Lien de réinitialisation reçu par courriel (`/reset-password?token=…`).
+  // Ignoré par le parcours mock, requis par le backend de la phase 4.
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") ?? undefined;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       emailSchema.parse(email);
@@ -27,17 +35,23 @@ export default function ResetPassword() {
     }
     if (password !== confirm) return toast.error(t("reset.err.match"));
 
-    const known = findUserByEmail(email);
-    if (!known) return toast.error(t("reset.err.noAccount"));
-
     setBusy(true);
-    setTimeout(() => {
-      const ok = setUserPassword(email, password);
-      setBusy(false);
-      if (!ok) return toast.error(t("reset.err.update"));
+    await new Promise((resolve) => setTimeout(resolve, SUBMIT_DELAY_MS));
+    try {
+      const outcome = await resetPassword({ email, password, token });
+      if (!outcome.ok) {
+        return toast.error(
+          outcome.reason === "no-account" ? t("reset.err.noAccount") : t("reset.err.update"),
+        );
+      }
       toast.success(t("reset.ok"));
       navigate("/auth");
-    }, 400);
+    } catch {
+      // Jeton absent ou refusé côté serveur — échec visible (AGENTS.md §7).
+      toast.error(t("reset.err.update"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

@@ -4,8 +4,9 @@ import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { upsertUser, findUserByEmail } from "@/lib/admin-store";
 import { useMyOrderList } from "@/data-provider";
+// Import de type uniquement : aucune fonction de `admin-store` n'est appelée
+// depuis cette page — les données passent par le fournisseur.
 import type { OrderStatus } from "@/lib/admin-store";
 import { useAddresses, newAddressId, type UserAddress } from "@/lib/addresses";
 import { WILAYAS } from "@/data/wilayas";
@@ -37,13 +38,13 @@ const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive
 };
 
 export default function Account() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateProfile } = useAuth();
   const { data: orders, loading, error } = useMyOrderList();
   const navigate = useNavigate();
   const { t, lang } = useI18n();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
-  const [name, setName] = useState(user?.user_metadata?.name ?? "");
-  const [phone, setPhone] = useState(user?.user_metadata?.phone ?? "");
+  const [name, setName] = useState(user?.name ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
   const { list: addresses, upsert, remove, setDefault } = useAddresses(user?.id);
   const [editing, setEditing] = useState<UserAddress | null>(null);
 
@@ -58,37 +59,24 @@ export default function Account() {
   // useMyOrderList() filtre déjà par client connecté côté provider.
   const myOrders = [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    // Persister le nom dans la table users de admin-store.
-    // Note : AdminUser ne contient pas de champ phone — seul le nom est
-    // persisté dans la table ; le téléphone est conservé dans la session
-    // localStorage uniquement.
-    const existing = findUserByEmail(user.email);
-    if (existing) {
-      upsertUser({ ...existing, name: name.trim() });
-    }
-    // Mettre à jour la session localStorage pour que le nom soit cohérent
-    // après rechargement. Le state React en mémoire (user) reste inchangé
-    // jusqu'au prochain rechargement car auth.tsx n'expose pas de setter de
-    // session : c'est la limite hors périmètre signalée dans le rapport.
+    // La persistance est entièrement déléguée au contexte d'authentification,
+    // qui écrit via le fournisseur puis rafraîchit la session (correctif de la
+    // phase 1 : `handleSave` enregistre réellement, il ne se contente pas
+    // d'afficher un succès). Note : le téléphone n'est porté que par la
+    // session — `AdminUser` n'a pas ce champ ; le backend de la phase 4 le
+    // renverra dans `AuthSession.user`.
     try {
-      const raw = window.localStorage.getItem("ka-mock-user");
-      if (raw) {
-        const stored = JSON.parse(raw) as {
-          id: string;
-          email: string;
-          user_metadata: { name?: string; phone?: string };
-        };
-        stored.user_metadata = { ...stored.user_metadata, name: name.trim(), phone: phone.trim() };
-        window.localStorage.setItem("ka-mock-user", JSON.stringify(stored));
-      }
+      const { error: saveError } = await updateProfile({
+        name: name.trim(),
+        phone: phone.trim() || undefined,
+      });
+      if (saveError) return toast.error(t("account.saveError"));
     } catch {
-      // localStorage indisponible — la modification est quand même enregistrée
-      // dans admin-store.
-      toast.error(t("account.saveError"));
-      return;
+      // Échec visible plutôt que silencieux (AGENTS.md §7).
+      return toast.error(t("account.saveError"));
     }
     toast.success(t("account.savedToast"));
   };
@@ -102,8 +90,8 @@ export default function Account() {
     setEditing({
       id: newAddressId(),
       label: t("account.addr.labelPh").split(",")[0]?.trim() || "Home",
-      fullName: user?.user_metadata?.name ?? "",
-      phone: user?.user_metadata?.phone ?? "",
+      fullName: user?.name ?? "",
+      phone: user?.phone ?? "",
       wilaya: WILAYAS[15]?.code ?? "16",
       address: "",
       isDefault: addresses.length === 0,
