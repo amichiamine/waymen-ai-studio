@@ -9,14 +9,14 @@
 
 ## 1. Décisions déjà prises — ne pas les rouvrir
 
-| Point            | Décision                                                          |
-| ---------------- | ----------------------------------------------------------------- |
-| Runtime          | PHP 8.2+ (validé sur 8.5), extensions `pdo_sqlite` **ou** `pdo_mysql` |
-| Dépendances      | **Aucune.** Pas de Slim, pas de `vendor/`, autoloader maison       |
-| Persistance      | PDO, double pilote choisi par `DB_DRIVER`                          |
-| Routage          | `api/src/Routeur.php`, ~150 lignes, motifs `:nom`                  |
-| Enveloppe        | `api/src/Reponse.php` — seul endroit qui écrit sur la sortie       |
-| Erreurs          | `api/src/ApiException.php` — jamais de trace exposée en production |
+| Point       | Décision                                                              |
+| ----------- | --------------------------------------------------------------------- |
+| Runtime     | PHP 8.2+ (validé sur 8.5), extensions `pdo_sqlite` **ou** `pdo_mysql` |
+| Dépendances | **Aucune.** Pas de Slim, pas de `vendor/`, autoloader maison          |
+| Persistance | PDO, double pilote choisi par `DB_DRIVER`                             |
+| Routage     | `api/src/Routeur.php`, ~150 lignes, motifs `:nom`                     |
+| Enveloppe   | `api/src/Reponse.php` — seul endroit qui écrit sur la sortie          |
+| Erreurs     | `api/src/ApiException.php` — jamais de trace exposée en production    |
 
 **Pourquoi zéro Composer** : l'hébergement n'est pas acquis. Un `vendor/` de
 plusieurs mégaoctets à téléverser, dont les dépendances doivent être compatibles
@@ -225,17 +225,17 @@ DB_DRIVER=mysql DB_HOST=127.0.0.1 DB_NAME=katech DB_USER=katech DB_PASSWORD=… 
 `Db` isole la divergence. Le reste du code n'a **aucune raison** de tester
 `DB_DRIVER` ; si vous en écrivez un, c'est que la couture manque dans `Db`.
 
-| Point                   | Règle                                                                            |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| Booléens                | `INTEGER` 0/1 en base ; vrais booléens dans le DTO                               |
-| Dates                   | Chaînes ISO-8601 UTC (`gmdate('c')`), jamais de type date natif                  |
-| JSON                    | `Db::json()` à l'écriture, `Db::dejson()` à la lecture. Jamais de `json_encode` nu |
-| Montants                | Entiers en DZD, jamais de décimale                                               |
-| Upsert                  | `Db::upsert()` uniquement. `ON CONFLICT` / `ON DUPLICATE KEY` n'apparaît nulle part ailleurs |
-| Transaction d'écriture  | `Db::transaction()` (ou `beginWrite()`) : `BEGIN IMMEDIATE` en SQLite, `BEGIN` en MySQL |
-| Décompte de stock       | `UPDATE … SET stock_qty = stock_qty - :q WHERE id = :id AND stock_qty >= :q2` — identique et atomique des deux côtés |
-| Tri venant de l'URL     | `Db::colonneTri()` + `Db::sens()` contre une liste blanche. Jamais interpolé brut |
-| Nouvelle table/colonne  | **Les DEUX fichiers de `schema/`**, dans le même ordre, puis le vérificateur      |
+| Point                  | Règle                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Booléens               | `INTEGER` 0/1 en base ; vrais booléens dans le DTO                                                                   |
+| Dates                  | Chaînes ISO-8601 UTC (`gmdate('c')`), jamais de type date natif                                                      |
+| JSON                   | `Db::json()` à l'écriture, `Db::dejson()` à la lecture. Jamais de `json_encode` nu                                   |
+| Montants               | Entiers en DZD, jamais de décimale                                                                                   |
+| Upsert                 | `Db::upsert()` uniquement. `ON CONFLICT` / `ON DUPLICATE KEY` n'apparaît nulle part ailleurs                         |
+| Transaction d'écriture | `Db::transaction()` (ou `beginWrite()`) : `BEGIN IMMEDIATE` en SQLite, `BEGIN` en MySQL                              |
+| Décompte de stock      | `UPDATE … SET stock_qty = stock_qty - :q WHERE id = :id AND stock_qty >= :q2` — identique et atomique des deux côtés |
+| Tri venant de l'URL    | `Db::colonneTri()` + `Db::sens()` contre une liste blanche. Jamais interpolé brut                                    |
+| Nouvelle table/colonne | **Les DEUX fichiers de `schema/`**, dans le même ordre, puis le vérificateur                                         |
 
 ### Quatre pièges vérifiés sur les deux pilotes
 
@@ -281,12 +281,12 @@ défaut, et la définition de chaque index. Code de sortie **1** au moindre éca
 
 Correspondances de types tolérées, et elles seules :
 
-| SQLite            | MySQL                                        |
-| ----------------- | -------------------------------------------- |
-| `TEXT`            | `VARCHAR(n)` · `TEXT` · `LONGTEXT`           |
-| `TEXT /* JSON */` | `JSON`                                       |
-| `INTEGER`         | `INT` · `BIGINT` · `TINYINT`                 |
-| `REAL`            | `DOUBLE` · `FLOAT` · `DECIMAL`               |
+| SQLite            | MySQL                              |
+| ----------------- | ---------------------------------- |
+| `TEXT`            | `VARCHAR(n)` · `TEXT` · `LONGTEXT` |
+| `TEXT /* JSON */` | `JSON`                             |
+| `INTEGER`         | `INT` · `BIGINT` · `TINYINT`       |
+| `REAL`            | `DOUBLE` · `FLOAT` · `DECIMAL`     |
 
 Le marqueur `/* JSON */` du côté SQLite n'est pas décoratif : il porte
 l'intention de type et le vérificateur le lit. Une colonne JSON sans marqueur
