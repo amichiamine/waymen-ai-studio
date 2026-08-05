@@ -6,10 +6,28 @@ Application 100 % client, sans backend. `bun run build` produit un dossier `dist
 
 ```bash
 bun install
-bun run dev        # http://localhost:8080
+bun run dev        # http://localhost:8080 (ou le premier port libre au-dessus)
 bun run build      # produit ./dist
 bun run preview    # sert ./dist localement
 ```
+
+### Choisir le port
+
+Le serveur démarre sur **8080** par défaut. Si le port est occupé — Tomcat de
+XAMPP l'utilise, et une fenêtre de terminal fermée sans `Ctrl+C` laisse un
+serveur en vie — Vite **balaie automatiquement** les ports suivants (8081,
+8082…) et affiche l'URL retenue au démarrage.
+
+Pour imposer un port de départ :
+
+```bash
+PORT=5173 bun run dev              # macOS / Linux
+$env:PORT=5173; bun run dev        # Windows PowerShell
+set PORT=5173 && bun run dev       # Windows cmd
+bunx vite --port 5173              # ponctuel, sans variable
+```
+
+`PREVIEW_PORT` fait de même pour `bun run preview`.
 
 ## Déploiement
 

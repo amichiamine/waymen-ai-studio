@@ -3,17 +3,32 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
+/**
+ * Port de développement.
+ *
+ * Historiquement figé à 8080 avec `strictPort: true`, ce qui faisait échouer le
+ * démarrage dès que le port était occupé — cas fréquent sous XAMPP, dont Tomcat
+ * écoute sur 8080, ou après une fenêtre de terminal fermée sans Ctrl+C.
+ *
+ * Désormais : port de départ configurable par la variable d'environnement
+ * `PORT`, et `strictPort: false` pour que Vite balaie les ports suivants
+ * (8081, 8082…) jusqu'à en trouver un libre. Vite affiche systématiquement
+ * l'URL retenue au démarrage : le comportement reste explicite, il cesse
+ * simplement d'être bloquant.
+ */
+const DEV_PORT = Number(process.env.PORT ?? 8080);
+
 export default defineConfig({
   plugins: [react(), tsconfigPaths(), tailwindcss()],
   server: {
     host: "::",
-    port: 8080,
-    strictPort: true,
+    port: DEV_PORT,
+    strictPort: false,
   },
   preview: {
     host: "::",
-    port: 8080,
-    strictPort: true,
+    port: Number(process.env.PREVIEW_PORT ?? DEV_PORT),
+    strictPort: false,
   },
   build: {
     outDir: "dist",
