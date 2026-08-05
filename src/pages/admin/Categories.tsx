@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRight, Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, Plus, ArrowRight, Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,13 +15,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useAdminState, deleteCategory, type AdminCategory } from "@/lib/admin-store";
+import { useCategoryList, useCategoryMutations, useProductList, toApiError } from "@/data-provider";
+import type { AdminCategory } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminCategories() {
-  const { categories, products } = useAdminState();
+  const { data: categories, loading, error } = useCategoryList();
+  const { data: products } = useProductList();
+  const { remove } = useCategoryMutations();
   const { can, guard, denyReason } = usePermissions();
   const [pending, setPending] = useState<AdminCategory | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const rows = useMemo(
     () =>
@@ -34,15 +38,35 @@ export default function AdminCategories() {
 
   const pendingCount = pending ? products.filter((p) => p.category === pending.slug).length : 0;
 
-  function confirmDelete() {
+  const confirmDelete = async () => {
     if (!pending) return;
     // Niveau 2 — vérification dans le handler, pas seulement dans le rendu.
     if (!guard("delete", "Supprimer la catégorie")) return;
     // Garde métier préservée : refus si des produits sont encore rattachés.
     if (pendingCount > 0) return;
-    deleteCategory(pending.slug);
-    toast.success(`Catégorie « ${pending.label} » supprimée`);
-    setPending(null);
+    setDeleting(true);
+    try {
+      await remove(pending.slug);
+      toast.success(`Catégorie « ${pending.label} » supprimée`);
+      setPending(null);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AdminPageShell title="Catégories" description="Chargement…">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="h-64 animate-pulse rounded-lg border bg-muted" />
+          ))}
+        </div>
+      </AdminPageShell>
+    );
   }
 
   return (
@@ -66,6 +90,16 @@ export default function AdminCategories() {
         )
       }
     >
+      {error && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map((c) => (
           <Card
@@ -178,10 +212,10 @@ export default function AdminCategories() {
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              disabled={pendingCount > 0}
+              disabled={pendingCount > 0 || deleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              {deleting ? "Suppression…" : "Supprimer"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

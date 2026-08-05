@@ -10,7 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { useAdminState, upsertCategory, deleteCategory, getCategory } from "@/lib/admin-store";
+import {
+  useCategoryList,
+  useCategoryDetail,
+  useCategoryMutations,
+  useProductList,
+  toApiError,
+} from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
 
 const optionalUrl = z
@@ -47,11 +53,17 @@ const schema = z.object({
 type V = z.infer<typeof schema>;
 
 export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
-  const { categories, products } = useAdminState();
+  const { data: categories } = useCategoryList();
+  const { data: products } = useProductList();
   const { can, guard, denyReason } = usePermissions();
   const { slug } = useParams();
+
+  // useProductDetail reste monté et inactif quand slug est undefined — jamais de hook conditionnel.
+  const { data: existing } = useCategoryDetail(mode === "edit" ? slug : undefined);
+
+  const { create, update: updateCategory, remove } = useCategoryMutations();
   const nav = useNavigate();
-  const existing = mode === "edit" && slug ? getCategory(slug) : undefined;
+
   const [v, setV] = useState<V>(
     existing
       ? {
@@ -64,6 +76,8 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
   );
   const [err, setErr] = useState<Partial<Record<keyof V, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (mode === "edit" && slug) {
@@ -78,7 +92,7 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
     setErr((e) => ({ ...e, [k]: undefined }));
   }
 
-  function submit(e: React.FormEvent) {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Niveau 2 — vérification dans le handler avant toute mutation.
     const perm = mode === "new" ? "create" : "update";
@@ -98,23 +112,32 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
       toast.error("Slug déjà utilisé");
       return;
     }
+    setSaving(true);
     try {
-      upsertCategory({
+      const payload = {
         slug: p.data.slug,
         label: p.data.label,
         description: p.data.description,
         cover: p.data.cover || undefined,
-      });
+      };
+      if (mode === "new") {
+        await create(payload);
+      } else {
+        await updateCategory(p.data.slug, payload);
+      }
       toast.success(mode === "new" ? "Catégorie créée" : "Catégorie mise à jour");
       nav("/admin/categories");
-    } catch {
-      toast.error("Enregistrement échoué");
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setSaving(false);
     }
-  }
+  };
 
   const usedCount = existing ? products.filter((p) => p.category === existing.slug).length : 0;
 
-  function doDelete() {
+  const doDelete = async () => {
     if (!existing) return;
     // Niveau 2 — vérification dans le handler avant toute mutation.
     if (!guard("delete", "Supprimer la catégorie")) return;
@@ -123,14 +146,18 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
       toast.error(`Impossible : ${usedCount} produit(s) utilisent cette catégorie.`);
       return;
     }
+    setDeleting(true);
     try {
-      deleteCategory(existing.slug);
+      await remove(existing.slug);
       toast.success("Catégorie supprimée");
       nav("/admin/categories");
-    } catch {
-      toast.error("Suppression échouée");
+    } catch (cause) {
+      const apiErr = toApiError(cause);
+      toast.error(apiErr.message);
+    } finally {
+      setDeleting(false);
     }
-  }
+  };
 
   // Clé de permission selon le mode : création ou modification.
   const formPerm = mode === "new" ? "create" : "update";
@@ -232,8 +259,8 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
           </Link>
           {/* Niveau 1+3 : bouton de soumission désactivé si pas la permission. */}
           <span title={denyReason(formPerm)} className="inline-flex">
-            <Button type="submit" disabled={!can(formPerm)}>
-              {mode === "new" ? "Créer" : "Enregistrer"}
+            <Button type="submit" disabled={!can(formPerm) || saving}>
+              {saving ? "Enregistrement…" : mode === "new" ? "Créer" : "Enregistrer"}
             </Button>
           </span>
         </div>
@@ -256,7 +283,7 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
             )
           ) : null
         }
-        confirmLabel="Supprimer"
+        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
         destructive
         onConfirm={doDelete}
       />

@@ -12,14 +12,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Upload, Search, Copy, Trash2, Pencil, Image as ImageIcon } from "lucide-react";
 import {
-  useAdminState,
-  upsertMediaAsset,
-  deleteMediaAsset,
-  renameMediaAsset,
-  type MediaAsset,
-} from "@/lib/admin-store";
+  AlertTriangle,
+  Upload,
+  Search,
+  Copy,
+  Trash2,
+  Pencil,
+  Image as ImageIcon,
+} from "lucide-react";
+import {
+  useMediaAssetList,
+  useMediaAssetMutations,
+  useProductList,
+  toApiError,
+} from "@/data-provider";
+import type { MediaAsset } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
 const MAX = 5 * 1024 * 1024; // 5 Mo par fichier
@@ -33,8 +41,6 @@ const MAX = 5 * 1024 * 1024; // 5 Mo par fichier
 const BUDGET = 3 * 1024 * 1024; // 3 Mo en taille binaire
 const WARN_THRESHOLD = 0.8; // avertissement à 80 % du budget
 
-const LS_KEY = "katech.admin.state.v1";
-
 const fmtSize = (b: number) =>
   b < 1024
     ? `${b} o`
@@ -43,7 +49,9 @@ const fmtSize = (b: number) =>
       : `${(b / 1048576).toFixed(2)} Mo`;
 
 export default function AdminMedia() {
-  const { mediaAssets, products } = useAdminState();
+  const { data: mediaAssets, loading, error } = useMediaAssetList();
+  const { data: products } = useProductList();
+  const { upload, rename: renameMutation, remove } = useMediaAssetMutations();
   const { can, guard, denyReason } = usePermissions();
   const inputRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
@@ -51,6 +59,7 @@ export default function AdminMedia() {
   const [renameFor, setRenameFor] = useState<MediaAsset | null>(null);
   const [rName, setRName] = useState("");
   const [rTag, setRTag] = useState("");
+  const [renameSaving, setRenameSaving] = useState(false);
 
   // Fusion : médiathèque + images utilisées par le catalogue (référence, non éditables ici)
   const catalog = useMemo(
@@ -89,6 +98,8 @@ export default function AdminMedia() {
   const budgetWarning = budgetPct >= WARN_THRESHOLD * 100;
 
   // Niveau 2 — vérification dans le handler avant tout téléversement.
+  // La protection de quota est conservée intacte : vérification avant l'appel
+  // au provider, sans la court-circuiter ni la dupliquer.
   const onFiles = async (files: FileList | null) => {
     if (!files) return;
     if (!guard("create", "Téléverser un média")) return;
@@ -117,33 +128,17 @@ export default function AdminMedia() {
         );
       }
 
-      const dataUrl = await new Promise<string>((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(String(r.result));
-        r.onerror = () => rej(new Error("read"));
-        r.readAsDataURL(f);
-      });
-      const asset: MediaAsset = {
-        id: `media_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-        name: f.name,
-        src: dataUrl,
-        mime: f.type,
-        size: f.size,
-        createdAt: new Date().toISOString(),
-      };
-      upsertMediaAsset(asset);
-
-      // Vérification que l'écriture localStorage a réellement réussi (AGENTS.md §7 :
-      // rendre les échecs visibles — saveState() avale les erreurs de quota en silence).
-      const stored = window.localStorage.getItem(LS_KEY);
-      const writtenOk = stored !== null && stored.includes(asset.id);
-      if (!writtenOk) {
+      // Le provider gère la conversion base64 / FormData selon le mode.
+      // Il vérifie aussi que l'écriture localStorage a réussi en mode mock.
+      try {
+        await upload(f);
+        toast.success(`${f.name} : téléversé et sauvegardé.`);
+      } catch (cause) {
+        const err = toApiError(cause);
         toast.error(
-          `${f.name} : l'image n'a pas pu être sauvegardée (quota localStorage dépassé). ` +
+          `${f.name} : l'image n'a pas pu être sauvegardée (${err.message}). ` +
             `Supprimez des médias pour libérer de l'espace, ou attendez la phase 4.`,
         );
-      } else {
-        toast.success(`${f.name} : téléversé et sauvegardé.`);
       }
     }
   };
@@ -162,17 +157,51 @@ export default function AdminMedia() {
   };
 
   // Niveau 2 — vérification dans le handler de renommage (update).
-  const saveRename = () => {
+  const saveRename = async () => {
     if (!renameFor) return;
     if (!guard("update", "Renommer le média")) return;
     if (!rName.trim()) {
       toast.error("Nom requis");
       return;
     }
-    renameMediaAsset(renameFor.id, rName.trim(), rTag.trim() || undefined);
-    toast.success("Métadonnées mises à jour");
-    setRenameFor(null);
+    setRenameSaving(true);
+    try {
+      await renameMutation(renameFor.id, rName.trim(), rTag.trim() || undefined);
+      toast.success("Métadonnées mises à jour");
+      setRenameFor(null);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setRenameSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <AdminPageShell
+        title="Médiathèque"
+        description="Chargement…"
+        actions={
+          <>
+            <input ref={inputRef} type="file" accept="image/*" multiple hidden />
+            <Button disabled>
+              <Upload className="me-2 h-4 w-4" /> Téléverser
+            </Button>
+          </>
+        }
+      >
+        <div
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+          aria-busy="true"
+        >
+          {Array.from({ length: 12 }, (_, i) => (
+            <div key={i} className="aspect-square animate-pulse rounded-lg border bg-muted" />
+          ))}
+        </div>
+      </AdminPageShell>
+    );
+  }
 
   return (
     <AdminPageShell
@@ -204,6 +233,16 @@ export default function AdminMedia() {
         </>
       }
     >
+      {error && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {error.message}
+        </p>
+      )}
+
       {/* Jauge de quota — affichage permanent */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -324,11 +363,16 @@ export default function AdminMedia() {
                             size="icon"
                             className="h-6 w-6"
                             disabled={!can("delete")}
-                            onClick={() => {
+                            onClick={async () => {
                               // Niveau 2 — vérification dans le handler.
                               if (!guard("delete", "Supprimer le média")) return;
-                              deleteMediaAsset(m.id);
-                              toast.success("Supprimé");
+                              try {
+                                await remove(m.id);
+                                toast.success("Supprimé");
+                              } catch (cause) {
+                                const err = toApiError(cause);
+                                toast.error(err.message);
+                              }
                             }}
                             aria-label="Supprimer"
                           >
@@ -396,7 +440,9 @@ export default function AdminMedia() {
             <Button variant="outline" onClick={() => setRenameFor(null)}>
               Annuler
             </Button>
-            <Button onClick={saveRename}>Enregistrer</Button>
+            <Button onClick={saveRename} disabled={renameSaving}>
+              {renameSaving ? "Enregistrement…" : "Enregistrer"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

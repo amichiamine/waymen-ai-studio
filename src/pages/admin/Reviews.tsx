@@ -9,20 +9,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, X, Trash2, Star, Plus, Pencil, Save } from "lucide-react";
+import { AlertTriangle, Check, X, Trash2, Star, Plus, Pencil, Save } from "lucide-react";
 import {
-  useAdminState,
-  updateReviewStatus,
-  deleteReview,
-  upsertHomeReview,
-  deleteHomeReview,
-  type ReviewStatus,
-  type HomeReview,
-} from "@/lib/admin-store";
+  useReviewList,
+  useReviewMutations,
+  useHomeReviewList,
+  useHomeReviewMutations,
+  useProductList,
+  toApiError,
+} from "@/data-provider";
+import type { HomeReview } from "@/api/types";
+import type { ReviewStatus } from "@/api/types";
 import { usePermissions } from "@/lib/admin-auth";
 
 export default function AdminReviews() {
-  const { reviews, homeReviews, products } = useAdminState();
+  const { data: reviews, loading: loadingReviews, error: errorReviews } = useReviewList();
+  const { data: homeReviews, loading: loadingHome, error: errorHome } = useHomeReviewList();
+  const { data: products } = useProductList();
+  const { moderate, remove: removeReview } = useReviewMutations();
+  const { upsert: upsertHomeReview, remove: removeHomeReview } = useHomeReviewMutations();
   const { can, guard, denyReason } = usePermissions();
   const [tab, setTab] = useState<"product" | "home">("product");
   const [statusTab, setStatusTab] = useState<"all" | ReviewStatus>("all");
@@ -31,6 +36,7 @@ export default function AdminReviews() {
     id: string;
     label: string;
   } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const rows = useMemo(() => {
     return reviews
@@ -49,12 +55,38 @@ export default function AdminReviews() {
   );
 
   // Niveau 2 — vérification dans le handler de confirmation de suppression.
-  function confirmDelete() {
+  const confirmDelete = async () => {
     if (!pendingDelete) return;
     if (!guard("delete", "Supprimer l'avis")) return;
-    if (pendingDelete.kind === "product") deleteReview(pendingDelete.id);
-    else deleteHomeReview(pendingDelete.id);
-    toast.success("Supprimé");
+    setDeleting(true);
+    try {
+      if (pendingDelete.kind === "product") {
+        await removeReview(pendingDelete.id);
+      } else {
+        await removeHomeReview(pendingDelete.id);
+      }
+      toast.success("Supprimé");
+      setPendingDelete(null);
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const loading = loadingReviews || loadingHome;
+
+  if (loading) {
+    return (
+      <AdminPageShell title="Avis" description="Chargement…">
+        <div className="space-y-3" aria-busy="true">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="h-32 animate-pulse rounded-lg border bg-muted" />
+          ))}
+        </div>
+      </AdminPageShell>
+    );
   }
 
   return (
@@ -62,6 +94,16 @@ export default function AdminReviews() {
       title="Avis"
       description={`${reviews.length} avis produits · ${homeReviews.length} avis d'accueil.`}
     >
+      {(errorReviews || errorHome) && (
+        <p
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {errorReviews?.message ?? errorHome?.message}
+        </p>
+      )}
+
       <Tabs value={tab} onValueChange={(v) => setTab(v as "product" | "home")}>
         <TabsList>
           <TabsTrigger value="product">Avis produits ({reviews.length})</TabsTrigger>
@@ -121,11 +163,16 @@ export default function AdminReviews() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
+                          onClick={async () => {
                             // Niveau 2 — vérification dans le handler.
                             if (!guard("update", "Approuver l'avis")) return;
-                            updateReviewStatus(r.id, "approved");
-                            toast.success("Approuvé");
+                            try {
+                              await moderate(r.id, "approved");
+                              toast.success("Approuvé");
+                            } catch (cause) {
+                              const err = toApiError(cause);
+                              toast.error(err.message);
+                            }
                           }}
                         >
                           <Check className="me-2 h-4 w-4" /> Approuver
@@ -142,11 +189,16 @@ export default function AdminReviews() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
+                          onClick={async () => {
                             // Niveau 2 — vérification dans le handler.
                             if (!guard("update", "Rejeter l'avis")) return;
-                            updateReviewStatus(r.id, "rejected");
-                            toast.success("Rejeté");
+                            try {
+                              await moderate(r.id, "rejected");
+                              toast.success("Rejeté");
+                            } catch (cause) {
+                              const err = toApiError(cause);
+                              toast.error(err.message);
+                            }
                           }}
                         >
                           <X className="me-2 h-4 w-4" /> Rejeter
@@ -197,6 +249,7 @@ export default function AdminReviews() {
             denyReasonCreate={denyReason("create")}
             guardUpdate={(label: string) => guard("update", label)}
             guardCreate={(label: string) => guard("create", label)}
+            onUpsert={upsertHomeReview}
           />
         </TabsContent>
       </Tabs>
@@ -208,6 +261,7 @@ export default function AdminReviews() {
         }}
         title={pendingDelete ? `Supprimer « ${pendingDelete.label} » ?` : "Supprimer ?"}
         description="Cette action est irréversible."
+        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
         destructive
         onConfirm={confirmDelete}
       />
@@ -233,6 +287,7 @@ function HomeReviewsEditor({
   denyReasonCreate,
   guardUpdate,
   guardCreate,
+  onUpsert,
 }: {
   reviews: HomeReview[];
   products: { id: string; name: string }[];
@@ -243,8 +298,10 @@ function HomeReviewsEditor({
   denyReasonCreate: string | undefined;
   guardUpdate: (label: string) => boolean;
   guardCreate: (label: string) => boolean;
+  onUpsert: (review: HomeReview) => Promise<HomeReview>;
 }) {
   const [editing, setEditing] = useState<HomeReview | null>(null);
+  const [saving, setSaving] = useState(false);
 
   function startNew() {
     setEditing({
@@ -408,7 +465,8 @@ function HomeReviewsEditor({
                 Annuler
               </Button>
               <Button
-                onClick={() => {
+                disabled={saving}
+                onClick={async () => {
                   if (!editing.name.trim() || !editing.text.trim()) {
                     toast.error("Nom et texte requis");
                     return;
@@ -420,12 +478,20 @@ function HomeReviewsEditor({
                   } else {
                     if (!guardUpdate("Modifier l'avis d'accueil")) return;
                   }
-                  upsertHomeReview(editing);
-                  toast.success("Avis enregistré");
-                  setEditing(null);
+                  setSaving(true);
+                  try {
+                    await onUpsert(editing);
+                    toast.success("Avis enregistré");
+                    setEditing(null);
+                  } catch (cause) {
+                    const err = toApiError(cause);
+                    toast.error(err.message);
+                  } finally {
+                    setSaving(false);
+                  }
                 }}
               >
-                <Save className="me-2 h-4 w-4" /> Enregistrer
+                <Save className="me-2 h-4 w-4" /> {saving ? "Enregistrement…" : "Enregistrer"}
               </Button>
             </div>
           </CardContent>
