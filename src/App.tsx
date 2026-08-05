@@ -14,13 +14,6 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useAdminState } from "@/lib/admin-store";
 import { useAdminRoles } from "@/lib/admin-auth";
-import {
-  AdminSidebar,
-  AdminMobileNav,
-  AdminBreadcrumbs,
-  AdminRoleSwitcher,
-  AdminNotificationBell,
-} from "@/components/admin/AdminLayout";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Home } from "lucide-react";
@@ -54,6 +47,11 @@ const Cart = lazy(() => import("@/pages/Cart"));
 const Favorites = lazy(() => import("@/pages/Favorites"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
+
+// Cadre du back-office (barre latérale, en-tête admin) : chargé à la demande au
+// même titre que les pages, pour que le visiteur de la boutique ne télécharge
+// pas `ui/sidebar` ni les primitives Radix qui n'existent que côté admin.
+const AdminShell = lazy(() => import("@/components/admin/AdminShell"));
 
 // Pages admin
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
@@ -154,30 +152,11 @@ function AdminLayout() {
       </div>
     );
   }
+  // Garde franchie : seulement maintenant on demande le chunk du cadre admin.
   return (
-    <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-3 border-b border-border/60 bg-card/50 px-3 lg:px-8">
-          <AdminMobileNav />
-          <AdminBreadcrumbs />
-          <div className="ml-auto flex items-center gap-2">
-            <AdminRoleSwitcher />
-            <AdminNotificationBell />
-            <Link to="/" className="text-sm text-primary hover:underline">
-              ← Boutique
-            </Link>
-          </div>
-        </header>
-        <main className="min-w-0 flex-1 p-4 lg:p-8">
-          {/* Suspense local : le chargement d'un écran admin ne doit pas faire
-              disparaître la barre latérale ni l'en-tête du back-office. */}
-          <Suspense fallback={<RouteLoader />}>
-            <Outlet />
-          </Suspense>
-        </main>
-      </div>
-    </div>
+    <Suspense fallback={<RouteLoader className="min-h-screen" />}>
+      <AdminShell pageFallback={<RouteLoader />} />
+    </Suspense>
   );
 }
 
