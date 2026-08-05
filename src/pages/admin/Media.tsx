@@ -4,6 +4,7 @@ import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,19 @@ import {
 } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 
-const MAX = 5 * 1024 * 1024; // 5 MB per file
+const MAX = 5 * 1024 * 1024; // 5 Mo par fichier
+
+// Budget global de la médiathèque en taille binaire.
+// Le surcoût base64 (~33 %) est pris en compte dans le calcul de l'espace occupé.
+// Le localStorage est partagé par l'ensemble de l'état : 3 Mo laisse une marge
+// raisonnable pour les autres données (produits, commandes, blog…).
+// TODO Phase 4 (PLAN.md §8, vague 4.5) : abandon du base64 et stockage en fichiers
+// serveur — cette contrainte deviendra caduque.
+const BUDGET = 3 * 1024 * 1024; // 3 Mo en taille binaire
+const WARN_THRESHOLD = 0.8; // avertissement à 80 % du budget
+
+const LS_KEY = "katech.admin.state.v1";
+
 const fmtSize = (b: number) =>
   b < 1024
     ? `${b} o`
@@ -71,6 +84,9 @@ export default function AdminMedia() {
   }, [combined, q]);
 
   const totalSize = mediaAssets.reduce((s, m) => s + m.size, 0);
+  const budgetPct = Math.min(100, Math.round((totalSize / BUDGET) * 100));
+  const budgetCritical = budgetPct >= 100;
+  const budgetWarning = budgetPct >= WARN_THRESHOLD * 100;
 
   // Niveau 2 — vérification dans le handler avant tout téléversement.
   const onFiles = async (files: FileList | null) => {
@@ -85,6 +101,22 @@ export default function AdminMedia() {
         toast.error(`${f.name} : trop volumineux (>5 Mo)`);
         continue;
       }
+
+      // Garde quota global : vérification avant téléversement.
+      if (totalSize + f.size > BUDGET) {
+        toast.error(
+          `Quota de la médiathèque atteint (${fmtSize(BUDGET)} max). ` +
+            `Supprimez des images existantes, ou attendez la phase 4 (stockage serveur).`,
+        );
+        continue;
+      }
+      if (totalSize + f.size > BUDGET * WARN_THRESHOLD) {
+        toast.warning(
+          `Attention : ce téléversement portera la médiathèque à ${fmtSize(totalSize + f.size)} / ${fmtSize(BUDGET)}. ` +
+            `Le stockage serveur (phase 4) lèvera cette limite.`,
+        );
+      }
+
       const dataUrl = await new Promise<string>((res, rej) => {
         const r = new FileReader();
         r.onload = () => res(String(r.result));
@@ -100,8 +132,20 @@ export default function AdminMedia() {
         createdAt: new Date().toISOString(),
       };
       upsertMediaAsset(asset);
+
+      // Vérification que l'écriture localStorage a réellement réussi (AGENTS.md §7 :
+      // rendre les échecs visibles — saveState() avale les erreurs de quota en silence).
+      const stored = window.localStorage.getItem(LS_KEY);
+      const writtenOk = stored !== null && stored.includes(asset.id);
+      if (!writtenOk) {
+        toast.error(
+          `${f.name} : l'image n'a pas pu être sauvegardée (quota localStorage dépassé). ` +
+            `Supprimez des médias pour libérer de l'espace, ou attendez la phase 4.`,
+        );
+      } else {
+        toast.success(`${f.name} : téléversé et sauvegardé.`);
+      }
     }
-    toast.success("Téléversement terminé");
   };
 
   const copySrc = (src: string) => {
@@ -147,7 +191,7 @@ export default function AdminMedia() {
             onChange={(e) => onFiles(e.target.files)}
           />
           {can("create") ? (
-            <Button onClick={() => inputRef.current?.click()}>
+            <Button onClick={() => inputRef.current?.click()} disabled={budgetCritical}>
               <Upload className="me-2 h-4 w-4" /> Téléverser
             </Button>
           ) : (
@@ -160,6 +204,37 @@ export default function AdminMedia() {
         </>
       }
     >
+      {/* Jauge de quota — affichage permanent */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            Espace médiathèque : {fmtSize(totalSize)} / {fmtSize(BUDGET)}
+          </span>
+          <span>{budgetPct} %</span>
+        </div>
+        <Progress
+          value={budgetPct}
+          className={
+            budgetCritical
+              ? "[&>div]:bg-destructive"
+              : budgetWarning
+                ? "[&>div]:bg-yellow-500"
+                : undefined
+          }
+        />
+        {budgetCritical && (
+          <p className="text-xs text-destructive">
+            Quota atteint — téléversements bloqués. Supprimez des images ou attendez le stockage
+            serveur (phase 4).
+          </p>
+        )}
+        {!budgetCritical && budgetWarning && (
+          <p className="text-xs text-yellow-600 dark:text-yellow-400">
+            Quota bientôt atteint. Envisagez de supprimer des images inutilisées.
+          </p>
+        )}
+      </div>
+
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
