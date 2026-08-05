@@ -40,6 +40,20 @@ async function loadDictionary(lang: Lang): Promise<Dictionary> {
   return mod.default;
 }
 
+/**
+ * Clés déjà signalées comme manquantes, pour ne journaliser qu'une fois chacune.
+ * Le repli reste silencieux en production : seul le développement voit le bruit.
+ */
+const reportedMissingKeys = new Set<string>();
+
+function reportMissingKey(lang: Lang, key: string): void {
+  if (!import.meta.env.DEV) return;
+  const marker = `${lang}:${key}`;
+  if (reportedMissingKeys.has(marker)) return;
+  reportedMissingKeys.add(marker);
+  console.warn(`[i18n] clé « ${key} » absente du dictionnaire « ${lang} » — repli appliqué.`);
+}
+
 export type TKey = string;
 
 type Ctx = {
@@ -64,6 +78,18 @@ function readInitialLang(): Lang {
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => readInitialLang());
   const [dict, setDict] = useState<Dictionary>(() => dictionaryCache[lang] ?? fr);
+  /**
+   * Vrai dès que le dictionnaire de la langue **initiale** est disponible.
+   * Choix assumé : tant qu'il est faux (langue persistée `en` ou `ar` au premier
+   * rendu), on ne rend pas les enfants — un écran vide d'une fraction de seconde
+   * vaut mieux qu'un flash de français aussitôt remplacé. Ce drapeau ne
+   * redevient jamais faux : lors d'un changement de langue en cours de session,
+   * l'ancien dictionnaire reste affiché jusqu'à l'arrivée du nouveau, ce qui
+   * évite de vider l'écran sous les yeux de l'utilisateur.
+   */
+  const [dictionaryReady, setDictionaryReady] = useState<boolean>(
+    () => dictionaryCache[lang] !== undefined,
+  );
   const dir: Dir = lang === "ar" ? "rtl" : "ltr";
 
   useEffect(() => {
@@ -76,18 +102,23 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const cached = dictionaryCache[lang];
     if (cached) {
       setDict(cached);
+      setDictionaryReady(true);
       return;
     }
     let cancelled = false;
     loadDictionary(lang)
       .then((loaded) => {
-        if (!cancelled) setDict(loaded);
+        if (cancelled) return;
+        setDict(loaded);
+        setDictionaryReady(true);
       })
       .catch((err: unknown) => {
         // Dégradation gracieuse : un échec réseau sur le chunk de langue laisse
         // l'application utilisable en français plutôt que de la casser.
         console.warn(`[i18n] chargement du dictionnaire « ${lang} » impossible :`, err);
-        if (!cancelled) setDict(fr);
+        if (cancelled) return;
+        setDict(fr);
+        setDictionaryReady(true);
       });
     return () => {
       cancelled = true;
@@ -107,11 +138,20 @@ export function I18nProvider({ children }: { children: ReactNode }) {
           console.warn("[i18n] impossible de persister la langue :", err);
         }
       },
-      t: (k) => dict[k] ?? fr[k] ?? k,
+      // `t` retourne toujours une chaîne : dictionnaire actif, puis repli fr,
+      // puis la clé elle-même. Jamais `undefined`, même pendant le chargement.
+      t: (k) => {
+        const direct = dict[k];
+        if (direct !== undefined) return direct;
+        reportMissingKey(lang, k);
+        return fr[k] ?? k;
+      },
     };
   }, [lang, dir, dict]);
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+  return (
+    <I18nContext.Provider value={value}>{dictionaryReady ? children : null}</I18nContext.Provider>
+  );
 }
 
 export function useI18n() {
