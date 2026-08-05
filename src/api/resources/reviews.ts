@@ -4,7 +4,7 @@ import { endpoints as E } from "../endpoints";
 import {
   getAdminSnapshot,
   createProductReview,
-  setReviewStatus,
+  updateReviewStatus,
   deleteReview,
 } from "@/lib/admin-store";
 import type { Review, ReviewStatus } from "../types";
@@ -27,7 +27,7 @@ export const reviewsApi = {
 
   async moderate(id: string, status: ReviewStatus): Promise<void> {
     if (isHttpMode()) { await http.patch<void>(E.reviews.moderate(id), { status }); return; }
-    setReviewStatus(id, status);
+    updateReviewStatus(id, status);
   },
 
   async remove(id: string): Promise<void> {

@@ -11,7 +11,7 @@ import type { Paginated, Product, ProductQuery } from "../types";
 
 function paginateLocal(items: Product[], q: ProductQuery = {}): Paginated<Product> {
   const page = q.page ?? 1;
-  const perPage = q.perPage ?? items.length || 1;
+  const perPage = q.perPage ?? (items.length || 1);
   let list = items;
   if (q.category) list = list.filter((p) => p.category === q.category);
   if (q.brand) list = list.filter((p) => p.brand === q.brand);

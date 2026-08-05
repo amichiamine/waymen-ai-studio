@@ -1,7 +1,7 @@
 import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
-import { getAdminSnapshot, createOrder, setOrderStatus } from "@/lib/admin-store";
+import { getAdminSnapshot, createOrder, updateOrderStatus } from "@/lib/admin-store";
 import type { CreateOrderInput, Order, OrderQuery, OrderStatus, Paginated } from "../types";
 
 export const ordersApi = {
@@ -10,7 +10,7 @@ export const ordersApi = {
     let items = getAdminSnapshot().orders;
     if (query.status) items = items.filter((o) => o.status === query.status);
     const page = query.page ?? 1;
-    const perPage = query.perPage ?? items.length || 1;
+    const perPage = query.perPage ?? (items.length || 1);
     return { items: items.slice((page - 1) * perPage, page * perPage), total: items.length, page, perPage };
   },
 
@@ -26,7 +26,7 @@ export const ordersApi = {
 
   async updateStatus(id: string, status: OrderStatus, note?: string): Promise<void> {
     if (isHttpMode()) { await http.patch<void>(E.orders.updateStatus(id), { status, note }); return; }
-    setOrderStatus(id, status, note);
+    updateOrderStatus(id, status, note);
   },
 
   async mine(): Promise<Order[]> {
