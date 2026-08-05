@@ -140,20 +140,23 @@ function ProductView({ p }: { p: ProductType }) {
   }, [stats.approved]);
 
   const canonical = `/product/${p.id}`;
+  const absoluteUrl = `${window.location.origin}/product/${p.id}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: p.name,
-    brand: p.brand,
+    brand: { "@type": "Brand", name: p.brand },
     category: t(cat.labelKey),
     image: p.image,
     description: p.specLine,
+    url: absoluteUrl,
     offers: {
       "@type": "Offer",
       priceCurrency: "DZD",
       price: p.price,
       availability:
         p.stock === "out" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      url: absoluteUrl,
     },
     aggregateRating:
       stats.count > 0
