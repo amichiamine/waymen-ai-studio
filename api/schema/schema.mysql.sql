@@ -94,9 +94,10 @@ CREATE TABLE IF NOT EXISTS orders (
   delivery_kind   VARCHAR(16) NOT NULL DEFAULT 'home',
   address         TEXT NOT NULL,
   phone           VARCHAR(48) NOT NULL DEFAULT '',
-  note            TEXT NULL,
-  created_at      VARCHAR(32) NOT NULL,
-  updated_at      VARCHAR(32) NOT NULL
+  note                TEXT NULL,
+  invoice_snapshot    JSON NULL,
+  created_at          VARCHAR(32) NOT NULL,
+  updated_at          VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX idx_orders_customer ON orders (customer_id);
 CREATE INDEX idx_orders_status ON orders (status);
