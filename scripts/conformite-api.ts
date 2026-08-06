@@ -50,6 +50,11 @@
  * testable). Ne jamais le lancer contre une base de production : il refuse de
  * démarrer si `API_URL` ne pointe pas sur une adresse de loopback, sauf
  * `CONFORMITE_AUTORISER_DISTANT=1`.
+ *
+ * Le téléversement du média d'amorçage écrit dans `UPLOAD_DIR`, dont le défaut
+ * (`<dépôt>/public_html/uploads`) n'est pas ignoré par git. Lancer le serveur
+ * PHP avec `UPLOAD_DIR=/tmp/katech-uploads` évite de salir le dépôt — voir
+ * docs/CONFORMITE-API.md §5.4.
  */
 
 import { env, exit, argv } from "node:process";

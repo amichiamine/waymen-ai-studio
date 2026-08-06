@@ -230,16 +230,20 @@ en arbitrage (§4.5). Les brancher sur les sections actuelles serait un travail
 
 ---
 
-## 5. Gravité 3 — écarts mineurs
+## 5. Gravité 3 — constats mineurs
 
-| #   | Constat                                                                                                                                                            |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 5.1 | `GET /content/home-reviews` renvoie `{ items }` **sans** `total`, `page`, `perPage` — seule liste de l'API à sortir du format paginé du contrat.                   |
-| 5.2 | Champs additifs non attendus par le frontend, sans effet : `position` (`/categories`, `/settings/payments`), `updatedAt` (7 ressources), `phone` (`/admin/users`). |
-| 5.3 | `specLine` est vide (`""`) pour les deux produits `builds` importés, alors que le seed frontend en portait une. À vérifier dans `importer-donnees-front.php`.      |
+Les trois écarts mineurs comptés par le harnais sont ceux de la ligne 5.1 ;
+5.2 à 5.4 sont des observations faites pendant la campagne.
 
-Aucun de ces trois points ne bloque la bascule ; 5.1 et 5.3 méritent quand même
-une correction, ce sont des divergences de données réelles.
+| #   | Constat                                                                                                                                                                                                                                                                               |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.1 | `GET /content/home-reviews` renvoie `{ items }` **sans** `total`, `page`, `perPage` — seule liste de l'API à sortir du format paginé du contrat.                                                                                                                                      |
+| 5.2 | Champs additifs non attendus par le frontend, sans effet : `position` (`/categories`, `/settings/payments`), `updatedAt` (7 ressources), `phone` (`/admin/users`).                                                                                                                    |
+| 5.3 | `specLine` est vide (`""`) pour les deux produits `builds` importés, alors que le seed frontend en portait une. À vérifier dans `importer-donnees-front.php`.                                                                                                                         |
+| 5.4 | `UPLOAD_DIR` vaut par défaut `<dépôt>/public_html/uploads`, qui n'est pas dans `.gitignore` : tout téléversement en développement laisse des fichiers non suivis dans le dépôt. Ajouter `public_html/` à `.gitignore`, ou exporter `UPLOAD_DIR=/tmp/katech-uploads` en développement. |
+
+Aucun de ces quatre points ne bloque la bascule ; 5.1, 5.3 et 5.4 méritent quand
+même une correction, ce sont des divergences réelles.
 
 ---
 
