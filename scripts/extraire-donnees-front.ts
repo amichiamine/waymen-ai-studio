@@ -61,17 +61,15 @@ const CAT_DESC: Record<string, string> = {
   phones: "Smartphones Android et iOS.",
 };
 
-const categories = (Object.keys(categoryMeta) as (keyof typeof categoryMeta)[]).map(
-  (slug, i) => ({
-    slug,
-    label: CAT_LABELS[slug] ?? slug,
-    description: CAT_DESC[slug] ?? "",
-    cover: `/assets/p-${products.find((p) => p.category === slug)?.id ?? slug}.webp`,
-    position: i,
-    created_at: now,
-    updated_at: now,
-  }),
-);
+const categories = (Object.keys(categoryMeta) as (keyof typeof categoryMeta)[]).map((slug, i) => ({
+  slug,
+  label: CAT_LABELS[slug] ?? slug,
+  description: CAT_DESC[slug] ?? "",
+  cover: `/assets/p-${products.find((p) => p.category === slug)?.id ?? slug}.webp`,
+  position: i,
+  created_at: now,
+  updated_at: now,
+}));
 
 // -------------------------------------------------------------------
 // Marques (déduites des produits)
@@ -87,7 +85,17 @@ const brandCountry: Record<string, string> = {
   "KA Build": "Algérie",
 };
 
-const brandsMap = new Map<string, { id: string; name: string; description: string; country: string; created_at: string; updated_at: string }>();
+const brandsMap = new Map<
+  string,
+  {
+    id: string;
+    name: string;
+    description: string;
+    country: string;
+    created_at: string;
+    updated_at: string;
+  }
+>();
 for (const p of products) {
   if (!brandsMap.has(p.brand)) {
     brandsMap.set(p.brand, {
@@ -264,14 +272,57 @@ const blogPosts = blogBase.map((b, i) => {
 // -------------------------------------------------------------------
 // Tarifs de livraison (58 wilayas + défaut)
 // -------------------------------------------------------------------
-const NORTH = new Set(["16","09","35","42","15","06","18","21","23","25","43","36","24","31","27","22","46","13"]);
-const CENTRE_HP = new Set(["02","10","26","44","38","14","20","29","48","05","19","34","40","41","28","03","17"]);
+const NORTH = new Set([
+  "16",
+  "09",
+  "35",
+  "42",
+  "15",
+  "06",
+  "18",
+  "21",
+  "23",
+  "25",
+  "43",
+  "36",
+  "24",
+  "31",
+  "27",
+  "22",
+  "46",
+  "13",
+]);
+const CENTRE_HP = new Set([
+  "02",
+  "10",
+  "26",
+  "44",
+  "38",
+  "14",
+  "20",
+  "29",
+  "48",
+  "05",
+  "19",
+  "34",
+  "40",
+  "41",
+  "28",
+  "03",
+  "17",
+]);
 
 const shippingRates = [{ wilaya_code: "*", home: 800, desk: 400, updated_at: now }];
 for (const w of WILAYAS) {
-  let home = 1500, desk = 800;
-  if (NORTH.has(w.code)) { home = 600; desk = 350; }
-  else if (CENTRE_HP.has(w.code)) { home = 900; desk = 500; }
+  let home = 1500,
+    desk = 800;
+  if (NORTH.has(w.code)) {
+    home = 600;
+    desk = 350;
+  } else if (CENTRE_HP.has(w.code)) {
+    home = 900;
+    desk = 500;
+  }
   shippingRates.push({ wilaya_code: w.code, home, desk, updated_at: now });
 }
 
@@ -279,24 +330,126 @@ for (const w of WILAYAS) {
 // Modes de paiement
 // -------------------------------------------------------------------
 const paymentMethods = [
-  { id: "cod",   label: "Paiement à la livraison", instructions: "Réglez votre commande en espèces au livreur.", active: 1, position: 0, updated_at: now },
-  { id: "bank",  label: "Virement bancaire",        instructions: "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.", active: 1, position: 1, updated_at: now },
-  { id: "card",  label: "CIB / Edahabia",           instructions: "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).", active: 1, position: 2, updated_at: now },
-  { id: "store", label: "Paiement en boutique",     instructions: "Retirez et réglez votre commande à notre point de vente d'Alger.", active: 0, position: 3, updated_at: now },
+  {
+    id: "cod",
+    label: "Paiement à la livraison",
+    instructions: "Réglez votre commande en espèces au livreur.",
+    active: 1,
+    position: 0,
+    updated_at: now,
+  },
+  {
+    id: "bank",
+    label: "Virement bancaire",
+    instructions:
+      "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.",
+    active: 1,
+    position: 1,
+    updated_at: now,
+  },
+  {
+    id: "card",
+    label: "CIB / Edahabia",
+    instructions:
+      "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).",
+    active: 1,
+    position: 2,
+    updated_at: now,
+  },
+  {
+    id: "store",
+    label: "Paiement en boutique",
+    instructions: "Retirez et réglez votre commande à notre point de vente d'Alger.",
+    active: 0,
+    position: 3,
+    updated_at: now,
+  },
 ];
 
 // -------------------------------------------------------------------
 // Pièces du configurateur (builder_steps → section site_content)
 // -------------------------------------------------------------------
 const builderSteps = [
-  { id: "case", label: "Boîtier",          icon: "case", options: [{ id: "case-a", name: "NZXT H5 Flow", price: 14000 }, { id: "case-b", name: "Lian Li Lancool 216", price: 18500 }, { id: "case-c", name: "Corsair 4000D Airflow", price: 16000 }] },
-  { id: "mb",   label: "Carte mère",       icon: "mb",   options: [{ id: "mb-a", name: "MSI B650 Tomahawk", price: 28000 }, { id: "mb-b", name: "ASUS X670E-Plus", price: 52000 }, { id: "mb-c", name: "Gigabyte B760 Aorus", price: 24000 }] },
-  { id: "cpu",  label: "Processeur",       icon: "cpu",  options: [{ id: "cpu-a", name: "AMD Ryzen 5 7600", price: 32000 }, { id: "cpu-b", name: "AMD Ryzen 7 7700X", price: 52000 }, { id: "cpu-c", name: "Intel Core i7-14700K", price: 65000 }] },
-  { id: "ram",  label: "Mémoire RAM",      icon: "ram",  options: [{ id: "ram-a", name: "16GB DDR5 6000", price: 14000 }, { id: "ram-b", name: "32GB DDR5 6000", price: 26000 }, { id: "ram-c", name: "64GB DDR5 6000", price: 52000 }] },
-  { id: "ssd",  label: "SSD",              icon: "ssd",  options: [{ id: "ssd-a", name: "500GB NVMe Gen4", price: 9000 }, { id: "ssd-b", name: "1TB NVMe Gen4", price: 16000 }, { id: "ssd-c", name: "2TB NVMe Gen4", price: 32000 }] },
-  { id: "gpu",  label: "Carte graphique",  icon: "gpu",  options: [{ id: "gpu-a", name: "RTX 4060 8GB", price: 60000 }, { id: "gpu-b", name: "RTX 4070 Super 12GB", price: 110000 }, { id: "gpu-c", name: "RTX 4080 Super 16GB", price: 200000 }] },
-  { id: "psu",  label: "Alimentation",     icon: "psu",  options: [{ id: "psu-a", name: "650W 80+ Bronze", price: 9500 }, { id: "psu-b", name: "750W 80+ Gold", price: 14500 }, { id: "psu-c", name: "850W 80+ Gold", price: 19000 }] },
-  { id: "cool", label: "Refroidissement",  icon: "cool", options: [{ id: "cool-a", name: "DeepCool AK620", price: 9000 }, { id: "cool-b", name: "Arctic LF II 280", price: 18000 }, { id: "cool-c", name: "NZXT Kraken X73", price: 28000 }] },
+  {
+    id: "case",
+    label: "Boîtier",
+    icon: "case",
+    options: [
+      { id: "case-a", name: "NZXT H5 Flow", price: 14000 },
+      { id: "case-b", name: "Lian Li Lancool 216", price: 18500 },
+      { id: "case-c", name: "Corsair 4000D Airflow", price: 16000 },
+    ],
+  },
+  {
+    id: "mb",
+    label: "Carte mère",
+    icon: "mb",
+    options: [
+      { id: "mb-a", name: "MSI B650 Tomahawk", price: 28000 },
+      { id: "mb-b", name: "ASUS X670E-Plus", price: 52000 },
+      { id: "mb-c", name: "Gigabyte B760 Aorus", price: 24000 },
+    ],
+  },
+  {
+    id: "cpu",
+    label: "Processeur",
+    icon: "cpu",
+    options: [
+      { id: "cpu-a", name: "AMD Ryzen 5 7600", price: 32000 },
+      { id: "cpu-b", name: "AMD Ryzen 7 7700X", price: 52000 },
+      { id: "cpu-c", name: "Intel Core i7-14700K", price: 65000 },
+    ],
+  },
+  {
+    id: "ram",
+    label: "Mémoire RAM",
+    icon: "ram",
+    options: [
+      { id: "ram-a", name: "16GB DDR5 6000", price: 14000 },
+      { id: "ram-b", name: "32GB DDR5 6000", price: 26000 },
+      { id: "ram-c", name: "64GB DDR5 6000", price: 52000 },
+    ],
+  },
+  {
+    id: "ssd",
+    label: "SSD",
+    icon: "ssd",
+    options: [
+      { id: "ssd-a", name: "500GB NVMe Gen4", price: 9000 },
+      { id: "ssd-b", name: "1TB NVMe Gen4", price: 16000 },
+      { id: "ssd-c", name: "2TB NVMe Gen4", price: 32000 },
+    ],
+  },
+  {
+    id: "gpu",
+    label: "Carte graphique",
+    icon: "gpu",
+    options: [
+      { id: "gpu-a", name: "RTX 4060 8GB", price: 60000 },
+      { id: "gpu-b", name: "RTX 4070 Super 12GB", price: 110000 },
+      { id: "gpu-c", name: "RTX 4080 Super 16GB", price: 200000 },
+    ],
+  },
+  {
+    id: "psu",
+    label: "Alimentation",
+    icon: "psu",
+    options: [
+      { id: "psu-a", name: "650W 80+ Bronze", price: 9500 },
+      { id: "psu-b", name: "750W 80+ Gold", price: 14500 },
+      { id: "psu-c", name: "850W 80+ Gold", price: 19000 },
+    ],
+  },
+  {
+    id: "cool",
+    label: "Refroidissement",
+    icon: "cool",
+    options: [
+      { id: "cool-a", name: "DeepCool AK620", price: 9000 },
+      { id: "cool-b", name: "Arctic LF II 280", price: 18000 },
+      { id: "cool-c", name: "NZXT Kraken X73", price: 28000 },
+    ],
+  },
 ];
 
 // -------------------------------------------------------------------
@@ -305,9 +458,33 @@ const builderSteps = [
 const siteContent = {
   "home-reviews": {
     items: [
-      { id: "hrev_1", name: "Amine Bensalah", city: "Alger",      productId: "rog-strix-g16",   text: "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.", rating: 5, gradient: "linear-gradient(135deg,#3b82f6,#1e40af)" },
-      { id: "hrev_2", name: "Yasmine A.",     city: "Oran",       productId: "macbook-air-m3",  text: "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.", rating: 5, gradient: "linear-gradient(135deg,#a855f7,#6d28d9)" },
-      { id: "hrev_3", name: "Karim Haddad",  city: "Constantine", productId: "build-mid-gaming", text: "Config puissante à un prix juste, fonctionnelle dès la première utilisation.", rating: 5, gradient: "linear-gradient(135deg,#10b981,#047857)" },
+      {
+        id: "hrev_1",
+        name: "Amine Bensalah",
+        city: "Alger",
+        productId: "rog-strix-g16",
+        text: "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.",
+        rating: 5,
+        gradient: "linear-gradient(135deg,#3b82f6,#1e40af)",
+      },
+      {
+        id: "hrev_2",
+        name: "Yasmine A.",
+        city: "Oran",
+        productId: "macbook-air-m3",
+        text: "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.",
+        rating: 5,
+        gradient: "linear-gradient(135deg,#a855f7,#6d28d9)",
+      },
+      {
+        id: "hrev_3",
+        name: "Karim Haddad",
+        city: "Constantine",
+        productId: "build-mid-gaming",
+        text: "Config puissante à un prix juste, fonctionnelle dès la première utilisation.",
+        rating: 5,
+        gradient: "linear-gradient(135deg,#10b981,#047857)",
+      },
     ],
   },
   ticker: {
@@ -319,13 +496,48 @@ const siteContent = {
       { id: "tick_5", text: "🎁 Cadeau pour toute config au-dessus de 200 000 DA" },
     ],
   },
-  marquee: { brands: ["HP", "Dell", "Lenovo", "ASUS", "Apple", "Samsung", "Xiaomi", "MSI", "Acer", "Intel", "AMD", "NVIDIA"] },
+  marquee: {
+    brands: [
+      "HP",
+      "Dell",
+      "Lenovo",
+      "ASUS",
+      "Apple",
+      "Samsung",
+      "Xiaomi",
+      "MSI",
+      "Acer",
+      "Intel",
+      "AMD",
+      "NVIDIA",
+    ],
+  },
   about: {
     values: [
-      { id: "val_1", icon: "shield",     title: "Garantie officielle",      description: "Tous nos produits sont authentiques et sous garantie des revendeurs agréés." },
-      { id: "val_2", icon: "truck",      title: "Livraison en Algérie",     description: "Livraison rapide et sécurisée dans les 58 wilayas." },
-      { id: "val_3", icon: "headphones", title: "Support dédié",            description: "Notre équipe est disponible avant et après votre achat." },
-      { id: "val_4", icon: "award",      title: "Expérience et confiance",  description: "Des années au service de milliers de clients satisfaits." },
+      {
+        id: "val_1",
+        icon: "shield",
+        title: "Garantie officielle",
+        description: "Tous nos produits sont authentiques et sous garantie des revendeurs agréés.",
+      },
+      {
+        id: "val_2",
+        icon: "truck",
+        title: "Livraison en Algérie",
+        description: "Livraison rapide et sécurisée dans les 58 wilayas.",
+      },
+      {
+        id: "val_3",
+        icon: "headphones",
+        title: "Support dédié",
+        description: "Notre équipe est disponible avant et après votre achat.",
+      },
+      {
+        id: "val_4",
+        icon: "award",
+        title: "Expérience et confiance",
+        description: "Des années au service de milliers de clients satisfaits.",
+      },
     ],
   },
   builder: { steps: builderSteps },

@@ -36,13 +36,13 @@ fourni, tâches CRON disponibles). La procédure vaut pour tout mutualisé PHP
 
 ## 1. Ce qu'il faut avant de commencer
 
-| Élément                     | Détail                                                       |
-| --------------------------- | ------------------------------------------------------------ |
-| Hébergement                 | PHP **8.2 minimum**, `.htaccess` lus, MySQL ou `pdo_sqlite`   |
-| Accès                       | Panneau de l'hébergeur (hPanel) + gestionnaire de fichiers    |
-| Domaine                     | Pointé sur l'hébergement, **certificat HTTPS actif**          |
-| En local                    | Le dépôt du projet et `bun` (ou `npm`) pour construire `dist/` |
-| Temps                       | Environ 45 minutes la première fois                           |
+| Élément     | Détail                                                         |
+| ----------- | -------------------------------------------------------------- |
+| Hébergement | PHP **8.2 minimum**, `.htaccess` lus, MySQL ou `pdo_sqlite`    |
+| Accès       | Panneau de l'hébergeur (hPanel) + gestionnaire de fichiers     |
+| Domaine     | Pointé sur l'hébergement, **certificat HTTPS actif**           |
+| En local    | Le dépôt du projet et `bun` (ou `npm`) pour construire `dist/` |
+| Temps       | Environ 45 minutes la première fois                            |
 
 Extensions PHP nécessaires : `pdo_mysql` **ou** `pdo_sqlite`, `mbstring`,
 `json`, `openssl`. Toutes sont standard. `zlib` est utilisée pour compresser
@@ -179,13 +179,13 @@ l'exige pour l'écriture.
 Le projet fonctionne à l'identique sur les deux. Le choix se fait avec une
 seule variable, `DB_DRIVER`, et reste réversible.
 
-| Critère                     | `mysql`                                | `sqlite`                                        |
-| --------------------------- | -------------------------------------- | ----------------------------------------------- |
-| Disponibilité en mutualisé  | **Garantie**                           | Dépend de `pdo_sqlite` et des droits d'écriture |
-| Mise en place               | Créer la base dans hPanel              | Aucune, un simple fichier                        |
-| Sauvegarde                  | Export SQL                             | Copie d'un fichier                               |
-| Portabilité                 | Export/import                          | **Totale** : un fichier à copier                 |
-| Recommandation              | **Par défaut chez Hostinger**          | Si la sonde confirme que c'est possible          |
+| Critère                    | `mysql`                       | `sqlite`                                        |
+| -------------------------- | ----------------------------- | ----------------------------------------------- |
+| Disponibilité en mutualisé | **Garantie**                  | Dépend de `pdo_sqlite` et des droits d'écriture |
+| Mise en place              | Créer la base dans hPanel     | Aucune, un simple fichier                       |
+| Sauvegarde                 | Export SQL                    | Copie d'un fichier                              |
+| Portabilité                | Export/import                 | **Totale** : un fichier à copier                |
+| Recommandation             | **Par défaut chez Hostinger** | Si la sonde confirme que c'est possible         |
 
 **En cas de doute, choisissez `mysql`** : c'est la raison d'être d'un
 hébergement mutualisé, et rien ne dépend d'un dossier inscriptible.
@@ -340,10 +340,10 @@ d'erreur possibles sont tous listés au [§13](#13-si-quelque-chose-échoue).
 > **Cette étape n'est pas optionnelle.** Tant qu'elle n'est pas faite, le site
 > est en ligne avec deux portes ouvertes.
 
-| Fichier                             | Pourquoi il doit disparaître                                                                                                                   |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `public_html/api/install.php`       | Point d'entrée capable de créer des tables et un compte propriétaire. Le témoin `installed.lock` le neutralise, mais **un fichier absent protège mieux qu'un fichier protégé** : il suffirait qu'un transfert efface le témoin. |
-| `public_html/sonde-hebergeur.php`   | Publie la version de PHP, les extensions, les chemins absolus du serveur et ses limites. C'est une carte du terrain offerte à un attaquant.      |
+| Fichier                           | Pourquoi il doit disparaître                                                                                                                                                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public_html/api/install.php`     | Point d'entrée capable de créer des tables et un compte propriétaire. Le témoin `installed.lock` le neutralise, mais **un fichier absent protège mieux qu'un fichier protégé** : il suffirait qu'un transfert efface le témoin. |
+| `public_html/sonde-hebergeur.php` | Publie la version de PHP, les extensions, les chemins absolus du serveur et ses limites. C'est une carte du terrain offerte à un attaquant.                                                                                     |
 
 À faire dans la foulée, dans `api/.env` :
 
@@ -377,17 +377,17 @@ valeur dans son assistant).
 Émet les événements en attente (notifications de commande, emails). Sans lui,
 les événements s'accumulent sans être perdus, mais rien n'est envoyé.
 
-| Champ       | Valeur                                                                                    |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| Fréquence   | Toutes les 5 minutes (`*/5 * * * *`)                                                       |
-| Commande    | `/usr/bin/php /home/uXXXXXXXXX/domains/votre-domaine.dz/public_html/api/tools/vider-outbox.php` |
+| Champ     | Valeur                                                                                          |
+| --------- | ----------------------------------------------------------------------------------------------- |
+| Fréquence | Toutes les 5 minutes (`*/5 * * * *`)                                                            |
+| Commande  | `/usr/bin/php /home/uXXXXXXXXX/domains/votre-domaine.dz/public_html/api/tools/vider-outbox.php` |
 
 ### CRON 2 — sauvegarde de la base
 
-| Champ       | Valeur                                                                                    |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| Fréquence   | Une fois par jour, la nuit (`15 3 * * *`)                                                  |
-| Commande    | `/usr/bin/php /home/uXXXXXXXXX/domains/votre-domaine.dz/public_html/api/tools/sauvegarder.php` |
+| Champ     | Valeur                                                                                         |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| Fréquence | Une fois par jour, la nuit (`15 3 * * *`)                                                      |
+| Commande  | `/usr/bin/php /home/uXXXXXXXXX/domains/votre-domaine.dz/public_html/api/tools/sauvegarder.php` |
 
 Le script fonctionne sur les deux pilotes, sans rien à configurer de plus :
 
@@ -445,41 +445,41 @@ public**.
 
 ### Le site fonctionne
 
-| À ouvrir                                  | Attendu                                                                              |
-| ----------------------------------------- | ------------------------------------------------------------------------------------ |
-| `https://votre-domaine.dz/`               | La page d'accueil, avec ses images et ses polices                                     |
-| `https://votre-domaine.dz/produits`       | La page produits — **et non une erreur 404 du serveur**. Si 404 : `.htaccess` racine absent |
-| Recharger (F5) sur `/produits`            | La même page. C'est le test réel du repli SPA                                          |
-| `https://votre-domaine.dz/api/health`     | `{"data":{"status":"ok","driver":"mysql", ...}}` — `driver` doit être le pilote choisi |
-| `https://votre-domaine.dz/api/products`   | Un JSON `{"data":{"items":[...]}}`                                                     |
-| Console du navigateur (F12)               | **Aucune erreur rouge.** Voir la note CSP ci-dessous                                   |
-| Connexion à l'administration              | Le compte propriétaire créé à l'étape 8 fonctionne                                     |
+| À ouvrir                                | Attendu                                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `https://votre-domaine.dz/`             | La page d'accueil, avec ses images et ses polices                                           |
+| `https://votre-domaine.dz/produits`     | La page produits — **et non une erreur 404 du serveur**. Si 404 : `.htaccess` racine absent |
+| Recharger (F5) sur `/produits`          | La même page. C'est le test réel du repli SPA                                               |
+| `https://votre-domaine.dz/api/health`   | `{"data":{"status":"ok","driver":"mysql", ...}}` — `driver` doit être le pilote choisi      |
+| `https://votre-domaine.dz/api/products` | Un JSON `{"data":{"items":[...]}}`                                                          |
+| Console du navigateur (F12)             | **Aucune erreur rouge.** Voir la note CSP ci-dessous                                        |
+| Connexion à l'administration            | Le compte propriétaire créé à l'étape 8 fonctionne                                          |
 
 ### Ce qui doit être REFUSÉ
 
 Chacune de ces adresses doit renvoyer **403** ou **404** — jamais le contenu du
 fichier, jamais un téléchargement qui démarre.
 
-| À ouvrir                                                        | Attendu                                     |
-| --------------------------------------------------------------- | ------------------------------------------- |
-| `https://votre-domaine.dz/api/.env`                             | **403** — jamais le contenu du fichier      |
-| `https://votre-domaine.dz/api/src/Db.php`                       | **403**                                     |
-| `https://votre-domaine.dz/api/tools/sauvegarder.php`            | **403**                                     |
-| `https://votre-domaine.dz/api/schema/schema.mysql.sql`          | **403**                                     |
-| `https://votre-domaine.dz/api/installed.lock`                   | **403**                                     |
-| `https://votre-domaine.dz/api/`                                 | Pas de liste de fichiers                    |
-| `https://votre-domaine.dz/assets/`                              | Pas de liste de fichiers                    |
-| `https://votre-domaine.dz/api/install.php`                      | **404** (le fichier a été supprimé au §9)   |
-| `https://votre-domaine.dz/sonde-hebergeur.php`                  | **404** (supprimé au §9)                    |
+| À ouvrir                                               | Attendu                                   |
+| ------------------------------------------------------ | ----------------------------------------- |
+| `https://votre-domaine.dz/api/.env`                    | **403** — jamais le contenu du fichier    |
+| `https://votre-domaine.dz/api/src/Db.php`              | **403**                                   |
+| `https://votre-domaine.dz/api/tools/sauvegarder.php`   | **403**                                   |
+| `https://votre-domaine.dz/api/schema/schema.mysql.sql` | **403**                                   |
+| `https://votre-domaine.dz/api/installed.lock`          | **403**                                   |
+| `https://votre-domaine.dz/api/`                        | Pas de liste de fichiers                  |
+| `https://votre-domaine.dz/assets/`                     | Pas de liste de fichiers                  |
+| `https://votre-domaine.dz/api/install.php`             | **404** (le fichier a été supprimé au §9) |
+| `https://votre-domaine.dz/sonde-hebergeur.php`         | **404** (supprimé au §9)                  |
 
 ### Le fichier de base de données — le test à ne pas sauter
 
 **En SQLite**, vérifier les deux adresses suivantes :
 
-| À ouvrir                                                 | Attendu                                                                 |
-| --------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `https://votre-domaine.dz/api/var/katech.sqlite`         | **403**                                                                 |
-| `https://votre-domaine.dz/katech.sqlite`                 | **403 ou 404**                                                          |
+| À ouvrir                                         | Attendu        |
+| ------------------------------------------------ | -------------- |
+| `https://votre-domaine.dz/api/var/katech.sqlite` | **403**        |
+| `https://votre-domaine.dz/katech.sqlite`         | **403 ou 404** |
 
 > **Si l'une de ces adresses déclenche un téléchargement, arrêtez tout.**
 > Toute la base est publique : comptes clients, commandes, adresses, mots de
@@ -492,10 +492,10 @@ le mot de passe de la base, renvoie bien **403**.
 
 **Dans les deux cas**, vérifier que les sauvegardes ne sont pas exposées :
 
-| À ouvrir                                         | Attendu                                      |
-| ------------------------------------------------- | -------------------------------------------- |
-| `https://votre-domaine.dz/backups/`              | **404** — ce dossier n'existe pas dans la racine web |
-| `https://votre-domaine.dz/katech-data/`          | **404**                                      |
+| À ouvrir                                | Attendu                                              |
+| --------------------------------------- | ---------------------------------------------------- |
+| `https://votre-domaine.dz/backups/`     | **404** — ce dossier n'existe pas dans la racine web |
+| `https://votre-domaine.dz/katech-data/` | **404**                                              |
 
 ### Les en-têtes de sécurité
 
@@ -582,17 +582,17 @@ espace en fin de ligne, majuscules, guillemets superflus. Écrire exactement
 
 ### « L'extension PHP « pdo_mysql » n'est pas activée sur ce serveur »
 
-Message complet : *« Activez-la dans le panneau de l'hébergeur, ou basculez
-DB_DRIVER=sqlite dans api/.env. »*
+Message complet : _« Activez-la dans le panneau de l'hébergeur, ou basculez
+DB_DRIVER=sqlite dans api/.env. »_
 hPanel → **Configuration PHP** → onglet **Extensions PHP** → cocher
 `pdo_mysql` → enregistrer. La même chose vaut pour `pdo_sqlite`.
 
 ### « Connexion MySQL refusée sur localhost:3306, base « … », utilisateur « … » »
 
-Message complet : *« Vérifiez dans api/.env : DB_HOST (souvent « localhost »
+Message complet : _« Vérifiez dans api/.env : DB_HOST (souvent « localhost »
 chez un mutualisé, pas « 127.0.0.1 »), DB_PORT, DB_NAME, DB_USER et
 DB_PASSWORD — et que la base a bien été créée dans le panneau de
-l'hébergeur. »*
+l'hébergeur. »_
 
 Dans l'ordre de probabilité :
 
@@ -604,17 +604,17 @@ Dans l'ordre de probabilité :
 
 ### « Le dossier de données « … » n'existe pas et n'a pas pu être créé »
 
-Message complet : *« Créez-le manuellement et rendez-le inscriptible par PHP,
-ou corrigez DB_SQLITE_PATH dans api/.env. »*
+Message complet : _« Créez-le manuellement et rendez-le inscriptible par PHP,
+ou corrigez DB_SQLITE_PATH dans api/.env. »_
 Le chemin est probablement erroné : vérifiez le chemin **absolu** exact dans le
 gestionnaire de fichiers. C'est l'erreur classique quand on recopie
 `/home/monuser/...` de l'exemple sans le remplacer par son vrai identifiant.
 
 ### « Le dossier de données « … » n'est pas inscriptible par PHP »
 
-Message complet : *« Passez-le en droits 0775 (ou 0755 s'il appartient à
+Message complet : _« Passez-le en droits 0775 (ou 0755 s'il appartient à
 l'utilisateur PHP). SQLite a besoin d'écrire dans le DOSSIER, pas seulement
-dans le fichier (journaux -wal et -shm). »*
+dans le fichier (journaux -wal et -shm). »_
 Corriger les droits du dossier `katech-data/` depuis hPanel.
 
 ### « Le fichier de base « … » existe mais n'est pas inscriptible par PHP »
@@ -624,8 +624,8 @@ typiquement après une restauration faite par téléversement.
 
 ### « Impossible d'ouvrir la base SQLite « … » »
 
-Message complet : *« Vérifiez DB_SQLITE_PATH dans api/.env, l'existence du
-dossier et ses droits d'écriture. »*
+Message complet : _« Vérifiez DB_SQLITE_PATH dans api/.env, l'existence du
+dossier et ses droits d'écriture. »_
 Si le dossier existe et est inscriptible, le système de fichiers de
 l'hébergeur peut être en cause (montage réseau). Basculer sur MySQL.
 
@@ -638,7 +638,7 @@ nouvelle base).
 
 ### Dans le journal : « PRAGMA journal_mode=WAL refusé par le système de fichiers »
 
-Message complet : *« La base reste fonctionnelle mais moins concurrente. »*
+Message complet : _« La base reste fonctionnelle mais moins concurrente. »_
 Ce n'est **pas** une erreur bloquante : le site fonctionne. C'est un signal
 que le mode WAL n'est pas accepté — surveillez les verrous ci-dessus.
 
