@@ -56,9 +56,31 @@ frontend en mode `mock`, pour que rien ne soit bloquant.
 | `bun run dev:mock` | Frontend seul, données dans le `localStorage` |
 | `bun run dev:api`  | API seule, pour la sonder au `curl`           |
 
-La base de développement vit **hors du dépôt**, dans `../katech-data/dev.sqlite` :
-jamais commitée, jamais servie par un serveur web. Pour repartir de zéro,
-supprimez ce fichier — il sera recréé et rempli au prochain démarrage.
+### Où vit la base de développement
+
+Dans le dossier de données de votre compte utilisateur — **jamais sous une
+racine web**, jamais dans le dépôt :
+
+| Système | Chemin                                             |
+| ------- | -------------------------------------------------- |
+| Windows | `%LOCALAPPDATA%\ka-tech\dev.sqlite`                |
+| macOS   | `~/Library/Application Support/ka-tech/dev.sqlite` |
+| Linux   | `~/.local/share/ka-tech/dev.sqlite`                |
+
+C'est important : un projet cloné dans `C:\xampp\htdocs\ka-tech` a pour parent
+`htdocs`, la racine web d'Apache. Une base placée là serait téléchargeable à
+`http://localhost/…/dev.sqlite` — comptes, commandes et empreintes de mots de
+passe compris. Le script **refuse** désormais tout emplacement sous `htdocs`,
+`www`, `public_html` ou `wwwroot`.
+
+Pour repartir de zéro, supprimez le fichier ; il sera recréé et rempli au
+démarrage suivant.
+
+```powershell
+Remove-Item -Recurse -Force $env:LOCALAPPDATA\ka-tech    # PowerShell
+```
+
+`DB_SQLITE_PATH` reste prioritaire si vous voulez choisir vous-même.
 
 Variables utiles : `PORT` (frontend), `API_PORT` (API), `DB_DRIVER=mysql` pour
 changer de pilote, `APP_ENV=development` pour voir les traces d'erreur.

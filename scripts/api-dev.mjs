@@ -18,6 +18,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 
 const racine = resolve(import.meta.dirname, "..");
@@ -26,9 +27,61 @@ const port = Number(process.env.API_PORT ?? 8160);
 // Chemin explicite si l'utilisateur en fournit un : PHP_BIN prime sur tout.
 const phpImpose = process.env.PHP_BIN;
 
-// Base de développement : hors du dépôt, pour ne jamais être commitée ni servie.
-const baseParDefaut = resolve(racine, "..", "katech-data", "dev.sqlite");
-const base = process.env.DB_SQLITE_PATH ?? baseParDefaut;
+/**
+ * Emplacement de la base de développement.
+ *
+ * Elle vivait dans le dossier PARENT du projet. Mauvais choix : quand le projet
+ * est cloné dans `C:\xampp\htdocs\ka-tech`, le parent est `htdocs` — la racine
+ * web d'Apache. La base devenait téléchargeable à
+ * `http://localhost/katech-data/dev.sqlite` : comptes, commandes et empreintes
+ * de mots de passe servis en HTTP. C'est arrivé.
+ *
+ * On la place désormais dans le dossier de données de l'utilisateur, qu'aucun
+ * serveur web ne sert jamais :
+ *   Windows : %LOCALAPPDATA%\ka-tech
+ *   macOS   : ~/Library/Application Support/ka-tech
+ *   Linux   : ~/.local/share/ka-tech
+ *
+ * `DB_SQLITE_PATH` reste prioritaire pour qui veut choisir.
+ */
+function dossierDonnees() {
+  if (process.platform === "win32") {
+    const base = process.env.LOCALAPPDATA ?? process.env.APPDATA;
+    if (base) return resolve(base, "ka-tech");
+  } else if (process.platform === "darwin") {
+    if (homedir()) return resolve(homedir(), "Library", "Application Support", "ka-tech");
+  } else {
+    const xdg = process.env.XDG_DATA_HOME;
+    if (xdg) return resolve(xdg, "ka-tech");
+    if (homedir()) return resolve(homedir(), ".local", "share", "ka-tech");
+  }
+  // Dernier recours : à côté du projet, avec l'avertissement ci-dessous.
+  return resolve(racine, "..", "katech-data");
+}
+
+const base = process.env.DB_SQLITE_PATH ?? resolve(dossierDonnees(), "dev.sqlite");
+
+/**
+ * Garde-fou : refuse de créer la base sous une racine web connue.
+ *
+ * Un `DB_SQLITE_PATH` mal choisi, ou un repli malheureux, rendrait la base
+ * téléchargeable. Mieux vaut un refus explicite qu'une fuite silencieuse
+ * (AGENTS.md §7).
+ */
+function souRacineWeb(chemin) {
+  const normalise = chemin.replace(/\\/g, "/").toLowerCase();
+  return ["/htdocs/", "/www/", "/public_html/", "/wwwroot/"].some((r) => normalise.includes(r));
+}
+
+if (souRacineWeb(base)) {
+  console.error(
+    `\nLa base « ${base} » se trouve sous une racine web.\n` +
+      `Elle serait téléchargeable par HTTP : comptes, commandes, empreintes de\n` +
+      `mots de passe. Choisissez un autre emplacement :\n\n` +
+      `  set DB_SQLITE_PATH=C:\\katech-data\\dev.sqlite && bun run dev\n`,
+  );
+  process.exit(1);
+}
 
 const env = {
   ...process.env,
