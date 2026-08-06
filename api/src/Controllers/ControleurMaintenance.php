@@ -1,19 +1,20 @@
 <?php
 
 /**
- * Maintenance — état de la base et sauvegarde téléchargeable.
+ * Maintenance — état de la base, sauvegarde téléchargeable, migration de pilote.
  *
  * Routes à câbler par l'orchestrateur (ne pas modifier api/routes.php ici) :
  *   GET  /maintenance/status    → etat()
  *   GET  /maintenance/backup    → sauvegarder()
+ *   POST /maintenance/migrate   → migrer()
  *
  * Réservé au rôle `owner` exclusivement.
  *
  * POURQUOI CE CONTRÔLEUR EXISTE.
  * La sécurité des données est la priorité explicite du propriétaire (hébergement
- * mutualisé, pas de SSH). Ces deux routes lui permettent de constater l'état de
- * sa base et d'en télécharger une sauvegarde exploitable, sans quitter son
- * navigateur.
+ * mutualisé, pas de SSH). Ces routes lui permettent de constater l'état de sa
+ * base, d'en télécharger une sauvegarde et d'en migrer le contenu vers un autre
+ * moteur, sans quitter son navigateur.
  *
  * Concernant api/tools/sauvegarder.php : ce script est un travailleur CRON,
  * conçu pour la ligne de commande. Il refuse explicitement tout appel HTTP
@@ -32,6 +33,8 @@ namespace KaTech\Controllers;
 use KaTech\ApiException;
 use KaTech\Auth\Garde;
 use KaTech\Db;
+use KaTech\Migration\Migrateur;
+use KaTech\Migration\Rapport;
 use KaTech\Reponse;
 use KaTech\Requete;
 
@@ -46,12 +49,20 @@ final class ControleurMaintenance
      *
      * Tableau de bord d'un coup d'œil pour le propriétaire :
      *   - pilote actif et nom de la base (JAMAIS le DSN complet ni le mot de passe)
-     *   - taille de la base (octets)
-     *   - nombre de lignes par table
+     *   - taille de la base en octets (null si indisponible)
+     *   - taille lisible (« 4.2 Mo ») pour l'affichage direct
+     *   - liste ordonnée des tables avec leur nombre de lignes
      *   - événements outbox en attente
      *   - date de la dernière sauvegarde sur disque (ou null si aucune)
      *
-     * → { data: { pilote, base, tailleFichier, tables, outboxEnAttente, derniereSauvegarde } }
+     * Choix de `size` : on renvoie DEUX formes — `size` (entier, octets) et
+     * `sizeHuman` (chaîne lisible). L'interface utilise `sizeHuman` pour
+     * l'affichage ; `size` sert aux tests automatisés et aux comparaisons.
+     * Un seul champ string aurait masqué la valeur brute et rendu les tests
+     * fragiles ; un seul entier aurait obligé le frontend à formater lui-même.
+     *
+     * → { data: { driver, database, size, sizeHuman, tables: [{name, rows}],
+     *             outboxPending, lastBackup } }
      *
      * @throws ApiException 403 si l'appelant n'est pas owner
      */
@@ -67,23 +78,23 @@ final class ControleurMaintenance
             $chemin = (string) $this->db->cheminSqlite();
             $nomBase = basename($chemin);
             // La taille du fichier renseigne sur l'espace occupé sans révéler le chemin.
-            $tailleFichier = is_file($chemin) ? (int) filesize($chemin) : null;
+            $tailleOctets = is_file($chemin) ? (int) filesize($chemin) : null;
         } else {
             // En MySQL, le nom de la base est public (CREATE DATABASE l'expose) ;
             // en revanche le host, le port et l'utilisateur ne doivent PAS sortir.
             $nomBase = (string) ($this->db->valeur('SELECT DATABASE()') ?? '');
             // Taille agrégée des tables (information_schema est toujours lisible).
-            $tailleFichier = (int) $this->db->valeur(
+            $tailleOctets = (int) $this->db->valeur(
                 "SELECT COALESCE(SUM(data_length + index_length), 0)
                    FROM information_schema.tables
                   WHERE table_schema = DATABASE()"
             );
         }
 
-        // ---------- Nombre de lignes par table ----------
-        // Établit la liste des tables depuis le schéma (non depuis une entrée
-        // utilisateur) pour éviter tout risque d'injection via le nom de table.
-        $tables = $this->compterLignesParTable();
+        // ---------- Nombre de lignes par table (tableau ordonné pour l'interface) ----------
+        // L'interface affiche une liste ordonnée, pas une carte nom→nombre.
+        // Chaque élément est { name, rows } pour la lisibilité côté frontend.
+        $tables = $this->tablesEnListe();
 
         // ---------- Événements outbox en attente ----------
         // « En attente » = status = 'pending', peu importe available_at.
@@ -100,12 +111,13 @@ final class ControleurMaintenance
         $derniereSauvegarde = $this->derniereDate();
 
         return Reponse::ok([
-            'pilote'            => $pilote,
-            'base'              => $nomBase,
-            'tailleFichier'     => $tailleFichier,
-            'tables'            => $tables,
-            'outboxEnAttente'   => $outboxEnAttente,
-            'derniereSauvegarde' => $derniereSauvegarde,
+            'driver'       => $pilote,
+            'database'     => $nomBase,
+            'size'         => $tailleOctets,
+            'sizeHuman'    => $tailleOctets !== null ? $this->tailleLisible($tailleOctets) : null,
+            'tables'       => $tables,
+            'outboxPending' => $outboxEnAttente,
+            'lastBackup'   => $derniereSauvegarde,
         ]);
     }
 
@@ -172,6 +184,148 @@ final class ControleurMaintenance
         // envoyerSqlite / envoyerMysql terminent avec exit — cette ligne est
         // morte mais satisfait le typage « never ».
         exit(0);
+    }
+
+    /**
+     * POST /maintenance/migrate
+     *
+     * Lance une migration de la base courante vers une base cible.
+     *
+     * Corps attendu :
+     *   { cible, dsn, utilisateur, motDePasse, simulation: boolean }
+     *
+     * `cible` est une étiquette libre (« mysql-prod », « postgres-backup »…),
+     * transmise telle quelle au rapport pour l'identifier. `dsn` est le DSN PDO
+     * de la base destinataire.
+     *
+     * SIMULATION PAR DÉFAUT ET PAR REPLI.
+     * Si `simulation` est absent, non booléen, ou ambigu, on simule. Jamais
+     * l'inverse. Un commerçant sans second exemplaire de ses données ne peut
+     * pas se permettre une écriture accidentelle.
+     *
+     * IDENTIFIANTS.
+     * `dsn`, `utilisateur` et `motDePasse` transitent dans le corps. Ils ne
+     * sont jamais journalisés, ni retournés dans la réponse, ni inclus dans un
+     * message d'erreur. En cas d'erreur de connexion, on distingue :
+     *   - refus de connexion (hôte joignable, identifiants rejetés)
+     *   - hôte injoignable ou DSN malformé
+     *   - budget épuisé (max_execution_time)
+     * sans jamais copier le DSN dans la réponse.
+     *
+     * BUDGET DE TEMPS.
+     * Le Migrateur annule TOUT si le budget (25 s par défaut) est épuisé, et le
+     * dit explicitement dans le rapport. La simulation mesure la durée de la
+     * passe de lecture : si elle dépasse le budget, la migration réelle
+     * l'épuisera aussi — l'interface doit l'afficher.
+     *
+     * → { data: { simulation, ok, message, tables: [{nom, lues, ecrites, anomalies}] } }
+     *
+     * @throws ApiException 403 si l'appelant n'est pas owner
+     * @throws ApiException 422 si le DSN est absent ou le corps invalide
+     */
+    public function migrer(Requete $r): Reponse
+    {
+        // Seul le propriétaire peut déclencher une migration : elle touche à la
+        // structure et au contenu COMPLET de la base.
+        Garde::exiger('owner');
+
+        // ---------- Lecture et validation des paramètres ----------
+        $dsn = trim((string) ($r->corps('dsn', '')));
+        if ($dsn === '') {
+            throw ApiException::validation('Paramètres de migration invalides.', [
+                'dsn' => ['Le DSN de la base cible est obligatoire.'],
+            ]);
+        }
+
+        $utilisateur = (string) ($r->corps('utilisateur', '') ?? '');
+        // Le mot de passe n'est pas journalisé ; null est une valeur légitime
+        // pour SQLite (qui n'en exige pas).
+        $motDePasseBrut = $r->corps('motDePasse');
+        $motDePasse = ($motDePasseBrut === null || $motDePasseBrut === '') ? null : (string) $motDePasseBrut;
+
+        // Comportement par défaut : SIMULATION.
+        // On n'accepte `false` que si le champ est explicitement un booléen
+        // false (JSON) ou la chaîne stricte « false ». Tout le reste simule.
+        $simulationBrut = $r->corps('simulation');
+        $simulation = $this->normaliserBooleanSimulation($simulationBrut);
+
+        $etiquetteCible = trim((string) ($r->corps('cible', '') ?? ''));
+        if ($etiquetteCible === '') {
+            $etiquetteCible = 'cible';
+        }
+
+        // ---------- Connexion à la base cible ----------
+        // Les erreurs de connexion sont capturées ici pour distinguer le refus
+        // d'identifiants (message utile) d'une panne réseau (message différent),
+        // sans jamais répercuter le DSN dans la réponse.
+        try {
+            $pdoCible = Migrateur::connecter($dsn, $utilisateur ?: null, $motDePasse);
+        } catch (\RuntimeException $e) {
+            // Le message de l'exception peut contenir « dsn masqué » grâce à
+            // Migrateur::masquer(), mais on préfère une phrase propre qui ne
+            // trahit aucun secret.
+            $messageErreur = $this->traduireErreurConnexion($e->getMessage());
+
+            throw new ApiException(
+                422,
+                'MIGRATION_CONNEXION_ECHEC',
+                $messageErreur
+            );
+        }
+
+        // ---------- Connexion à la base source ----------
+        $pdoSource = $this->db->pdo();
+
+        // ---------- Exécution ----------
+        $mode = $simulation ? Rapport::MODE_SIMULATION : Rapport::MODE_REELLE;
+
+        $migrateur = new Migrateur($pdoSource, $pdoCible, [
+            'mode' => $mode,
+            // La création du schéma n'est pas proposée ici : l'interface de
+            // migration est réservée aux bases déjà installées. Forcer
+            // creer_schema depuis le web ouvrirait des DDL non maîtrisés.
+            'creer_schema' => false,
+            // Budget légèrement en dessous de la limite mutualisée (30 s) pour
+            // laisser le temps de retourner la réponse proprement.
+            'budget_s' => 25.0,
+            'etiquette_source' => $this->db->pilote(),
+            'etiquette_cible' => $etiquetteCible,
+        ]);
+
+        $resultat = $migrateur->executer();
+
+        // ---------- Projection de la réponse ----------
+        // On renvoie le strict nécessaire pour l'interface, sans les DSN, sans
+        // les descripteurs source/cible (qui pourraient contenir le nom de la
+        // base cible et des détails de connexion).
+        $tablesReponse = array_map(
+            static fn (array $t): array => [
+                'nom'       => (string) $t['table'],
+                'lues'      => (int) $t['lues'],
+                'ecrites'   => (int) $t['ecrites'],
+                'anomalies' => (int) $t['anomalies'],
+            ],
+            (array) ($resultat['tables'] ?? [])
+        );
+
+        $ok = (bool) ($resultat['ok'] ?? false);
+
+        // Le motif d'échec est exposé uniquement s'il est défini et ne contient
+        // pas de DSN. Migrateur::masquer() protège les cas connus, mais une
+        // erreur interne peut passer. On filtre prudemment.
+        $message = $this->sansDsn((string) ($resultat['motif'] ?? ''));
+        if ($message === '' && $ok) {
+            $message = $simulation
+                ? 'Simulation terminée sans erreur bloquante.'
+                : 'Migration terminée avec succès.';
+        }
+
+        return Reponse::ok([
+            'simulation' => $simulation,
+            'ok'         => $ok,
+            'message'    => $message,
+            'tables'     => $tablesReponse,
+        ]);
     }
 
     // =========================================================================
@@ -593,15 +747,19 @@ final class ControleurMaintenance
     // =========================================================================
 
     /**
-     * Compte le nombre de lignes dans chaque table du schéma.
+     * Renvoie les tables sous forme de liste ordonnée d'objets { name, rows }.
+     *
+     * Le tableau (pas la carte) est la forme attendue par l'interface : elle
+     * affiche les tables en liste ordonnée et non sous forme de carte clé→valeur.
+     * L'ordre alphabétique est stable et indépendant du pilote.
      *
      * Les noms de tables sont lus depuis le schéma interne de la base
      * (sqlite_master / information_schema), jamais depuis une entrée utilisateur.
      * Chaque nom est ensuite passé par Db::identifiant() avant interpolation.
      *
-     * @return array<string,int>
+     * @return list<array{name:string,rows:int}>
      */
-    private function compterLignesParTable(): array
+    private function tablesEnListe(): array
     {
         if ($this->db->estSqlite()) {
             $lignes = $this->db->tous(
@@ -615,16 +773,19 @@ final class ControleurMaintenance
             );
         }
 
-        $comptages = [];
+        $resultat = [];
         foreach ($lignes as $l) {
             $nom = (string) $l['name'];
             // Db::identifiant() valide le nom (caractères autorisés uniquement) :
             // même si sqlite_master renvoyait un nom bizarre, il ne passerait pas.
             $nomSql = Db::identifiant($nom);
-            $comptages[$nom] = (int) $this->db->valeur("SELECT COUNT(*) FROM {$nomSql}");
+            $resultat[] = [
+                'name' => $nom,
+                'rows' => (int) $this->db->valeur("SELECT COUNT(*) FROM {$nomSql}"),
+            ];
         }
 
-        return $comptages;
+        return $resultat;
     }
 
     /**
@@ -670,6 +831,127 @@ final class ControleurMaintenance
         }
 
         return null;
+    }
+
+    /**
+     * Taille en octets → chaîne humainement lisible (« 4.2 Mo », « 120 Ko »…).
+     *
+     * Les unités sont en base 10 (SI), comme le font la plupart des systèmes
+     * de fichiers grand public (macOS, Windows Explorer). La base 2 (Mio, Kio)
+     * serait plus précise mais moins compréhensible pour un commerçant.
+     */
+    private function tailleLisible(int $octets): string
+    {
+        if ($octets < 1000) {
+            return $octets . ' o';
+        }
+        if ($octets < 1_000_000) {
+            return round($octets / 1_000, 1) . ' Ko';
+        }
+        if ($octets < 1_000_000_000) {
+            return round($octets / 1_000_000, 1) . ' Mo';
+        }
+
+        return round($octets / 1_000_000_000, 2) . ' Go';
+    }
+
+    /**
+     * Normalise le champ `simulation` vers un booléen.
+     *
+     * RÈGLE DE SÉCURITÉ : on simule par défaut ET par repli.
+     * Seul un booléen JSON `false` explicite déclenche une migration réelle.
+     * Toute valeur absente, mal typée, ou ambiguë (chaîne « faux », null…)
+     * est traitée comme une demande de simulation.
+     *
+     * Pourquoi si strict : une migration réelle sur la seule base de données
+     * d'un commerçant sans backup récent est irréversible. Mieux vaut une
+     * simulation involontaire (corrigeable en relançant avec simulation=false)
+     * qu'une migration réelle involontaire (irréversible).
+     */
+    private function normaliserBooleanSimulation(mixed $valeur): bool
+    {
+        // Seul un booléen PHP false (décodé depuis JSON `false`) désactive la simulation.
+        // Une chaîne « false » ou 0 ne suffisent pas : on exige la clarté.
+        if (is_bool($valeur)) {
+            return $valeur;
+        }
+
+        // Tout le reste → simulation.
+        return true;
+    }
+
+    /**
+     * Traduit un message d'erreur de connexion en phrase compréhensible,
+     * sans jamais reproduire le DSN ni les identifiants.
+     *
+     * La distinction refus-identifiants / hôte-injoignable est utile :
+     *   - Refus : « vérifiez l'utilisateur et le mot de passe »
+     *   - Injoignable : « vérifiez l'hôte et le port »
+     * Une erreur générique « une erreur est survenue » ne l'est pas.
+     */
+    private function traduireErreurConnexion(string $messageOriginal): string
+    {
+        $bas = strtolower($messageOriginal);
+
+        // Refus d'authentification (MySQL : 1045, PostgreSQL : FATAL password, etc.)
+        if (str_contains($bas, 'access denied')
+            || str_contains($bas, 'password authentication failed')
+            || str_contains($bas, '1045')
+        ) {
+            return 'La base cible refuse la connexion : utilisateur ou mot de passe invalide. '
+                . 'Vérifiez les identifiants et les permissions accordées à cet utilisateur.';
+        }
+
+        // Hôte inconnu ou injoignable
+        if (str_contains($bas, 'could not connect')
+            || str_contains($bas, 'connection refused')
+            || str_contains($bas, 'unknown host')
+            || str_contains($bas, 'no such host')
+            || str_contains($bas, 'name or service not known')
+        ) {
+            return 'Impossible de joindre la base cible : l\'hôte est inconnu ou le port est fermé. '
+                . 'Vérifiez le DSN (hôte, port).';
+        }
+
+        // DSN malformé ou pilote non supporté (détecté par Migrateur::connecter())
+        if (str_contains($bas, 'pilote')
+            || str_contains($bas, 'dsn vide')
+            || str_contains($bas, 'non support')
+        ) {
+            return 'Le DSN fourni est invalide ou le pilote n\'est pas supporté. '
+                . 'Formats acceptés : sqlite:/chemin, mysql:host=…;dbname=…, pgsql:host=…;dbname=….';
+        }
+
+        // Base inexistante (MySQL : 1049, PostgreSQL : database does not exist)
+        if (str_contains($bas, 'unknown database')
+            || str_contains($bas, 'database')
+            || str_contains($bas, '1049')
+        ) {
+            return 'La base de données cible n\'existe pas. Créez-la d\'abord dans le panneau de votre hébergeur.';
+        }
+
+        // Cas non identifié : message générique sans détails techniques.
+        // On ne retourne PAS le message d'origine car il peut contenir le DSN.
+        return 'Connexion à la base cible impossible. Vérifiez le DSN, les identifiants et que la base existe.';
+    }
+
+    /**
+     * Supprime toute mention de DSN d'un message avant de le renvoyer en réponse.
+     *
+     * Filet de sécurité final : même si une exception interne avait encodé un DSN
+     * dans son message, il ne doit pas sortir vers le client.
+     */
+    private function sansDsn(string $message): string
+    {
+        // Retire les patterns DSN courants : mysql:host=..., sqlite:/path, pgsql:host=...
+        $filtre = (string) preg_replace(
+            '/\b(mysql|sqlite|pgsql|pdo):[^\s,;)\"\']+/i',
+            '[DSN masqué]',
+            $message
+        );
+
+        // Retire aussi les mots de passe qui auraient pu se glisser (best-effort).
+        return (string) preg_replace('/(password|pwd|motdepasse)[=:][^\s,;)\"\']+/i', '$1=[masqué]', $filtre);
     }
 
     /**
