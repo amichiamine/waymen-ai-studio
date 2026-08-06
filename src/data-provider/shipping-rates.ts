@@ -39,7 +39,7 @@ export type ShippingRateMutations = {
 };
 
 async function upsertRateHttp(rate: ShippingRate): Promise<ShippingRate> {
-  return http.patch<ShippingRate>(E.settings.shippingRateUpsert(rate.wilayaCode), rate);
+  return http.put<ShippingRate>(E.settings.shippingRateUpsert(rate.wilayaCode), rate);
 }
 
 async function removeRateHttp(wilayaCode: string): Promise<void> {

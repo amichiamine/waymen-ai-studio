@@ -7,16 +7,17 @@ import {
   updateReviewStatus,
   deleteReview,
 } from "@/lib/admin-store";
-import type { Review, ReviewStatus } from "../types";
+import type { Review, ReviewStatus, Paginated } from "../types";
 
 export const reviewsApi = {
   async byProduct(productId: string): Promise<Review[]> {
-    if (isHttpMode()) return http.get<Review[]>(E.reviews.byProduct(productId));
+    if (isHttpMode())
+      return (await http.get<Paginated<Review>>(E.reviews.byProduct(productId))).items;
     return getAdminSnapshot().reviews.filter((r) => r.productId === productId);
   },
 
   async list(): Promise<Review[]> {
-    if (isHttpMode()) return http.get<Review[]>(E.reviews.list());
+    if (isHttpMode()) return (await http.get<Paginated<Review>>(E.reviews.list())).items;
     return getAdminSnapshot().reviews;
   },
 

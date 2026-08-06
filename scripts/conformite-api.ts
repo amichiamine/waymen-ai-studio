@@ -613,9 +613,8 @@ const RESSOURCES: readonly Ressource[] = [
     cle: ".reviews",
     hook: "useReviewList()",
     chemin: "/reviews",
-    // `reviewsApi.list()` fait `http.get<Review[]>` : un TABLEAU NU, pas
-    // d'enveloppe paginée.
-    enveloppe: "tableau",
+    // `reviewsApi.list()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
+    enveloppe: "paginee",
     champs: CHAMPS_AVIS,
     sondes: [
       { methode: "PATCH", chemin: `/reviews/${ID_ABSENT}/status`, libelle: "moderate avis" },
@@ -626,15 +625,16 @@ const RESSOURCES: readonly Ressource[] = [
     cle: ".reviews (d'un produit)",
     hook: "useProductReviewList()",
     chemin: "/products/rog-strix-g16/reviews",
-    enveloppe: "tableau",
+    // `reviewsApi.byProduct()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
+    enveloppe: "paginee",
     champs: CHAMPS_AVIS,
   },
   {
     cle: ".users",
     hook: "useUserList()",
     chemin: "/admin/users",
-    // `usersApi.list()` fait `http.get<AdminUser[]>` : tableau nu.
-    enveloppe: "tableau",
+    // `usersApi.list()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
+    enveloppe: "paginee",
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "name", type: "chaine" },
@@ -760,8 +760,8 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "desk", type: "nombre" },
     ],
     sondes: [
-      // Le provider fait `http.patch(...)` ; la route est déclarée en `put`.
-      { methode: "PATCH", chemin: "/settings/shipping/rates/16", libelle: "upsert tarif" },
+      // Le provider fait désormais `http.put(...)` — aligné sur la route (lot 1 corrigé).
+      { methode: "PUT", chemin: "/settings/shipping/rates/16", libelle: "upsert tarif" },
       {
         methode: "DELETE",
         chemin: `/settings/shipping/rates/${ID_ABSENT}`,
@@ -781,7 +781,8 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "active", type: "booleen" },
     ],
     sondes: [
-      { methode: "PATCH", chemin: `/settings/payments/${ID_ABSENT}`, libelle: "upsert mode" },
+      // Le provider fait désormais `http.put(...)` — aligné sur la route (lot 1 corrigé).
+      { methode: "PUT", chemin: `/settings/payments/${ID_ABSENT}`, libelle: "upsert mode" },
       { methode: "DELETE", chemin: `/settings/payments/${ID_ABSENT}`, libelle: "remove mode" },
     ],
   },
@@ -789,8 +790,8 @@ const RESSOURCES: readonly Ressource[] = [
     cle: ".stockMovements",
     hook: "useStockMovementList()",
     chemin: "/inventory/movements",
-    // `inventoryApi.movements()` fait `http.get<StockMovement[]>` : tableau nu.
-    enveloppe: "tableau",
+    // `inventoryApi.movements()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
+    enveloppe: "paginee",
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "productId", type: "chaine" },
@@ -800,8 +801,8 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "createdAt", type: "iso8601" },
     ],
     sondes: [
-      // Le provider fait `http.patch(...)` ; la route est déclarée en `post`.
-      { methode: "PATCH", chemin: `/inventory/${ID_ABSENT}/adjust`, libelle: "adjust stock" },
+      // Le provider fait désormais `http.post(...)` — aligné sur la route (lot 1 corrigé).
+      { methode: "POST", chemin: `/inventory/${ID_ABSENT}/adjust`, libelle: "adjust stock" },
     ],
   },
   {
