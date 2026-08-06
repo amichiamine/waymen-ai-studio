@@ -163,18 +163,27 @@ final class ControleurAuth
         $maintenant = gmdate('c');
         $id = 'usr-' . bin2hex(random_bytes(8));
 
-        $this->db->transaction(fn (Db $d) => $d->inserer('users', [
-            'id' => $id,
-            'name' => $nom,
-            'email' => $email,
-            'password_hash' => MotDePasse::hacher((string) $motDePasse),
-            'role' => 'customer', // JAMAIS depuis le corps de la requête.
-            'active' => 1,
-            'phone' => $telephone,
-            'last_login' => $maintenant,
-            'created_at' => $maintenant,
-            'updated_at' => $maintenant,
-        ]));
+        $hache = MotDePasse::hacher((string) $motDePasse);
+
+        // Le compte ET sa fiche client dans LA MÊME transaction : pas de compte
+        // sans fiche, pas de fiche sans compte (cf. commentaire de
+        // `assurerFicheClient`).
+        $this->db->transaction(function (Db $d) use ($id, $nom, $email, $hache, $telephone, $maintenant): void {
+            $d->inserer('users', [
+                'id' => $id,
+                'name' => $nom,
+                'email' => $email,
+                'password_hash' => $hache,
+                'role' => 'customer', // JAMAIS depuis le corps de la requête.
+                'active' => 1,
+                'phone' => $telephone,
+                'last_login' => $maintenant,
+                'created_at' => $maintenant,
+                'updated_at' => $maintenant,
+            ]);
+
+            $this->assurerFicheClient($d, $nom, $email, $telephone ?? '', $maintenant);
+        });
 
         $ligne = $this->utilisateurParId($id);
         if ($ligne === null) {
@@ -184,6 +193,74 @@ final class ControleurAuth
         Session::ouvrir($ligne);
 
         return Reponse::cree($this->sessionDto($ligne));
+    }
+
+    /**
+     * Fiche `customers` d'un compte fraîchement inscrit — création idempotente.
+     *
+     * POURQUOI. `users` et `customers` sont deux tables distinctes et le schéma
+     * ne porte aucune clé étrangère entre elles. `GET /me/orders` relie donc un
+     * compte à ses commandes par le COURRIEL (`idx_customers_email`), ce que
+     * `ControleurCommandes::clientValide()` faisait déjà pour rattacher une
+     * commande à une fiche existante. Avant la vague 4.9, l'inscription ne
+     * créait AUCUNE fiche : un compte neuf n'avait rien à relier et son
+     * historique restait donc vide quoi qu'il fasse (§4.1 de
+     * docs/CONFORMITE-API.md).
+     *
+     * Idempotent : si une fiche porte déjà ce courriel (achat en invité passé
+     * avant l'inscription, ou fiche saisie au back-office), on la RÉUTILISE.
+     * Créer un doublon casserait l'unicité par courriel que
+     * `ControleurClients::creer()` fait respecter.
+     */
+    private function assurerFicheClient(
+        Db $d,
+        string $nom,
+        string $email,
+        string $telephone,
+        string $maintenant,
+    ): void {
+        $courriel = mb_strtolower(trim($email));
+        if ($courriel === '') {
+            return;
+        }
+
+        $existante = $d->valeur(
+            'SELECT id FROM customers WHERE LOWER(email) = :courriel AND email <> \'\'',
+            [':courriel' => $courriel],
+        );
+        if ($existante !== null) {
+            return;
+        }
+
+        // Format `cus_…`, identique à celui de ControleurClients::creer().
+        for ($essai = 0; $essai < 8; $essai++) {
+            $id = 'cus_' . bin2hex(random_bytes(6));
+            if ($d->valeur('SELECT id FROM customers WHERE id = :id', [':id' => $id]) !== null) {
+                continue;
+            }
+
+            $d->inserer('customers', [
+                'id' => $id,
+                'name' => $nom === '' ? $courriel : $nom,
+                'email' => $courriel,
+                'phone' => $telephone,
+                'wilaya' => '',
+                'orders_count' => 0,
+                'total_spent' => 0,
+                'created_at' => $maintenant,
+                'updated_at' => $maintenant,
+            ]);
+
+            return;
+        }
+
+        // Jamais d'échec silencieux : l'inscription échoue en 500 nommée plutôt
+        // que de rendre un compte sans fiche, donc sans historique possible.
+        throw new ApiException(
+            500,
+            'INTERNAL_ERROR',
+            'Impossible de tirer un identifiant de fiche client libre après 8 tentatives.'
+        );
     }
 
     // ==================================================================
