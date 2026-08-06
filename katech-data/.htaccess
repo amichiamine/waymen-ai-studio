@@ -1,0 +1,54 @@
+# katech-data:protection-v1
+# =====================================================================
+# katech-data/.htaccess — ce dossier ne sort JAMAIS par HTTP
+# =====================================================================
+# Écrit automatiquement par scripts/api-dev.mjs. Ne pas supprimer.
+#
+# POURQUOI : ce dossier contient la base de développement (comptes,
+# commandes, empreintes de mots de passe) et vit à l'intérieur du projet.
+# Si le projet est cloné dans C:\xampp\htdocs\ka-tech, Apache le sert à
+# http://localhost/ka-tech/katech-data/. Ce fichier l'en empêche.
+#
+# PORTÉE RÉELLE : Apache et LiteSpeed seulement, et seulement si
+# AllowOverride autorise ces directives. nginx IGNORE les .htaccess :
+# sur nginx, ce fichier ne protège RIEN. C'est pourquoi la base porte
+# aussi un nom non devinable (voir scripts/api-dev.mjs).
+#
+# Deux barrières redondantes À DESSEIN : si un module manque, l'autre tient.
+# =====================================================================
+
+Options -Indexes
+
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
+
+# --- Barrière 1 : refus du dossier entier (mod_authz_core) -----------
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>
+
+# --- Barrière 2 : refus par réécriture, si mod_authz_core manquait ---
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^ - [F,L]
+</IfModule>
+
+# --- Barrière 3 : refus par nom de fichier ---------------------------
+# Redondant avec la barrière 1, mais survit à un « Require all granted »
+# hérité d'une configuration de VirtualHost trop permissive.
+<FilesMatch "(^\.|\.(sqlite|sqlite-wal|sqlite-shm|db|sql|env|log|bak|old|gz|zip|tar)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+ErrorDocument 403 "Acces refuse."

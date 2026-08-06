@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- # katech-data:protection-v1 -->
+<!--
+  Écrit automatiquement par scripts/api-dev.mjs. Ne pas supprimer.
+
+  Rôle : empêcher le LISTAGE du dossier sur les serveurs où « Options -Indexes »
+  ne s'applique pas (nginx avec autoindex, par exemple). Cette page est alors
+  servie à la place de la liste des fichiers.
+
+  Ce fichier n'empêche PAS de télécharger un fichier dont on connaît le nom.
+  C'est le .htaccess (Apache/LiteSpeed) et le nom non devinable de la base qui
+  s'en chargent.
+-->
+<meta charset="utf-8" />
+<title>Acces refuse</title>
+<p>Rien a voir ici.</p>

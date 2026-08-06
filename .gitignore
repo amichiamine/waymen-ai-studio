@@ -43,3 +43,27 @@ package-lock.json
 # Un fichier de test y est deja apparu pendant la recette et aurait ete
 # committe par un `git add -A` distrait.
 public_html/uploads/
+
+# Dossier de donnees de developpement, DANS le projet (scripts/api-dev.mjs).
+# Il contient la base SQLite : comptes, commandes, empreintes de mots de passe.
+# Rien de tout cela ne part sur GitHub. Seuls les deux fichiers de protection
+# sont versionnes, pour qu'ils existent des le clonage et pas seulement apres
+# le premier `bun run dev` -- entre les deux, le dossier serait nu sous htdocs.
+/katech-data/*
+!/katech-data/.htaccess
+!/katech-data/index.html
+
+# Bases SQLite ou qu'elles soient, y compris les fichiers annexes que SQLite
+# cree a cote en mode WAL (-wal, -shm). Les oublier revient a publier la base :
+# un -wal contient les dernieres ecritures non encore fusionnees.
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+*.db
+
+# Sauvegardes qui pourraient atterrir dans le projet (api/tools/sauvegarder.php).
+# Volontairement pas de `*.sql` : api/schema/*.sql est du code et reste versionne.
+backups/
+*.sql.gz
+*.dump
