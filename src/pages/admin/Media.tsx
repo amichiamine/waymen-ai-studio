@@ -85,7 +85,10 @@ export default function AdminMedia() {
             }) as MediaAsset & { fromCatalog?: boolean },
         )
         .map((m) => ({ ...m, fromCatalog: true })),
-    [products],
+    // `L` participe au calcul : l'omettre figeait les libellés sur la langue
+    // active au premier rendu, et un changement de langue ne retraduisait plus
+    // rien ici.
+    [products, L],
   );
 
   const combined = useMemo(
