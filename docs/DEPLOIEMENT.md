@@ -189,6 +189,7 @@ gérée côté navigateur et qu'aucun fichier `produits` n'existe sur le disque.
    >
    > **Nuance côté build.** Si vous construisez vous-même le `dist/`, trois
    > variables se décident AU BUILD et ne peuvent pas être changées après coup :
+   >
    > - `VITE_API_MODE` doit valoir `http` (le défaut est `mock` ; un build en
    >   `mock` ne parle jamais à l'API, quelle que soit la configuration du
    >   serveur) ;
