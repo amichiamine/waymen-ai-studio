@@ -393,11 +393,37 @@ final class ControleurAuth
      * doit perdre l'accès sans attendre l'expiration. La session est refermée
      * dans la foulée, sinon le client garderait un cookie qui ne mène nulle part.
      *
-     * → 200 { data: AuthSession } ou 401
+     * RÉPOND 200 AVEC `user: null` À UN ANONYME — et non 401.
+     *
+     * « Qui suis-je ? » est une QUESTION, pas une ressource protégée : « personne »
+     * en est une réponse valide, et la seule route du contrat dont c'est le cas.
+     * Le 401 précédent était un état parfaitement normal comptabilisé comme une
+     * erreur par le navigateur (deux `GET /auth/me → 401` rouges dans la console
+     * à chaque chargement) et par le compteur d'échecs du badge de mode.
+     *
+     * CE QUI NE CHANGE PAS :
+     *   - aucune garde n'est affaiblie : `Garde::protege*` reste intact, et TOUTES
+     *     les autres routes protégées répondent toujours 401 (`rafraichir()`
+     *     ci-dessous continue d'appeler `relireOuFermer()`) ;
+     *   - rien n'est révélé : la réponse anonyme ne contient que `user: null` et
+     *     `expiresAt: null` — pas de motif, pas de distinction entre « aucun
+     *     cookie », « cookie expiré » et « compte désactivé », qui sortent tous
+     *     par la même porte ;
+     *   - une session dont le compte a disparu ou a été désactivé est toujours
+     *     FERMÉE ici (le client cesse donc de se croire connecté) : c'est
+     *     `Session::fermer()` qui protège, pas le code de statut.
+     *
+     * → 200 { data: AuthSession } · 200 { data: { user: null } } si anonyme
      */
     public function session(Requete $r): Reponse
     {
-        $ligne = $this->relireOuFermer();
+        $ligne = $this->relireOuNull();
+
+        // « Personne » : même sortie pour un visiteur sans cookie, un cookie
+        // expiré et un compte désactivé. Aucun oracle, aucun motif divulgué.
+        if ($ligne === null) {
+            return Reponse::ok(['user' => null, 'expiresAt' => null]);
+        }
 
         return Reponse::ok($this->sessionDto($ligne));
     }
@@ -752,27 +778,63 @@ final class ControleurAuth
     }
 
     /**
-     * Relit l'utilisateur de la session en base ; ferme la session et lève 401
-     * si le compte a disparu ou a été désactivé entre-temps.
+     * Relit l'utilisateur de la session en base, SANS jamais lever.
      *
-     * @return array<string,mixed>
+     * Renvoie `null` dans les trois cas où il n'y a personne à servir : aucune
+     * session, compte disparu, compte désactivé. Dans les deux derniers, la
+     * session est REFERMÉE — un cookie qui ne mène nulle part ne doit pas
+     * survivre à cet appel.
+     *
+     * Extrait de `relireOuFermer()` pour que `session()` (GET /auth/me) puisse
+     * répondre « personne » en 200 sans dupliquer cette relecture, et sans que
+     * les autres routes perdent leur 401.
+     *
+     * @return array<string,mixed>|null
      */
-    private function relireOuFermer(): array
+    private function relireOuNull(): ?array
     {
-        $utilisateur = Garde::exigerConnexion();
+        $utilisateur = Garde::utilisateur(); // Ne lève pas, contrairement à exigerConnexion().
+
+        if ($utilisateur === null) {
+            return null;
+        }
 
         $ligne = $this->utilisateurParId($utilisateur['id']);
 
         if ($ligne === null || (int) $ligne['active'] !== 1) {
             Session::fermer();
 
-            throw ApiException::nonAuthentifie(
-                'Votre session n\'est plus valide. Reconnectez-vous.'
-            );
+            return null;
         }
 
         // Le rôle en base fait autorité : une rétrogradation prend effet ici.
         Session::actualiser(['role' => (string) $ligne['role']]);
+
+        return $ligne;
+    }
+
+    /**
+     * Relit l'utilisateur de la session en base ; ferme la session et lève 401
+     * si le compte a disparu ou a été désactivé entre-temps.
+     *
+     * Reste la porte des routes PROTÉGÉES (`rafraichir()`) : leur 401 est
+     * inchangé, messages compris.
+     *
+     * @return array<string,mixed>
+     */
+    private function relireOuFermer(): array
+    {
+        // D'abord la garde : elle produit le 401 « Authentification requise… »
+        // lorsqu'il n'y a aucune session, message distinct du suivant.
+        Garde::exigerConnexion();
+
+        $ligne = $this->relireOuNull();
+
+        if ($ligne === null) {
+            throw ApiException::nonAuthentifie(
+                'Votre session n\'est plus valide. Reconnectez-vous.'
+            );
+        }
 
         return $ligne;
     }
