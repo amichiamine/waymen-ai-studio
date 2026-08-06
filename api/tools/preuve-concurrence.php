@@ -127,6 +127,19 @@ if ($produit === null) {
     }
 }
 
+// PRÉ-VOL. Sans lui, une base d'essai à laquelle il manque simplement un moyen
+// de paiement rend « 6 réponses ni 201 ni 409 » et laisse croire à une faille
+// de concurrence. C'est arrivé pendant la mise au point de ce script, et le
+// diagnostic a coûté plus cher que le défaut. Un test doit dire POURQUOI il
+// échoue, sinon il envoie chercher au mauvais endroit.
+$paiements = (int) $pdo->query("SELECT COUNT(*) FROM payment_methods WHERE id = 'cod'")->fetchColumn();
+if ($paiements === 0) {
+    fwrite(STDERR, "Le moyen de paiement « cod » (paiement à la livraison) n'existe pas dans cette\n"
+        . "base : toute commande serait refusée en 422, pour une raison étrangère à la\n"
+        . "concurrence. Lancez api/tools/importer-donnees-front.php sur cette base.\n");
+    exit(2);
+}
+
 $pdo->exec('DELETE FROM order_items');
 $pdo->exec('DELETE FROM orders');
 $pdo->exec('DELETE FROM stock_movements');
