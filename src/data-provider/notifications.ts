@@ -1,16 +1,7 @@
 import { useCallback, useMemo } from "react";
 
-import { isHttpMode } from "@/api/config";
-import { ApiError } from "@/api/client";
-import {
-  getAdminSnapshot,
-  addNotification,
-  updateNotification,
-  deleteNotification,
-  markAllNotificationsRead,
-  type AdminNotification,
-  type NotificationLevel,
-} from "@/lib/admin-store";
+import { notificationsApi } from "@/api/resources/notifications";
+import type { AdminNotification } from "@/lib/admin-store";
 
 import { runMutation, useResource } from "./use-resource";
 import { invalidateResource } from "./cache";
@@ -24,22 +15,15 @@ const NO_NOTIFICATIONS: AdminNotification[] = [];
 
 /**
  * Liste des notifications — remplace `useAdminState().notifications`.
+ *
+ * En mode mock : lecture directe du store, `loading: false` au premier rendu.
+ * En mode http : lecture de `GET /notifications` (liste paginée, on extrait `.items`).
  */
 export function useNotificationList(): ResourceState<AdminNotification[]> {
   return useResource<AdminNotification[]>({
     key: NOTIFICATIONS_RESOURCE,
     fromStore: (state) => state.notifications,
-    fromHttp: async () => {
-      // Aucun endpoint backend dédié aux notifications n'existe à ce stade.
-      // Le mode http échoue explicitement pour éviter un silence trompeur
-      // (AGENTS.md §7). Phase 4 devra déclarer l'endpoint et brancher la couche API.
-      throw new ApiError(
-        501,
-        "not_implemented",
-        "Les notifications ne sont pas encore disponibles via l'API HTTP. " +
-          "Cette ressource sera implémentée en phase 4 (PLAN.md).",
-      );
-    },
+    fromHttp: async () => (await notificationsApi.list()).items,
     fallback: NO_NOTIFICATIONS,
   });
 }
@@ -48,7 +32,7 @@ export type NotificationInput = {
   title: string;
   /** Corps du message. Vide par défaut si non fourni. */
   body?: string;
-  level: NotificationLevel;
+  level?: AdminNotification["level"];
   link?: string;
 };
 
@@ -61,63 +45,34 @@ export type NotificationMutations = {
 
 /**
  * Mutations des notifications. Toujours asynchrones, y compris en mock.
- * `create` ajoute une notification manuellement. En mode http, aucun endpoint
- * de création de notification n'existe à ce stade — échec explicite (phase 4 — PLAN.md).
  */
 export function useNotificationMutations(): NotificationMutations {
   const create = useCallback((input: NotificationInput) => {
     return runMutation(NOTIFICATIONS_RESOURCE, "create", async () => {
-      if (isHttpMode()) {
-        throw new ApiError(
-          501,
-          "not_implemented",
-          "La création de notifications n'est pas encore disponible via l'API HTTP. " +
-            "Cette ressource sera implémentée en phase 4 (PLAN.md).",
-        );
-      }
-      addNotification({ ...input, body: input.body ?? "" });
+      await notificationsApi.create({
+        title: input.title,
+        body: input.body ?? "",
+        level: input.level ?? "info",
+        link: input.link,
+      });
     });
   }, []);
 
   const markRead = useCallback((id: string, read = true) => {
     return runMutation(NOTIFICATIONS_RESOURCE, "markRead", async () => {
-      if (isHttpMode()) {
-        throw new ApiError(
-          501,
-          "not_implemented",
-          "Les mutations de notifications ne sont pas encore disponibles via l'API HTTP. " +
-            "Cette ressource sera implémentée en phase 4 (PLAN.md).",
-        );
-      }
-      updateNotification(id, { read });
+      await notificationsApi.markRead(id, read);
     });
   }, []);
 
   const markAllRead = useCallback(() => {
     return runMutation(NOTIFICATIONS_RESOURCE, "markAllRead", async () => {
-      if (isHttpMode()) {
-        throw new ApiError(
-          501,
-          "not_implemented",
-          "Les mutations de notifications ne sont pas encore disponibles via l'API HTTP. " +
-            "Cette ressource sera implémentée en phase 4 (PLAN.md).",
-        );
-      }
-      markAllNotificationsRead();
+      await notificationsApi.markAllRead();
     });
   }, []);
 
   const remove = useCallback((id: string) => {
     return runMutation(NOTIFICATIONS_RESOURCE, "remove", async () => {
-      if (isHttpMode()) {
-        throw new ApiError(
-          501,
-          "not_implemented",
-          "Les mutations de notifications ne sont pas encore disponibles via l'API HTTP. " +
-            "Cette ressource sera implémentée en phase 4 (PLAN.md).",
-        );
-      }
-      deleteNotification(id);
+      await notificationsApi.remove(id);
     });
   }, []);
 

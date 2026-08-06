@@ -1,8 +1,11 @@
 import { useCallback, useMemo } from "react";
 
+import { http } from "@/api/client";
+import { endpoints as E } from "@/api/endpoints";
 import { setAboutValues, type AboutValue } from "@/lib/admin-store";
 
 import { runMutation, useResource } from "./use-resource";
+import { isHttpData } from "./mode";
 import type { ResourceState } from "./types";
 
 export const ABOUT_VALUES_RESOURCE = "about-values";
@@ -10,36 +13,38 @@ export const ABOUT_VALUES_RESOURCE = "about-values";
 const NO_ABOUT_VALUES: AboutValue[] = [];
 
 /**
- * Échec explicite du mode http pour les valeurs « À propos ».
+ * Lit la section `about` depuis `GET /content` et en extrait `about.values`.
  *
- * Aucun endpoint REST dédié n'est encore défini pour cette ressource.
- * Le câblage http sera réalisé en phase 4 (PLAN.md). On refuse tout repli
- * silencieux vers le store local : une erreur explicite est préférable à un
- * résultat incorrect (AGENTS.md §7).
+ * Le backend stocke les valeurs de la page « À propos » dans la section
+ * « about » de la table `site_content`. La route `/content` retourne l'ensemble
+ * des sections ; le provider en extrait uniquement `about.values`.
  */
-function aboutValuesHttpNotImplemented(): Promise<never> {
-  return Promise.reject(
-    new Error(
-      "[about-values] Aucun endpoint HTTP dédié n'est encore défini. " +
-        "Cette ressource sera câblée en phase 4 — voir PLAN.md. " +
-        "En mode http, les valeurs « À propos » ne sont pas disponibles.",
-    ),
-  );
+async function fetchAboutValues(): Promise<AboutValue[]> {
+  const content = await http.get<Record<string, unknown>>(E.content.get());
+  const about = content?.about;
+  if (
+    about !== null &&
+    about !== undefined &&
+    typeof about === "object" &&
+    !Array.isArray(about) &&
+    Array.isArray((about as Record<string, unknown>).values)
+  ) {
+    return (about as { values: AboutValue[] }).values;
+  }
+  return [];
 }
 
 /**
  * Valeurs affichées sur la page « À propos ».
  *
  * En mode mock : lecture directe du store, `loading: false` au premier rendu.
- * En mode http : l'endpoint n'est pas encore défini (phase 4). Le hook renvoie
- * la liste vide avec une `ApiError` journalisée — jamais un échec silencieux
- * (AGENTS.md §7).
+ * En mode http : lecture de `GET /content → about.values`.
  */
 export function useAboutValueList(): ResourceState<AboutValue[]> {
   return useResource<AboutValue[]>({
     key: ABOUT_VALUES_RESOURCE,
     fromStore: (state) => state.aboutValues,
-    fromHttp: () => aboutValuesHttpNotImplemented(),
+    fromHttp: fetchAboutValues,
     fallback: NO_ABOUT_VALUES,
   });
 }
@@ -56,6 +61,10 @@ export function useAboutValueMutations(): AboutValueMutations {
   const set = useCallback(
     (list: AboutValue[]) =>
       runMutation(ABOUT_VALUES_RESOURCE, "set", async () => {
+        if (isHttpData()) {
+          await http.patch<void>(E.content.update(), { about: { values: list } });
+          return list;
+        }
         setAboutValues(list);
         return list;
       }),

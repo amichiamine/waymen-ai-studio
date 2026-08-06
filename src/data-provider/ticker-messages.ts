@@ -1,8 +1,11 @@
 import { useCallback, useMemo } from "react";
 
+import { http } from "@/api/client";
+import { endpoints as E } from "@/api/endpoints";
 import { setTickerMessages, type TickerMessage } from "@/lib/admin-store";
 
 import { runMutation, useResource } from "./use-resource";
+import { isHttpData } from "./mode";
 import type { ResourceState } from "./types";
 
 export const TICKER_RESOURCE = "ticker-messages";
@@ -10,36 +13,38 @@ export const TICKER_RESOURCE = "ticker-messages";
 const NO_TICKER_MESSAGES: TickerMessage[] = [];
 
 /**
- * Échec explicite du mode http pour le bandeau défilant (ticker).
+ * Lit la section `ticker` depuis `GET /content` et en extrait `ticker.items`.
  *
- * Aucun endpoint REST dédié n'est encore défini pour cette ressource.
- * Le câblage http sera réalisé en phase 4 (PLAN.md). On refuse tout repli
- * silencieux vers le store local : une erreur explicite est préférable à un
- * résultat incorrect (AGENTS.md §7).
+ * Le backend stocke les messages du bandeau dans la section « ticker » de la
+ * table `site_content`. La route `/content` retourne l'ensemble des sections ;
+ * le provider en extrait uniquement `ticker.items`.
  */
-function tickerMessagesHttpNotImplemented(): Promise<never> {
-  return Promise.reject(
-    new Error(
-      "[ticker-messages] Aucun endpoint HTTP dédié n'est encore défini. " +
-        "Cette ressource sera câblée en phase 4 — voir PLAN.md. " +
-        "En mode http, les messages du bandeau défilant ne sont pas disponibles.",
-    ),
-  );
+async function fetchTickerMessages(): Promise<TickerMessage[]> {
+  const content = await http.get<Record<string, unknown>>(E.content.get());
+  const ticker = content?.ticker;
+  if (
+    ticker !== null &&
+    ticker !== undefined &&
+    typeof ticker === "object" &&
+    !Array.isArray(ticker) &&
+    Array.isArray((ticker as Record<string, unknown>).items)
+  ) {
+    return (ticker as { items: TickerMessage[] }).items;
+  }
+  return [];
 }
 
 /**
  * Messages du bandeau défilant (ticker).
  *
  * En mode mock : lecture directe du store, `loading: false` au premier rendu.
- * En mode http : l'endpoint n'est pas encore défini (phase 4). Le hook renvoie
- * la liste vide avec une `ApiError` journalisée — jamais un échec silencieux
- * (AGENTS.md §7).
+ * En mode http : lecture de `GET /content → ticker.items`.
  */
 export function useTickerMessageList(): ResourceState<TickerMessage[]> {
   return useResource<TickerMessage[]>({
     key: TICKER_RESOURCE,
     fromStore: (state) => state.tickerMessages,
-    fromHttp: () => tickerMessagesHttpNotImplemented(),
+    fromHttp: fetchTickerMessages,
     fallback: NO_TICKER_MESSAGES,
   });
 }
@@ -56,6 +61,10 @@ export function useTickerMessageMutations(): TickerMessageMutations {
   const set = useCallback(
     (list: TickerMessage[]) =>
       runMutation(TICKER_RESOURCE, "set", async () => {
+        if (isHttpData()) {
+          await http.patch<void>(E.content.update(), { ticker: { items: list } });
+          return list;
+        }
         setTickerMessages(list);
         return list;
       }),

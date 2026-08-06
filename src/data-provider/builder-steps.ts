@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from "react";
 
+import { http } from "@/api/client";
+import { endpoints as E } from "@/api/endpoints";
 import type { BuilderStep } from "@/lib/admin-store";
-import { getAdminSnapshot, setBuilderSteps } from "@/lib/admin-store";
+import { setBuilderSteps } from "@/lib/admin-store";
 
 import { runMutation, useResource } from "./use-resource";
-import { toApiError } from "./errors";
 import { isHttpData } from "./mode";
 import type { ResourceState } from "./types";
 
@@ -18,36 +19,38 @@ export const BUILDER_STEPS_RESOURCE = "builderSteps";
 const NO_BUILDER_STEPS: BuilderStep[] = [];
 
 /**
- * Échec explicite du mode http pour les étapes du configurateur.
+ * Lit la section `builder` depuis `GET /content` et en extrait `builder.steps`.
  *
- * Ces données font partie du contenu de site (pas d'endpoint REST dédié dans
- * `endpoints.ts`). L'endpoint sera défini en phase 4 (PLAN.md). En attendant,
- * on refuse de rester silencieux : une erreur explicite est préférable à un
- * résultat incorrect ou une perte silencieuse de données.
+ * Le backend stocke les étapes du configurateur dans la section « builder » de
+ * la table `site_content`. La route `/content` retourne l'ensemble des sections ;
+ * le provider en extrait uniquement `builder.steps`.
  */
-function builderStepsHttpNotImplemented(): Promise<BuilderStep[]> {
-  return Promise.reject(
-    new Error(
-      "builderSteps : aucun endpoint HTTP dédié n'est encore défini. " +
-        "Cette ressource sera câblée en phase 4 (PLAN.md). " +
-        "En mode http, les étapes du configurateur ne sont pas disponibles.",
-    ),
-  );
+async function fetchBuilderSteps(): Promise<BuilderStep[]> {
+  const content = await http.get<Record<string, unknown>>(E.content.get());
+  const builder = content?.builder;
+  if (
+    builder !== null &&
+    builder !== undefined &&
+    typeof builder === "object" &&
+    !Array.isArray(builder) &&
+    Array.isArray((builder as Record<string, unknown>).steps)
+  ) {
+    return (builder as { steps: BuilderStep[] }).steps;
+  }
+  return [];
 }
 
 /**
  * Liste des étapes du configurateur — remplace `useAdminState().builderSteps`.
  *
  * En mode mock : lecture directe du store, `loading: false` au premier rendu.
- * En mode http : l'endpoint n'est pas encore défini (phase 4). Le hook renvoie
- * la liste vide avec une `ApiError` journalisée — jamais un échec silencieux
- * (`AGENTS.md` §7).
+ * En mode http : lecture de `GET /content → builder.steps`.
  */
 export function useBuilderStepList(): ResourceState<BuilderStep[]> {
   return useResource<BuilderStep[]>({
     key: BUILDER_STEPS_RESOURCE,
     fromStore: (state) => state.builderSteps,
-    fromHttp: async () => builderStepsHttpNotImplemented(),
+    fromHttp: fetchBuilderSteps,
     fallback: NO_BUILDER_STEPS,
   });
 }
@@ -58,25 +61,20 @@ export type BuilderStepMutations = {
 
 /**
  * Mutations des étapes du configurateur. Toujours asynchrones, y compris en mock.
- *
- * En mode http : échec explicite tant que l'endpoint n'est pas défini (phase 4).
  */
 export function useBuilderStepMutations(): BuilderStepMutations {
-  const replace = useCallback((steps: BuilderStep[]) => {
-    if (isHttpData()) {
-      const error = toApiError(
-        new Error(
-          "builderSteps : mutation HTTP non implémentée. " +
-            "L'endpoint sera défini en phase 4 (PLAN.md).",
-        ),
-      );
-      return Promise.reject(error);
-    }
-    return runMutation(BUILDER_STEPS_RESOURCE, "replace", async () => {
-      setBuilderSteps(steps);
-      return getAdminSnapshot().builderSteps;
-    });
-  }, []);
+  const replace = useCallback(
+    (steps: BuilderStep[]) =>
+      runMutation(BUILDER_STEPS_RESOURCE, "replace", async () => {
+        if (isHttpData()) {
+          await http.patch<void>(E.content.update(), { builder: { steps } });
+          return steps;
+        }
+        setBuilderSteps(steps);
+        return steps;
+      }),
+    [],
+  );
 
   return useMemo(() => ({ replace }), [replace]);
 }

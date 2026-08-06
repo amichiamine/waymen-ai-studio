@@ -678,7 +678,11 @@ const RESSOURCES: readonly Ressource[] = [
     cle: ".homeReviews",
     hook: "useHomeReviewList()",
     chemin: "/content/home-reviews",
-    enveloppe: "paginee",
+    // Le backend retourne `{ data: { items: [...] } }` (section site_content).
+    // Après déballage de `data`, on obtient `{ items: [...] }` : pas d'enveloppe
+    // paginée complète — on extrait directement `items`.
+    enveloppe: "tableau",
+    extraire: (c) => (estObjet(c) && Array.isArray(c.items) ? c.items : undefined),
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "name", type: "chaine" },
@@ -688,9 +692,6 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "rating", type: "nombre" },
       { nom: "gradient", type: "chaine" },
     ],
-    providerNonBranche:
-      "src/data-provider/home-reviews.ts — `fromHttp` lève une ApiError 501 " +
-      "(`httpNotImplementedError()`) alors que `GET /content/home-reviews` existe.",
   },
   {
     cle: ".tickerMessages",
@@ -702,10 +703,6 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "id", type: "chaine" },
       { nom: "text", type: "chaine" },
     ],
-    providerNonBranche:
-      "src/data-provider/ticker-messages.ts — `fromHttp` lève une ApiError 501 " +
-      "(`tickerMessagesHttpNotImplemented()`) alors que la donnée est dans " +
-      "`GET /content` → section `ticker.items`.",
   },
   {
     cle: ".marqueeBrands",
@@ -713,9 +710,6 @@ const RESSOURCES: readonly Ressource[] = [
     chemin: "/content",
     enveloppe: "tableau-de-chaines",
     extraire: (c) => (estObjet(c) && estObjet(c.marquee) ? c.marquee.brands : undefined),
-    providerNonBranche:
-      "src/data-provider/marquee-brands.ts — `fromHttp` lève une ApiError 501 " +
-      "alors que la donnée est dans `GET /content` → section `marquee.brands`.",
   },
   {
     cle: ".aboutValues",
@@ -729,9 +723,6 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "title", type: "chaine" },
       { nom: "description", type: "chaine" },
     ],
-    providerNonBranche:
-      "src/data-provider/about-values.ts — `fromHttp` lève une ApiError 501 " +
-      "alors que la donnée est dans `GET /content` → section `about.values`.",
   },
   {
     cle: ".builderSteps",
@@ -745,9 +736,6 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "icon", type: "chaine", valeurs: ICONES_ETAPE },
       { nom: "options", type: "tableau" },
     ],
-    providerNonBranche:
-      "src/data-provider/builder-steps.ts — `fromHttp` lève une ApiError 501 " +
-      "alors que la donnée est dans `GET /content` → section `builder.steps`.",
   },
   {
     cle: ".shippingRates",
@@ -838,9 +826,6 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "createdAt", type: "iso8601" },
       { nom: "link", type: "chaine", requis: false },
     ],
-    providerNonBranche:
-      "src/data-provider/notifications.ts — `fromHttp` lève une ApiError 501 " +
-      "alors que `GET /notifications` existe (5 routes).",
   },
   {
     cle: ".auditLogs",

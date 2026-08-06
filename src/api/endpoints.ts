@@ -125,4 +125,12 @@ export const endpoints = {
     reports: () => `/analytics/reports`,
     audit: () => `/analytics/audit`,
   },
+
+  notifications: {
+    list: () => `/notifications`,
+    detail: (id: string) => `/notifications/${id}`,
+    create: () => `/notifications`,
+    update: (id: string) => `/notifications/${id}`,
+    remove: (id: string) => `/notifications/${id}`,
+  },
 } as const;

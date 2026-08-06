@@ -1,7 +1,8 @@
 export { productsApi } from "./resources/products";
 export { ordersApi } from "./resources/orders";
 export { reviewsApi } from "./resources/reviews";
-export { contentApi, settingsApi } from "./resources/content";
+export { contentApi, homeReviewsApi, settingsApi } from "./resources/content";
+export { notificationsApi } from "./resources/notifications";
 export { authApi } from "./resources/auth";
 // Ressources ajoutées en vague 2.3.
 export { blogApi } from "./resources/blog";
