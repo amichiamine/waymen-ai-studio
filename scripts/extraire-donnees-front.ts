@@ -25,6 +25,9 @@ import { WILAYAS } from "@/data/wilayas";
 // Données admin-store
 import { categoryMeta } from "@/data/products";
 
+// Contenu de la vitrine
+import { seedSiteContent } from "@/lib/site-content";
+
 // -------------------------------------------------------------------
 // Types — reproduits localement pour éviter des imports React
 // -------------------------------------------------------------------
@@ -453,94 +456,144 @@ const builderSteps = [
 ];
 
 // -------------------------------------------------------------------
-// Contenu du site (sections site_content)
+// Contenu du site — toutes les sections de SiteContent (src/lib/site-content.ts)
 // -------------------------------------------------------------------
+
+/**
+ * Les avis de la section « home-reviews » vivent dans un contenu éditorial
+ * à part (section dédiée « home-reviews » de site_content). On les conserve
+ * dans le seed de la vitrine pour que /content/home-reviews soit alimenté.
+ *
+ * La seed complète est produite par seedSiteContent() ; on n'en extrait que
+ * les données pures (sans les icônes React non sérialisables).
+ */
+const siteContentSeed = seedSiteContent();
+
+// section « home-reviews » : liste éditoriale d'avis (maintenue séparément)
+const homeReviewsSection = {
+  items: [
+    {
+      id: "hrev_1",
+      name: "Amine Bensalah",
+      city: "Alger",
+      productId: "rog-strix-g16",
+      text: "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.",
+      rating: 5,
+      gradient: "linear-gradient(135deg,#3b82f6,#1e40af)",
+    },
+    {
+      id: "hrev_2",
+      name: "Yasmine A.",
+      city: "Oran",
+      productId: "macbook-air-m3",
+      text: "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.",
+      rating: 5,
+      gradient: "linear-gradient(135deg,#a855f7,#6d28d9)",
+    },
+    {
+      id: "hrev_3",
+      name: "Karim Haddad",
+      city: "Constantine",
+      productId: "build-mid-gaming",
+      text: "Config puissante à un prix juste, fonctionnelle dès la première utilisation.",
+      rating: 5,
+      gradient: "linear-gradient(135deg,#10b981,#047857)",
+    },
+  ],
+};
+
+// section « ticker » : messages du bandeau défilant
+const tickerSection = {
+  items: [
+    { id: "tick_1", text: "🚚 Livraison rapide dans toutes les wilayas" },
+    { id: "tick_2", text: "✅ Garantie officielle sur tous les produits" },
+    { id: "tick_3", text: "🔧 Support technique 7j/7" },
+    { id: "tick_4", text: "💳 Paiement sécurisé à la livraison" },
+    { id: "tick_5", text: "🎁 Cadeau pour toute config au-dessus de 200 000 DA" },
+  ],
+};
+
+// section « marquee » : marques du bandeau défilant
+const marqueeSection = {
+  brands: [
+    "HP",
+    "Dell",
+    "Lenovo",
+    "ASUS",
+    "Apple",
+    "Samsung",
+    "Xiaomi",
+    "MSI",
+    "Acer",
+    "Intel",
+    "AMD",
+    "NVIDIA",
+  ],
+};
+
+// section « about » : valeurs de la page À propos
+const aboutSection = {
+  values: [
+    {
+      id: "val_1",
+      icon: "shield",
+      title: "Garantie officielle",
+      description: "Tous nos produits sont authentiques et sous garantie des revendeurs agréés.",
+    },
+    {
+      id: "val_2",
+      icon: "truck",
+      title: "Livraison en Algérie",
+      description: "Livraison rapide et sécurisée dans les 58 wilayas.",
+    },
+    {
+      id: "val_3",
+      icon: "headphones",
+      title: "Support dédié",
+      description: "Notre équipe est disponible avant et après votre achat.",
+    },
+    {
+      id: "val_4",
+      icon: "award",
+      title: "Expérience et confiance",
+      description: "Des années au service de milliers de clients satisfaits.",
+    },
+  ],
+};
+
+// section « builder » : étapes du configurateur PC
+const builderSection = { steps: builderSteps };
+
+/**
+ * siteContent : toutes les sections de SiteContent + les sections éditoriales.
+ *
+ * Les 15 sections de SiteContent sont extraites directement de seedSiteContent().
+ * Les Localized<string> sont conservés tels quels (objets {fr,en,ar}) — jamais aplatis.
+ * Les 5 sections éditoriales sont conservées pour la compatibilité de l'import.
+ */
 const siteContent = {
-  "home-reviews": {
-    items: [
-      {
-        id: "hrev_1",
-        name: "Amine Bensalah",
-        city: "Alger",
-        productId: "rog-strix-g16",
-        text: "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.",
-        rating: 5,
-        gradient: "linear-gradient(135deg,#3b82f6,#1e40af)",
-      },
-      {
-        id: "hrev_2",
-        name: "Yasmine A.",
-        city: "Oran",
-        productId: "macbook-air-m3",
-        text: "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.",
-        rating: 5,
-        gradient: "linear-gradient(135deg,#a855f7,#6d28d9)",
-      },
-      {
-        id: "hrev_3",
-        name: "Karim Haddad",
-        city: "Constantine",
-        productId: "build-mid-gaming",
-        text: "Config puissante à un prix juste, fonctionnelle dès la première utilisation.",
-        rating: 5,
-        gradient: "linear-gradient(135deg,#10b981,#047857)",
-      },
-    ],
-  },
-  ticker: {
-    items: [
-      { id: "tick_1", text: "🚚 Livraison rapide dans toutes les wilayas" },
-      { id: "tick_2", text: "✅ Garantie officielle sur tous les produits" },
-      { id: "tick_3", text: "🔧 Support technique 7j/7" },
-      { id: "tick_4", text: "💳 Paiement sécurisé à la livraison" },
-      { id: "tick_5", text: "🎁 Cadeau pour toute config au-dessus de 200 000 DA" },
-    ],
-  },
-  marquee: {
-    brands: [
-      "HP",
-      "Dell",
-      "Lenovo",
-      "ASUS",
-      "Apple",
-      "Samsung",
-      "Xiaomi",
-      "MSI",
-      "Acer",
-      "Intel",
-      "AMD",
-      "NVIDIA",
-    ],
-  },
-  about: {
-    values: [
-      {
-        id: "val_1",
-        icon: "shield",
-        title: "Garantie officielle",
-        description: "Tous nos produits sont authentiques et sous garantie des revendeurs agréés.",
-      },
-      {
-        id: "val_2",
-        icon: "truck",
-        title: "Livraison en Algérie",
-        description: "Livraison rapide et sécurisée dans les 58 wilayas.",
-      },
-      {
-        id: "val_3",
-        icon: "headphones",
-        title: "Support dédié",
-        description: "Notre équipe est disponible avant et après votre achat.",
-      },
-      {
-        id: "val_4",
-        icon: "award",
-        title: "Expérience et confiance",
-        description: "Des années au service de milliers de clients satisfaits.",
-      },
-    ],
-  },
-  builder: { steps: builderSteps },
+  // 15 sections de SiteContent (src/lib/site-content.ts → type SiteContent)
+  header: siteContentSeed.header,
+  footer: siteContentSeed.footer,
+  hero: siteContentSeed.hero,
+  categories: siteContentSeed.categories,
+  useChips: siteContentSeed.useChips,
+  bestSellers: siteContentSeed.bestSellers,
+  featuredTabs: siteContentSeed.featuredTabs,
+  flashSale: siteContentSeed.flashSale,
+  brandsMarquee: siteContentSeed.brandsMarquee,
+  whyUs: siteContentSeed.whyUs,
+  builderTeaser: siteContentSeed.builderTeaser,
+  reviews: siteContentSeed.reviews,
+  contactCta: siteContentSeed.contactCta,
+  floatingWhatsApp: siteContentSeed.floatingWhatsApp,
+  mobileBottomBar: siteContentSeed.mobileBottomBar,
+  // 5 sections éditoriales (listes gérées séparément par l'admin)
+  "home-reviews": homeReviewsSection,
+  ticker: tickerSection,
+  marquee: marqueeSection,
+  about: aboutSection,
+  builder: builderSection,
 };
 
 // -------------------------------------------------------------------

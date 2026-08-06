@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T12:32:21.672Z",
+  "generatedAt": "2026-08-06T15:24:24.655Z",
   "categories": [
     {
       "slug": "laptops",
@@ -7,8 +7,8 @@
       "description": "Laptops pour le travail, les études et le gaming.",
       "cover": "/assets/p-rog-strix-g16.webp",
       "position": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "slug": "desktops",
@@ -16,8 +16,8 @@
       "description": "Tours et mini-PC de bureau.",
       "cover": "/assets/p-dell-optiplex-5000.webp",
       "position": 1,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "slug": "builds",
@@ -25,8 +25,8 @@
       "description": "Configurations sur-mesure KA Build.",
       "cover": "/assets/p-build-mid-gaming.webp",
       "position": 2,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "slug": "phones",
@@ -34,8 +34,8 @@
       "description": "Smartphones Android et iOS.",
       "cover": "/assets/p-galaxy-s25-ultra.webp",
       "position": 3,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     }
   ],
   "brands": [
@@ -44,64 +44,64 @@
       "name": "ASUS",
       "description": "Marque ASUS distribuée par KA Tech.",
       "country": "Taïwan",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "hp",
       "name": "HP",
       "description": "Marque HP distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "lenovo",
       "name": "Lenovo",
       "description": "Marque Lenovo distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "apple",
       "name": "Apple",
       "description": "Marque Apple distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "dell",
       "name": "Dell",
       "description": "Marque Dell distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "ka-build",
       "name": "KA Build",
       "description": "Marque KA Build distribuée par KA Tech.",
       "country": "Algérie",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "samsung",
       "name": "Samsung",
       "description": "Marque Samsung distribuée par KA Tech.",
       "country": "Corée du Sud",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "xiaomi",
       "name": "Xiaomi",
       "description": "Marque Xiaomi distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     }
   ],
   "products": [
@@ -110,7 +110,10 @@
       "name": "ASUS ROG Strix G16",
       "brand": "ASUS",
       "category": "laptops",
-      "use_tags": ["gaming", "edit"],
+      "use_tags": [
+        "gaming",
+        "edit"
+      ],
       "spec_line": "Intel i9 · RTX 4070 · 32GB · 1TB",
       "specs": {
         "cpu": "Intel Core i9-13980HX",
@@ -130,15 +133,18 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "hp-pavilion-15",
       "name": "HP Pavilion 15",
       "brand": "HP",
       "category": "laptops",
-      "use_tags": ["study", "home"],
+      "use_tags": [
+        "study",
+        "home"
+      ],
       "spec_line": "Intel i5 · 8GB · 512GB SSD",
       "specs": {
         "cpu": "Intel Core i5-1335U",
@@ -158,15 +164,17 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "thinkpad-x1-carbon",
       "name": "Lenovo ThinkPad X1 Carbon",
       "brand": "Lenovo",
       "category": "laptops",
-      "use_tags": ["work"],
+      "use_tags": [
+        "work"
+      ],
       "spec_line": "Intel i7 · 16GB · 1TB SSD",
       "specs": {
         "cpu": "Intel Core i7-1365U vPro",
@@ -186,15 +194,19 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "macbook-air-m3",
       "name": "MacBook Air M3",
       "brand": "Apple",
       "category": "laptops",
-      "use_tags": ["work", "study", "edit"],
+      "use_tags": [
+        "work",
+        "study",
+        "edit"
+      ],
       "spec_line": "Apple M3 · 16GB · 512GB",
       "specs": {
         "cpu": "Apple M3 (8-core)",
@@ -218,15 +230,18 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "dell-optiplex-5000",
       "name": "Dell OptiPlex 5000",
       "brand": "Dell",
       "category": "desktops",
-      "use_tags": ["work", "home"],
+      "use_tags": [
+        "work",
+        "home"
+      ],
       "spec_line": "Core i5 · 8GB · 256GB SSD",
       "specs": {
         "cpu": "Intel Core i5-12500",
@@ -244,15 +259,18 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "hp-omen-45l",
       "name": "HP Omen 45L",
       "brand": "HP",
       "category": "desktops",
-      "use_tags": ["gaming", "edit"],
+      "use_tags": [
+        "gaming",
+        "edit"
+      ],
       "spec_line": "Ryzen 9 · RTX 4080 · 32GB",
       "specs": {
         "cpu": "AMD Ryzen 9 7900X",
@@ -270,8 +288,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "build-mid-gaming",
@@ -282,7 +300,9 @@
       },
       "brand": "KA Build",
       "category": "builds",
-      "use_tags": ["gaming"],
+      "use_tags": [
+        "gaming"
+      ],
       "spec_line": "Ryzen 5 · RX 6600 · 16GB · 500GB",
       "specs": {
         "cpu": "AMD Ryzen 5 5600",
@@ -300,8 +320,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "build-pro-editing",
@@ -312,7 +332,10 @@
       },
       "brand": "KA Build",
       "category": "builds",
-      "use_tags": ["edit", "work"],
+      "use_tags": [
+        "edit",
+        "work"
+      ],
       "spec_line": "Ryzen 9 · RTX 4070 Ti · 64GB · 2TB",
       "specs": {
         "cpu": "AMD Ryzen 9 7950X",
@@ -330,15 +353,18 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "galaxy-s25-ultra",
       "name": "Samsung Galaxy S25 Ultra",
       "brand": "Samsung",
       "category": "phones",
-      "use_tags": ["work", "edit"],
+      "use_tags": [
+        "work",
+        "edit"
+      ],
       "spec_line": "12GB · 256GB · 200MP",
       "specs": {
         "cpu": "Snapdragon 8 Gen 4",
@@ -357,15 +383,18 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "iphone-16-pro-max",
       "name": "iPhone 16 Pro Max",
       "brand": "Apple",
       "category": "phones",
-      "use_tags": ["work", "edit"],
+      "use_tags": [
+        "work",
+        "edit"
+      ],
       "spec_line": "256GB · A18 Pro · Titanium",
       "specs": {
         "cpu": "Apple A18 Pro",
@@ -388,15 +417,18 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "xiaomi-14t-pro",
       "name": "Xiaomi 14T Pro",
       "brand": "Xiaomi",
       "category": "phones",
-      "use_tags": ["work", "home"],
+      "use_tags": [
+        "work",
+        "home"
+      ],
       "spec_line": "12GB · 512GB · Leica",
       "specs": {
         "cpu": "MediaTek Dimensity 9300+",
@@ -415,15 +447,18 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "redmi-note-13-pro",
       "name": "Redmi Note 13 Pro",
       "brand": "Xiaomi",
       "category": "phones",
-      "use_tags": ["study", "home"],
+      "use_tags": [
+        "study",
+        "home"
+      ],
       "spec_line": "8GB · 256GB · 200MP",
       "specs": {
         "cpu": "Snapdragon 7s Gen 2",
@@ -442,8 +477,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T12:32:21.672Z",
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "created_at": "2026-08-06T15:24:24.655Z",
+      "updated_at": "2026-08-06T15:24:24.655Z"
     }
   ],
   "blogPosts": [
@@ -467,11 +502,14 @@
       },
       "cover": "/assets/p-rog-strix-g16.webp",
       "author": "Équipe KA Tech",
-      "tags": ["laptop", "guide"],
+      "tags": [
+        "laptop",
+        "guide"
+      ],
       "status": "published",
-      "published_at": "2026-07-07T12:32:21.674Z",
-      "created_at": "2026-07-07T12:32:21.674Z",
-      "updated_at": "2026-07-07T12:32:21.674Z"
+      "published_at": "2026-07-07T15:24:24.656Z",
+      "created_at": "2026-07-07T15:24:24.656Z",
+      "updated_at": "2026-07-07T15:24:24.656Z"
     },
     {
       "id": "blog_101",
@@ -493,11 +531,14 @@
       },
       "cover": "/assets/p-hp-pavilion-15.webp",
       "author": "Yacine B.",
-      "tags": ["gaming", "comparatif"],
+      "tags": [
+        "gaming",
+        "comparatif"
+      ],
       "status": "published",
-      "published_at": "2026-07-11T12:32:21.674Z",
-      "created_at": "2026-07-11T12:32:21.674Z",
-      "updated_at": "2026-07-11T12:32:21.674Z"
+      "published_at": "2026-07-11T15:24:24.656Z",
+      "created_at": "2026-07-11T15:24:24.656Z",
+      "updated_at": "2026-07-11T15:24:24.656Z"
     },
     {
       "id": "blog_102",
@@ -519,11 +560,15 @@
       },
       "cover": "/assets/p-thinkpad-x1-carbon.webp",
       "author": "Équipe KA Tech",
-      "tags": ["smartphone", "photo", "top"],
+      "tags": [
+        "smartphone",
+        "photo",
+        "top"
+      ],
       "status": "published",
-      "published_at": "2026-07-15T12:32:21.674Z",
-      "created_at": "2026-07-15T12:32:21.674Z",
-      "updated_at": "2026-07-15T12:32:21.674Z"
+      "published_at": "2026-07-15T15:24:24.656Z",
+      "created_at": "2026-07-15T15:24:24.656Z",
+      "updated_at": "2026-07-15T15:24:24.656Z"
     },
     {
       "id": "blog_103",
@@ -545,11 +590,14 @@
       },
       "cover": "/assets/p-macbook-air-m3.webp",
       "author": "Yacine B.",
-      "tags": ["pc-sur-mesure", "conseil"],
+      "tags": [
+        "pc-sur-mesure",
+        "conseil"
+      ],
       "status": "published",
-      "published_at": "2026-07-19T12:32:21.674Z",
-      "created_at": "2026-07-19T12:32:21.674Z",
-      "updated_at": "2026-07-19T12:32:21.674Z"
+      "published_at": "2026-07-19T15:24:24.656Z",
+      "created_at": "2026-07-19T15:24:24.656Z",
+      "updated_at": "2026-07-19T15:24:24.656Z"
     },
     {
       "id": "blog_104",
@@ -571,11 +619,14 @@
       },
       "cover": "/assets/p-dell-optiplex-5000.webp",
       "author": "Équipe KA Tech",
-      "tags": ["livraison", "faq"],
+      "tags": [
+        "livraison",
+        "faq"
+      ],
       "status": "published",
-      "published_at": "2026-07-23T12:32:21.674Z",
-      "created_at": "2026-07-23T12:32:21.674Z",
-      "updated_at": "2026-07-23T12:32:21.674Z"
+      "published_at": "2026-07-23T15:24:24.656Z",
+      "created_at": "2026-07-23T15:24:24.656Z",
+      "updated_at": "2026-07-23T15:24:24.656Z"
     }
   ],
   "shippingRates": [
@@ -583,355 +634,355 @@
       "wilaya_code": "*",
       "home": 800,
       "desk": 400,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "01",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "02",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "03",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "04",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "05",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "06",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "07",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "08",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "09",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "10",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "11",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "12",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "13",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "14",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "15",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "16",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "17",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "18",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "19",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "20",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "21",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "22",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "23",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "24",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "25",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "26",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "27",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "28",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "29",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "30",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "31",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "32",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "33",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "34",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "35",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "36",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "37",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "38",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "39",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "40",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "41",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "42",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "43",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "44",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "45",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "46",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "47",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "48",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "49",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "50",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "51",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "52",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "53",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "54",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "55",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "56",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "57",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "wilaya_code": "58",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     }
   ],
   "paymentMethods": [
@@ -941,7 +992,7 @@
       "instructions": "Réglez votre commande en espèces au livreur.",
       "active": 1,
       "position": 0,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "bank",
@@ -949,7 +1000,7 @@
       "instructions": "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.",
       "active": 1,
       "position": 1,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "card",
@@ -957,7 +1008,7 @@
       "instructions": "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).",
       "active": 1,
       "position": 2,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     },
     {
       "id": "store",
@@ -965,10 +1016,748 @@
       "instructions": "Retirez et réglez votre commande à notre point de vente d'Alger.",
       "active": 0,
       "position": 3,
-      "updated_at": "2026-08-06T12:32:21.672Z"
+      "updated_at": "2026-08-06T15:24:24.655Z"
     }
   ],
   "siteContent": {
+    "header": {
+      "showSearch": true,
+      "searchPlaceholder": {
+        "fr": "Rechercher un produit, une marque…",
+        "en": "Search a product, a brand…",
+        "ar": "ابحث عن منتج أو علامة تجارية…"
+      },
+      "builderCta": {
+        "label": {
+          "fr": "Configurez votre PC",
+          "en": "Build your PC",
+          "ar": "جمّع حاسوبك"
+        },
+        "href": "/builder"
+      },
+      "primaryNav": [
+        {
+          "id": "hn_blog",
+          "label": {
+            "fr": "Blog",
+            "en": "Blog",
+            "ar": "المدونة"
+          },
+          "href": "/blog"
+        },
+        {
+          "id": "hn_about",
+          "label": {
+            "fr": "À propos",
+            "en": "About",
+            "ar": "من نحن"
+          },
+          "href": "/about"
+        },
+        {
+          "id": "hn_contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact",
+            "ar": "اتصل بنا"
+          },
+          "href": "/contact"
+        }
+      ],
+      "categoryMenu": {
+        "label": {
+          "fr": "Catégories",
+          "en": "Categories",
+          "ar": "الفئات"
+        },
+        "title": {
+          "fr": "Nos catégories",
+          "en": "Our categories",
+          "ar": "فئاتنا"
+        },
+        "browseLabel": {
+          "fr": "Voir toutes les catégories",
+          "en": "Browse all categories",
+          "ar": "عرض كل الفئات"
+        },
+        "browseHref": "/category",
+        "items": [
+          {
+            "id": "hc_1",
+            "label": {
+              "fr": "Ordinateurs portables",
+              "en": "Laptops",
+              "ar": "أجهزة الكمبيوتر المحمولة"
+            },
+            "href": "/category/laptops",
+            "icon": "laptop"
+          },
+          {
+            "id": "hc_2",
+            "label": {
+              "fr": "Ordinateurs de bureau",
+              "en": "Desktops",
+              "ar": "أجهزة الكمبيوتر المكتبية"
+            },
+            "href": "/category/desktops",
+            "icon": "monitor"
+          },
+          {
+            "id": "hc_3",
+            "label": {
+              "fr": "Configurations",
+              "en": "Builds",
+              "ar": "التجميعات"
+            },
+            "href": "/category/builds",
+            "icon": "cpu"
+          },
+          {
+            "id": "hc_4",
+            "label": {
+              "fr": "Téléphones",
+              "en": "Phones",
+              "ar": "الهواتف"
+            },
+            "href": "/category/phones",
+            "icon": "smartphone"
+          },
+          {
+            "id": "hc_5",
+            "label": {
+              "fr": "Offres",
+              "en": "Deals",
+              "ar": "العروض"
+            },
+            "href": "/search",
+            "icon": "tag",
+            "accent": true
+          }
+        ]
+      }
+    },
+    "footer": {
+      "tagline": {
+        "fr": "Boutique en ligne spécialisée dans la vente d'ordinateurs, de téléphones et d'accessoires — livraison dans toute l'Algérie avec garantie officielle.",
+        "en": "Online store specialized in computers, phones and accessories — delivery across Algeria with official warranty.",
+        "ar": "متجر إلكتروني متخصص في بيع الحواسيب والهواتف والملحقات — توصيل لكل أنحاء الجزائر مع ضمان رسمي."
+      },
+      "copyright": {
+        "fr": "© 2026 KA Tech — Tous droits réservés",
+        "en": "© 2026 KA Tech — All rights reserved",
+        "ar": "© 2026 KA Tech — جميع الحقوق محفوظة"
+      },
+      "madeIn": {
+        "fr": "Fait avec passion en Algérie",
+        "en": "Made with passion in Algeria",
+        "ar": "صُنع بشغف في الجزائر"
+      },
+      "socials": [
+        {
+          "id": "s_fb",
+          "icon": "facebook",
+          "label": {
+            "fr": "Facebook",
+            "en": "Facebook",
+            "ar": "فيسبوك"
+          },
+          "href": "#"
+        },
+        {
+          "id": "s_ig",
+          "icon": "instagram",
+          "label": {
+            "fr": "Instagram",
+            "en": "Instagram",
+            "ar": "إنستغرام"
+          },
+          "href": "#"
+        },
+        {
+          "id": "s_wa",
+          "icon": "message-circle",
+          "label": {
+            "fr": "WhatsApp",
+            "en": "WhatsApp",
+            "ar": "واتساب"
+          },
+          "href": "#"
+        },
+        {
+          "id": "s_tt",
+          "icon": "music",
+          "label": {
+            "fr": "TikTok",
+            "en": "TikTok",
+            "ar": "تيك توك"
+          },
+          "href": "#"
+        }
+      ],
+      "columns": [
+        {
+          "id": "fc_quick",
+          "title": {
+            "fr": "Liens rapides",
+            "en": "Quick links",
+            "ar": "روابط سريعة"
+          },
+          "links": [
+            {
+              "id": "fl_1",
+              "label": {
+                "fr": "Accueil",
+                "en": "Home",
+                "ar": "الرئيسية"
+              },
+              "href": "/"
+            },
+            {
+              "id": "fl_2",
+              "label": {
+                "fr": "Configurez votre PC",
+                "en": "Build your PC",
+                "ar": "جمّع حاسوبك"
+              },
+              "href": "/builder"
+            },
+            {
+              "id": "fl_3",
+              "label": {
+                "fr": "Offres",
+                "en": "Deals",
+                "ar": "العروض"
+              },
+              "href": "/category/laptops"
+            }
+          ]
+        },
+        {
+          "id": "fc_cats",
+          "title": {
+            "fr": "Catégories",
+            "en": "Categories",
+            "ar": "الفئات"
+          },
+          "links": [
+            {
+              "id": "fl_4",
+              "label": {
+                "fr": "Ordinateurs portables",
+                "en": "Laptops",
+                "ar": "أجهزة الكمبيوتر المحمولة"
+              },
+              "href": "/category/laptops"
+            },
+            {
+              "id": "fl_5",
+              "label": {
+                "fr": "Ordinateurs de bureau",
+                "en": "Desktops",
+                "ar": "أجهزة الكمبيوتر المكتبية"
+              },
+              "href": "/category/desktops"
+            },
+            {
+              "id": "fl_6",
+              "label": {
+                "fr": "Configurations",
+                "en": "Builds",
+                "ar": "التجميعات"
+              },
+              "href": "/category/builds"
+            },
+            {
+              "id": "fl_7",
+              "label": {
+                "fr": "Téléphones",
+                "en": "Phones",
+                "ar": "الهواتف"
+              },
+              "href": "/category/phones"
+            }
+          ]
+        },
+        {
+          "id": "fc_sup",
+          "title": {
+            "fr": "Support",
+            "en": "Support",
+            "ar": "الدعم"
+          },
+          "links": [
+            {
+              "id": "fl_8",
+              "label": {
+                "fr": "Contactez-nous",
+                "en": "Contact us",
+                "ar": "اتصل بنا"
+              },
+              "href": "/contact"
+            },
+            {
+              "id": "fl_9",
+              "label": {
+                "fr": "Garantie",
+                "en": "Warranty",
+                "ar": "الضمان"
+              },
+              "href": "/about"
+            },
+            {
+              "id": "fl_10",
+              "label": {
+                "fr": "Livraison",
+                "en": "Shipping",
+                "ar": "التوصيل"
+              },
+              "href": "/about"
+            },
+            {
+              "id": "fl_11",
+              "label": {
+                "fr": "FAQ",
+                "en": "FAQ",
+                "ar": "الأسئلة الشائعة"
+              },
+              "href": "/about"
+            }
+          ]
+        }
+      ]
+    },
+    "hero": {
+      "badge": {
+        "fr": "Collection 2026 disponible",
+        "en": "2026 collection available",
+        "ar": "مجموعة 2026 متوفرة"
+      },
+      "title1": {
+        "fr": "La puissance tech,",
+        "en": "Tech power,",
+        "ar": "قوة التكنولوجيا،"
+      },
+      "title2": {
+        "fr": "entre vos mains",
+        "en": "in your hands",
+        "ar": "بين يديك"
+      },
+      "subtitle": {
+        "fr": "Les derniers ordinateurs portables, de bureau et téléphones aux meilleurs prix, avec garantie officielle et support technique dédié.",
+        "en": "The latest laptops, desktops and phones at the best prices, with official warranty and dedicated tech support.",
+        "ar": "أحدث أجهزة الكمبيوتر المحمولة والمكتبية والهواتف بأفضل الأسعار، مع ضمان رسمي ودعم تقني مخصص."
+      },
+      "primaryCta": {
+        "label": {
+          "fr": "Acheter maintenant",
+          "en": "Shop now",
+          "ar": "تسوق الآن"
+        },
+        "href": "/category/laptops"
+      },
+      "secondaryCta": {
+        "label": {
+          "fr": "Offres du jour",
+          "en": "Today's deals",
+          "ar": "عروض اليوم"
+        },
+        "href": "/category/laptops"
+      },
+      "kpis": [
+        {
+          "id": "kpi_1",
+          "icon": "users",
+          "value": "+5 000",
+          "label": {
+            "fr": "clients satisfaits",
+            "en": "happy customers",
+            "ar": "زبون راضٍ"
+          }
+        },
+        {
+          "id": "kpi_2",
+          "icon": "package",
+          "value": "+1 200",
+          "label": {
+            "fr": "produits",
+            "en": "products",
+            "ar": "منتجات"
+          }
+        },
+        {
+          "id": "kpi_3",
+          "icon": "map-pin",
+          "value": {
+            "fr": "58 wilayas",
+            "en": "58 wilayas",
+            "ar": "58 ولاية"
+          },
+          "label": {
+            "fr": "livraison",
+            "en": "delivery",
+            "ar": "التوصيل"
+          }
+        }
+      ],
+      "showImage": true
+    },
+    "categories": {
+      "title": {
+        "fr": "Achetez par catégorie",
+        "en": "Shop by category",
+        "ar": "تسوق حسب الفئة"
+      },
+      "subtitle": {
+        "fr": "Choisissez la catégorie qui vous convient",
+        "en": "Pick the category that suits you",
+        "ar": "اختر الفئة التي تناسبك"
+      },
+      "browseLabel": {
+        "fr": "Parcourir",
+        "en": "Browse",
+        "ar": "تصفح"
+      }
+    },
+    "useChips": {
+      "title": {
+        "fr": "Achetez par usage",
+        "en": "Shop by use case",
+        "ar": "تسوق حسب الاستخدام"
+      }
+    },
+    "bestSellers": {
+      "title": {
+        "fr": "Meilleures ventes",
+        "en": "Best sellers",
+        "ar": "الأكثر مبيعًا"
+      },
+      "subtitle": {
+        "fr": "Les produits préférés de nos clients",
+        "en": "Our customers' favorite products",
+        "ar": "المنتجات المفضلة لدى زبائننا"
+      }
+    },
+    "featuredTabs": {
+      "title": {
+        "fr": "Produits sélectionnés",
+        "en": "Featured products",
+        "ar": "منتجات مختارة"
+      },
+      "subtitle": {
+        "fr": "Découvrez les nouveautés dans chaque catégorie",
+        "en": "Discover what's new in every category",
+        "ar": "اكتشف الجديد في كل فئة"
+      },
+      "tabs": [
+        {
+          "id": "t_1",
+          "categorySlug": "laptops",
+          "label": {
+            "fr": "Portables",
+            "en": "Laptops",
+            "ar": "محمولة"
+          }
+        },
+        {
+          "id": "t_2",
+          "categorySlug": "desktops",
+          "label": {
+            "fr": "Bureau",
+            "en": "Desktops",
+            "ar": "مكتبية"
+          }
+        },
+        {
+          "id": "t_3",
+          "categorySlug": "builds",
+          "label": {
+            "fr": "Configs",
+            "en": "Builds",
+            "ar": "تجميعات"
+          }
+        },
+        {
+          "id": "t_4",
+          "categorySlug": "phones",
+          "label": {
+            "fr": "Téléphones",
+            "en": "Phones",
+            "ar": "هواتف"
+          }
+        }
+      ]
+    },
+    "flashSale": {
+      "badge": {
+        "fr": "Offres de la semaine",
+        "en": "Deals of the week",
+        "ar": "عروض الأسبوع"
+      },
+      "title": {
+        "fr": "Réductions à durée limitée",
+        "en": "Limited-time discounts",
+        "ar": "تخفيضات لفترة محدودة"
+      },
+      "viewAllLabel": {
+        "fr": "Voir toutes les offres",
+        "en": "See all deals",
+        "ar": "عرض كل العروض"
+      },
+      "viewAllHref": "/category/laptops",
+      "countdownHours": 71
+    },
+    "brandsMarquee": {
+      "title": {
+        "fr": "Nous travaillons avec les plus grandes marques",
+        "en": "We work with the biggest brands",
+        "ar": "نتعامل مع أكبر العلامات التجارية"
+      }
+    },
+    "whyUs": {
+      "kicker": {
+        "fr": "Pourquoi KA Tech",
+        "en": "Why KA Tech",
+        "ar": "لماذا KA Tech"
+      },
+      "title1": {
+        "fr": "Parce que la tech mérite",
+        "en": "Because tech deserves",
+        "ar": "لأن التكنولوجيا تستحق"
+      },
+      "title2": {
+        "fr": "un partenaire de confiance",
+        "en": "a trusted partner",
+        "ar": "شريكًا موثوقًا"
+      },
+      "subtitle": {
+        "fr": "Nous sélectionnons nos produits avec soin et nous engageons sur chaque achat.",
+        "en": "We carefully select our products and stand behind every purchase.",
+        "ar": "نختار منتجاتنا بعناية ونلتزم بكل عملية شراء."
+      },
+      "items": [
+        {
+          "id": "w_1",
+          "icon": "shield",
+          "title": {
+            "fr": "Garantie officielle",
+            "en": "Official warranty",
+            "ar": "ضمان رسمي"
+          },
+          "description": {
+            "fr": "Garantie revendeur agréé sur tous les produits",
+            "en": "Authorized reseller warranty on all products",
+            "ar": "ضمان الموزع المعتمد على جميع المنتجات"
+          }
+        },
+        {
+          "id": "w_2",
+          "icon": "truck",
+          "title": {
+            "fr": "Livraison rapide",
+            "en": "Fast delivery",
+            "ar": "توصيل سريع"
+          },
+          "description": {
+            "fr": "Livraison dans toutes les wilayas en 24-72 heures",
+            "en": "Delivery to all wilayas in 24-72 hours",
+            "ar": "توصيل لجميع الولايات في 24-72 ساعة"
+          }
+        },
+        {
+          "id": "w_3",
+          "icon": "headphones",
+          "title": {
+            "fr": "Support technique",
+            "en": "Tech support",
+            "ar": "دعم تقني"
+          },
+          "description": {
+            "fr": "Une équipe dédiée avant et après l'achat",
+            "en": "A dedicated team before and after purchase",
+            "ar": "فريق مخصص قبل وبعد الشراء"
+          }
+        },
+        {
+          "id": "w_4",
+          "icon": "credit-card",
+          "title": {
+            "fr": "Paiement sécurisé",
+            "en": "Secure payment",
+            "ar": "دفع آمن"
+          },
+          "description": {
+            "fr": "Payez à la livraison ou via des moyens approuvés",
+            "en": "Pay on delivery or via approved methods",
+            "ar": "ادفع عند الاستلام أو بوسائل معتمدة"
+          }
+        }
+      ]
+    },
+    "builderTeaser": {
+      "badge": {
+        "fr": "Outil de configuration",
+        "en": "Config tool",
+        "ar": "أداة التجميع"
+      },
+      "title": {
+        "fr": "Concevez votre config idéale",
+        "en": "Design your ideal build",
+        "ar": "صمم تجميعتك المثالية"
+      },
+      "subtitle": {
+        "fr": "Sélectionnez vos composants étape par étape, vérifiez la compatibilité et voyez le prix final en direct.",
+        "en": "Pick components step by step, check compatibility and see the final price live.",
+        "ar": "اختر مكوناتك خطوة بخطوة، تحقق من التوافق وشاهد السعر النهائي مباشرة."
+      },
+      "cta": {
+        "label": {
+          "fr": "Commencer la config",
+          "en": "Start building",
+          "ar": "ابدأ التجميع"
+        },
+        "href": "/builder"
+      },
+      "items": [
+        {
+          "id": "bt_1",
+          "icon": "cpu",
+          "title": {
+            "fr": "Processeurs",
+            "en": "Processors",
+            "ar": "المعالجات"
+          },
+          "subtitle": "Intel · AMD"
+        },
+        {
+          "id": "bt_2",
+          "icon": "memory",
+          "title": {
+            "fr": "Mémoire",
+            "en": "Memory",
+            "ar": "الذاكرة"
+          },
+          "subtitle": "DDR4 · DDR5"
+        },
+        {
+          "id": "bt_3",
+          "icon": "hard-drive",
+          "title": {
+            "fr": "Stockage",
+            "en": "Storage",
+            "ar": "التخزين"
+          },
+          "subtitle": "NVMe Gen4"
+        },
+        {
+          "id": "bt_4",
+          "icon": "zap",
+          "title": {
+            "fr": "Refroidissement",
+            "en": "Cooling",
+            "ar": "التبريد"
+          },
+          "subtitle": {
+            "fr": "Air · Liquide",
+            "en": "Air · Liquid",
+            "ar": "هواء · سائل"
+          }
+        }
+      ]
+    },
+    "reviews": {
+      "title": {
+        "fr": "Avis de nos clients",
+        "en": "Customer reviews",
+        "ar": "آراء زبائننا"
+      },
+      "subtitle": {
+        "fr": "Des milliers de clients nous font confiance",
+        "en": "Thousands of customers trust us",
+        "ar": "آلاف الزبائن يثقون بنا"
+      }
+    },
+    "contactCta": {
+      "title": {
+        "fr": "Une question ? Contactez-nous",
+        "en": "Got a question? Contact us",
+        "ar": "لديك سؤال؟ تواصل معنا"
+      },
+      "subtitle": {
+        "fr": "Notre équipe est disponible du dimanche au jeudi, de 9h à 19h.",
+        "en": "Our team is available Sunday to Thursday, 9am to 7pm.",
+        "ar": "فريقنا متاح من الأحد إلى الخميس، من 9 صباحًا إلى 7 مساءً."
+      },
+      "whatsappLabel": {
+        "fr": "Écrivez-nous sur WhatsApp",
+        "en": "Message us on WhatsApp",
+        "ar": "راسلنا عبر واتساب"
+      }
+    },
+    "floatingWhatsApp": {
+      "enabled": true,
+      "ariaLabel": {
+        "fr": "WhatsApp",
+        "en": "WhatsApp",
+        "ar": "واتساب"
+      }
+    },
+    "mobileBottomBar": {
+      "items": [
+        {
+          "id": "mb_1",
+          "icon": "home",
+          "label": {
+            "fr": "Accueil",
+            "en": "Home",
+            "ar": "الرئيسية"
+          },
+          "href": "/"
+        },
+        {
+          "id": "mb_2",
+          "icon": "grid",
+          "label": {
+            "fr": "Catégories",
+            "en": "Categories",
+            "ar": "الفئات"
+          },
+          "href": "/category"
+        },
+        {
+          "id": "mb_3",
+          "icon": "wrench",
+          "label": {
+            "fr": "Configurer",
+            "en": "Build",
+            "ar": "تجميع"
+          },
+          "href": "/builder",
+          "primary": true
+        },
+        {
+          "id": "mb_4",
+          "icon": "shopping-cart",
+          "label": {
+            "fr": "Panier",
+            "en": "Cart",
+            "ar": "السلة"
+          },
+          "href": "/cart",
+          "requiresAuth": true
+        },
+        {
+          "id": "mb_5",
+          "icon": "user",
+          "label": {
+            "fr": "Compte",
+            "en": "Account",
+            "ar": "الحساب"
+          },
+          "href": "/account",
+          "requiresAuth": true
+        }
+      ]
+    },
     "home-reviews": {
       "items": [
         {
