@@ -49,6 +49,110 @@ final class ControleurCrm
     // =================================================================
 
     /**
+     * POST /messages  — ROUTE PUBLIQUE (visiteur non connecté).
+     *
+     * Corps attendu (conforme au formulaire Contact.tsx) :
+     *   { name, email, phone?, subject, message }
+     *
+     * Limites de taille calquées sur le schéma Zod du frontend (Contact.tsx) :
+     *   name    : 2–100 caractères
+     *   email   : valide, max 255
+     *   phone   : optionnel, max 30
+     *   subject : 2–150 caractères
+     *   message : 5–2000 caractères
+     *
+     * → 201 { data: Message } en cas de succès.
+     *
+     * Sécurité :
+     *   - Validation stricte avec messages exploitables.
+     *   - Taille de chaque champ bornée pour éviter le remplissage de la base.
+     *   - VAGUE 4.5 : brancher ici une limitation de débit (rate-limit) par IP
+     *     ou par empreinte de formulaire, comme cela a été fait sur la connexion.
+     */
+    public function recevoirMessage(Requete $r): Reponse
+    {
+        // VAGUE 4.5 : insérer ici l'appel au throttle (ex. RateLimiter::verifier($ip, 'contact', 10, 60))
+        // avant toute validation, pour couper les rafales avant qu'elles n'atteignent la logique métier.
+
+        $erreurs = [];
+
+        // -- name --
+        $name = trim((string) $r->corps('name', ''));
+        if ($name === '') {
+            $erreurs['name'][] = 'Le nom est obligatoire.';
+        } elseif (mb_strlen($name) < 2) {
+            $erreurs['name'][] = 'Le nom doit contenir au moins 2 caractères.';
+        } elseif (mb_strlen($name) > 100) {
+            $erreurs['name'][] = 'Le nom ne peut pas dépasser 100 caractères.';
+        }
+
+        // -- email --
+        $email = trim(mb_strtolower((string) $r->corps('email', '')));
+        if ($email === '') {
+            $erreurs['email'][] = "L'adresse e-mail est obligatoire.";
+        } elseif (mb_strlen($email) > 255) {
+            $erreurs['email'][] = "L'adresse e-mail ne peut pas dépasser 255 caractères.";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $erreurs['email'][] = "L'adresse e-mail est invalide.";
+        }
+
+        // -- phone (optionnel) --
+        $phone     = null;
+        $phoneRaw  = trim((string) $r->corps('phone', ''));
+        if ($phoneRaw !== '') {
+            if (mb_strlen($phoneRaw) > 30) {
+                $erreurs['phone'][] = 'Le numéro de téléphone ne peut pas dépasser 30 caractères.';
+            } else {
+                $phone = $phoneRaw;
+            }
+        }
+
+        // -- subject --
+        $subject = trim((string) $r->corps('subject', ''));
+        if ($subject === '') {
+            $erreurs['subject'][] = "L'objet du message est obligatoire.";
+        } elseif (mb_strlen($subject) < 2) {
+            $erreurs['subject'][] = "L'objet doit contenir au moins 2 caractères.";
+        } elseif (mb_strlen($subject) > 150) {
+            $erreurs['subject'][] = "L'objet ne peut pas dépasser 150 caractères.";
+        }
+
+        // -- message --
+        $corps = trim((string) $r->corps('message', ''));
+        if ($corps === '') {
+            $erreurs['message'][] = 'Le message est obligatoire.';
+        } elseif (mb_strlen($corps) < 5) {
+            $erreurs['message'][] = 'Le message doit contenir au moins 5 caractères.';
+        } elseif (mb_strlen($corps) > 2000) {
+            $erreurs['message'][] = 'Le message ne peut pas dépasser 2 000 caractères.';
+        }
+
+        if ($erreurs !== []) {
+            throw ApiException::validation('Le formulaire contient des erreurs.', $erreurs);
+        }
+
+        $id         = $this->genererUuid();
+        $maintenant = gmdate('c');
+
+        $this->db->transaction(function (Db $d) use ($id, $name, $email, $phone, $subject, $corps, $maintenant): void {
+            $d->inserer('messages', [
+                'id'         => $id,
+                'name'       => $name,
+                'email'      => $email,
+                'phone'      => $phone,
+                'subject'    => $subject,
+                'body'       => $corps,
+                'is_read'    => 0,
+                'created_at' => $maintenant,
+            ]);
+        });
+
+        $ligne = $this->db->un('SELECT * FROM messages WHERE id = :id', [':id' => $id]);
+
+        return Reponse::cree($this->enDtoMessage((array) $ligne));
+    }
+
+    /**
      * GET /messages
      * Filtres : isRead (booléen), search (name, email, subject, body).
      * → { data: { items, total, page, perPage } }
