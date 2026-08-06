@@ -49,7 +49,20 @@ try {
     // valeur par défaut qui masque une absence.
     // ------------------------------------------------------------------
     $cheminEnv = __DIR__ . '/.env';
-    if (!is_file($cheminEnv)) {
+
+    // Un `.env` n'est pas la SEULE façon de configurer l'API : `Env::get()` lit
+    // d'abord les vraies variables d'environnement, et c'est ainsi que
+    // `scripts/api-dev.mjs` travaille depuis toujours — aucun fichier, tout
+    // injecté au lancement. Exiger le fichier a cassé `bun run dev`, qui ne
+    // démarrait plus du tout. Constaté, pas supposé.
+    //
+    // Ce qui compte n'est donc pas l'existence d'un fichier mais celle d'une
+    // CONFIGURATION. On ne réclame le `.env` que si rien n'est configuré par
+    // ailleurs — cas réel du commerçant qui vient de téléverser son dossier.
+    $configureParEnvironnement = Env::get('DB_DRIVER') !== null
+        && (Env::get('DB_NAME') !== null || Env::get('DB_SQLITE_PATH') !== null);
+
+    if (!is_file($cheminEnv) && !$configureParEnvironnement) {
         echoLigne('');
         echoLigne('ÉTAPE MANQUANTE : le fichier api/.env n\'existe pas encore.');
         echoLigne('');
@@ -151,7 +164,11 @@ try {
     // installation impossible. Le message est explicite pour que le
     // commerçant sache quoi demander à son hébergeur.
     // ------------------------------------------------------------------
-    $permsActuelles = fileperms($cheminEnv);
+    // `is_file` d'abord : sans lui, `fileperms()` sur un fichier absent émet un
+    // avertissement, que le bootstrap du projet promeut en exception. En
+    // développement il n'y a pas de `.env` du tout — l'installation entière
+    // échouait donc ici, après avoir créé les tables.
+    $permsActuelles = is_file($cheminEnv) ? fileperms($cheminEnv) : false;
     if ($permsActuelles !== false) {
         $permsOctal = $permsActuelles & 0777;
         // Le bit « other readable » (0004) est la menace principale.
