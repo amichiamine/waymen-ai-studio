@@ -330,12 +330,33 @@ final class ControleurMaintenance
         // On renvoie le strict nécessaire pour l'interface, sans les DSN, sans
         // les descripteurs source/cible (qui pourraient contenir le nom de la
         // base cible et des détails de connexion).
+        // Les anomalies sont regroupées par table pour être RENDUES, pas
+        // seulement comptées. « 1 anomalie » sans son libellé est une alerte
+        // qu'on ne peut pas traiter : le propriétaire voit qu'il y a un
+        // problème, sans aucun moyen de savoir lequel ni s'il peut migrer
+        // malgré tout. C'est le défaut « une erreur est survenue », déjà
+        // corrigé ailleurs dans ce projet, sous une autre forme.
+        $parTable = [];
+        foreach ((array) ($resultat['anomalies'] ?? []) as $a) {
+            $table = (string) ($a['table'] ?? '');
+            if ($table === '') {
+                continue;
+            }
+            $parTable[$table][] = [
+                'gravite' => (string) ($a['gravite'] ?? 'avertissement'),
+                // Même filtre que le motif d'échec : une anomalie peut citer la
+                // base cible, et cette réponse repart vers le navigateur.
+                'message' => $this->sansDsn((string) ($a['message'] ?? '')),
+            ];
+        }
+
         $tablesReponse = array_map(
-            static fn (array $t): array => [
+            fn (array $t): array => [
                 'nom'       => (string) $t['table'],
                 'lues'      => (int) $t['lues'],
                 'ecrites'   => (int) $t['ecrites'],
                 'anomalies' => (int) $t['anomalies'],
+                'details'   => $parTable[(string) $t['table']] ?? [],
             ],
             (array) ($resultat['tables'] ?? [])
         );
