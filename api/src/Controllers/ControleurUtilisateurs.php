@@ -71,15 +71,24 @@ final class ControleurUtilisateurs
      * GET /admin/users
      *
      * Paramètres facultatifs :
-     *   - role   : filtrer par rôle
+     *   - role   : filtrer par rôle (ne peut pas valoir « customer »)
      *   - search : recherche dans name et email
      *   - sort, order, page, perPage
+     *
+     * Les comptes de rôle « customer » sont systématiquement exclus : cet
+     * annuaire ne concerne que l'équipe (owner, admin, editor, viewer).
+     * Les clients disposent de leur propre route : GET /customers.
      *
      * Le champ `password_hash` n'est jamais inclus dans la réponse.
      */
     public function lister(Requete $r): Reponse
     {
         [$where, $params] = $this->filtres($r);
+
+        // Exclusion systématique des comptes « customer » de l'annuaire équipe.
+        $where[] = "role != :role_exclu";
+        $params[':role_exclu'] = 'customer';
+
         $clause = $where === [] ? '' : ' WHERE ' . implode(' AND ', $where);
         $p = Pagination::depuis($r);
 
@@ -105,6 +114,10 @@ final class ControleurUtilisateurs
     /**
      * GET /admin/users/:id
      *
+     * Renvoie 404 si l'identifiant est inconnu OU si le compte est de rôle
+     * « customer » : un client n'appartient pas à l'annuaire de l'équipe et
+     * ne doit pas y apparaître, même par son identifiant direct.
+     *
      * Le champ `password_hash` n'est jamais inclus dans la réponse.
      */
     public function detail(Requete $r): Reponse
@@ -112,13 +125,14 @@ final class ControleurUtilisateurs
         $id = $r->param('id');
 
         // SELECT explicite — password_hash délibérément absent.
+        // La condition role != 'customer' est cohérente avec la liste.
         $ligne = $this->db->un(
-            'SELECT ' . self::COLONNES_SECURISEES . ' FROM users WHERE id = :id',
+            'SELECT ' . self::COLONNES_SECURISEES . " FROM users WHERE id = :id AND role != 'customer'",
             [':id' => $id],
         );
 
         if ($ligne === null) {
-            throw ApiException::introuvable("Aucun utilisateur ne porte l'identifiant « {$id} ».");
+            throw ApiException::introuvable("Aucun membre de l'équipe ne porte l'identifiant « {$id} ».");
         }
 
         return Reponse::ok($this->enDto($ligne));
@@ -238,13 +252,13 @@ final class ControleurUtilisateurs
     {
         $id = $r->param('id');
 
-        // Vérifier que l'utilisateur existe.
+        // Vérifier que l'utilisateur existe et n'est pas un client.
         $existant = $this->db->un(
-            'SELECT id FROM users WHERE id = :id',
+            "SELECT id FROM users WHERE id = :id AND role != 'customer'",
             [':id' => $id],
         );
         if ($existant === null) {
-            throw ApiException::introuvable("Aucun utilisateur ne porte l'identifiant « {$id} ».");
+            throw ApiException::introuvable("Aucun membre de l'équipe ne porte l'identifiant « {$id} ».");
         }
 
         // Refus explicite de tout changement de mot de passe via cette route.
@@ -371,13 +385,13 @@ final class ControleurUtilisateurs
     {
         $id = $r->param('id');
 
-        // Vérifier que l'utilisateur existe.
+        // Vérifier que l'utilisateur existe et n'est pas un client.
         $existant = $this->db->un(
-            'SELECT id FROM users WHERE id = :id',
+            "SELECT id FROM users WHERE id = :id AND role != 'customer'",
             [':id' => $id],
         );
         if ($existant === null) {
-            throw ApiException::introuvable("Aucun utilisateur ne porte l'identifiant « {$id} ».");
+            throw ApiException::introuvable("Aucun membre de l'équipe ne porte l'identifiant « {$id} ».");
         }
 
         $motDePasse = $r->corps('password');
@@ -425,12 +439,12 @@ final class ControleurUtilisateurs
         $id = $r->param('id');
 
         $n = $this->db->run(
-            'DELETE FROM users WHERE id = :id',
+            "DELETE FROM users WHERE id = :id AND role != 'customer'",
             [':id' => $id],
         )->rowCount();
 
         if ($n === 0) {
-            throw ApiException::introuvable("Aucun utilisateur ne porte l'identifiant « {$id} ».");
+            throw ApiException::introuvable("Aucun membre de l'équipe ne porte l'identifiant « {$id} ».");
         }
 
         return Reponse::vide();
