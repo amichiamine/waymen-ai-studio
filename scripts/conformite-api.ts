@@ -953,7 +953,11 @@ async function amorcer(
   }
 }
 
-async function amorcerJeuDEssai(proprietaire: Session): Promise<void> {
+async function amorcerJeuDEssai(
+  proprietaire: Session,
+  client: Session,
+  emailClient: string,
+): Promise<void> {
   const suffixe = Date.now().toString(36);
 
   await amorcer("coupon", proprietaire, "POST", "/coupons", {
@@ -966,12 +970,22 @@ async function amorcerJeuDEssai(proprietaire: Session): Promise<void> {
     active: true,
   });
 
-  await amorcer("client", proprietaire, "POST", "/customers", {
-    name: "Client de conformité",
-    email: `conf-${suffixe}@katech.dz`,
-    phone: "0555000111",
-    wilaya: "16",
-  });
+  // La fiche client est déjà créée par POST /auth/register (vague 4.3).
+  // On s'assure qu'elle existe et on la complète (wilaya) via un upsert.
+  // Si l'adresse est déjà en base (409), la fiche existe : on ignore silencieusement.
+  {
+    const r = await appeler(proprietaire, "POST", "/customers", {
+      name: "Client de conformité",
+      email: emailClient,
+      phone: "0555000111",
+      wilaya: "16",
+    });
+    if (r.erreur && r.statut !== 409) {
+      echecsAmorcage.push(
+        `client : POST /customers → ${r.statut} ${r.erreur.code} ${r.erreur.message}`,
+      );
+    }
+  }
 
   await amorcer("abonné", proprietaire, "POST", "/subscribers", {
     email: `abo-${suffixe}@katech.dz`,
@@ -1005,12 +1019,13 @@ async function amorcerJeuDEssai(proprietaire: Session): Promise<void> {
     return;
   }
 
-  await amorcer("commande", proprietaire, "POST", "/orders", {
+  // Commande admin (liste /orders).
+  await amorcer("commande admin", proprietaire, "POST", "/orders", {
     items: [{ productId: produitId, qty: 1 }],
     customer: {
       name: "Client de conformité",
       phone: "0555000111",
-      email: `conf-${suffixe}@katech.dz`,
+      email: emailClient,
     },
     shipping: {
       wilayaCode: "16",
@@ -1021,13 +1036,72 @@ async function amorcerJeuDEssai(proprietaire: Session): Promise<void> {
     paymentMethodId: "cod",
   });
 
-  await amorcer("avis", proprietaire, "POST", `/products/${produitId}/reviews`, {
-    productName: "Produit de conformité",
+  // Commande en session client — même email que le compte inscrit.
+  // Le contrôleur lie la commande à la fiche customer via le courriel de session
+  // (ControleurCommandes::clientValide) : /me/orders retrouvera bien cet ordre.
+  if (client.cookie !== null) {
+    await amorcer("commande (session client)", client, "POST", "/orders", {
+      items: [{ productId: produitId, qty: 1 }],
+      customer: {
+        name: "Client de conformité",
+        phone: "0555000111",
+        email: emailClient,
+      },
+      shipping: {
+        wilayaCode: "16",
+        commune: "Alger",
+        address: "1 rue de la recette",
+        method: "home",
+      },
+      paymentMethodId: "cod",
+    });
+  } else {
+    echecsAmorcage.push(
+      "commande (session client) : session client absente — /me/orders restera vide.",
+    );
+  }
+
+  // Avis sur le produit — créé en session client (protegeConnecte sur la route).
+  // L'avis doit ensuite être approuvé pour apparaître dans GET /products/:id/reviews.
+  //
+  // IMPORTANT : la ressource `.reviews (d'un produit)` du harnais teste
+  // GET /products/rog-strix-g16/reviews — on crée donc l'avis sur ce produit
+  // précisément, indépendamment de produitId (premier résultat du catalogue).
+  const PRODUIT_AVIS = "rog-strix-g16";
+  let avisId: string | null = null;
+  const sessionAvis = client.cookie !== null ? client : proprietaire;
+  const creerAvis = await appeler(sessionAvis, "POST", `/products/${PRODUIT_AVIS}/reviews`, {
+    productName: "ROG Strix G16 — Avis de conformité",
     customerName: "Client de conformité",
     rating: 5,
     title: "Avis de conformité",
     body: "Avis créé par le harnais pour vérifier la forme renvoyée par l'API.",
   });
+  if (creerAvis.erreur) {
+    echecsAmorcage.push(
+      `avis : POST /products/${PRODUIT_AVIS}/reviews → ` +
+        `${creerAvis.statut} ${creerAvis.erreur.code} ${creerAvis.erreur.message}`,
+    );
+  } else {
+    avisId =
+      estObjet(creerAvis.corps) && typeof creerAvis.corps.id === "string"
+        ? creerAvis.corps.id
+        : null;
+  }
+
+  // Approbation de l'avis — nécessaire pour qu'il apparaisse dans
+  // GET /products/:id/reviews (filtre status='approved' côté serveur).
+  // GET /reviews (liste admin) renvoie tous les statuts.
+  if (avisId !== null) {
+    await amorcer("approbation avis", proprietaire, "PATCH", `/reviews/${avisId}/status`, {
+      status: "approved",
+    });
+  } else {
+    echecsAmorcage.push(
+      "approbation avis : aucun identifiant d'avis récupéré — .reviews (d'un produit) " +
+        "restera vide.",
+    );
+  }
 
   // Le mouvement de stock se crée par un ajustement. Le provider utilise
   // `PATCH` (cf. sonde), mais l'amorçage doit REUSSIR : on emploie donc le
@@ -1365,9 +1439,13 @@ async function principal(): Promise<number> {
   }
 
   // ---- Session client, pour /me/orders ----------------------------------
-  const suffixe = Date.now().toString(36);
+  // L'email du client est partagé entre l'inscription et l'amorçage : c'est
+  // sur cet email que /me/orders retrouvera les commandes (la correspondance
+  // compte ↔ fiche client se fait par email dans ControleurCommandes).
+  const suffixeClient = Date.now().toString(36);
+  const emailClientSession = `client-conf-${suffixeClient}@katech.dz`;
   const inscription = await appeler(client, "POST", "/auth/register", {
-    email: `client-conf-${suffixe}@katech.dz`,
+    email: emailClientSession,
     password: "Mdp-Recette-2026!",
     name: "Client de conformité",
     phone: "0555222333",
@@ -1379,7 +1457,7 @@ async function principal(): Promise<number> {
     );
   }
 
-  await amorcerJeuDEssai(proprietaire);
+  await amorcerJeuDEssai(proprietaire, client, emailClientSession);
 
   for (const ressource of RESSOURCES) {
     await controler(ressource, { proprietaire, client });
