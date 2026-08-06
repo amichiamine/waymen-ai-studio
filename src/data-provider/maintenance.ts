@@ -58,12 +58,33 @@ export type MigrationInput = {
   simulation: boolean;
 };
 
+/**
+ * Un détail d'anomalie attaché à une table.
+ *
+ * `gravite` distingue deux niveaux de sévérité :
+ *   - "erreur"        → incohérence de données confirmée (peut bloquer la migration).
+ *   - "avertissement" → différence détectée mais non bloquante (à surveiller).
+ *
+ * Le champ peut être absent dans les réponses d'un backend plus ancien : code
+ * défensivement en aval (tableaux vides en repli), mais sans avaler l'information.
+ */
+export type DetailAnomalie = {
+  gravite: "avertissement" | "erreur";
+  message: string;
+};
+
 /** Résultat d'une migration (simulée ou réelle). */
 export type MigrationResultTable = {
   nom: string;
   lues: number;
   ecrites: number;
   anomalies: number;
+  /**
+   * Détails lisibles de chaque anomalie.
+   * Absent d'une réponse de backend ancien → traiter comme tableau vide.
+   * Présent → longueur cohérente avec `anomalies`.
+   */
+  details?: DetailAnomalie[];
 };
 
 export type MigrationResult = {
@@ -224,24 +245,54 @@ export type MigrationMutations = {
 
 /**
  * Données mock du rapport de simulation, pour démontrer l'interface sans backend.
+ *
+ * Les anomalies sont volontairement représentatives : une erreur bloquante sur
+ * « products » (contenu cible divergent après relecture) et un avertissement sur
+ * « orders » (encodage non identique, non bloquant). Cela permet de visualiser
+ * en mode mock les deux niveaux de gravité et la logique de décision associée.
  */
 function mockMigrationResult(input: MigrationInput): MigrationResult {
   return {
     simulation: input.simulation,
-    ok: true,
+    // La présence d'une erreur bloquante rend ok: false — simulation échouée.
+    ok: false,
     message: input.simulation
-      ? "Simulation réussie — aucune donnée n'a été modifiée."
-      : "Migration exécutée avec succès.",
+      ? "Simulation terminée — 2 anomalie(s) détectée(s). Vérifiez avant d'exécuter."
+      : "Migration terminée avec anomalies — vérification requise.",
     tables: [
-      { nom: "products", lues: 48, ecrites: 48, anomalies: 0 },
-      { nom: "categories", lues: 12, ecrites: 12, anomalies: 0 },
-      { nom: "brands", lues: 8, ecrites: 8, anomalies: 0 },
-      { nom: "orders", lues: 134, ecrites: 134, anomalies: 0 },
-      { nom: "customers", lues: 97, ecrites: 97, anomalies: 0 },
-      { nom: "users", lues: 3, ecrites: 3, anomalies: 0 },
-      { nom: "reviews", lues: 62, ecrites: 62, anomalies: 0 },
-      { nom: "media_assets", lues: 210, ecrites: 210, anomalies: 0 },
-      { nom: "stock_movements", lues: 340, ecrites: 340, anomalies: 0 },
+      {
+        nom: "products",
+        lues: 48,
+        ecrites: 45,
+        anomalies: 1,
+        details: [
+          {
+            gravite: "erreur",
+            message:
+              "Le contenu écrit ne correspond pas à la source : 3 ligne(s) rejetées par la base cible (contrainte d'unicité sur slug).",
+          },
+        ],
+      },
+      { nom: "categories", lues: 12, ecrites: 12, anomalies: 0, details: [] },
+      { nom: "brands", lues: 8, ecrites: 8, anomalies: 0, details: [] },
+      {
+        nom: "orders",
+        lues: 134,
+        ecrites: 134,
+        anomalies: 1,
+        details: [
+          {
+            gravite: "avertissement",
+            message:
+              "Encodage du champ « notes » converti de latin1 vers utf8mb4 : vérifiez les caractères spéciaux dans les commandes importées.",
+          },
+        ],
+      },
+      { nom: "customers", lues: 97, ecrites: 97, anomalies: 0, details: [] },
+      { nom: "users", lues: 3, ecrites: 3, anomalies: 0, details: [] },
+      { nom: "reviews", lues: 62, ecrites: 62, anomalies: 0, details: [] },
+      { nom: "media_assets", lues: 210, ecrites: 210, anomalies: 0, details: [] },
+      { nom: "stock_movements", lues: 340, ecrites: 340, anomalies: 0, details: [] },
     ],
   };
 }

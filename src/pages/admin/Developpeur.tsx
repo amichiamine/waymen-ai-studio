@@ -27,6 +27,10 @@ import {
   EyeOff,
   Play,
   FileSearch,
+  ChevronDown,
+  ChevronRight,
+  Info,
+  OctagonX,
 } from "lucide-react";
 import { usePermissions } from "@/lib/admin-auth";
 import {
@@ -35,6 +39,8 @@ import {
   useMigrationMutations,
   type MigrationInput,
   type MigrationResult,
+  type MigrationResultTable,
+  type DetailAnomalie,
 } from "@/data-provider/maintenance";
 import { toApiError } from "@/data-provider/errors";
 
@@ -516,15 +522,214 @@ export default function AdminDeveloppeur() {
   );
 }
 
-// ── Sous-composant : rapport de migration ─────────────────────────────────────
+// ── Sous-composants : rapport de migration ────────────────────────────────────
+
+/**
+ * Simplifie un message technique issu du backend pour le rendre lisible
+ * par un commerçant non-développeur.
+ *
+ * Pourquoi cette transformation ici et pas dans le backend : la page reçoit
+ * des messages bruts du serveur (empreintes MD5, noms de contraintes SQL).
+ * Le commerçant n'a pas besoin de ces identifiants pour décider s'il peut
+ * migrer — il lui faut une phrase d'action claire. On traduit donc à
+ * l'affichage, sans altérer la donnée source.
+ */
+function simplifierMessage(message: string): string {
+  // Remplacer les séquences d'empreintes hex (ex. ad63bb2f….12) par une
+  // formulation neutre. L'empreinte n'apporte aucune information utile au
+  // propriétaire et rend le message illisible.
+  return message
+    .replace(/\b[0-9a-f]{8,}…?\.[0-9]+\b/gi, "[valeur calculée]")
+    .replace(/\(source [0-9a-f]{6,}[^)]*\)/gi, "")
+    .replace(/\(cible [0-9a-f]{6,}[^)]*\)/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+/**
+ * Icône et couleur associées à la gravité d'une anomalie.
+ * `erreur`       → rouge    (peut empêcher la migration)
+ * `avertissement` → amber   (à surveiller, non bloquant)
+ */
+function BadgeGravite({ gravite }: { gravite: DetailAnomalie["gravite"] }) {
+  if (gravite === "erreur") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive">
+        <OctagonX className="h-3 w-3 shrink-0" />
+        Erreur
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+      <AlertTriangle className="h-3 w-3 shrink-0" />
+      Avertissement
+    </span>
+  );
+}
+
+/**
+ * Ligne de table expandable : affiche le résumé des compteurs et, si des
+ * anomalies sont présentes, permet de déplier les détails par un clic.
+ *
+ * Pourquoi gérer l'ouverture localement plutôt qu'avec un Accordéon shadcn :
+ * le tableau a des `<tr>` imbriquées pour les détails — la primitive Accordion
+ * attend des `<div>` ; mélanger les deux casserait la sémantique du tableau.
+ * Un simple `useState` local est ici la solution la plus propre.
+ */
+function LigneTable({ t }: { t: MigrationResultTable }) {
+  const [ouvert, setOuvert] = useState(false);
+  // Repli défensif : le champ `details` peut être absent d'une réponse ancienne.
+  const details = t.details ?? [];
+  const aDesDetails = t.anomalies > 0 && details.length > 0;
+  const anomaliesSansDetails = t.anomalies > 0 && details.length === 0;
+
+  return (
+    <>
+      {/* Ligne principale */}
+      <tr
+        className={
+          t.anomalies > 0 ? "bg-destructive/5 hover:bg-destructive/10" : "hover:bg-muted/30"
+        }
+      >
+        <td className="py-1.5 pe-2">
+          {aDesDetails ? (
+            <button
+              type="button"
+              onClick={() => setOuvert((v) => !v)}
+              className="flex w-full items-center gap-1 text-start font-mono text-xs"
+              aria-expanded={ouvert}
+              aria-label={`Détails anomalies — ${t.nom}`}
+            >
+              {ouvert ? (
+                <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
+              ) : (
+                <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+              )}
+              {t.nom}
+            </button>
+          ) : (
+            <span className="font-mono">{t.nom}</span>
+          )}
+        </td>
+        <td className="py-1.5 pe-3 text-end tabular-nums">{t.lues.toLocaleString("fr-FR")}</td>
+        <td className="py-1.5 pe-3 text-end tabular-nums">{t.ecrites.toLocaleString("fr-FR")}</td>
+        <td className="py-1.5 text-end tabular-nums">
+          {t.anomalies > 0 ? (
+            <span className="font-semibold text-destructive">{t.anomalies}</span>
+          ) : (
+            <span className="text-green-600">0</span>
+          )}
+        </td>
+      </tr>
+
+      {/* Rangée de détails dépliée — uniquement si disponibles */}
+      {ouvert && aDesDetails && (
+        <tr className="bg-destructive/5">
+          <td colSpan={4} className="pb-2 pt-0 ps-6 pe-3">
+            <ul className="space-y-1.5">
+              {details.map((d, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-foreground/80">
+                  <BadgeGravite gravite={d.gravite} />
+                  <span>{simplifierMessage(d.message)}</span>
+                </li>
+              ))}
+            </ul>
+          </td>
+        </tr>
+      )}
+
+      {/*
+       * Repli visible : anomalies signalées mais détails absents (backend ancien).
+       * Sans ce message, le commerçant verrait « anomalies : 1 » sans savoir pourquoi
+       * — c'est exactement le défaut qu'on cherche à corriger.
+       */}
+      {anomaliesSansDetails && (
+        <tr className="bg-amber-500/5">
+          <td colSpan={4} className="pb-2 pt-0 ps-4 pe-3">
+            <p className="flex items-center gap-1.5 text-xs text-amber-700">
+              <Info className="h-3 w-3 shrink-0" />
+              Détails non disponibles — mettez à jour le serveur pour obtenir l&apos;explication
+              complète.
+            </p>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+/**
+ * Bandeau de décision en tête du rapport.
+ *
+ * Sa question centrale : « est-ce que je peux y aller, oui ou non ? »
+ * Le commerçant doit lire ce bandeau et avoir une réponse sans lire le détail.
+ */
+function BandeauDecision({
+  rapport,
+  totalErreurs,
+  totalAvertissements,
+}: {
+  rapport: MigrationResult;
+  totalErreurs: number;
+  totalAvertissements: number;
+}) {
+  if (!rapport.ok && totalErreurs > 0) {
+    return (
+      <Alert variant="destructive" className="py-3">
+        <OctagonX className="h-4 w-4" />
+        <AlertTitle>Migration déconseillée</AlertTitle>
+        <AlertDescription>
+          {totalErreurs} erreur{totalErreurs > 1 ? "s" : ""} bloquante
+          {totalErreurs > 1 ? "s" : ""} détectée{totalErreurs > 1 ? "s" : ""}. Des données
+          pourraient être perdues ou corrompues. Corrigez les problèmes avant d&apos;exécuter.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  if (totalAvertissements > 0) {
+    return (
+      <Alert className="border-amber-500/40 bg-amber-500/10 py-3">
+        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <AlertTitle className="text-amber-800">Migration possible avec précautions</AlertTitle>
+        <AlertDescription className="text-amber-700">
+          {totalAvertissements} avertissement{totalAvertissements > 1 ? "s" : ""} signalé
+          {totalAvertissements > 1 ? "s" : ""}. Aucune perte de données confirmée, mais vérifiez les
+          détails avant de conclure.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  return (
+    <Alert className="border-green-500/40 bg-green-500/10 py-3">
+      <CheckCircle2 className="h-4 w-4 text-green-600" />
+      <AlertTitle className="text-green-800">Migration sans anomalie</AlertTitle>
+      <AlertDescription className="text-green-700">
+        Toutes les tables ont été traitées sans erreur. Vous pouvez exécuter la migration.
+      </AlertDescription>
+    </Alert>
+  );
+}
 
 function RapportMigration({ rapport }: { rapport: MigrationResult }) {
   const totalLues = rapport.tables.reduce((s, t) => s + t.lues, 0);
   const totalEcrites = rapport.tables.reduce((s, t) => s + t.ecrites, 0);
   const totalAnomalies = rapport.tables.reduce((s, t) => s + t.anomalies, 0);
 
+  // Compteurs par gravité pour alimenter le bandeau de décision.
+  // Repli défensif : `details` peut être absent (réponse de backend ancien).
+  const totalErreurs = rapport.tables.reduce(
+    (s, t) => s + (t.details ?? []).filter((d) => d.gravite === "erreur").length,
+    0,
+  );
+  const totalAvertissements = rapport.tables.reduce(
+    (s, t) => s + (t.details ?? []).filter((d) => d.gravite === "avertissement").length,
+    0,
+  );
+
   return (
-    <div className="rounded-md border bg-muted/20 p-4 space-y-3">
+    <div className="rounded-md border bg-muted/20 p-4 space-y-4">
+      {/* En-tête : type de rapport et statut global */}
       <div className="flex items-center gap-2">
         {rapport.ok ? (
           <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
@@ -539,6 +744,13 @@ function RapportMigration({ rapport }: { rapport: MigrationResult }) {
           {rapport.simulation ? "Simulation" : "Exécution réelle"}
         </Badge>
       </div>
+
+      {/* Bandeau de décision : verdict clair pour le commerçant */}
+      <BandeauDecision
+        rapport={rapport}
+        totalErreurs={totalErreurs}
+        totalAvertissements={totalAvertissements}
+      />
 
       {/* Résumé chiffré */}
       <div className="grid grid-cols-3 gap-3 text-sm">
@@ -562,11 +774,15 @@ function RapportMigration({ rapport }: { rapport: MigrationResult }) {
         </div>
       </div>
 
-      {/* Détail par table */}
+      {/* Détail par table — lignes expandables pour les tables en anomalie */}
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b text-muted-foreground">
+              {/*
+               * Colonne Table : largeur libre pour que les noms longs ne cassent
+               * pas la mise en page. Les colonnes numériques sont à droite.
+               */}
               <th className="py-1.5 pe-3 font-medium text-start">Table</th>
               <th className="py-1.5 pe-3 font-medium text-end">Lues</th>
               <th className="py-1.5 pe-3 font-medium text-end">Écrites</th>
@@ -575,26 +791,18 @@ function RapportMigration({ rapport }: { rapport: MigrationResult }) {
           </thead>
           <tbody className="divide-y">
             {rapport.tables.map((t) => (
-              <tr key={t.nom} className={t.anomalies > 0 ? "bg-destructive/5" : undefined}>
-                <td className="py-1.5 pe-3 font-mono">{t.nom}</td>
-                <td className="py-1.5 pe-3 text-end tabular-nums">
-                  {t.lues.toLocaleString("fr-FR")}
-                </td>
-                <td className="py-1.5 pe-3 text-end tabular-nums">
-                  {t.ecrites.toLocaleString("fr-FR")}
-                </td>
-                <td
-                  className={`py-1.5 text-end tabular-nums ${
-                    t.anomalies > 0 ? "font-semibold text-destructive" : ""
-                  }`}
-                >
-                  {t.anomalies}
-                </td>
-              </tr>
+              <LigneTable key={t.nom} t={t} />
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Note de lecture quand des lignes sont expandables */}
+      {totalAnomalies > 0 && (
+        <p className="text-xs text-muted-foreground">
+          Cliquez sur une ligne en anomalie pour voir l&apos;explication détaillée.
+        </p>
+      )}
     </div>
   );
 }
