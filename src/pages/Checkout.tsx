@@ -30,6 +30,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertTriangle, Tag, MapPin } from "lucide-react";
 import { useI18n, useLocalize } from "@/lib/i18n";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 
 const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 const COUPON_KEY = "ka-cart-coupon";
@@ -427,7 +428,11 @@ export default function Checkout() {
           <CardContent className="space-y-3">
             {lines.map((l) => (
               <div key={l.product_id} className="flex items-center gap-3 text-sm">
-                <img src={l.product.image} alt="" className="h-12 w-12 rounded object-cover" />
+                <ImageCatalogue
+                  src={l.product.image}
+                  alt=""
+                  className="h-12 w-12 rounded object-cover"
+                />
                 <div className="min-w-0 flex-1 text-start">
                   <p className="truncate">{L(l.product.name) ?? ""}</p>
                   <p className="text-xs text-muted-foreground">× {l.quantity}</p>

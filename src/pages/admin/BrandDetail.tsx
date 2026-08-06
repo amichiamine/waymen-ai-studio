@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -208,7 +209,7 @@ export default function AdminBrandDetail() {
                 <ul className="divide-y">
                   {items.map((p) => (
                     <li key={p.id} className="flex items-center gap-3 py-3">
-                      <img
+                      <ImageCatalogue
                         src={p.image}
                         alt=""
                         loading="lazy"

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -785,12 +786,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
                 {v.image && (
                   <div className="aspect-square overflow-hidden rounded-md border bg-muted">
-                    <img
-                      src={v.image}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      onError={(e) => (e.currentTarget.style.display = "none")}
-                    />
+                    <ImageCatalogue src={v.image} alt="" className="h-full w-full object-cover" />
                   </div>
                 )}
               </CardContent>

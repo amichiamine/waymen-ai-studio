@@ -1,41 +1,41 @@
 {
-  "generatedAt": "2026-08-06T15:24:24.655Z",
+  "generatedAt": "2026-08-06T21:53:40.166Z",
   "categories": [
     {
       "slug": "laptops",
       "label": "Ordinateurs portables",
       "description": "Laptops pour le travail, les études et le gaming.",
-      "cover": "/assets/p-rog-strix-g16.webp",
+      "cover": "media/p-rog.webp",
       "position": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "slug": "desktops",
       "label": "Ordinateurs de bureau",
       "description": "Tours et mini-PC de bureau.",
-      "cover": "/assets/p-dell-optiplex-5000.webp",
+      "cover": "media/p-optiplex.webp",
       "position": 1,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "slug": "builds",
       "label": "Configurations PC",
       "description": "Configurations sur-mesure KA Build.",
-      "cover": "/assets/p-build-mid-gaming.webp",
+      "cover": "media/p-build-mid.webp",
       "position": 2,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "slug": "phones",
       "label": "Smartphones",
       "description": "Smartphones Android et iOS.",
-      "cover": "/assets/p-galaxy-s25-ultra.webp",
+      "cover": "media/p-galaxy.webp",
       "position": 3,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     }
   ],
   "brands": [
@@ -44,64 +44,64 @@
       "name": "ASUS",
       "description": "Marque ASUS distribuée par KA Tech.",
       "country": "Taïwan",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "hp",
       "name": "HP",
       "description": "Marque HP distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "lenovo",
       "name": "Lenovo",
       "description": "Marque Lenovo distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "apple",
       "name": "Apple",
       "description": "Marque Apple distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "dell",
       "name": "Dell",
       "description": "Marque Dell distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "ka-build",
       "name": "KA Build",
       "description": "Marque KA Build distribuée par KA Tech.",
       "country": "Algérie",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "samsung",
       "name": "Samsung",
       "description": "Marque Samsung distribuée par KA Tech.",
       "country": "Corée du Sud",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "xiaomi",
       "name": "Xiaomi",
       "description": "Marque Xiaomi distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     }
   ],
   "products": [
@@ -126,12 +126,12 @@
       "old_price": 319000,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/rog-strix-g16.webp",
+      "image": "media/p-rog.webp",
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "hp-pavilion-15",
@@ -154,12 +154,12 @@
       "old_price": null,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/hp-pavilion-15.webp",
+      "image": "media/p-pavilion.webp",
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "thinkpad-x1-carbon",
@@ -182,12 +182,12 @@
       "old_price": null,
       "stock": "low",
       "stock_qty": 3,
-      "image": "/assets/thinkpad-x1-carbon.webp",
+      "image": "media/p-thinkpad.webp",
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "macbook-air-m3",
@@ -214,12 +214,12 @@
       "old_price": 265000,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/macbook-air-m3.webp",
+      "image": "media/p-macbook.webp",
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "dell-optiplex-5000",
@@ -240,12 +240,12 @@
       "old_price": null,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/dell-optiplex-5000.webp",
+      "image": "media/p-optiplex.webp",
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "hp-omen-45l",
@@ -266,12 +266,12 @@
       "old_price": 460000,
       "stock": "low",
       "stock_qty": 3,
-      "image": "/assets/hp-omen-45l.webp",
+      "image": "media/p-omen.webp",
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "build-mid-gaming",
@@ -296,12 +296,12 @@
       "old_price": null,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/build-mid-gaming.webp",
+      "image": "media/p-build-mid.webp",
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "build-pro-editing",
@@ -326,12 +326,12 @@
       "old_price": null,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/build-pro-editing.webp",
+      "image": "media/p-build-pro.webp",
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "galaxy-s25-ultra",
@@ -353,12 +353,12 @@
       "old_price": 145000,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/galaxy-s25-ultra.webp",
+      "image": "media/p-galaxy.webp",
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "iphone-16-pro-max",
@@ -384,12 +384,12 @@
       "old_price": null,
       "stock": "low",
       "stock_qty": 3,
-      "image": "/assets/iphone-16-pro-max.webp",
+      "image": "media/p-iphone.webp",
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "xiaomi-14t-pro",
@@ -411,12 +411,12 @@
       "old_price": null,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/xiaomi-14t-pro.webp",
+      "image": "media/p-xiaomi.webp",
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "redmi-note-13-pro",
@@ -438,12 +438,12 @@
       "old_price": 45000,
       "stock": "in",
       "stock_qty": 50,
-      "image": "/assets/redmi-note-13-pro.webp",
+      "image": "media/p-redmi.webp",
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T15:24:24.655Z",
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "created_at": "2026-08-06T21:53:40.166Z",
+      "updated_at": "2026-08-06T21:53:40.166Z"
     }
   ],
   "blogPosts": [
@@ -465,13 +465,13 @@
         "en": "# Choosing the right laptop in 2026\n\nIn 2026, the laptop market is richer than ever. Here are the 5 criteria you should not overlook:\n\n1. **The processor**: go for an Intel Core Ultra or an AMD Ryzen 7000+.\n2. **RAM**: 16 GB minimum, 32 GB for creative work.\n3. **The SSD**: NVMe Gen4, 512 GB minimum.\n4. **The screen**: IPS or OLED panel, 100% sRGB for accurate colour.\n5. **The warranty**: at KA Tech, all our laptops come with an official warranty.",
         "ar": "# كيف تختار حاسوبك المحمول في 2026\n\nفي 2026، سوق الحواسيب المحمولة أثرى من أي وقت مضى. إليك 5 معايير لا ينبغي إغفالها:\n\n1. **المعالج**: اختر Intel Core Ultra أو AMD Ryzen 7000+.\n2. **الذاكرة RAM**: 16 غيغابايت كحد أدنى، و32 غيغابايت للإبداع والمونتاج.\n3. **القرص SSD**: NVMe Gen4، 512 غيغابايت كحد أدنى.\n4. **الشاشة**: لوحة IPS أو OLED، 100% sRGB لدقة الألوان.\n5. **الضمان**: في KA Tech، جميع حواسيبنا المحمولة تأتي مع ضمان رسمي."
       },
-      "cover": "/assets/p-rog-strix-g16.webp",
+      "cover": "media/p-rog.webp",
       "author": "Équipe KA Tech",
       "tags": ["laptop", "guide"],
       "status": "published",
-      "published_at": "2026-07-07T15:24:24.656Z",
-      "created_at": "2026-07-07T15:24:24.656Z",
-      "updated_at": "2026-07-07T15:24:24.656Z"
+      "published_at": "2026-07-07T21:53:40.167Z",
+      "created_at": "2026-07-07T21:53:40.167Z",
+      "updated_at": "2026-07-07T21:53:40.167Z"
     },
     {
       "id": "blog_101",
@@ -491,13 +491,13 @@
         "en": "The PC vs console debate comes back every generation. In 2026, the PC has the edge on modularity, the Steam library and longevity — but the console remains unbeatable for plug-and-play simplicity.",
         "ar": "نقاش PC مقابل الكونسول يعود مع كل جيل. في 2026، يتفوق PC على صعيد المرونة ومكتبة Steam والعمر الافتراضي — لكن الكونسول يبقى لا يُضاهى في سهولة التشغيل الفوري."
       },
-      "cover": "/assets/p-hp-pavilion-15.webp",
+      "cover": "media/p-pavilion.webp",
       "author": "Yacine B.",
       "tags": ["gaming", "comparatif"],
       "status": "published",
-      "published_at": "2026-07-11T15:24:24.656Z",
-      "created_at": "2026-07-11T15:24:24.656Z",
-      "updated_at": "2026-07-11T15:24:24.656Z"
+      "published_at": "2026-07-11T21:53:40.167Z",
+      "created_at": "2026-07-11T21:53:40.167Z",
+      "updated_at": "2026-07-11T21:53:40.167Z"
     },
     {
       "id": "blog_102",
@@ -517,13 +517,13 @@
         "en": "Three flagships, three photography philosophies. The iPhone bets on video consistency, Samsung on zoom versatility, and Xiaomi on the Leica signature. The choice is yours.",
         "ar": "ثلاثة هواتف رائدة، ثلاث فلسفات تصوير. iPhone يراهن على ثبات الفيديو، Samsung على تعدد استخدامات الزووم، Xiaomi على توقيع Leica. لك أن تختار."
       },
-      "cover": "/assets/p-thinkpad-x1-carbon.webp",
+      "cover": "media/p-thinkpad.webp",
       "author": "Équipe KA Tech",
       "tags": ["smartphone", "photo", "top"],
       "status": "published",
-      "published_at": "2026-07-15T15:24:24.656Z",
-      "created_at": "2026-07-15T15:24:24.656Z",
-      "updated_at": "2026-07-15T15:24:24.656Z"
+      "published_at": "2026-07-15T21:53:40.167Z",
+      "created_at": "2026-07-15T21:53:40.167Z",
+      "updated_at": "2026-07-15T21:53:40.167Z"
     },
     {
       "id": "blog_103",
@@ -543,13 +543,13 @@
         "en": "Our PC configurator walks you through every step. Before confirming your build, check: CPU/motherboard socket compatibility, the PSU TDP (+30% headroom), and the case airflow.",
         "ar": "يرشدك مُجمِّع PC الخاص بنا خطوة بخطوة. قبل تأكيد تجميعتك، تحقق من: توافق socket المعالج مع اللوحة الأم، TDP مزود الطاقة (+30% هامش)، وتهوية الصندوق."
       },
-      "cover": "/assets/p-macbook-air-m3.webp",
+      "cover": "media/p-macbook.webp",
       "author": "Yacine B.",
       "tags": ["pc-sur-mesure", "conseil"],
       "status": "published",
-      "published_at": "2026-07-19T15:24:24.656Z",
-      "created_at": "2026-07-19T15:24:24.656Z",
-      "updated_at": "2026-07-19T15:24:24.656Z"
+      "published_at": "2026-07-19T21:53:40.167Z",
+      "created_at": "2026-07-19T21:53:40.167Z",
+      "updated_at": "2026-07-19T21:53:40.167Z"
     },
     {
       "id": "blog_104",
@@ -569,13 +569,13 @@
         "en": "KA Tech delivers to all 58 wilayas. Allow 2 to 5 business days depending on your region. Cash on delivery is available for the majority of products.",
         "ar": "KA Tech يوصّل إلى جميع الولايات الـ58. الدفع عند الاستلام متاح لغالبية المنتجات."
       },
-      "cover": "/assets/p-dell-optiplex-5000.webp",
+      "cover": "media/p-optiplex.webp",
       "author": "Équipe KA Tech",
       "tags": ["livraison", "faq"],
       "status": "published",
-      "published_at": "2026-07-23T15:24:24.656Z",
-      "created_at": "2026-07-23T15:24:24.656Z",
-      "updated_at": "2026-07-23T15:24:24.656Z"
+      "published_at": "2026-07-23T21:53:40.167Z",
+      "created_at": "2026-07-23T21:53:40.167Z",
+      "updated_at": "2026-07-23T21:53:40.167Z"
     }
   ],
   "shippingRates": [
@@ -583,355 +583,355 @@
       "wilaya_code": "*",
       "home": 800,
       "desk": 400,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "01",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "02",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "03",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "04",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "05",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "06",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "07",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "08",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "09",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "10",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "11",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "12",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "13",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "14",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "15",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "16",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "17",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "18",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "19",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "20",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "21",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "22",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "23",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "24",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "25",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "26",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "27",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "28",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "29",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "30",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "31",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "32",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "33",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "34",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "35",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "36",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "37",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "38",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "39",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "40",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "41",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "42",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "43",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "44",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "45",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "46",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "47",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "48",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "49",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "50",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "51",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "52",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "53",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "54",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "55",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "56",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "57",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "wilaya_code": "58",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     }
   ],
   "paymentMethods": [
@@ -941,7 +941,7 @@
       "instructions": "Réglez votre commande en espèces au livreur.",
       "active": 1,
       "position": 0,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "bank",
@@ -949,7 +949,7 @@
       "instructions": "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.",
       "active": 1,
       "position": 1,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "card",
@@ -957,7 +957,7 @@
       "instructions": "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).",
       "active": 1,
       "position": 2,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     },
     {
       "id": "store",
@@ -965,7 +965,7 @@
       "instructions": "Retirez et réglez votre commande à notre point de vente d'Alger.",
       "active": 0,
       "position": 3,
-      "updated_at": "2026-08-06T15:24:24.655Z"
+      "updated_at": "2026-08-06T21:53:40.166Z"
     }
   ],
   "siteContent": {

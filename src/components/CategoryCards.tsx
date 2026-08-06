@@ -7,6 +7,7 @@ import phonesImg from "@/assets/cat-phones.webp";
 import { useCategoryList, useSiteContent } from "@/data-provider";
 import type { Category } from "@/data/products";
 import { Reveal } from "@/components/Reveal";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { useLocalize } from "@/lib/i18n";
 
 const DEFAULT_IMG: Record<string, string> = {
@@ -46,7 +47,7 @@ export function CategoryCards() {
                 className="group relative overflow-hidden rounded-xl border border-border bg-card aspect-[4/5] flex flex-col justify-end p-6 transition-all duration-500 hover:border-primary/60 hover:-translate-y-1.5 hover:shadow-[var(--shadow-glow)]"
               >
                 {img && (
-                  <img
+                  <ImageCatalogue
                     src={img}
                     alt={c.label}
                     width={800}

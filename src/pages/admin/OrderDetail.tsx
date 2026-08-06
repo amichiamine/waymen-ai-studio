@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
@@ -172,7 +173,7 @@ export default function AdminOrderDetail() {
                   className="flex items-center gap-3 border-b pb-3 last:border-none last:pb-0"
                 >
                   {it.image && (
-                    <img
+                    <ImageCatalogue
                       src={it.image}
                       alt=""
                       loading="lazy"

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -240,12 +241,7 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
               {err.cover && <p className="mt-1 text-xs text-destructive">{err.cover}</p>}
               {v.cover && (
                 <div className="mt-3 aspect-[16/10] overflow-hidden rounded-md border bg-muted">
-                  <img
-                    src={v.cover}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    onError={(e) => (e.currentTarget.style.display = "none")}
-                  />
+                  <ImageCatalogue src={v.cover} alt="" className="h-full w-full object-cover" />
                 </div>
               )}
             </div>

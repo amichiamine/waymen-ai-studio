@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { useProductRating, useSiteSettings } from "@/data-provider";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 
 export function ProductCard({ p }: { p: Product }) {
   const { t } = useI18n();
@@ -43,7 +44,7 @@ export function ProductCard({ p }: { p: Product }) {
         to={`/product/${p.id}`}
         className="block relative aspect-square bg-gradient-to-br from-background to-card overflow-hidden"
       >
-        <img
+        <ImageCatalogue
           src={p.image}
           alt={name}
           width={512}

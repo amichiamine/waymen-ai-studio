@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout";
@@ -124,7 +125,7 @@ export default function AdminBlogList() {
               <Card key={p.id}>
                 <CardContent className="flex flex-wrap items-center gap-4 p-4">
                   {p.cover ? (
-                    <img
+                    <ImageCatalogue
                       src={p.cover}
                       alt={title}
                       className="h-16 w-24 shrink-0 rounded-md object-cover"

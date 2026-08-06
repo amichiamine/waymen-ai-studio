@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { useLocalize } from "@/lib/i18n";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
@@ -313,7 +314,7 @@ export default function AdminMedia() {
                 onClick={() => setPreview(m as MediaAsset)}
                 className="block aspect-square w-full overflow-hidden"
               >
-                <img
+                <ImageCatalogue
                   src={m.src}
                   alt={m.name}
                   loading="lazy"
@@ -407,7 +408,11 @@ export default function AdminMedia() {
           {preview && (
             <div className="space-y-3">
               <div className="flex items-center justify-center overflow-hidden rounded-md border bg-muted p-2">
-                <img src={preview.src} alt={preview.name} className="max-h-[60vh] object-contain" />
+                <ImageCatalogue
+                  src={preview.src}
+                  alt={preview.name}
+                  className="max-h-[60vh] object-contain"
+                />
               </div>
               <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
                 <div>Format : {preview.mime || "—"}</div>

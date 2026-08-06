@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -579,13 +580,10 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
               />
               {errors.cover && <p className="text-xs text-destructive">{errors.cover}</p>}
               {form.cover ? (
-                <img
+                <ImageCatalogue
                   src={form.cover}
                   alt="Aperçu"
                   className="mt-2 aspect-[16/9] w-full rounded-md border object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
-                  }}
                 />
               ) : (
                 <div className="flex h-28 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">

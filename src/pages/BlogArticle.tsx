@@ -4,6 +4,7 @@ import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBlogPostDetail } from "@/data-provider";
 import { useI18n, useLocalize } from "@/lib/i18n";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -120,7 +121,7 @@ export default function BlogArticle() {
       </header>
 
       {post.cover && (
-        <img
+        <ImageCatalogue
           src={post.cover}
           alt={title}
           className="mt-8 aspect-[16/9] w-full rounded-xl border border-border object-cover"

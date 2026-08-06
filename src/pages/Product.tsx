@@ -6,6 +6,8 @@ import { useProducts } from "@/lib/useProducts";
 import { useProductReviewList, useReviewMutations } from "@/data-provider";
 
 import { ProductCard } from "@/components/ProductCard";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
+import { urlMediaAbsolue } from "@/components/media-url";
 import {
   Heart,
   ShoppingCart,
@@ -178,7 +180,10 @@ function ProductView({ p }: { p: ProductType }) {
     name,
     brand: { "@type": "Brand", name: p.brand },
     category: t(cat.labelKey),
-    image: p.image,
+    // schema.org est lu par un moteur, hors du contexte de la page : la balise
+    // `<base>` ne s'y applique pas. C'est le seul consommateur qui exige une URL
+    // ABSOLUE — d'où `urlMediaAbsolue` et non la résolution ordinaire.
+    image: urlMediaAbsolue(p.image),
     description: specLine,
     url: absoluteUrl,
     offers: {
@@ -233,7 +238,7 @@ function ProductView({ p }: { p: ProductType }) {
             style={{ background: "var(--gradient-glow)" }}
             aria-hidden
           />
-          <img
+          <ImageCatalogue
             src={p.image}
             alt={name}
             width={1024}

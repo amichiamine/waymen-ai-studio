@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -168,7 +169,7 @@ export default function AdminProductDetail() {
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <Card className="overflow-hidden">
           <div className="aspect-square bg-muted">
-            <img src={product.image} alt={name} className="h-full w-full object-cover" />
+            <ImageCatalogue src={product.image} alt={name} className="h-full w-full object-cover" />
           </div>
           <CardContent className="space-y-2 p-5">
             <div className="flex items-baseline gap-2">

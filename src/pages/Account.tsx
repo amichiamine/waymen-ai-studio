@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { LogOut, User, Package, MapPin, Plus, Trash2, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 
 const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 
@@ -363,7 +364,7 @@ export default function Account() {
                             .map(
                               (it, i) =>
                                 it.image && (
-                                  <img
+                                  <ImageCatalogue
                                     key={i}
                                     src={it.image}
                                     alt=""

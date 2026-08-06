@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { AdminPageShell, AdminEmptyState } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -129,7 +130,7 @@ export default function AdminCategoryDetail() {
         <Card className="overflow-hidden">
           {category.cover ? (
             <div className="aspect-[16/10] bg-muted">
-              <img
+              <ImageCatalogue
                 src={category.cover}
                 alt={category.label}
                 loading="lazy"
@@ -210,7 +211,7 @@ export default function AdminCategoryDetail() {
                 <ul className="divide-y">
                   {items.map((p) => (
                     <li key={p.id} className="flex items-center gap-3 py-3">
-                      <img
+                      <ImageCatalogue
                         src={p.image}
                         alt=""
                         loading="lazy"

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
@@ -111,7 +112,7 @@ export default function AdminCategories() {
               className="block aspect-[16/10] w-full overflow-hidden bg-muted"
             >
               {c.cover ? (
-                <img
+                <ImageCatalogue
                   src={c.cover}
                   alt={c.label}
                   loading="lazy"

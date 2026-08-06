@@ -5,6 +5,7 @@ import { Search, Newspaper, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useBlogPostList } from "@/data-provider";
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 
 /** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
 const haystack = (v: Localized<string> | undefined): string =>
@@ -100,7 +101,7 @@ export default function Blog() {
                     >
                       {p.cover && (
                         <div className="aspect-[16/9] overflow-hidden bg-muted">
-                          <img
+                          <ImageCatalogue
                             src={p.cover}
                             alt={title}
                             loading="lazy"

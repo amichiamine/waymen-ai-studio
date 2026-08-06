@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
@@ -226,7 +227,7 @@ export default function AdminProducts() {
               <TableRow key={p.id}>
                 <TableCell>
                   <Link to={`/admin/products/${p.id}/view`}>
-                    <img
+                    <ImageCatalogue
                       src={p.image}
                       alt=""
                       loading="lazy"

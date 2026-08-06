@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -293,7 +294,7 @@ export default function AdminInventory() {
                   <TableRow key={p.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img
+                        <ImageCatalogue
                           src={p.image}
                           alt=""
                           loading="lazy"

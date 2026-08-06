@@ -12,11 +12,17 @@
  * données dans deux fichiers sources.
  *
  * Usage :
- *   bunx tsx scripts/extraire-donnees-front.ts
+ *   bun run scripts/extraire-donnees-front.ts
+ *
+ * POURQUOI `bun` ET NON `tsx` : ce script importe `@/data/products`, qui
+ * importe des `.webp`. Node/tsx s'arrête sur `ERR_UNKNOWN_FILE_EXTENSION` ;
+ * bun résout ces imports en CHEMIN DE FICHIER absolu, ce dont la publication
+ * des médias ci-dessous a précisément besoin.
  */
 
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "fs";
 import { writeFileSync } from "fs";
-import { resolve } from "path";
+import { basename, resolve } from "path";
 
 // Données produits
 import { products } from "@/data/products";
@@ -49,6 +55,116 @@ function localiser(v: Localized<string> | undefined): string {
 }
 
 // -------------------------------------------------------------------
+// Publication des médias du catalogue
+// -------------------------------------------------------------------
+/**
+ * LE DÉFAUT QUE CETTE SECTION SUPPRIME.
+ *
+ * Ce script fabriquait des chemins en dur : `/assets/${p.id}.webp`. Trois
+ * erreurs superposées, et pas une seule visible :
+ *
+ *   1. `assets/` est le dossier des fichiers EMPREINTÉS par Vite. La vraie
+ *      image s'appelle `p-rog-mdwkNFOE.webp` — jamais `rog-strix-g16.webp`.
+ *      Une URL stockée en base ne peut PAS viser un fichier empreinté : elle
+ *      serait fausse au build suivant, dont l'empreinte change.
+ *   2. Le nom lui-même était inventé (`rog-strix-g16` est l'identifiant du
+ *      produit, le fichier s'appelle `p-rog`).
+ *   3. Le chemin était ABSOLU. Déposé dans `public_html/ma-boutique/`, le site
+ *      réclamait `https://domaine.dz/assets/…` — hors du dossier livré.
+ *
+ * Résultat : 19 URL mortes depuis toujours, invisibles parce que le mode
+ * `mock` importe les images comme des modules et fonctionne, lui.
+ *
+ * CE QUI EST FAIT À LA PLACE.
+ *
+ * `public/media/` : emplacement STABLE, hors de la chaîne d'empreinte de Vite,
+ * copié tel quel dans `dist/` au build. Même nature que `uploads/` (médias
+ * téléversés par l'administrateur), et pour la même raison : une URL persistée
+ * en base doit survivre aux reconstructions.
+ *
+ * Les chemins émis sont RELATIFS (« media/p-rog.webp », sans barre initiale).
+ * Le front les résout contre `CHEMIN_BASE` (`src/lib/media.ts`), déduit de la
+ * balise `<base>` posée par `public/index.php`. La base n'a donc rien à savoir
+ * de l'endroit où le site sera déposé.
+ *
+ * Le fichier source est l'image RÉELLEMENT importée par `src/data/products.ts` :
+ * sous bun, `p.image` vaut le chemin absolu du `.webp`. Aucun nom n'est deviné,
+ * et le mode `mock` continue d'importer exactement les mêmes fichiers depuis
+ * `src/assets/` — il ne perd rien.
+ *
+ * POIDS DU DÉPÔT : les copies sont octet pour octet identiques aux sources.
+ * Git étant adressé par contenu, elles partagent le même blob : le dépôt ne
+ * grossit que d'une entrée d'arbre par fichier, pas d'une image.
+ */
+const DOSSIER_MEDIAS = resolve(import.meta.dir, "../public/media");
+const PREFIXE_MEDIA = "media";
+
+/** Chemins émis, pour le contrôle final et le repérage des orphelins. */
+const mediasPublies = new Map<string, string>();
+
+/**
+ * Copie une image de `src/assets/` vers `public/media/` et renvoie le chemin
+ * relatif à stocker en base.
+ *
+ * ÉCHEC VISIBLE : toute source absente arrête l'extraction. C'est le garde-fou
+ * qui manquait — ni le typage, ni le lint, ni le build ne savent qu'une chaîne
+ * est censée désigner un fichier. Ici, on le sait, donc on le vérifie.
+ */
+function publierMedia(source: string, contexte: string): string {
+  if (typeof source !== "string" || source.trim() === "") {
+    throw new Error(`${contexte} : aucune image source. Rien ne sera stocké en base à l'aveugle.`);
+  }
+
+  // Sous bun, un import de .webp vaut le chemin absolu du fichier. Toute autre
+  // forme (URL, chemin déjà relatif) signale un changement de résolution des
+  // imports : on refuse de deviner.
+  if (!source.startsWith("/") || !/\.(webp|png|jpe?g|avif|gif|svg)$/i.test(source)) {
+    throw new Error(
+      `${contexte} : « ${source} » n'est pas un chemin de fichier image absolu. ` +
+        `Ce script doit être lancé avec bun (« bun run scripts/extraire-donnees-front.ts ») : ` +
+        `lui seul résout les imports .webp en chemin de fichier.`,
+    );
+  }
+
+  if (!existsSync(source) || !statSync(source).isFile()) {
+    throw new Error(`${contexte} : le fichier « ${source} » n'existe pas.`);
+  }
+
+  const nom = basename(source);
+  const destination = `${DOSSIER_MEDIAS}/${nom}`;
+
+  // Deux produits qui pointeraient deux fichiers différents portant le même nom
+  // s'écraseraient l'un l'autre en silence.
+  const dejaVu = mediasPublies.get(nom);
+  if (dejaVu !== undefined && dejaVu !== source) {
+    throw new Error(
+      `${contexte} : deux sources différentes portent le nom « ${nom} » ` +
+        `(« ${dejaVu} » et « ${source} »).`,
+    );
+  }
+
+  mkdirSync(DOSSIER_MEDIAS, { recursive: true });
+  // Recopie seulement si le contenu diffère : l'horodatage du dépôt ne bouge
+  // pas à chaque extraction, et `git status` reste lisible.
+  if (!existsSync(destination) || !readFileSync(destination).equals(readFileSync(source))) {
+    copyFileSync(source, destination);
+  }
+  mediasPublies.set(nom, source);
+
+  return `${PREFIXE_MEDIA}/${nom}`;
+}
+
+/** Image d'un produit désigné par identifiant — échoue si le produit n'existe pas. */
+function mediaDuProduit(id: string, contexte: string): string {
+  const produit = products.find((p) => p.id === id);
+  if (produit === undefined) {
+    throw new Error(`${contexte} : aucun produit ne porte l'identifiant « ${id} ».`);
+  }
+
+  return publierMedia(produit.image, `${contexte} (produit ${id})`);
+}
+
+// -------------------------------------------------------------------
 // Catégories (tirées de categoryMeta + libellés déjà en français)
 // -------------------------------------------------------------------
 const CAT_LABELS: Record<string, string> = {
@@ -64,15 +180,24 @@ const CAT_DESC: Record<string, string> = {
   phones: "Smartphones Android et iOS.",
 };
 
-const categories = (Object.keys(categoryMeta) as (keyof typeof categoryMeta)[]).map((slug, i) => ({
-  slug,
-  label: CAT_LABELS[slug] ?? slug,
-  description: CAT_DESC[slug] ?? "",
-  cover: `/assets/p-${products.find((p) => p.category === slug)?.id ?? slug}.webp`,
-  position: i,
-  created_at: now,
-  updated_at: now,
-}));
+const categories = (Object.keys(categoryMeta) as (keyof typeof categoryMeta)[]).map((slug, i) => {
+  // La vignette de catégorie est l'image de son premier produit. Une catégorie
+  // vide n'aurait pas de vignette : on le dit plutôt que de forger un nom.
+  const premier = products.find((p) => p.category === slug);
+  if (premier === undefined) {
+    throw new Error(`Catégorie « ${slug} » : aucun produit, donc aucune vignette possible.`);
+  }
+
+  return {
+    slug,
+    label: CAT_LABELS[slug] ?? slug,
+    description: CAT_DESC[slug] ?? "",
+    cover: publierMedia(premier.image, `Vignette de la catégorie ${slug}`),
+    position: i,
+    created_at: now,
+    updated_at: now,
+  };
+});
 
 // -------------------------------------------------------------------
 // Marques (déduites des produits)
@@ -132,7 +257,7 @@ const produitsExtraits = products.map((p) => ({
   old_price: p.oldPrice ?? null,
   stock: p.stock,
   stock_qty: p.stockQty ?? defaultQtyForLabel(p.stock),
-  image: `/assets/${p.id}.webp`,
+  image: publierMedia(p.image, `Image du produit ${p.id}`),
   best_seller: p.bestSeller ? 1 : 0,
   sale: p.sale ? 1 : 0,
   custom_build: p.customBuild ? 1 : 0,
@@ -255,14 +380,14 @@ const blogBase = [
 
 const blogPosts = blogBase.map((b, i) => {
   const ts = new Date(BASE_BLOG_DATE - b.daysAgo * 86400000).toISOString();
-  const cover = products[i % products.length]?.id ?? "rog-strix-g16";
+  const idIllustration = products[i % products.length]?.id ?? "rog-strix-g16";
   return {
     id: `blog_${100 + i}`,
     slug: b.slug,
     title: b.title,
     excerpt: b.excerpt,
     content: b.content,
-    cover: `/assets/p-${cover}.webp`,
+    cover: mediaDuProduit(idIllustration, `Illustration de l'article ${b.slug}`),
     author: b.author,
     tags: b.tags,
     status: "published",
@@ -644,6 +769,80 @@ const payload = {
   shippingSettings,
 };
 
+// -------------------------------------------------------------------
+// Contrôle final — aucun chemin d'image émis sans fichier derrière
+// -------------------------------------------------------------------
+/**
+ * Deuxième filet, POSÉ SUR LE RÉSULTAT et non sur la fabrication.
+ *
+ * `publierMedia()` garantit les chemins qui passent par lui ; ce contrôle-ci
+ * relit le JSON produit et exige que CHAQUE valeur ressemblant à un média
+ * désigne un fichier réellement présent sous `public/`. Un futur champ ajouté
+ * sans passer par le helper serait attrapé ici, avant d'atteindre la base.
+ *
+ * C'est exactement le contrôle qui manquait : 19 chemins morts ont traversé le
+ * typage, le lint, le build et des mois de développement.
+ */
+const DOSSIER_PUBLIC = resolve(import.meta.dir, "../public");
+const EXTENSIONS_IMAGE = /\.(webp|png|jpe?g|avif|gif|svg)$/i;
+
+function verifierCheminsMedias(valeur: unknown, chemin: string, anomalies: string[]): void {
+  if (typeof valeur === "string") {
+    if (!EXTENSIONS_IMAGE.test(valeur)) return;
+    // Une URL externe (https://…) est le choix assumé d'un exploitant : hors
+    // de portée d'une vérification sur disque, on la laisse passer.
+    if (/^[a-z][a-z0-9+.-]*:/i.test(valeur)) return;
+
+    if (valeur.startsWith("/")) {
+      anomalies.push(
+        `${chemin} : « ${valeur} » est un chemin ABSOLU. Il sortirait du dossier ` +
+          `de déploiement en sous-dossier. Utiliser publierMedia().`,
+      );
+
+      return;
+    }
+
+    if (!existsSync(`${DOSSIER_PUBLIC}/${valeur}`)) {
+      anomalies.push(`${chemin} : « ${valeur} » ne correspond à aucun fichier de public/.`);
+    }
+
+    return;
+  }
+
+  if (Array.isArray(valeur)) {
+    valeur.forEach((v, i) => verifierCheminsMedias(v, `${chemin}[${i}]`, anomalies));
+
+    return;
+  }
+
+  if (valeur !== null && typeof valeur === "object") {
+    for (const [cle, v] of Object.entries(valeur)) {
+      verifierCheminsMedias(v, `${chemin}.${cle}`, anomalies);
+    }
+  }
+}
+
+const anomaliesMedias: string[] = [];
+verifierCheminsMedias(payload, "payload", anomaliesMedias);
+if (anomaliesMedias.length > 0) {
+  console.error(
+    `\n${anomaliesMedias.length} chemin(s) d'image invalide(s) — extraction ABANDONNÉE :`,
+  );
+  for (const a of anomaliesMedias) console.error(`  - ${a}`);
+  process.exit(1);
+}
+
+// Fichiers de public/media/ que plus aucune donnée ne réclame : ils seraient
+// livrés pour rien. Simple avertissement — la suppression reste une décision
+// humaine, le fichier peut être référencé depuis la base d'un site en service.
+if (existsSync(DOSSIER_MEDIAS)) {
+  const orphelins = readdirSync(DOSSIER_MEDIAS).filter((f) => !mediasPublies.has(f));
+  if (orphelins.length > 0) {
+    console.warn(`  ⚠ public/media/ contient ${orphelins.length} fichier(s) non référencé(s) :`);
+    for (const o of orphelins) console.warn(`    - ${o}`);
+  }
+}
+
 const dest = resolve(import.meta.dir, "../api/tools/donnees-front.json");
 writeFileSync(dest, JSON.stringify(payload, null, 2), "utf8");
 
@@ -655,3 +854,4 @@ console.log(`  articles    : ${blogPosts.length}`);
 console.log(`  tarifs liv. : ${shippingRates.length}`);
 console.log(`  paiements   : ${paymentMethods.length}`);
 console.log(`  site_content: ${Object.keys(siteContent).length} sections`);
+console.log(`  médias      : ${mediasPublies.size} fichier(s) publiés dans public/media/`);

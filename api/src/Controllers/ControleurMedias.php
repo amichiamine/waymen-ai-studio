@@ -186,8 +186,7 @@ final class ControleurMedias
         }
 
         /* ---- 8. Construction de l'URL publique ---- */
-        $baseUrl = rtrim((string) Env::get('UPLOAD_BASE_URL', '/uploads'), '/');
-        $urlFichier = $baseUrl . '/' . $nomFichier;
+        $urlFichier = $this->baseUrlUploads() . '/' . $nomFichier;
 
         /* ---- 9. Persistance en base ---- */
         $nomOriginal = basename((string) $fichier['name']);
@@ -249,11 +248,17 @@ final class ControleurMedias
      */
     private function supprimerFichier(string $src): void
     {
-        $baseUrl     = rtrim((string) Env::get('UPLOAD_BASE_URL', '/uploads'), '/');
+        $baseUrl     = $this->baseUrlUploads();
         $dossierUploads = rtrim(
             (string) Env::get('UPLOAD_DIR', dirname(__DIR__, 3) . '/public_html/uploads'),
             '/'
         );
+
+        // Tolérance à la barre initiale : les enregistrements créés avant que
+        // l'URL ne devienne relative valent « /uploads/xxx.webp ». Sans cette
+        // normalisation, leur fichier resterait sur le disque à la suppression
+        // — un orphelin muet de plus.
+        $src = ltrim($src, '/');
 
         // Reconstitution du chemin local depuis l'URL stockée.
         if (str_starts_with($src, $baseUrl . '/')) {
@@ -265,6 +270,37 @@ final class ControleurMedias
                 Db::journaliserStatique("Échec de suppression du fichier « {$chemin} ».");
             }
         }
+    }
+
+    /**
+     * Préfixe des URL de médias téléversés, sans barre initiale ni finale.
+     *
+     * POURQUOI « uploads » ET NON « /uploads ». Le site est déployable dans un
+     * sous-dossier (`public_html/ma-boutique/`) : le chemin de dépôt n'est connu
+     * qu'à l'exécution, côté navigateur, par la balise `<base>` que
+     * `public/index.php` calcule depuis `SCRIPT_NAME`. Une URL ABSOLUE stockée en
+     * base viserait la racine du DOMAINE — `https://domaine.dz/uploads/…` — donc
+     * hors du dossier livré, et tout média téléversé par le commerçant
+     * disparaîtrait. C'est le défaut qui frappait déjà les images du catalogue.
+     *
+     * Le chemin relatif est résolu côté client par `src/components/media-url.ts`,
+     * exactement comme « media/… », et reste juste à la racine comme en
+     * sous-dossier. Un exploitant qui sert ses médias ailleurs (CDN, autre
+     * domaine) renseigne UPLOAD_BASE_URL avec une URL absolue : elle est alors
+     * transmise telle quelle.
+     */
+    private function baseUrlUploads(): string
+    {
+        $base = trim((string) Env::get('UPLOAD_BASE_URL', 'uploads'));
+
+        // Une valeur explicitement absolue (URL complète) est respectée ; sinon
+        // on retire la barre initiale, qui est précisément ce qui casse le
+        // déploiement en sous-dossier.
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $base) === 1) {
+            return rtrim($base, '/');
+        }
+
+        return trim($base, '/');
     }
 
     /** Génère un nom de fichier unique non prédictible, sans extension. */

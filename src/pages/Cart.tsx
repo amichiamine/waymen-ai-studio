@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCouponMutations } from "@/data-provider";
 import type { CouponCheckResult } from "@/api/types";
 import { useI18n, useLocalize } from "@/lib/i18n";
+import { ImageCatalogue } from "@/components/ImageCatalogue";
 
 const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 const COUPON_KEY = "ka-cart-coupon";
@@ -134,7 +135,7 @@ export default function Cart() {
             {lines.map((l) => (
               <Card key={l.product_id}>
                 <CardContent className="flex items-center gap-4 p-4">
-                  <img
+                  <ImageCatalogue
                     src={l.product.image}
                     alt={L(l.product.name) ?? ""}
                     className="h-20 w-20 rounded object-cover"
