@@ -166,6 +166,13 @@ const env = {
   // l'invente.
   INSTALL_OWNER_PASSWORD: process.env.INSTALL_OWNER_PASSWORD ?? "katech-dev-2026",
   INSTALL_OWNER_NAME: process.env.INSTALL_OWNER_NAME ?? "Propriétaire",
+  // Le serveur intégré de PHP ne sert QU'UNE requête à la fois par défaut.
+  // Deux conséquences fâcheuses : la navigation se fige dès qu'une page
+  // déclenche plusieurs appels, et surtout la concurrence devient intestable en
+  // local — six commandes simultanées sur le dernier article passeraient en
+  // file indienne et donneraient un résultat parfait qui ne prouverait rien.
+  // Voir api/tools/preuve-concurrence.php, qui signale ce profil.
+  PHP_CLI_SERVER_WORKERS: process.env.PHP_CLI_SERVER_WORKERS ?? "8",
 };
 
 /**

@@ -217,6 +217,7 @@ const pagesAdmin = [
   ["Rapports", "/admin/reports"],
   ["Journal", "/admin/audit"],
   ["Réinitialisation", "/admin/reset"],
+  ["Développeur", "/admin/developpeur"],
 ];
 
 for (const [nom, chemin] of pagesAdmin) {
@@ -237,6 +238,51 @@ for (const [nom, chemin] of pagesAdmin) {
     }
   });
 }
+
+console.log("\nMAINTENANCE");
+
+// Ces trois routes sont le seul acces du proprietaire a ses donnees sur un
+// hebergement mutualise, ou il n'a ni SSH ni phpMyAdmin. Une page qui S'AFFICHE
+// ne prouve pas qu'elles repondent : on les appelle depuis la session reelle du
+// navigateur, cookie compris.
+await etape("Etat de la base", async () => {
+  const etat = await page.evaluate(async () => {
+    const r = await fetch("/api/v1/maintenance/status", { credentials: "include" });
+    return { status: r.status, corps: await r.json().catch(() => null) };
+  });
+  if (etat.status !== 200) throw new Error(`HTTP ${etat.status}`);
+  const d = etat.corps?.data;
+  if (!d?.driver) throw new Error("aucun pilote annonce");
+  if (!Array.isArray(d.tables) || d.tables.length === 0) {
+    throw new Error("aucune table remontee — la forme du contrat a change ?");
+  }
+});
+
+await etape("Simulation de migration", async () => {
+  const res = await page.evaluate(async () => {
+    const r = await fetch("/api/v1/maintenance/migrate", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      // `simulation: true` : cette etape ne doit RIEN ecrire nulle part.
+      body: JSON.stringify({
+        cible: "mysql",
+        dsn: "mysql:host=127.0.0.1;port=3306;dbname=katech_restore",
+        utilisateur: "katech",
+        motDePasse: "katech",
+        simulation: true,
+      }),
+    });
+    return { status: r.status, corps: await r.json().catch(() => null) };
+  });
+  // MySQL peut ne pas tourner sur la machine qui lance ce parcours : un refus
+  // de connexion est alors un resultat legitime, pas un echec du produit. Ce
+  // qu'on exige, c'est que la route reponde et que la simulation reste vraie.
+  if (![200, 422, 503].includes(res.status)) throw new Error(`HTTP ${res.status}`);
+  if (res.status === 200 && res.corps?.data?.simulation !== true) {
+    throw new Error("la reponse ne se declare pas en simulation — risque d'ecriture reelle");
+  }
+});
 
 await navigateur.close();
 
