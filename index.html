@@ -2,8 +2,20 @@
 <html lang="fr" class="dark" style="color-scheme: dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Icônes : chemins ABSOLUS à la source, car c'est la seule forme que Vite
+         sait réécrire selon `base` (vérifié : `--base=/boutique/` produit bien
+         « /boutique/favicon.ico »). Les écrire relatifs les soustrairait à ce
+         mécanisme ET les casserait sur les routes profondes de la SPA, où
+         « ./favicon.ico » se résoudrait contre /produits/xyz/. -->
+    <!-- Le .ico reste déclaré en premier : c'est le seul repli universel, et
+         c'est aussi ce que les navigateurs vont chercher à la racine sans lien. -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- iOS ignore le manifeste et le SVG : il lui faut son PNG opaque. -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0a0d12" />
     <title>KA Tech — La puissance tech entre vos mains</title>
     <meta
       name="description"
@@ -16,13 +28,24 @@
       content="Ordinateurs, configurations et smartphones avec garantie officielle et livraison partout en Algérie."
     />
     <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:site_name" content="KA Tech" />
+    <meta property="og:locale" content="fr_DZ" />
+    <!-- WhatsApp — canal de vente principal en Algérie — n'accepte QUE des URL
+         absolues pour og:image : un chemin relatif ne produit aucune vignette.
+         Domaine aligné sur le défaut de scripts/generate-sitemap.ts. -->
+    <meta property="og:url" content="https://katech.dz/" />
+    <meta property="og:image" content="https://katech.dz/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="KA Tech — La technologie entre vos mains" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="KA Tech" />
     <meta
       name="twitter:description"
       content="Ordinateurs, configurations et smartphones avec garantie officielle en Algérie."
     />
-    <meta property="og:url" content="/" />
+    <meta name="twitter:image" content="https://katech.dz/og-image.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -34,7 +57,8 @@
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "KA Tech",
-        "url": "/",
+        "url": "https://katech.dz/",
+        "logo": "https://katech.dz/og-image.png",
         "description": "Ordinateurs portables, ordinateurs de bureau, configurations sur mesure et smartphones en Algérie.",
         "areaServed": "DZ"
       }

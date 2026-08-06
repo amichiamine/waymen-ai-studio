@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="KA Tech">
+  <clipPath id="a"><rect width="64" height="64" rx="14"/></clipPath>
+  <g clip-path="url(#a)">
+    <rect width="64" height="64" fill="#222652"/>
+    <path d="M0 0h24L0 24Z" fill="#1178b7"/>
+  </g>
+  <path d="M16 10h9v9.3L34.3 10H47L25 32l22 22H34.3L25 44.7V54h-9z" fill="#fff"/>
+</svg>
