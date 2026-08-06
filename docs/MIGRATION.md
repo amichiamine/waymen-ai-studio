@@ -4,11 +4,11 @@
 > vers un autre — SQLite, MySQL/MariaDB, PostgreSQL — dans n'importe quel sens,
 > sans rien perdre et sans rien déformer.
 
-| Élément                        | Rôle                                                     |
-| ------------------------------ | -------------------------------------------------------- |
+| Élément                           | Rôle                                                                          |
+| --------------------------------- | ----------------------------------------------------------------------------- |
 | `api/src/Migration/Migrateur.php` | Le moteur. Utilisable depuis la ligne de commande **ou** depuis une page web. |
-| `api/src/Migration/Rapport.php`   | Le rapport, **structure de données** (jamais du texte).  |
-| `api/tools/migrer.php`            | Habillage console. Aucune logique de migration dedans.   |
+| `api/src/Migration/Rapport.php`   | Le rapport, **structure de données** (jamais du texte).                       |
+| `api/tools/migrer.php`            | Habillage console. Aucune logique de migration dedans.                        |
 
 ---
 
@@ -58,13 +58,13 @@ Cette empreinte est calculée sur des valeurs **normalisées**, pas sur le texte
 brut, parce que les trois moteurs ne rendent pas la même chose pour la même
 donnée :
 
-| Divergence                      | Ce que rend chaque moteur                       | Traitement                         |
-| ------------------------------- | ------------------------------------------------ | ---------------------------------- |
-| Booléens                        | `0`/`1` (SQLite, MySQL), `t`/`f` (PostgreSQL)   | ramenés à `0`/`1`                  |
-| JSON                            | MySQL **réordonne les clés** d'un objet          | comparé sous forme canonique (clés triées) |
-| `NULL` contre chaîne vide       | —                                                 | **jamais confondus** (marqueur dédié) |
-| Nombres                         | `10`, `10.00`, `1.0E1`                            | écriture décimale canonique        |
-| Dates en type temporel natif    | `2026-01-15 08:30:00+00` / `2026-01-15T08:30:00Z` | ISO-8601 UTC                       |
+| Divergence                   | Ce que rend chaque moteur                         | Traitement                                 |
+| ---------------------------- | ------------------------------------------------- | ------------------------------------------ |
+| Booléens                     | `0`/`1` (SQLite, MySQL), `t`/`f` (PostgreSQL)     | ramenés à `0`/`1`                          |
+| JSON                         | MySQL **réordonne les clés** d'un objet           | comparé sous forme canonique (clés triées) |
+| `NULL` contre chaîne vide    | —                                                 | **jamais confondus** (marqueur dédié)      |
+| Nombres                      | `10`, `10.00`, `1.0E1`                            | écriture décimale canonique                |
+| Dates en type temporel natif | `2026-01-15 08:30:00+00` / `2026-01-15T08:30:00Z` | ISO-8601 UTC                               |
 
 L'empreinte est **commutative** (OU-exclusif + somme + compte) : elle ne dépend
 pas de l'ordre des lignes. C'est nécessaire, car « `ORDER BY id` » ne classe pas
@@ -95,16 +95,16 @@ transaction, rendant la purge irréversible avant la première insertion).
 Deux mécanismes, et il faut les deux :
 
 1. **Une seule transaction** pour tout le chargement. Si le processus meurt,
-   le serveur annule. *Mesuré* : `kill -9` en plein transfert de 40 000 lignes
+   le serveur annule. _Mesuré_ : `kill -9` en plein transfert de 40 000 lignes
    → **0 ligne** dans la cible.
 2. **Une table témoin `_katech_migration`** déposée dans la cible **avant** la
    transaction et validée aussitôt — sinon elle disparaîtrait avec elle et ne
    témoignerait de rien.
 
-| État du témoin | Signification                                        | Migration suivante          |
-| -------------- | ---------------------------------------------------- | --------------------------- |
-| `en_cours`     | processus tué : personne n'a pu conclure             | **refusée** sans `--remplacer` |
-| `annulee`      | échec propre, annulation confirmée par le moteur     | autorisée                   |
+| État du témoin | Signification                                           | Migration suivante                    |
+| -------------- | ------------------------------------------------------- | ------------------------------------- |
+| `en_cours`     | processus tué : personne n'a pu conclure                | **refusée** sans `--remplacer`        |
+| `annulee`      | échec propre, annulation confirmée par le moteur        | autorisée                             |
 | `terminee`     | validée et vérifiée (le résumé chiffré est en `detail`) | soumise à la règle « cible non vide » |
 
 La distinction `annulee` / `en_cours` compte : sans elle, le moindre échec
@@ -121,10 +121,10 @@ quand plus personne ne fait le lien avec la migration.
 Trois tables sont concernées (`order_items`, `outbox`, `login_attempts`) :
 
 | Moteur     | Correctif appliqué après le commit                     |
-| ---------- | -------------------------------------------------------- |
-| PostgreSQL | `setval(pg_get_serial_sequence(…), max+1, false)`       |
-| MySQL      | `ALTER TABLE … AUTO_INCREMENT = max+1`                   |
-| SQLite     | `sqlite_sequence` (vérifié ; alimenté automatiquement)   |
+| ---------- | ------------------------------------------------------ |
+| PostgreSQL | `setval(pg_get_serial_sequence(…), max+1, false)`      |
+| MySQL      | `ALTER TABLE … AUTO_INCREMENT = max+1`                 |
+| SQLite     | `sqlite_sequence` (vérifié ; alimenté automatiquement) |
 
 Après le commit et pas avant : en MySQL, `ALTER TABLE` est du DDL et validerait
 implicitement la transaction en cours.
@@ -138,10 +138,10 @@ autant de mémoire que la table entière. Ni par `LIMIT/OFFSET`, qui relit tout
 depuis le début à chaque lot.
 
 Le tri est forcé en **collation binaire** sur les clés textuelles. Sans cela,
-MySQL trie en `utf8mb4_unicode_ci`, où « a » et « A » sont *égaux* : deux lignes
+MySQL trie en `utf8mb4_unicode_ci`, où « a » et « A » sont _égaux_ : deux lignes
 distinctes peuvent alors être sautées ou relues à la frontière d'un lot.
 
-*Mesuré* : 40 000 lignes migrées avec `memory_limit=48M`, **pic à 1,3 Mo**, sur
+_Mesuré_ : 40 000 lignes migrées avec `memory_limit=48M`, **pic à 1,3 Mo**, sur
 les trois pilotes — y compris en lecture PostgreSQL.
 
 ---
@@ -207,10 +207,10 @@ remplie :
          traitées). Tout est annulé : la base cible n'a pas été modifiée.
 ```
 
-| Contexte                    | Budget conseillé                                          |
-| --------------------------- | ---------------------------------------------------------- |
-| Ligne de commande / CRON    | 300 s (défaut de `migrer.php`)                             |
-| Derrière une requête HTTP   | `max_execution_time − 5 s`, soit **25 s** pour un mutualisé |
+| Contexte                  | Budget conseillé                                            |
+| ------------------------- | ----------------------------------------------------------- |
+| Ligne de commande / CRON  | 300 s (défaut de `migrer.php`)                              |
+| Derrière une requête HTTP | `max_execution_time − 5 s`, soit **25 s** pour un mutualisé |
 
 **Ce que le moteur ne fait pas** : reprendre une migration là où elle s'était
 arrêtée. C'est un choix. Une reprise partielle suppose de savoir exactement ce
@@ -374,13 +374,13 @@ Gravités : `erreur` (bloquante — la transaction est annulée),
 
 ## 7. Ce que ce moteur ne fait PAS
 
-| Non couvert                          | Pourquoi                                                       |
-| ------------------------------------ | ---------------------------------------------------------------- |
-| Reprise après coupure                | Voir §4 : « tout ou rien » est le seul état vérifiable.          |
-| Migration de schéma (ALTER, versions)| Ce moteur copie des **données**. Le schéma vient de `api/schema/`. |
-| Copie des index et contraintes       | Ils viennent du fichier de schéma, pas de la source.             |
-| Migration à chaud                    | Arrêtez les écritures : la boutique en maintenance le temps de la copie. |
-| Clés composites en pagination par clé| Repli `LIMIT/OFFSET`, signalé en avertissement. Aucune table du projet n'est concernée. |
+| Non couvert                           | Pourquoi                                                                                |
+| ------------------------------------- | --------------------------------------------------------------------------------------- |
+| Reprise après coupure                 | Voir §4 : « tout ou rien » est le seul état vérifiable.                                 |
+| Migration de schéma (ALTER, versions) | Ce moteur copie des **données**. Le schéma vient de `api/schema/`.                      |
+| Copie des index et contraintes        | Ils viennent du fichier de schéma, pas de la source.                                    |
+| Migration à chaud                     | Arrêtez les écritures : la boutique en maintenance le temps de la copie.                |
+| Clés composites en pagination par clé | Repli `LIMIT/OFFSET`, signalé en avertissement. Aucune table du projet n'est concernée. |
 
 ---
 
@@ -421,18 +421,18 @@ champs JSON réordonnés :  53   (même contenu, ordre des clés normalisé — 
 
 **Comportements de sûreté vérifiés en conditions réelles :**
 
-| Scénario                                              | Résultat observé                                            |
-| ----------------------------------------------------- | ------------------------------------------------------------ |
-| `kill -9` en plein transfert de 40 000 lignes         | 0 ligne dans la cible, témoin `en_cours`                     |
-| Migration suivante sur cette cible                    | refusée, message nommant la date et le jeton                 |
-| Puis `--remplacer`                                    | 40 000 lignes, 23/23 identiques, `AUTO_INCREMENT → 40001`    |
-| Budget de temps épuisé                                | tout annulé, 0 ligne, témoin `annulee`                       |
-| Cible non vide sans `--remplacer`                     | refusée, données de la cible intactes, code de sortie 1      |
-| Cible sans schéma                                     | refus explicite renvoyant à `--creer-schema`                 |
-| Valeur non-JSON dans une colonne JSON                 | détectée **en simulation**, table + colonne + ligne nommées  |
-| Chaîne de 80 caractères vers un `VARCHAR(64)`         | détectée en simulation, jamais tronquée                      |
-| Entier hors bornes `INT`                              | détecté en simulation                                        |
-| 40 000 lignes sous `memory_limit=48M`                 | pic à 1,3 Mo, sur les trois pilotes                          |
+| Scénario                                      | Résultat observé                                            |
+| --------------------------------------------- | ----------------------------------------------------------- |
+| `kill -9` en plein transfert de 40 000 lignes | 0 ligne dans la cible, témoin `en_cours`                    |
+| Migration suivante sur cette cible            | refusée, message nommant la date et le jeton                |
+| Puis `--remplacer`                            | 40 000 lignes, 23/23 identiques, `AUTO_INCREMENT → 40001`   |
+| Budget de temps épuisé                        | tout annulé, 0 ligne, témoin `annulee`                      |
+| Cible non vide sans `--remplacer`             | refusée, données de la cible intactes, code de sortie 1     |
+| Cible sans schéma                             | refus explicite renvoyant à `--creer-schema`                |
+| Valeur non-JSON dans une colonne JSON         | détectée **en simulation**, table + colonne + ligne nommées |
+| Chaîne de 80 caractères vers un `VARCHAR(64)` | détectée en simulation, jamais tronquée                     |
+| Entier hors bornes `INT`                      | détecté en simulation                                       |
+| 40 000 lignes sous `memory_limit=48M`         | pic à 1,3 Mo, sur les trois pilotes                         |
 
 ---
 

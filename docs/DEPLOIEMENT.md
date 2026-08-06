@@ -41,8 +41,8 @@ fourni, tâches CRON disponibles). La procédure vaut pour tout mutualisé PHP
 
 ## 1. Ce qu'il faut avant de commencer
 
-| Élément     | Détail                                                         |
-| ----------- | -------------------------------------------------------------- |
+| Élément     | Détail                                                                  |
+| ----------- | ----------------------------------------------------------------------- |
 | Hébergement | PHP **8.2 minimum**, `.htaccess` lus, au moins un pilote PDO disponible |
 | Accès       | Panneau de l'hébergeur (hPanel) + gestionnaire de fichiers              |
 | Domaine     | Pointé sur l'hébergement, **certificat HTTPS actif**                    |
@@ -186,13 +186,13 @@ Le projet fonctionne à l'identique sur les trois pilotes. Le choix se fait
 avec une seule variable, `DB_DRIVER`, et reste réversible après déploiement
 via la page `/admin/developpeur` (voir [§8](#8-lancer-linstallation)).
 
-| Critère                    | `mysql`                       | `sqlite`                                        | `pgsql`                                           |
-| -------------------------- | ----------------------------- | ----------------------------------------------- | ------------------------------------------------- |
-| Disponibilité en mutualisé | **Garantie**                  | Dépend de `pdo_sqlite` et des droits d'écriture | Si `pdo_pgsql` est activé (pas toujours le cas)   |
-| Mise en place              | Créer la base dans hPanel     | Aucune, un simple fichier                       | Créer la base PostgreSQL (Supabase, Neon…)        |
-| Sauvegarde                 | Export SQL                    | Copie d'un fichier                              | Export SQL                                        |
-| Portabilité                | Export/import                 | **Totale** : un fichier à copier                | Export/import, ou migrateur intégré               |
-| Recommandation             | **Par défaut chez Hostinger** | Si la sonde confirme que c'est possible         | Si vous utilisez Supabase, Neon, ou Railway       |
+| Critère                    | `mysql`                       | `sqlite`                                        | `pgsql`                                         |
+| -------------------------- | ----------------------------- | ----------------------------------------------- | ----------------------------------------------- |
+| Disponibilité en mutualisé | **Garantie**                  | Dépend de `pdo_sqlite` et des droits d'écriture | Si `pdo_pgsql` est activé (pas toujours le cas) |
+| Mise en place              | Créer la base dans hPanel     | Aucune, un simple fichier                       | Créer la base PostgreSQL (Supabase, Neon…)      |
+| Sauvegarde                 | Export SQL                    | Copie d'un fichier                              | Export SQL                                      |
+| Portabilité                | Export/import                 | **Totale** : un fichier à copier                | Export/import, ou migrateur intégré             |
+| Recommandation             | **Par défaut chez Hostinger** | Si la sonde confirme que c'est possible         | Si vous utilisez Supabase, Neon, ou Railway     |
 
 **En cas de doute, choisissez `mysql`** : c'est la raison d'être d'un
 hébergement mutualisé, et rien ne dépend d'un dossier inscriptible.
@@ -593,6 +593,7 @@ d'accueil, vérifier la présence de : `X-Content-Type-Options: nosniff`,
 ### La page Développeur
 
 Ouvrir `/admin/developpeur` avec le compte propriétaire. Elle doit afficher :
+
 - le pilote actif (doit correspondre à `DB_DRIVER` dans `api/.env`) ;
 - le nombre de lignes par table (les tables du schéma doivent toutes être là) ;
 - le bouton de sauvegarde téléchargeable.

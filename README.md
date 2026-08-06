@@ -140,11 +140,11 @@ l'achat de l'hébergement.
 
 ### Moteurs de base supportés
 
-| `DB_DRIVER` | Quand l'utiliser |
-|-------------|-----------------|
-| `mysql`     | Recommandé chez Hostinger — garanti, sans prérequis |
+| `DB_DRIVER` | Quand l'utiliser                                                   |
+| ----------- | ------------------------------------------------------------------ |
+| `mysql`     | Recommandé chez Hostinger — garanti, sans prérequis                |
 | `sqlite`    | Si `pdo_sqlite` est activé et un dossier hors web est inscriptible |
-| `pgsql`     | Si vous utilisez Supabase, Neon, Railway ou un PostgreSQL dédié |
+| `pgsql`     | Si vous utilisez Supabase, Neon, Railway ou un PostgreSQL dédié    |
 
 Les données peuvent migrer d'un moteur à l'autre depuis `/admin/developpeur`.
 
@@ -255,14 +255,14 @@ bun run build
 
 ### Où trouver quoi
 
-| Besoin | Fichier |
-|--------|---------|
-| Schéma des tables | `api/schema/` |
-| Contrôleurs API | `api/src/Controllers/` |
-| Connexion et dialectes SQL | `api/src/Db.php` |
-| Migrateur de données | `api/src/Migration/` |
+| Besoin                          | Fichier                           |
+| ------------------------------- | --------------------------------- |
+| Schéma des tables               | `api/schema/`                     |
+| Contrôleurs API                 | `api/src/Controllers/`            |
+| Connexion et dialectes SQL      | `api/src/Db.php`                  |
+| Migrateur de données            | `api/src/Migration/`              |
 | Page Développeur (propriétaire) | `src/pages/admin/Developpeur.tsx` |
-| Sonde d'hébergement | `scripts/sonde-hebergeur.php` |
+| Sonde d'hébergement             | `scripts/sonde-hebergeur.php`     |
 
 ### Quand ça casse
 

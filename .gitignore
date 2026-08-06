@@ -38,3 +38,8 @@ package-lock.json
 .env
 .env.*
 !.env.example
+
+# Medias televerses par la boutique : donnees d'execution, jamais du code.
+# Un fichier de test y est deja apparu pendant la recette et aurait ete
+# committe par un `git add -A` distrait.
+public_html/uploads/

@@ -411,7 +411,7 @@ Trois pièges PostgreSQL, tous rencontrés en exécution réelle sur ce projet :
    `READ COMMITTED` à chaque connexion, et ce n'est pas décoratif. En
    `READ COMMITTED`, la deuxième transaction attend le verrou de ligne puis
    **réévalue** `stock_qty >= :qmin` sur la version fraîchement committée
-   (mécanisme *EvalPlanQual*) : elle obtient `rowCount() = 0`, c'est-à-dire un
+   (mécanisme _EvalPlanQual_) : elle obtient `rowCount() = 0`, c'est-à-dire un
    refus métier propre en **409**. Passé en `REPEATABLE READ`, le même test à six
    commandes concurrentes rend `2 × 201`, `1 × 409` et **`3 × 500`**
    (`SQLSTATE 40001, could not serialize access due to concurrent update`) : le
