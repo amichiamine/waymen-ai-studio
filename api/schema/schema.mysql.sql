@@ -303,3 +303,19 @@ CREATE TABLE IF NOT EXISTS outbox (
   created_at    VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX idx_outbox_pending ON outbox (status, available_at);
+
+-- ---------------------------------------------------------------- 22
+-- Jetons de réinitialisation de mot de passe (vague 4.3).
+-- On ne stocke QUE l'empreinte SHA-256 du secret : une fuite de cette table ne
+-- permet donc pas de réinitialiser un compte. `used_at` rend le jeton à usage
+-- unique ; `expires_at` en borne la durée de vie.
+CREATE TABLE IF NOT EXISTS password_resets (
+  id            VARCHAR(96) NOT NULL PRIMARY KEY,
+  user_id       VARCHAR(96) NOT NULL,
+  token_hash    VARCHAR(128) NOT NULL,
+  expires_at    VARCHAR(32) NOT NULL,
+  used_at       VARCHAR(32) NULL,
+  created_at    VARCHAR(32) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX idx_password_resets_user ON password_resets (user_id);
+CREATE INDEX idx_password_resets_expires ON password_resets (expires_at);

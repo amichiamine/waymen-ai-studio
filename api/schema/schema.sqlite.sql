@@ -310,3 +310,19 @@ CREATE TABLE IF NOT EXISTS outbox (
   created_at    TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_outbox_pending ON outbox (status, available_at);
+
+-- ---------------------------------------------------------------- 22
+-- Jetons de réinitialisation de mot de passe (vague 4.3).
+-- On ne stocke QUE l'empreinte SHA-256 du secret : une fuite de cette table ne
+-- permet donc pas de réinitialiser un compte. `used_at` rend le jeton à usage
+-- unique ; `expires_at` en borne la durée de vie.
+CREATE TABLE IF NOT EXISTS password_resets (
+  id            TEXT NOT NULL PRIMARY KEY,
+  user_id       TEXT NOT NULL,
+  token_hash    TEXT NOT NULL,
+  expires_at    TEXT NOT NULL,
+  used_at       TEXT NULL,
+  created_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets (expires_at);
