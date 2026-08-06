@@ -1,16 +1,49 @@
 # =====================================================================
-# api/.htaccess — routage et protection des fichiers sensibles
+# api/.htaccess — routage de l'API et protection des fichiers sensibles
 # =====================================================================
 # À déposer dans public_html/api/. Un second .htaccess, à la racine de
-# public_html, gère le repli SPA et exclut /api (voir docs/BACKEND.md).
+# public_html, gère le repli SPA et exclut /api (voir docs/DEPLOIEMENT.md).
+#
+# PRINCIPE : un seul point d'entrée, index.php. Tout le reste du dossier
+# (code, schémas, outils, secrets, base) n'est pas du contenu web et ne
+# doit JAMAIS sortir par HTTP.
+#
+# DÉFENSE EN PROFONDEUR — trois barrières indépendantes, car un .htaccess
+# peut être ignoré (serveur mal configuré, AllowOverride None, migration
+# vers nginx) :
+#   1. mod_authz_core / mod_access_compat  → <FilesMatch ... Require all denied>
+#   2. mod_rewrite                          → RewriteRule ... [F]
+#      (1 et 2 sont redondantes À DESSEIN : si un module manque, l'autre tient)
+#   3. garde applicative dans les fichiers PHP eux-mêmes : un script d'outil
+#      appelé par HTTP refuse de s'exécuter (voir api/tools/sauvegarder.php).
+# La quatrième barrière n'est pas ici : c'est le placement de la base SQLite
+# HORS de public_html (DB_SQLITE_PATH). C'est la seule qui survive à la perte
+# totale des .htaccess. Elle est obligatoire — voir docs/DEPLOIEMENT.md.
+#
+# ATTENTION avant toute modification : les 93 routes de l'API sont des URL
+# virtuelles réécrites vers index.php. Une règle de refus trop large les
+# casserait toutes. Aucune route ne commence par src/, schema/, tools/, var/
+# ou vendor/, et aucune ne se termine par .env, .sql ou .md — c'est ce qui
+# rend les refus ci-dessous sans effet de bord. Vérifier ce point si des
+# routes sont ajoutées.
 # =====================================================================
 
 # --- Interdiction de lister le contenu du dossier --------------------
 Options -Indexes
 
-# --- Fichiers qui ne doivent JAMAIS être servis ----------------------
-# Secrets, base SQLite, schémas, journaux, témoin d'installation.
-<FilesMatch "(^\.env|^\.env\..*|\.sqlite$|\.sqlite-wal$|\.sqlite-shm$|\.db$|\.sql$|\.lock$|\.log$|^composer\.(json|lock)$)">
+# La négociation de contenu ferait servir « index.php » pour l'URL « index »,
+# et peut court-circuiter la réécriture. On la coupe.
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
+
+# =====================================================================
+# BARRIÈRE 1 — refus par nom de fichier (mod_authz_core)
+# =====================================================================
+# Secrets, bases SQLite et leurs journaux, exports SQL, schémas, verrous,
+# journaux, métadonnées Composer, documentation.
+# Le motif est ancré sur le NOM du fichier, pas sur l'URL.
+<FilesMatch "(^\.|^composer\.(json|lock)$|\.(env|sqlite|sqlite-wal|sqlite-shm|db|sql|lock|log|md|ini|bak|old|orig|swp|dist|sample|example)$)">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
@@ -20,28 +53,83 @@ Options -Indexes
   </IfModule>
 </FilesMatch>
 
-# --- Dossiers de code et de données ----------------------------------
-# Aucun fichier de src/, schema/, tools/ ou var/ ne doit être accessible :
-# seul index.php (et install.php, temporairement) est un point d'entrée.
+# Cas particulier : « .env.example » et « .env.production » ne finissent pas
+# par « .env ». Le préfixe « ^\. » ci-dessus les attrape déjà (tout fichier
+# commençant par un point est refusé), mais on le redit explicitement — un
+# secret exposé coûte plus cher qu'une ligne redondante.
+<FilesMatch "^\.env">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# =====================================================================
+# BARRIÈRE 2 — refus par chemin, et routage (mod_rewrite)
+# =====================================================================
 RewriteEngine On
 
-RewriteRule ^(src|schema|tools|var|vendor)/ - [F,L]
+# --- Dossiers qui ne contiennent aucun point d'entrée web ------------
+# src/     : le code de l'API (classes, contrôleurs)
+# schema/  : les fichiers .sql de création de tables
+# tools/   : les scripts CRON (sauvegarde, outbox) — CLI uniquement
+# var/     : données locales, base SQLite de repli, journaux
+# vendor/  : présent seulement si un outillage de dev y a été copié
+# Le refus vient AVANT la réécriture : sinon la règle de routage
+# transformerait /api/src/Db.php en 404 JSON au lieu d'un 403 franc.
+RewriteRule ^(src|schema|tools|var|vendor)(/|$) - [F,L]
+
+# --- Doublon des refus par nom, au cas où mod_authz_core manquerait --
+RewriteRule (^|/)\. - [F,L]
+RewriteRule \.(env|sqlite|sqlite-wal|sqlite-shm|db|sql|lock|log|md|ini|bak|old|orig|swp)$ - [F,L]
+RewriteRule ^composer\.(json|lock)$ - [F,L]
 
 # --- Routage : tout ce qui n'est pas un fichier réel va à index.php ---
+# Les fichiers réels restants sont index.php et, temporairement,
+# install.php (à SUPPRIMER après installation — docs/DEPLOIEMENT.md).
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [QSA,L]
 
-# --- En-têtes de sécurité --------------------------------------------
+# =====================================================================
+# En-têtes
+# =====================================================================
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "DENY"
   Header always set Referrer-Policy "same-origin"
+
+  # Une réponse d'API ne doit jamais être mise en cache par un proxy :
+  # elle dépend du cookie de session.
+  Header always set Cache-Control "no-store, max-age=0"
+
+  # Ne pas annoncer la version de PHP.
+  Header always unset X-Powered-By
 </IfModule>
 
-# --- Ne pas divulguer la version de PHP ------------------------------
+# =====================================================================
+# Réglages PHP (appliqués seulement si l'hébergeur les autorise)
+# =====================================================================
+# Sous LiteSpeed/PHP-FPM, php_flag est ignoré : ces mêmes réglages sont
+# déjà imposés par le code (api/src/bootstrap.php). Ceci est une ceinture
+# en plus des bretelles, jamais l'unique protection.
 <IfModule mod_php.c>
   php_flag expose_php off
   php_flag display_errors off
   php_flag log_errors on
 </IfModule>
+<IfModule mod_php7.c>
+  php_flag expose_php off
+  php_flag display_errors off
+  php_flag log_errors on
+</IfModule>
+
+# --- Page d'erreur sobre ---------------------------------------------
+# Sans cela, un 403 affiche la page HTML par défaut du serveur, qui
+# divulgue son nom et sa version. Message en texte simple : la syntaxe
+# ErrorDocument ne permet pas d'y placer du JSON entre guillemets de
+# façon portable, et un refus n'a pas à être consommé par le client.
+ErrorDocument 403 "Acces refuse."

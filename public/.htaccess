@@ -1,0 +1,247 @@
+# =====================================================================
+# public/.htaccess — racine du site (public_html/.htaccess)
+# =====================================================================
+# Vite copie tout le contenu de public/ dans dist/ au build : ce fichier
+# se retrouve donc dans dist/.htaccess, puis à la racine de public_html.
+# VÉRIFIER APRÈS CHAQUE BUILD que dist/.htaccess existe bien — certains
+# outils de copie ignorent les fichiers commençant par un point.
+# (voir docs/DEPLOIEMENT.md, « Après le build »)
+#
+# Ce fichier fait quatre choses :
+#   1. le repli SPA — toute route inconnue sert index.html ;
+#   2. les en-têtes de sécurité ;
+#   3. la compression ;
+#   4. le cache — long pour les fichiers empreintés, NUL pour index.html.
+#
+# RÈGLE ABSOLUE : ne jamais intercepter /api. L'API a son propre
+# .htaccess dans public_html/api/, et ses 93 routes sont des URL
+# virtuelles. Si le repli SPA attrapait /api/products, l'API entière
+# renverrait du HTML. C'est la première règle de réécriture ci-dessous,
+# et elle doit le rester.
+# =====================================================================
+
+Options -Indexes
+
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
+
+DirectoryIndex index.html
+
+# =====================================================================
+# 1. Réécriture
+# =====================================================================
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # --- L'API d'abord, et on s'arrête là ------------------------------
+  # [L] sans substitution : la requête poursuit son chemin normal et
+  # atteint public_html/api/.htaccess, qui fait son propre routage.
+  RewriteRule ^api(/|$) - [L]
+
+  # --- Validation SSL (Let's Encrypt) --------------------------------
+  # Doit passer AVANT le refus des fichiers commençant par un point.
+  RewriteRule ^\.well-known/ - [L]
+
+  # --- Refus des fichiers qui n'ont rien à faire à la racine web -----
+  # Filet de sécurité si un .env, une base ou une sauvegarde est
+  # téléversé par erreur dans public_html.
+  RewriteRule (^|/)\. - [F,L]
+  RewriteRule \.(env|sqlite|sqlite-wal|sqlite-shm|db|sql|lock|log|ini|bak|old|orig|swp|gz|zip|tar)$ - [F,L]
+
+  # --- Aucun script exécutable dans uploads/ -------------------------
+  # uploads/ reçoit des fichiers envoyés par les administrateurs. Un
+  # .php qui y atterrirait deviendrait une porte d'entrée. On refuse de
+  # le servir, quelle que soit la configuration des handlers.
+  RewriteRule ^uploads/.*\.(php|phtml|phps|php[0-9]|phar|pl|py|cgi|sh|jsp|asp|htaccess)$ - [F,L]
+
+  # --- Fichiers et dossiers réels : servis tels quels -----------------
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # --- Un asset absent doit échouer franchement -----------------------
+  # Sans cette règle, /assets/index-ABCDEFGH.js manquant recevrait
+  # index.html avec un code 200 : le navigateur afficherait une erreur de
+  # type MIME incompréhensible. Un 404 dit la vérité — le déploiement est
+  # incomplet ou un onglet ouvert réclame une ancienne empreinte.
+  RewriteRule ^assets/ - [R=404,L]
+
+  # --- Repli SPA ------------------------------------------------------
+  # Tout le reste est une route côté client (React Router) : on sert
+  # index.html et le navigateur résout la route.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Sécurité indépendante de mod_rewrite : même refus, par nom de fichier.
+<FilesMatch "(^\.|\.(env|sqlite|sqlite-wal|sqlite-shm|db|sql|lock|log|ini|bak|old|orig|swp)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# =====================================================================
+# 2. En-têtes de sécurité
+# =====================================================================
+<IfModule mod_headers.c>
+
+  # Empêche le navigateur de deviner un type MIME différent de celui
+  # annoncé (un .webp interprété comme du HTML, par exemple).
+  Header always set X-Content-Type-Options "nosniff"
+
+  # Détournement en cadre (clickjacking). frame-ancestors dans la CSP
+  # ci-dessous est la version moderne ; X-Frame-Options couvre les
+  # navigateurs et proxys qui ne lisent que lui.
+  Header always set X-Frame-Options "DENY"
+
+  # Politique de référent : l'origine seule part vers l'extérieur, et
+  # jamais rien en clair depuis HTTPS. Le chemin complet (qui peut
+  # contenir un numéro de commande) ne fuit pas vers un tiers.
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Aucune API sensible du navigateur n'est utilisée par le site.
+  # On les refuse toutes explicitement.
+  Header always set Permissions-Policy "accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), xr-spatial-tracking=()"
+
+  # ------------------------------------------------------------------
+  # Politique de sécurité du contenu (CSP)
+  # ------------------------------------------------------------------
+  # Mal réglée, une CSP casse le site en silence côté navigateur. Celle-ci
+  # a été construite en relevant TOUT ce que dist/index.html et le bundle
+  # chargent réellement. Directive par directive :
+  #
+  #   default-src 'self'      tout ce qui n'est pas listé ci-dessous doit
+  #                           venir du même domaine.
+  #   script-src 'self'       les bundles Vite (/assets/*.js) sont
+  #                           servis par le même domaine. Le bloc
+  #                           <script type="application/ld+json"> de
+  #                           index.html est un bloc de DONNÉES, pas un
+  #                           script exécutable : la spécification CSP ne
+  #                           le soumet pas à script-src. Si un navigateur
+  #                           le signalait malgré tout, le symptôme serait
+  #                           une ligne en console SANS effet sur le site.
+  #   style-src ... 'unsafe-inline' https://fonts.googleapis.com
+  #                           OBLIGATOIRE : React écrit des attributs
+  #                           style="" (à commencer par
+  #                           <html style="color-scheme: dark">) et les
+  #                           composants Radix positionnent les menus par
+  #                           style en ligne. Sans 'unsafe-inline', toute
+  #                           l'interface se disloque. La feuille Google
+  #                           Fonts est chargée depuis index.html.
+  #   font-src ... fonts.gstatic.com
+  #                           les fichiers .woff2 des polices Sora et
+  #                           Inter. Sans cela : polices de repli.
+  #   img-src 'self' data: blob: https:
+  #                           'self' pour /assets et /uploads, data: pour
+  #                           les images en ligne, blob: pour les aperçus
+  #                           avant téléversement, https: parce que les
+  #                           fiches produit peuvent référencer une image
+  #                           hébergée ailleurs. Sans https:, des visuels
+  #                           du catalogue disparaîtraient.
+  #   connect-src 'self'      l'API est servie par le même domaine
+  #                           (/api). À élargir si elle déménage.
+  #   frame-ancestors 'none'  personne ne peut encadrer le site.
+  #   form-action 'self'      un formulaire ne peut pas poster ailleurs.
+  #   base-uri 'self'         empêche un <base> injecté de détourner
+  #                           toutes les URL relatives.
+  #   object-src 'none'       aucun plugin, jamais.
+  #
+  # EN CAS DE PROBLÈME : remplacer le nom d'en-tête par
+  # Content-Security-Policy-Report-Only. La politique n'est alors plus
+  # appliquée, mais les violations restent visibles dans la console du
+  # navigateur. On corrige, puis on remet le nom d'origine.
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; media-src 'self'; worker-src 'self' blob:; manifest-src 'self'; frame-src 'none'"
+
+  # HSTS — à n'activer QU'APRÈS avoir confirmé que HTTPS fonctionne sur
+  # le domaine ET tous ses sous-domaines. Une fois envoyé, le navigateur
+  # refusera le HTTP pendant un an : impossible à annuler côté visiteur.
+  # Décommenter seulement à ce moment-là.
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  Header always unset X-Powered-By
+</IfModule>
+
+# =====================================================================
+# 3. Compression
+# =====================================================================
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript text/javascript
+  AddOutputFilterByType DEFLATE application/json application/manifest+json
+  AddOutputFilterByType DEFLATE image/svg+xml application/xml application/rss+xml
+  AddOutputFilterByType DEFLATE font/ttf font/otf application/vnd.ms-fontobject
+
+  # Les .webp, .woff2, .png, .jpg, .ico sont DÉJÀ compressés : les
+  # repasser dans gzip coûte du CPU et fait parfois grossir le fichier.
+</IfModule>
+
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css
+  AddOutputFilterByType BROTLI_COMPRESS application/javascript text/javascript
+  AddOutputFilterByType BROTLI_COMPRESS application/json image/svg+xml
+</IfModule>
+
+# =====================================================================
+# 4. Cache
+# =====================================================================
+# Le raisonnement tient en une phrase : les fichiers dont le nom contient
+# une empreinte changent de nom quand leur contenu change, donc on peut
+# les garder un an ; index.html garde toujours le même nom et désigne les
+# empreintes du jour, donc il ne doit JAMAIS être mis en cache — sinon un
+# déploiement reste invisible pour les visiteurs déjà venus.
+<IfModule mod_headers.c>
+
+  # --- Fichiers empreintés par Vite : « nom-XXXXXXXX.ext » -----------
+  # L'empreinte fait 8 caractères (ex. index-5CzrmEk_.js,
+  # vendor-react-C5iM2OHa.js, ka-tech-logo-CpXjeo84.webp). Le motif vise
+  # cette forme précise, et donc jamais robots.txt, sitemap.xml ni
+  # favicon.ico, qui eux ne sont pas empreintés.
+  <FilesMatch "-[A-Za-z0-9_-]{8}\.(js|mjs|css|webp|avif|png|jpe?g|gif|svg|woff2?|ttf|otf)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+    Header unset Expires
+    Header unset Pragma
+  </FilesMatch>
+
+  # --- index.html : jamais de cache ----------------------------------
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+
+  # --- Fichiers non empreintés : cache court, revalidé ---------------
+  # Le sitemap et robots.txt changent sans changer de nom ; les médias
+  # téléversés aussi (une fiche produit peut être recorrigée).
+  <FilesMatch "^(robots\.txt|sitemap\.xml|favicon\.ico|manifest\.webmanifest)$">
+    Header set Cache-Control "public, max-age=3600, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Repli pour les médias téléversés, non empreintés : une semaine.
+  ExpiresByType image/webp "access plus 1 week"
+  ExpiresByType image/png  "access plus 1 week"
+  ExpiresByType image/jpeg "access plus 1 week"
+  # mod_headers ci-dessus reprend la main sur les fichiers empreintés
+  # et sur index.html : Cache-Control l'emporte sur Expires.
+</IfModule>
+
+# =====================================================================
+# Types MIME — au cas où le serveur ne les connaîtrait pas
+# =====================================================================
+<IfModule mod_mime.c>
+  AddType application/javascript            .js .mjs
+  AddType text/css                          .css
+  AddType image/webp                        .webp
+  AddType image/avif                        .avif
+  AddType image/svg+xml                     .svg
+  AddType font/woff2                        .woff2
+  AddType application/manifest+json         .webmanifest
+  AddCharset UTF-8                          .js .css .html .json .xml .svg
+</IfModule>
