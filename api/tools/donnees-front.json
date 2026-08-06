@@ -110,10 +110,7 @@
       "name": "ASUS ROG Strix G16",
       "brand": "ASUS",
       "category": "laptops",
-      "use_tags": [
-        "gaming",
-        "edit"
-      ],
+      "use_tags": ["gaming", "edit"],
       "spec_line": "Intel i9 · RTX 4070 · 32GB · 1TB",
       "specs": {
         "cpu": "Intel Core i9-13980HX",
@@ -141,10 +138,7 @@
       "name": "HP Pavilion 15",
       "brand": "HP",
       "category": "laptops",
-      "use_tags": [
-        "study",
-        "home"
-      ],
+      "use_tags": ["study", "home"],
       "spec_line": "Intel i5 · 8GB · 512GB SSD",
       "specs": {
         "cpu": "Intel Core i5-1335U",
@@ -172,9 +166,7 @@
       "name": "Lenovo ThinkPad X1 Carbon",
       "brand": "Lenovo",
       "category": "laptops",
-      "use_tags": [
-        "work"
-      ],
+      "use_tags": ["work"],
       "spec_line": "Intel i7 · 16GB · 1TB SSD",
       "specs": {
         "cpu": "Intel Core i7-1365U vPro",
@@ -202,11 +194,7 @@
       "name": "MacBook Air M3",
       "brand": "Apple",
       "category": "laptops",
-      "use_tags": [
-        "work",
-        "study",
-        "edit"
-      ],
+      "use_tags": ["work", "study", "edit"],
       "spec_line": "Apple M3 · 16GB · 512GB",
       "specs": {
         "cpu": "Apple M3 (8-core)",
@@ -238,10 +226,7 @@
       "name": "Dell OptiPlex 5000",
       "brand": "Dell",
       "category": "desktops",
-      "use_tags": [
-        "work",
-        "home"
-      ],
+      "use_tags": ["work", "home"],
       "spec_line": "Core i5 · 8GB · 256GB SSD",
       "specs": {
         "cpu": "Intel Core i5-12500",
@@ -267,10 +252,7 @@
       "name": "HP Omen 45L",
       "brand": "HP",
       "category": "desktops",
-      "use_tags": [
-        "gaming",
-        "edit"
-      ],
+      "use_tags": ["gaming", "edit"],
       "spec_line": "Ryzen 9 · RTX 4080 · 32GB",
       "specs": {
         "cpu": "AMD Ryzen 9 7900X",
@@ -300,9 +282,7 @@
       },
       "brand": "KA Build",
       "category": "builds",
-      "use_tags": [
-        "gaming"
-      ],
+      "use_tags": ["gaming"],
       "spec_line": "Ryzen 5 · RX 6600 · 16GB · 500GB",
       "specs": {
         "cpu": "AMD Ryzen 5 5600",
@@ -332,10 +312,7 @@
       },
       "brand": "KA Build",
       "category": "builds",
-      "use_tags": [
-        "edit",
-        "work"
-      ],
+      "use_tags": ["edit", "work"],
       "spec_line": "Ryzen 9 · RTX 4070 Ti · 64GB · 2TB",
       "specs": {
         "cpu": "AMD Ryzen 9 7950X",
@@ -361,10 +338,7 @@
       "name": "Samsung Galaxy S25 Ultra",
       "brand": "Samsung",
       "category": "phones",
-      "use_tags": [
-        "work",
-        "edit"
-      ],
+      "use_tags": ["work", "edit"],
       "spec_line": "12GB · 256GB · 200MP",
       "specs": {
         "cpu": "Snapdragon 8 Gen 4",
@@ -391,10 +365,7 @@
       "name": "iPhone 16 Pro Max",
       "brand": "Apple",
       "category": "phones",
-      "use_tags": [
-        "work",
-        "edit"
-      ],
+      "use_tags": ["work", "edit"],
       "spec_line": "256GB · A18 Pro · Titanium",
       "specs": {
         "cpu": "Apple A18 Pro",
@@ -425,10 +396,7 @@
       "name": "Xiaomi 14T Pro",
       "brand": "Xiaomi",
       "category": "phones",
-      "use_tags": [
-        "work",
-        "home"
-      ],
+      "use_tags": ["work", "home"],
       "spec_line": "12GB · 512GB · Leica",
       "specs": {
         "cpu": "MediaTek Dimensity 9300+",
@@ -455,10 +423,7 @@
       "name": "Redmi Note 13 Pro",
       "brand": "Xiaomi",
       "category": "phones",
-      "use_tags": [
-        "study",
-        "home"
-      ],
+      "use_tags": ["study", "home"],
       "spec_line": "8GB · 256GB · 200MP",
       "specs": {
         "cpu": "Snapdragon 7s Gen 2",
@@ -502,10 +467,7 @@
       },
       "cover": "/assets/p-rog-strix-g16.webp",
       "author": "Équipe KA Tech",
-      "tags": [
-        "laptop",
-        "guide"
-      ],
+      "tags": ["laptop", "guide"],
       "status": "published",
       "published_at": "2026-07-07T15:24:24.656Z",
       "created_at": "2026-07-07T15:24:24.656Z",
@@ -531,10 +493,7 @@
       },
       "cover": "/assets/p-hp-pavilion-15.webp",
       "author": "Yacine B.",
-      "tags": [
-        "gaming",
-        "comparatif"
-      ],
+      "tags": ["gaming", "comparatif"],
       "status": "published",
       "published_at": "2026-07-11T15:24:24.656Z",
       "created_at": "2026-07-11T15:24:24.656Z",
@@ -560,11 +519,7 @@
       },
       "cover": "/assets/p-thinkpad-x1-carbon.webp",
       "author": "Équipe KA Tech",
-      "tags": [
-        "smartphone",
-        "photo",
-        "top"
-      ],
+      "tags": ["smartphone", "photo", "top"],
       "status": "published",
       "published_at": "2026-07-15T15:24:24.656Z",
       "created_at": "2026-07-15T15:24:24.656Z",
@@ -590,10 +545,7 @@
       },
       "cover": "/assets/p-macbook-air-m3.webp",
       "author": "Yacine B.",
-      "tags": [
-        "pc-sur-mesure",
-        "conseil"
-      ],
+      "tags": ["pc-sur-mesure", "conseil"],
       "status": "published",
       "published_at": "2026-07-19T15:24:24.656Z",
       "created_at": "2026-07-19T15:24:24.656Z",
@@ -619,10 +571,7 @@
       },
       "cover": "/assets/p-dell-optiplex-5000.webp",
       "author": "Équipe KA Tech",
-      "tags": [
-        "livraison",
-        "faq"
-      ],
+      "tags": ["livraison", "faq"],
       "status": "published",
       "published_at": "2026-07-23T15:24:24.656Z",
       "created_at": "2026-07-23T15:24:24.656Z",
