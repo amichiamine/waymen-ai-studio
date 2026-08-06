@@ -1,11 +1,12 @@
 <?php
 
 /**
- * Socle de persistance — double pilote SQLite / MySQL derrière PDO.
+ * Socle de persistance — triple pilote SQLite / MySQL / PostgreSQL derrière PDO.
  *
  * Toute la divergence de dialecte du projet est concentrée ICI (cf. PLAN.md,
- * section « Double pilote SQLite / MySQL »). Un contrôleur ne doit jamais
- * tester `DB_DRIVER` : il appelle `beginWrite()` et `upsert()`.
+ * section « Double pilote SQLite / MySQL », étendue au pilote `pgsql` qui ouvre
+ * PostgreSQL en général et Supabase en particulier). Un contrôleur ne doit
+ * jamais tester `DB_DRIVER` : il appelle `beginWrite()` et `upsert()`.
  *
  * Règles non négociables :
  *  - requêtes préparées exclusivement, jamais de concaténation de valeurs ;
@@ -26,6 +27,10 @@ final class Db
 {
     public const PILOTE_SQLITE = 'sqlite';
     public const PILOTE_MYSQL = 'mysql';
+    public const PILOTE_PGSQL = 'pgsql';
+
+    /** Les trois seules valeurs acceptées pour `DB_DRIVER`. */
+    public const PILOTES = [self::PILOTE_SQLITE, self::PILOTE_MYSQL, self::PILOTE_PGSQL];
 
     private static ?self $instance = null;
 
@@ -57,10 +62,10 @@ final class Db
         Env::charger();
         $pilote = strtolower((string) Env::get('DB_DRIVER', self::PILOTE_SQLITE));
 
-        if (!in_array($pilote, [self::PILOTE_SQLITE, self::PILOTE_MYSQL], true)) {
+        if (!in_array($pilote, self::PILOTES, true)) {
             throw ApiException::baseIndisponible(
                 "Pilote de base inconnu : « {$pilote} ». Vérifiez DB_DRIVER dans api/.env : "
-                . 'les seules valeurs acceptées sont « sqlite » et « mysql ».'
+                . 'les seules valeurs acceptées sont « sqlite », « mysql » et « pgsql ».'
             );
         }
 
@@ -68,6 +73,22 @@ final class Db
             $chemin = (string) Env::get('DB_SQLITE_PATH', dirname(__DIR__) . '/var/katech.sqlite');
 
             return new self(self::PILOTE_SQLITE, ['path' => $chemin]);
+        }
+
+        if ($pilote === self::PILOTE_PGSQL) {
+            return new self(self::PILOTE_PGSQL, [
+                'host' => (string) Env::get('DB_HOST', '127.0.0.1'),
+                // Port PostgreSQL par défaut, et non 3306 : un défaut hérité de
+                // MySQL produirait un « connexion refusée » incompréhensible.
+                'port' => Env::int('DB_PORT', 5432),
+                'name' => (string) Env::get('DB_NAME', 'katech'),
+                'user' => (string) Env::get('DB_USER', ''),
+                'pass' => (string) Env::get('DB_PASSWORD', ''),
+                // Supabase (et tout Postgres hébergé) exige TLS : DB_SSLMODE=require.
+                // Vide = on laisse le défaut de libpq (« prefer ») décider, ce qui
+                // convient à un PostgreSQL local.
+                'sslmode' => (string) Env::get('DB_SSLMODE', ''),
+            ]);
         }
 
         return new self(self::PILOTE_MYSQL, [
@@ -89,6 +110,16 @@ final class Db
         return $this->pilote === self::PILOTE_SQLITE;
     }
 
+    public function estMysql(): bool
+    {
+        return $this->pilote === self::PILOTE_MYSQL;
+    }
+
+    public function estPgsql(): bool
+    {
+        return $this->pilote === self::PILOTE_PGSQL;
+    }
+
     /** Chemin du fichier SQLite, ou null en MySQL. */
     public function cheminSqlite(): ?string
     {
@@ -107,7 +138,11 @@ final class Db
             return $this->pdo;
         }
 
-        $this->pdo = $this->estSqlite() ? $this->connecterSqlite() : $this->connecterMysql();
+        $this->pdo = match ($this->pilote) {
+            self::PILOTE_SQLITE => $this->connecterSqlite(),
+            self::PILOTE_PGSQL => $this->connecterPgsql(),
+            default => $this->connecterMysql(),
+        };
 
         return $this->pdo;
     }
@@ -221,6 +256,83 @@ final class Db
         return $pdo;
     }
 
+    /**
+     * PostgreSQL — pilote destiné aussi bien à un serveur local qu'à Supabase,
+     * Neon ou Railway. Aucun de ces fournisseurs n'impose de code spécifique :
+     * seule la chaîne de connexion change, `DB_SSLMODE=require` en plus.
+     */
+    private function connecterPgsql(): PDO
+    {
+        if (!in_array('pgsql', PDO::getAvailableDrivers(), true)) {
+            throw ApiException::baseIndisponible(
+                "L'extension PHP « pdo_pgsql » n'est pas activée sur ce serveur. "
+                . 'Activez-la dans le panneau de l\'hébergeur, ou basculez DB_DRIVER=sqlite '
+                . 'ou DB_DRIVER=mysql dans api/.env.'
+            );
+        }
+
+        $dsn = sprintf(
+            'pgsql:host=%s;port=%d;dbname=%s',
+            $this->config['host'],
+            $this->config['port'],
+            $this->config['name'],
+        );
+        // Non concaténé quand la valeur est vide : un `sslmode=` sans valeur est
+        // refusé par libpq, alors qu'un paramètre absent retombe sur « prefer ».
+        if ((string) $this->config['sslmode'] !== '') {
+            $dsn .= ';sslmode=' . $this->config['sslmode'];
+        }
+
+        try {
+            $pdo = new PDO($dsn, (string) $this->config['user'], (string) $this->config['pass'], $this->optionsPdo());
+        } catch (PDOException $e) {
+            $this->journaliser('Connexion PostgreSQL impossible', $e);
+
+            throw ApiException::baseIndisponible(
+                sprintf(
+                    'Connexion PostgreSQL refusée sur %s:%d, base « %s », utilisateur « %s ». '
+                    . 'Vérifiez dans api/.env : DB_HOST, DB_PORT (5432 en direct), DB_NAME, DB_USER, '
+                    . 'DB_PASSWORD — et que la base existe (elle n\'est pas créée automatiquement). '
+                    . 'Chez Supabase : DB_SSLMODE=require est OBLIGATOIRE, l\'hôte est celui de la section '
+                    . '« Database » du tableau de bord, et le port 5432 (connexion directe) est préférable '
+                    . 'au 6543 (pooler en mode transaction), qui met en défaut les requêtes réellement '
+                    . 'préparées côté serveur utilisées par ce projet.',
+                    $this->config['host'],
+                    $this->config['port'],
+                    $this->config['name'],
+                    $this->config['user'],
+                ),
+                $e
+            );
+        }
+
+        // Dates : le projet stocke des chaînes ISO-8601 UTC. On fixe quand même
+        // le fuseau de session pour que tout `now()` écrit un jour dans un
+        // script d'exploitation soit en UTC comme le reste.
+        $pdo->exec("SET TIME ZONE 'UTC'");
+        $pdo->exec("SET client_encoding TO 'UTF8'");
+
+        // NIVEAU D'ISOLATION — ce réglage porte la garantie anti-survente.
+        //
+        // En READ COMMITTED, quand deux transactions font simultanément
+        // `UPDATE products SET stock_qty = stock_qty - :q WHERE id = :id AND
+        // stock_qty >= :qmin`, la seconde se bloque sur le verrou de ligne de la
+        // première, puis — une fois celle-ci validée — RÉÉVALUE sa clause WHERE
+        // sur la version fraîchement committée (mécanisme EvalPlanQual de
+        // PostgreSQL). Le stock relu est donc le stock décrémenté : la condition
+        // `>= :qmin` retombe à faux et `rowCount()` vaut 0, c'est-à-dire un refus
+        // propre en 409. Aucune survente possible, exactement comme en MySQL.
+        //
+        // En REPEATABLE READ ou SERIALIZABLE, ce même scénario ne donnerait PAS
+        // un refus métier mais une erreur de sérialisation (SQLSTATE 40001), donc
+        // un 500 au lieu d'un 409 — un refus de stock deviendrait une panne. Le
+        // niveau est donc épinglé explicitement plutôt que laissé au hasard de la
+        // configuration du serveur ou du projet Supabase.
+        $pdo->exec("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
+
+        return $pdo;
+    }
+
     /** @return array<int,mixed> */
     private function optionsPdo(): array
     {
@@ -317,6 +429,13 @@ final class Db
      * `SQLITE_BUSY` à la promotion — exactement la survente qu'on veut
      * empêcher. MySQL prend le verrou de ligne au premier UPDATE, un `BEGIN`
      * ordinaire suffit.
+     *
+     * PostgreSQL est dans le même cas que MySQL : `BEGIN` suffit, le verrou de
+     * ligne est pris par l'`UPDATE` conditionnel lui-même. Ce qui compte n'est
+     * pas la forme du `BEGIN` mais le niveau d'isolation, épinglé à
+     * READ COMMITTED à l'ouverture de la connexion (voir `connecterPgsql()`) :
+     * c'est lui qui fait rééévaluer `stock_qty >= :qmin` après l'attente du
+     * verrou, et donc refuser la survente au lieu de lever un 40001.
      */
     public function beginWrite(): void
     {
@@ -325,11 +444,7 @@ final class Db
         }
 
         try {
-            if ($this->estSqlite()) {
-                $this->pdo()->exec('BEGIN IMMEDIATE');
-            } else {
-                $this->pdo()->exec('BEGIN');
-            }
+            $this->pdo()->exec($this->estSqlite() ? 'BEGIN IMMEDIATE' : 'BEGIN');
             $this->transactionOuverte = true;
         } catch (PDOException $e) {
             $this->journaliser('Ouverture de transaction impossible', $e);
@@ -392,8 +507,12 @@ final class Db
 
     /**
      * Insertion-ou-mise-à-jour, seul endroit du projet qui connaît la
-     * divergence `ON CONFLICT ... DO UPDATE` (SQLite) /
+     * divergence `ON CONFLICT ... DO UPDATE` (SQLite et PostgreSQL) /
      * `ON DUPLICATE KEY UPDATE` (MySQL).
+     *
+     * La signature n'a pas bougé en accueillant PostgreSQL : `$cleConflit`
+     * était déjà OBLIGATOIRE — SQLite l'exige comme Postgres. Seul MySQL s'en
+     * passait, et il continue de l'ignorer. Aucun appel existant n'est touché.
      *
      * @param string        $table    Nom de table (identifiant, validé).
      * @param array<string,mixed> $donnees Colonnes → valeurs.
@@ -422,10 +541,10 @@ final class Db
 
         if ($maj === []) {
             // Aucune colonne à écraser : l'upsert dégénère en « ignorer si présent ».
-            $sql .= $this->estSqlite()
+            $sql .= $this->supporteOnConflict()
                 ? ' ON CONFLICT (' . implode(', ', array_map([self::class, 'identifiant'], $cleConflit)) . ') DO NOTHING'
                 : ' ON DUPLICATE KEY UPDATE ' . self::identifiant($cleConflit[0]) . ' = ' . self::identifiant($cleConflit[0]);
-        } elseif ($this->estSqlite()) {
+        } elseif ($this->supporteOnConflict()) {
             $cible = implode(', ', array_map([self::class, 'identifiant'], $cleConflit));
             $affect = implode(', ', array_map(
                 static fn (string $c): string => self::identifiant($c) . ' = excluded.' . self::identifiant($c),
@@ -446,6 +565,18 @@ final class Db
         }
 
         return $this->run($sql, $params)->rowCount();
+    }
+
+    /**
+     * SQLite et PostgreSQL partagent la clause standard
+     * `ON CONFLICT (colonnes) DO UPDATE SET c = excluded.c`, y compris le nom de
+     * la pseudo-table `excluded`. La seule contrainte, commune aux deux, est de
+     * NOMMER les colonnes de conflit — ce que `upsert()` impose déjà à tous ses
+     * appelants. MySQL reste seul avec `ON DUPLICATE KEY UPDATE`.
+     */
+    private function supporteOnConflict(): bool
+    {
+        return $this->estSqlite() || $this->estPgsql();
     }
 
     /**
@@ -477,6 +608,13 @@ final class Db
      * ANSI_QUOTES uniquement — on utilise donc le backtick pour MySQL et le
      * guillemet double pour SQLite. La liste blanche de caractères rend de
      * toute façon l'injection impossible : seul `[A-Za-z0-9_]` passe.
+     *
+     * PostgreSQL ajoute une raison de NE PAS échapper : un identifiant non
+     * quoté y est replié en minuscules, alors qu'un identifiant quoté conserve
+     * sa casse exacte. Quoter « Stock_Qty » créerait donc une colonne
+     * introuvable par le reste du code. Les trois schémas n'emploient que des
+     * identifiants déjà en minuscules : les laisser nus est à la fois sûr et
+     * portable, et c'est la seule écriture qui vaille pour les trois pilotes.
      */
     public static function identifiant(string $nom): string
     {
@@ -511,8 +649,25 @@ final class Db
     }
 
     /**
-     * Encodage JSON commun aux deux pilotes : colonne `JSON` en MySQL,
-     * `TEXT` en SQLite, mais la chaîne stockée est rigoureusement la même.
+     * Encodage JSON commun aux trois pilotes : colonne `JSON` en MySQL, `TEXT`
+     * en SQLite comme en PostgreSQL, mais la chaîne stockée est rigoureusement
+     * la même.
+     *
+     * POURQUOI PAS `jsonb` EN POSTGRESQL, alors qu'il existe et qu'il est
+     * meilleur en indexation ? Deux raisons dirimantes, mesurées sur ce code :
+     *   1. `jsonb` NORMALISE ce qu'on lui donne — clés réordonnées, espaces
+     *      retirés, doublons écrasés. La chaîne relue ne serait plus celle
+     *      écrite, et les trois pilotes cesseraient d'être interchangeables
+     *      pour la migration de données ;
+     *   2. le catalogue filtre les tableaux JSON avec `use_tags LIKE '%"work"%'`
+     *      et cherche dans les libellés localisés avec `LOWER(name) LIKE …`
+     *      (docs/BACKEND.md §4, piège n°3). Or PostgreSQL n'a ni `LIKE` ni
+     *      `LOWER()` sur `jsonb` : « operator does not exist: jsonb ~~ unknown ».
+     *      Passer à `jsonb` imposerait un `::text` dans une dizaine de
+     *      contrôleurs, c'est-à-dire de rouvrir la règle « aucun contrôleur ne
+     *      connaît le dialecte ».
+     * Le gain de `jsonb` (opérateurs `@>`, index GIN) ne sert à rien ici : aucune
+     * requête du projet n'interroge la structure interne d'un document JSON.
      */
     public static function json(mixed $valeur): ?string
     {
