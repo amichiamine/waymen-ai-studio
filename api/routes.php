@@ -172,6 +172,9 @@ $routeur->patch('/notifications/:id', Garde::protege('update', [$notifs, 'mettre
 $routeur->delete('/notifications/:id', Garde::protege('delete', [$notifs, 'supprimer']));
 
 $crm = new ControleurCrm($db);
+// Route PUBLIQUE : le formulaire de contact du site doit pouvoir ecrire sans
+// compte. Validation stricte et taille bornee cote controleur.
+$routeur->post('/messages', [$crm, 'recevoirMessage']);
 $routeur->get('/messages', Garde::protege('read', [$crm, 'listerMessages']));
 $routeur->get('/messages/:id', Garde::protege('read', [$crm, 'detailMessage']));
 $routeur->patch('/messages/:id', Garde::protege('update', [$crm, 'mettreAJourMessage']));
