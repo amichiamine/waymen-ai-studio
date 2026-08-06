@@ -7,9 +7,9 @@
  * backend. En mode http, on appelle le backend réel.
  *
  * Les trois opérations exposées sont :
- *   - useEtatBase()       : lecture de l'état de la base (GET /maintenance/etat)
- *   - useSauvegarde()     : déclencheur de téléchargement (GET /maintenance/sauvegarde)
- *   - useMigration()      : simuler/exécuter une migration (POST /maintenance/migration)
+ *   - useEtatBase()       : lecture de l'état de la base (GET /maintenance/status)
+ *   - useSauvegarde()     : déclencheur de téléchargement (GET /maintenance/backup)
+ *   - useMigration()      : simuler/exécuter une migration (POST /maintenance/migrate)
  *
  * ATTENTION : pas d'import depuis le baril `@/data-provider` ici — cela
  * créerait une dépendance circulaire que Rollup signalerait au build.
@@ -37,7 +37,7 @@ export type TableStat = {
   rows: number;
 };
 
-/** Réponse de GET /maintenance/etat */
+/** Réponse de GET /maintenance/status */
 export type EtatBase = {
   driver: string;
   database: string;
@@ -114,7 +114,7 @@ const ETAT_MOCK: EtatBase = {
 };
 
 /** Clé de cache stable. */
-export const MAINTENANCE_RESOURCE = "maintenance/etat";
+export const MAINTENANCE_RESOURCE = "maintenance/status";
 
 // ── Hook de lecture — état de la base ────────────────────────────────────────
 
@@ -122,7 +122,7 @@ export const MAINTENANCE_RESOURCE = "maintenance/etat";
  * Lit l'état de la base de données.
  *
  * En mode mock : renvoie des données fictives synchrones.
- * En mode http : GET /maintenance/etat
+ * En mode http : GET /maintenance/status
  */
 export function useEtatBase(): ResourceState<EtatBase> {
   return useResource<EtatBase>({
@@ -132,7 +132,7 @@ export function useEtatBase(): ResourceState<EtatBase> {
     fromStore: () => ETAT_MOCK,
     // http.get gère le préfixe API_BASE_URL, le délai d'expiration, les cookies
     // de session et la traduction des erreurs (ApiError avec code et message).
-    fromHttp: () => http.get<EtatBase>("/maintenance/etat"),
+    fromHttp: () => http.get<EtatBase>("/maintenance/status"),
     fallback: ETAT_VIDE,
   });
 }
@@ -186,7 +186,7 @@ export function useSauvegarde() {
     // défaut que ce module corrige.
     // Les credentials sont calés sur la même stratégie que le client HTTP du
     // projet : "include" pour les cookies, "same-origin" pour le bearer.
-    const urlSauvegarde = `${API_BASE_URL}/maintenance/sauvegarde`;
+    const urlSauvegarde = `${API_BASE_URL}/maintenance/backup`;
     const credentialsSauvegarde: RequestCredentials =
       AUTH_STRATEGY === "cookie" ? "include" : "same-origin";
     const resp = await fetch(urlSauvegarde, { credentials: credentialsSauvegarde });
@@ -264,7 +264,7 @@ export function useMigrationMutations(): MigrationMutations {
       // de session et la traduction des erreurs — cohérent avec les 24 autres
       // ressources du projet. Le mot de passe est dans le corps JSON, jamais
       // dans l'URL.
-      return http.post<MigrationResult>("/maintenance/migration", input);
+      return http.post<MigrationResult>("/maintenance/migrate", input);
     });
   }, []);
 

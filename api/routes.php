@@ -25,6 +25,7 @@ use KaTech\Controllers\ControleurCoupons;
 use KaTech\Controllers\ControleurCrm;
 use KaTech\Controllers\ControleurJournal;
 use KaTech\Controllers\ControleurLivraison;
+use KaTech\Controllers\ControleurMaintenance;
 use KaTech\Controllers\ControleurMarques;
 use KaTech\Controllers\ControleurMedias;
 use KaTech\Controllers\ControleurNotifications;
@@ -191,6 +192,18 @@ $routeur->get('/analytics/audit/:id', Garde::protege('read', [$journal, 'detail'
 $stock = new ControleurStock($db);
 $routeur->get('/inventory/movements', Garde::protege('read', [$stock, 'lister']));
 $routeur->post('/inventory/:productId/adjust', Garde::protege('update', [$stock, 'ajuster']));
+
+// ----------------------------------------------------- Maintenance
+// Le proprietaire n'a ni SSH ni phpMyAdmin sur un mutualise : ces trois routes
+// sont son seul acces a ses propres donnees. D'ou le rang le plus eleve —
+// `resetData` vaut `owner` dans Garde::MATRICE — et la garde posee ICI en plus
+// de celle du controleur. Une route capable d'exporter la base entiere ou de la
+// deplacer ailleurs doit etre visiblement gardee dans ce fichier : c'est ici
+// qu'on relit les 66 gardes, pas dans le corps des controleurs.
+$maintenance = new ControleurMaintenance($db);
+$routeur->get('/maintenance/status', Garde::protege('resetData', [$maintenance, 'etat']));
+$routeur->get('/maintenance/backup', Garde::protege('resetData', [$maintenance, 'sauvegarder']));
+$routeur->post('/maintenance/migrate', Garde::protege('resetData', [$maintenance, 'migrer']));
 
 // ------------------------------------------------------ Authentification
 // Les 8 routes du contrat sont SANS garde : elles gerent elles-memes leur
