@@ -48,17 +48,17 @@ Audit réalisé le 5 août 2026 sur le dépôt complet.
 
 **Hébergement mutualisé** (dossier `public_html`), ce qui exclut Node.js côté serveur.
 
-| Couche                       | Choix                                                  |
-| ---------------------------- | ------------------------------------------------------ |
-| Runtime                      | PHP 8.2+                                               |
-| Framework API                | Slim 4 (+ Composer)                                    |
-| Persistance transactionnelle | **SQLite OU MySQL** — pilote choisi par `DB_DRIVER`    |
-| Persistance JSON             | Factures figées, contenu éditorial, payloads d'outbox  |
-| Authentification             | Sessions PHP + cookie `httpOnly`, hachage **Argon2id** |
-| Emails                       | PHPMailer en SMTP                                      |
-| Médias                       | Fichiers dans `public_html/uploads/`                   |
-| Paiement au lancement        | **Paiement à la livraison** (SATIM ultérieurement)     |
-| SEO                          | Prérendu au build (le SSR est impossible en mutualisé) |
+| Couche                       | Choix                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| Runtime                      | PHP 8.2+                                                                        |
+| Framework API                | Aucun (routeur maison) — pas de Composer, pas de `vendor/`                      |
+| Persistance transactionnelle | **SQLite, MySQL ou PostgreSQL** — pilote choisi par `DB_DRIVER`                 |
+| Persistance JSON             | Factures figées, contenu éditorial, payloads d'outbox                           |
+| Authentification             | Sessions PHP + cookie `httpOnly`, hachage **Argon2id** (repli bcrypt)           |
+| Emails                       | PHPMailer en SMTP, émission en fin de requête (pas de CRON)                     |
+| Médias                       | Fichiers dans `public_html/uploads/`                                            |
+| Paiement au lancement        | **Paiement à la livraison** (SATIM ultérieurement)                              |
+| SEO                          | Prérendu au build (le SSR est impossible en mutualisé)                          |
 
 ### Répartition SQLite / JSON
 
@@ -92,7 +92,7 @@ sinon ils sont téléchargeables par HTTP.
     └── api/                  ← Slim
 ```
 
-### Double pilote SQLite / MySQL — décision du 5 août 2026
+### Triple pilote SQLite / MySQL / PostgreSQL — décision du 5 août 2026, étendue le 6 août 2026
 
 **Contexte** : l'hébergement n'est pas encore acquis, aucun test préalable n'est
 possible, et l'exigence est un déploiement sans surprise.
@@ -105,9 +105,14 @@ MySQL seul aurait été garanti — c'est la raison d'être d'un mutualisé, et 
 le fournit déjà en local — mais aurait fait perdre la portabilité du fichier
 unique.
 
-**Retenu : les deux**, derrière PDO, le pilote étant choisi par la variable
-`DB_DRIVER`. Surcoût estimé à 15 %, en échange d'un déploiement qui fonctionne
-quel que soit l'hébergeur et d'une réversibilité totale.
+**Retenu : les deux** à l'origine, puis **un troisième pilote `pgsql`** a été
+ajouté. Il ouvre PostgreSQL en général (Supabase, Neon, Railway ou tout serveur
+PostgreSQL autonome). Ce sont exactement les mêmes données, le même code de
+contrôleur, la seule différence est la chaîne de connexion et une variable
+`DB_SSLMODE=require` obligatoire chez les fournisseurs qui imposent TLS.
+
+Voir §9 ter pour la décision détaillée de ne PAS utiliser l'API HTTPS de Supabase
+(PostgREST), mais le pilote SQL direct.
 
 #### Ce que la double compatibilité impose
 
@@ -665,16 +670,15 @@ justifiés : réinitialisation locale et plomberie de permissions.
 
 | Vague | Agent                  | Tâche                                                                                                             |
 | ----- | ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 4.1   | orchestrateur **fort** | Schéma des 16 tables + `outbox` ; note d'architecture                                                             |
-| 4.2   | **fort** (S1)          | Pilote Slim complet sur les produits : PDO, PRAGMA WAL, `busy_timeout`, stock atomique en transaction `IMMEDIATE` |
+| 4.1   | orchestrateur **fort** | Schéma des 21 tables + `outbox` ; note d'architecture                                                             |
+| 4.2   | **fort** (S1)          | Pilote complet sur les produits : PDO, PRAGMA WAL, `busy_timeout`, stock atomique en transaction `IMMEDIATE`      |
 | 4.3   | 5 × intermédiaire (S2) | Répliquer les endpoints des autres ressources                                                                     |
 | 4.4   | **fort** (S13)         | Sessions PHP, cookie `httpOnly`, Argon2id                                                                         |
-| 4.5   | intermédiaire          | Outbox + CRON d'émission (Telegram, Notion)                                                                       |
-| 4.5   | intermédiaire          | Snapshots de facture en JSON immuable                                                                             |
+| 4.5   | intermédiaire          | Outbox vidée en fin de requête HTTP (pas de CRON), snapshots de facture JSON immuables                            |
 | 4.5   | intermédiaire          | Stockage des images en fichiers (abandon du base64)                                                               |
 | 4.5   | intermédiaire          | Emails transactionnels SMTP (PHPMailer)                                                                           |
 | 4.6   | intermédiaire (S7)     | Script de migration des données seed vers SQLite                                                                  |
-| 4.7   | **fort**               | Emplacement hors `public_html`, `.htaccess`, fallback SPA, CRON de sauvegarde                                     |
+| 4.7   | **fort**               | Emplacement hors `public_html`, `.htaccess`, fallback SPA, sauvegarde                                             |
 | 4.8   | intermédiaire (S14)    | Documentation de déploiement et d'exploitation                                                                    |
 
 ### Transactions — règle absolue
@@ -688,7 +692,8 @@ $db->beginTransaction();
   $db->prepare('INSERT INTO outbox (event, payload) VALUES (?, ?)')
      ->execute(['order.created', json_encode($data)]);
 $db->commit();
-// l'émission vers Telegram/Notion se fait hors transaction, par CRON
+// l'émission des emails se fait en fin de requête via register_shutdown_function()
+// -- pas de CRON nécessaire pour une petite boutique
 ```
 
 ---
@@ -697,17 +702,18 @@ $db->commit();
 
 #### Vague 4.1 — LIVRÉE : la fondation
 
-3 commits, 1 agent fort. **21 tables, 172 colonnes, 22 index**, installées pour
-de vrai sur les **deux pilotes**.
+3 commits, 1 agent fort. **23 tables, 184 colonnes, 25 index**, installées pour
+de vrai sur les **trois pilotes**.
 
 Validé à froid par l'orchestrateur, pas sur rapport : `install.php` exécuté sur
-SQLite et sur MySQL, seed appliqué, serveur lancé, et `GET /products` interrogé
-en HTTP réel sur les deux. **Résultats rigoureusement identiques** — même
-enveloppe, même pagination, même tri, y compris sur une recherche en arabe dans
-les champs `Localized`. `/health` confirme le pilote actif, 404 et 405 sont bien
-enveloppés.
+SQLite, MySQL et PostgreSQL, seed appliqué, serveur lancé, et `GET /products`
+interrogé en HTTP réel sur les trois. **Résultats rigoureusement identiques** —
+même enveloppe, même pagination, même tri, y compris sur une recherche en arabe
+dans les champs `Localized`. `/health` confirme le pilote actif, 404 et 405 sont
+bien enveloppés.
 
-Le vérificateur de parité des schémas passe, et il a été **testé en négatif** :
+Le vérificateur de parité des schémas (`api/tools/verifier-parite-schema.php`)
+passe sur les **trois** fichiers de schéma, et il a été **testé en négatif** :
 en modifiant une nullabilité et en retirant un index, il signale les deux écarts
 et échoue. Il entrera dans la CI.
 
@@ -740,14 +746,27 @@ installés en développement l'a fait apparaître immédiatement.
 3. Les `DEFAULT ''` sur colonnes TEXT ont été retirés des deux schémas, MySQL
    les interdisant.
 
-#### Reste — vagues 4.2 à 4.8
+#### Vagues 4.2 à 4.7 — LIVRÉES (vague en cours au 6 août 2026)
 
-- [ ] 4.2 — répliquer les contrôleurs des autres ressources sur le pilote `/products`
-- [ ] 4.3 — authentification : sessions PHP, cookie `httpOnly`, Argon2id avec repli bcrypt
-- [ ] 4.4 — décompte de stock atomique branché sur le tunnel d'achat
-- [ ] 4.5 — outbox et CRON d'émission, snapshots de facture, téléversement de médias, emails SMTP
-- [ ] 4.6 — script de migration des données seed
-- [ ] 4.7 — durcissement : emplacement des fichiers, `.htaccess`, sauvegarde
+- [x] 4.2 — contrôleurs de toutes les ressources livrés
+- [x] 4.3 — authentification : sessions PHP, cookie `httpOnly`, Argon2id avec repli bcrypt
+- [x] 4.4 — décompte de stock atomique en transaction, anti-survente prouvé sur les trois pilotes
+- [x] 4.5 — outbox vidée en fin de requête (pas de CRON), snapshots de facture JSON immuables,
+        téléversement de médias, emails SMTP, limitation de débit sur `/auth/login`
+- [x] 4.6 — script de migration des données seed (`api/tools/importer-donnees-front.php`, `semer-demo.php`)
+- [x] 4.7 — emplacement hors `public_html`, `.htaccess`, sauvegarde avec vérification de contenu
+
+**Livraisons supplémentaires non prévues au plan :**
+
+- Pilote `pgsql` (PostgreSQL, Supabase) — voir §9 ter.
+- Moteur de migration à six directions (`api/src/Migration/`, `api/tools/migrer.php`).
+- Page `/admin/developpeur` : état de la base, sauvegarde téléchargeable, migration assistée.
+- Routes `GET /maintenance/status`, `GET /maintenance/backup`, `POST /maintenance/migrate`
+  (rang `owner`).
+- Vérificateur de parité des trois schémas (`api/tools/verifier-parite-schema.php`).
+
+#### Reste — vague 4.8
+
 - [ ] 4.8 — bascule `VITE_API_MODE=http` et recette de bout en bout
 
 ---
@@ -880,24 +899,49 @@ serveur est l'outil le plus dangereux du projet. Non négociable :
 | Recette des 6 chemins de migration        | 3 h       |
 | **Total**                                 | **~17 h** |
 
+### Décision : pas de CRON pour l'outbox — 6 août 2026
+
+L'outbox a été conçue pour être vidée par un CRON toutes les 5 minutes.
+**Le CRON a été supprimé.** À la place, l'outbox est vidée en fin de la
+requête HTTP qui crée la commande, via `register_shutdown_function()` :
+la réponse est envoyée au client, puis les emails partent dans la foulée,
+invisibles pour l'acheteur.
+
+**Motif** : le client (commerçant algérien, petite boutique) ne veut pas
+gérer une tâche planifiée. Un CRON mal configuré ou désactivé par l'hébergeur
+ne serait pas diagnostiqué facilement — les commandes ne recevraient jamais
+de confirmation. En émettant en fin de requête, la chaîne est directe et
+observable : si un email échoue, il reste en file `pending` et
+`GET /maintenance/status` le signale.
+
+**Limite connue** : sur le serveur intégré `php -S` (développement), le
+client attend la fin de l'envoi. En production avec LiteSpeed/FastCGI,
+`fastcgi_finish_request()` libère le navigateur avant l'envoi.
+
+`api/tools/vider-outbox.php` reste disponible comme outil de réessai manuel.
+
 ---
 
 ## 10. Décisions prises
 
-| Décision              | Choix                                                                                                | Date        |
-| --------------------- | ---------------------------------------------------------------------------------------------------- | ----------- |
-| Base de données       | SQLite (transactionnel) + JSON (immuable et semi-structuré)                                          | 5 août 2026 |
-| Backend               | PHP 8.2 + Slim 4, contrainte du mutualisé                                                            | 5 août 2026 |
-| Authentification      | Sessions PHP + cookie `httpOnly` (déjà anticipé par `VITE_API_AUTH=cookie`)                          | 5 août 2026 |
-| Branches              | Phases 2 et 4 sur branche dédiée, fusion après commande de vérité                                    | 5 août 2026 |
-| Paiement au lancement | Paiement à la livraison seul ; SATIM ultérieurement                                                  | 5 août 2026 |
-| Backend               | **PHP 8.2 + Slim + SQLite serveur — définitif.** Node « supporté mais non garanti » chez l'hébergeur | 5 août 2026 |
-| Canaux de vente       | Boutique complète prioritaire, WhatsApp complémentaire                                               | 5 août 2026 |
-| SQLite navigateur     | Écarté : 400 kB de moteur pour 9 kB de données                                                       | 5 août 2026 |
+| Décision              | Choix                                                                                                 | Date         |
+| --------------------- | ----------------------------------------------------------------------------------------------------- | ------------ |
+| Base de données       | SQLite (transactionnel) + JSON (immuable et semi-structuré)                                           | 5 août 2026  |
+| Backend               | PHP 8.2 sans framework ni Composer — aucune dépendance à installer sur le serveur                     | 5 août 2026  |
+| Authentification      | Sessions PHP + cookie `httpOnly` (déjà anticipé par `VITE_API_AUTH=cookie`)                           | 5 août 2026  |
+| Branches              | Phases 2 et 4 sur branche dédiée, fusion après commande de vérité                                     | 5 août 2026  |
+| Paiement au lancement | Paiement à la livraison seul ; SATIM ultérieurement                                                   | 5 août 2026  |
+| Backend               | **PHP 8.2 + routeur maison + SQLite/MySQL/PostgreSQL — définitif.** Node « supporté mais non garanti » | 5 août 2026  |
+| Canaux de vente       | Boutique complète prioritaire, WhatsApp complémentaire                                                | 5 août 2026  |
+| SQLite navigateur     | Écarté : 400 kB de moteur pour 9 kB de données                                                        | 5 août 2026  |
+| Pilote pgsql          | Ajouté — pilote SQL direct, PAS l'API HTTPS PostgREST (voir §9 ter)                                   | 6 août 2026  |
+| Outbox / CRON emails  | L'outbox est vidée en fin de requête HTTP. Pas de CRON pour les emails — décision explicite du client | 6 août 2026  |
+| Vérification sauvegardes | Par empreinte de CONTENU par table, pas seulement par structure                                    | 6 août 2026  |
 
 ## 11. Décisions ouvertes
 
-- Rester connecté à Lovable pendant les refontes des phases 2 et 4 ?
 - Admin en français uniquement, ou internationaliser les 35 pages (+2-3 h agent) ?
 - Sortir le back-office du bundle visiteur (au-delà du code splitting) ?
-- Volumétrie cible à 12 mois — confirme SQLite ou impose MySQL.
+- Volumétrie cible à 12 mois — confirme SQLite ou impose MySQL ou PostgreSQL.
+- `categories.label` et `.description` : passer en `Localized` (exige de toucher
+  le frontend — voir §8, écart §3 assumé).

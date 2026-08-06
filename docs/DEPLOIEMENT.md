@@ -12,6 +12,11 @@ fourni, tâches CRON disponibles). La procédure vaut pour tout mutualisé PHP
 > pas de Node.js sur le serveur, aucune dépendance à installer. Le site est
 > construit en local ; le serveur ne reçoit que des fichiers finis.
 
+> **Trois moteurs de base supportés.** L'API fonctionne à l'identique sur
+> `sqlite`, `mysql` et `pgsql` (PostgreSQL — Supabase, Neon, Railway…).
+> Le choix se fait avec une seule variable, `DB_DRIVER`, et reste réversible
+> via la page `/admin/developpeur`.
+
 ---
 
 ## Sommaire
@@ -25,7 +30,7 @@ fourni, tâches CRON disponibles). La procédure vaut pour tout mutualisé PHP
 7. [Renseigner `api/.env`](#7-renseigner-apienv)
 8. [Lancer l'installation](#8-lancer-linstallation)
 9. [Suppressions obligatoires](#9-suppressions-obligatoires)
-10. [Les deux tâches CRON](#10-les-deux-tâches-cron)
+10. [La tâche CRON de sauvegarde](#10-la-tâche-cron-de-sauvegarde)
 11. [Liste de vérification après déploiement](#11-liste-de-vérification-après-déploiement)
 12. [Restaurer une sauvegarde](#12-restaurer-une-sauvegarde)
 13. [Si quelque chose échoue](#13-si-quelque-chose-échoue)
@@ -38,15 +43,16 @@ fourni, tâches CRON disponibles). La procédure vaut pour tout mutualisé PHP
 
 | Élément     | Détail                                                         |
 | ----------- | -------------------------------------------------------------- |
-| Hébergement | PHP **8.2 minimum**, `.htaccess` lus, MySQL ou `pdo_sqlite`    |
-| Accès       | Panneau de l'hébergeur (hPanel) + gestionnaire de fichiers     |
-| Domaine     | Pointé sur l'hébergement, **certificat HTTPS actif**           |
-| En local    | Le dépôt du projet et `bun` (ou `npm`) pour construire `dist/` |
-| Temps       | Environ 45 minutes la première fois                            |
+| Hébergement | PHP **8.2 minimum**, `.htaccess` lus, au moins un pilote PDO disponible |
+| Accès       | Panneau de l'hébergeur (hPanel) + gestionnaire de fichiers              |
+| Domaine     | Pointé sur l'hébergement, **certificat HTTPS actif**                    |
+| En local    | Le dépôt du projet et `bun` (ou `npm`) pour construire `dist/`          |
+| Temps       | Environ 45 minutes la première fois                                     |
 
-Extensions PHP nécessaires : `pdo_mysql` **ou** `pdo_sqlite`, `mbstring`,
-`json`, `openssl`. Toutes sont standard. `zlib` est utilisée pour compresser
-les sauvegardes ; son absence n'est pas bloquante.
+Extensions PHP nécessaires : **un** parmi `pdo_mysql`, `pdo_sqlite` ou
+`pdo_pgsql`, plus `mbstring`, `json`, `openssl`. Toutes sont standard.
+`zlib` est utilisée pour compresser les sauvegardes ; son absence n'est pas
+bloquante.
 
 > **HTTPS d'abord.** Activez le certificat SSL **avant** l'installation. Les
 > cookies de session sont marqués `Secure` : en HTTP simple, la connexion à
@@ -176,19 +182,25 @@ l'exige pour l'écriture.
 
 ## 6. Choisir le pilote de base de données
 
-Le projet fonctionne à l'identique sur les deux. Le choix se fait avec une
-seule variable, `DB_DRIVER`, et reste réversible.
+Le projet fonctionne à l'identique sur les trois pilotes. Le choix se fait
+avec une seule variable, `DB_DRIVER`, et reste réversible après déploiement
+via la page `/admin/developpeur` (voir [§8](#8-lancer-linstallation)).
 
-| Critère                    | `mysql`                       | `sqlite`                                        |
-| -------------------------- | ----------------------------- | ----------------------------------------------- |
-| Disponibilité en mutualisé | **Garantie**                  | Dépend de `pdo_sqlite` et des droits d'écriture |
-| Mise en place              | Créer la base dans hPanel     | Aucune, un simple fichier                       |
-| Sauvegarde                 | Export SQL                    | Copie d'un fichier                              |
-| Portabilité                | Export/import                 | **Totale** : un fichier à copier                |
-| Recommandation             | **Par défaut chez Hostinger** | Si la sonde confirme que c'est possible         |
+| Critère                    | `mysql`                       | `sqlite`                                        | `pgsql`                                           |
+| -------------------------- | ----------------------------- | ----------------------------------------------- | ------------------------------------------------- |
+| Disponibilité en mutualisé | **Garantie**                  | Dépend de `pdo_sqlite` et des droits d'écriture | Si `pdo_pgsql` est activé (pas toujours le cas)   |
+| Mise en place              | Créer la base dans hPanel     | Aucune, un simple fichier                       | Créer la base PostgreSQL (Supabase, Neon…)        |
+| Sauvegarde                 | Export SQL                    | Copie d'un fichier                              | Export SQL                                        |
+| Portabilité                | Export/import                 | **Totale** : un fichier à copier                | Export/import, ou migrateur intégré               |
+| Recommandation             | **Par défaut chez Hostinger** | Si la sonde confirme que c'est possible         | Si vous utilisez Supabase, Neon, ou Railway       |
 
 **En cas de doute, choisissez `mysql`** : c'est la raison d'être d'un
 hébergement mutualisé, et rien ne dépend d'un dossier inscriptible.
+
+Vous pouvez changer de moteur après déploiement : la page
+`/admin/developpeur` propose une migration assistée (simulation d'abord,
+transfert réel après confirmation). `docs/MIGRATION.md` décrit la procédure
+complète.
 
 ### 6.a — MySQL : créer la base dans hPanel
 
@@ -233,6 +245,34 @@ gestionnaire de fichiers de hPanel.
 SQLite doit pouvoir écrire dans le **dossier**, pas seulement dans le fichier :
 il y crée aussi `katech.sqlite-wal` et `katech.sqlite-shm`.
 
+### 6.c — PostgreSQL : Supabase, Neon, Railway
+
+PostgreSQL est un serveur externe : la base n'est **pas** sur le même serveur
+que le site. Cela convient parfaitement à un hébergement mutualisé.
+
+1. Créer la base chez le fournisseur (Supabase : `Project Settings` → `Database`).
+2. Vérifier que `pdo_pgsql` est activé (la sonde §2 le confirme).
+3. Dans `api/.env` :
+   ```ini
+   DB_DRIVER=pgsql
+   DB_HOST=db.<référence>.supabase.co
+   DB_PORT=5432
+   DB_NAME=postgres
+   DB_USER=postgres
+   DB_PASSWORD=le-mot-de-passe-du-projet
+   DB_SSLMODE=require
+   ```
+
+> **`DB_SSLMODE=require` est obligatoire chez Supabase.** Sans lui, la
+> connexion échoue avec un message qui ne mentionne pas TLS, ce qui rend
+> le diagnostic difficile.
+>
+> **Port 5432, pas 6543.** Le port 6543 est le pooler en mode transaction :
+> il désactive les requêtes préparées côté serveur utilisées par ce projet.
+>
+> La base doit exister avant d'ouvrir `install.php` : contrairement à MySQL
+> chez Hostinger, elle n'est **pas** créée automatiquement.
+
 ---
 
 ## 7. Renseigner `api/.env`
@@ -273,6 +313,21 @@ DB_PASSWORD=le-mot-de-passe-genere
 DB_DRIVER=sqlite
 DB_SQLITE_PATH=/home/uXXXXXXXXX/domains/votre-domaine.dz/katech-data/katech.sqlite
 ```
+
+### Si `DB_DRIVER=pgsql`
+
+```ini
+DB_DRIVER=pgsql
+DB_HOST=db.<référence>.supabase.co
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=le-mot-de-passe-du-projet
+DB_SSLMODE=require
+```
+
+`DB_SSLMODE=require` est obligatoire chez Supabase et la plupart des services
+PostgreSQL hébergés. Laisser vide seulement pour un PostgreSQL local.
 
 ### Le compte propriétaire — lu une seule fois
 
@@ -325,6 +380,19 @@ TERMINÉ.
 **Le nombre de tables doit être 23.** S'il est inférieur, le dossier
 `api/schema/` n'a pas été téléversé entièrement.
 
+### Accès aux données après installation : page Développeur
+
+Une fois connecté avec le compte propriétaire, la page `/admin/developpeur`
+donne accès à :
+
+- l'état de la base (pilote actif, nombre de lignes par table) ;
+- une sauvegarde téléchargeable à la demande ;
+- la migration assistée vers un autre moteur (simulation d'abord, transfert
+  réel après confirmation).
+
+C'est le seul moyen pour le propriétaire d'accéder à ses données sans SSH.
+**Seul le propriétaire peut ouvrir cette page** — jamais un administrateur.
+
 L'installateur dépose un témoin `api/installed.lock` et **refuse de
 s'exécuter une seconde fois** : rejoué, il détruirait les données en place. Un
 second appel affiche `INSTALLATION DÉJÀ EFFECTUÉE` avec un code 409.
@@ -363,7 +431,7 @@ https://votre-domaine.dz/sonde-hebergeur.php
 
 ---
 
-## 10. Les deux tâches CRON
+## 10. La tâche CRON de sauvegarde
 
 hPanel → **Avancé** → **Tâches Cron**.
 
@@ -372,24 +440,20 @@ Hostinger, PHP en ligne de commande est `/usr/bin/php` (parfois
 `/opt/alt/php82/usr/bin/php` selon la version choisie ; hPanel propose la bonne
 valeur dans son assistant).
 
-### CRON 1 — vidage de l'outbox
+> **Une seule tâche CRON est nécessaire.** Les emails de confirmation de
+> commande sont émis directement à la fin de la requête qui crée la commande,
+> sans CRON. C'est un choix explicite du projet : une petite boutique n'a pas
+> à gérer un processus de fond. `api/tools/vider-outbox.php` reste disponible
+> comme outil manuel de réessai, mais n'est pas à planifier.
 
-Émet les événements en attente (notifications de commande, emails). Sans lui,
-les événements s'accumulent sans être perdus, mais rien n'est envoyé.
-
-| Champ     | Valeur                                                                                          |
-| --------- | ----------------------------------------------------------------------------------------------- |
-| Fréquence | Toutes les 5 minutes (`*/5 * * * *`)                                                            |
-| Commande  | `/usr/bin/php /home/uXXXXXXXXX/domains/votre-domaine.dz/public_html/api/tools/vider-outbox.php` |
-
-### CRON 2 — sauvegarde de la base
+### CRON — sauvegarde de la base
 
 | Champ     | Valeur                                                                                         |
 | --------- | ---------------------------------------------------------------------------------------------- |
 | Fréquence | Une fois par jour, la nuit (`15 3 * * *`)                                                      |
 | Commande  | `/usr/bin/php /home/uXXXXXXXXX/domains/votre-domaine.dz/public_html/api/tools/sauvegarder.php` |
 
-Le script fonctionne sur les deux pilotes, sans rien à configurer de plus :
+Le script fonctionne sur les trois pilotes, sans rien à configurer de plus :
 
 - **SQLite** : instantané cohérent par `VACUUM INTO`, le mécanisme de
   sauvegarde de SQLite. Ce n'est pas une copie de fichier : une copie prise
@@ -398,12 +462,19 @@ Le script fonctionne sur les deux pilotes, sans rien à configurer de plus :
 - **MySQL** : export SQL écrit depuis PHP, dans une transaction à instantané
   cohérent. `mysqldump` n'est pas utilisé, car il est souvent absent d'un
   mutualisé.
+- **PostgreSQL** : export SQL depuis PHP, avec lecture cohérente par
+  transaction. Même procédé que MySQL.
 
-Après écriture, la sauvegarde est **relue et vérifiée** (contrôle d'intégrité
-et comptage des tables pour SQLite, marqueur de fin et comptage des
-`CREATE TABLE` pour MySQL). La rotation ne supprime les anciennes sauvegardes
-**qu'après** cette vérification : une sauvegarde ratée n'entraîne jamais la
-perte d'une sauvegarde valide.
+Après écriture, la sauvegarde est **relue et vérifiée par le contenu**
+(empreintes par table calculées et comparées à la source). La rotation ne
+supprime les anciennes sauvegardes **qu'après** cette vérification : une
+sauvegarde ratée n'entraîne jamais la perte d'une sauvegarde valide.
+
+Pour vérifier une archive existante après coup :
+
+```bash
+php api/tools/sauvegarder.php --verifier=/chemin/vers/katech-20260806.sqlite.gz
+```
 
 > **Ne redirigez pas la sortie vers `/dev/null`.** Le CRON de l'hébergeur
 > envoie la sortie du script par courriel, et c'est exactement ainsi qu'un
@@ -519,11 +590,18 @@ d'accueil, vérifier la présence de : `X-Content-Type-Options: nosniff`,
 > `Content-Security-Policy-Report-Only` : les violations restent visibles mais
 > ne sont plus appliquées. Corrigez, puis remettez le nom d'origine.
 
-### Les tâches CRON
+### La page Développeur
+
+Ouvrir `/admin/developpeur` avec le compte propriétaire. Elle doit afficher :
+- le pilote actif (doit correspondre à `DB_DRIVER` dans `api/.env`) ;
+- le nombre de lignes par table (les tables du schéma doivent toutes être là) ;
+- le bouton de sauvegarde téléchargeable.
+
+### La tâche CRON de sauvegarde
 
 Après 24 heures, vérifier qu'un fichier est apparu dans
 `~/katech-data/backups/`. Sinon, lancer la sauvegarde à la main
-([§10](#10-les-deux-tâches-cron)) et lire le message d'erreur.
+([§10](#10-la-tâche-cron-de-sauvegarde)) et lire le message d'erreur.
 
 ---
 
@@ -576,9 +654,9 @@ l'API.
 
 ### « Pilote de base inconnu : « … ». Vérifiez DB_DRIVER dans api/.env »
 
-`DB_DRIVER` contient autre chose que `sqlite` ou `mysql`. Fautes fréquentes :
-espace en fin de ligne, majuscules, guillemets superflus. Écrire exactement
-`DB_DRIVER=mysql`.
+`DB_DRIVER` contient autre chose que `sqlite`, `mysql` ou `pgsql`. Fautes
+fréquentes : espace en fin de ligne, majuscules, guillemets superflus. Écrire
+exactement `DB_DRIVER=mysql` (ou `sqlite`, ou `pgsql`).
 
 ### « L'extension PHP « pdo_mysql » n'est pas activée sur ce serveur »
 
@@ -642,6 +720,22 @@ Message complet : _« La base reste fonctionnelle mais moins concurrente. »_
 Ce n'est **pas** une erreur bloquante : le site fonctionne. C'est un signal
 que le mode WAL n'est pas accepté — surveillez les verrous ci-dessus.
 
+### « Connexion PostgreSQL refusée sur … »
+
+Message complet : _« Vérifiez dans api/.env : DB_HOST, DB_PORT (5432 en direct),
+DB_NAME, DB_USER, DB_PASSWORD — et que la base existe (elle n'est pas créée
+automatiquement). Chez Supabase : DB_SSLMODE=require est OBLIGATOIRE… »_
+
+Dans l'ordre de probabilité :
+
+1. **`DB_SSLMODE=require` manquant** chez Supabase ou un service hébergé : la
+   connexion est refusée sans message explicite mentionnant TLS.
+2. **Port 6543 au lieu de 5432** : le pooler en mode transaction désactive les
+   requêtes préparées côté serveur utilisées par ce projet — erreur différente,
+   mais liée.
+3. La base n'a pas été créée avant l'installation (ce n'est pas automatique
+   en PostgreSQL).
+
 ### « SESSION_SAVE_PATH pointe vers « … », qui n'existe pas et n'a pas pu être créé »
 
 Créer le dossier de sessions, ou retirer la ligne `SESSION_SAVE_PATH` du
@@ -690,7 +784,9 @@ videz-le.
    **Ne pas supprimer** `uploads/`, `api/.env`, ni le dossier `katech-data/`.
 4. Si le code de l'API a changé, remplacer `api/src/`, `api/routes.php`,
    `api/index.php`, `api/schema/`, `api/tools/`. **Ne pas** re-téléverser
-   `install.php`.
+   `install.php`. `api/schema/` contient maintenant trois fichiers
+   (`schema.sqlite.sql`, `schema.mysql.sql`, `schema.pgsql.sql`) — téléverser
+   les trois, même si vous n'utilisez qu'un seul pilote.
 5. Les anciens fichiers de `assets/` peuvent être supprimés : leurs noms
    contiennent une empreinte, les nouveaux ont d'autres noms. En cas de doute,
    les laisser une semaine — un visiteur ayant un onglet ouvert peut encore les
@@ -726,4 +822,5 @@ de vérification du [§11](#11-liste-de-vérification-après-déploiement) :
 
 - `api/.env.example` — toutes les variables de configuration, commentées
 - `docs/BACKEND.md` — architecture de l'API et recette
-- `PLAN.md` — décisions d'architecture, dont le double pilote SQLite / MySQL
+- `docs/MIGRATION.md` — migrer les données entre moteurs (six directions)
+- `PLAN.md` — décisions d'architecture, dont le triple pilote SQLite / MySQL / PostgreSQL

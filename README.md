@@ -1,6 +1,10 @@
-# KA Tech — Frontend React + Vite (SPA)
+# KA Tech — Boutique en ligne (React + PHP)
 
-Application 100 % client, sans backend. `bun run build` produit un dossier `dist/` statique copiable sur n'importe quel serveur web.
+Application e-commerce complète : SPA React/Vite en frontend, API PHP 8.2
+en backend, base de données au choix (`sqlite`, `mysql` ou `pgsql`). Hébergement
+mutualisé sans prérequis exotique : pas de Node.js côté serveur, pas de Composer
+sur le serveur. `bun run build` produit le frontend statique ; `api/` contient
+le backend PHP prêt à déployer.
 
 ## Développement
 
@@ -107,52 +111,60 @@ comme un succès. Rapport : `docs/CONFORMITE-API.md`.
 
 ## Déploiement
 
-Copiez le contenu de `dist/` à la racine web de votre serveur. **Un fallback SPA est indispensable** pour que le rafraîchissement d'une route profonde (`/product/xyz`, `/admin/orders`) serve `index.html`.
+La procédure complète sans SSH est dans `docs/DEPLOIEMENT.md`.
+Résumé :
 
-### nginx
+1. `bun run build` — produit `dist/`.
+2. Téléverser le contenu de `dist/` dans `public_html/` et `api/` dans
+   `public_html/api/`.
+3. Créer `api/.env` à partir de `api/.env.example`. Choisir `DB_DRIVER`
+   (`sqlite`, `mysql` ou `pgsql`).
+4. Ouvrir `/api/install.php` une fois, puis le supprimer.
+
+**La base de données ne doit jamais être dans `public_html`.** La sonde
+`scripts/sonde-hebergeur.php` vérifie que les prérequis sont réunis avant
+l'achat de l'hébergement.
+
+### Où vivent les données
+
+```
+~/
+├── katech-data/          ← HORS public_html (ni SQLite ni sauvegardes ne doivent être en racine web)
+│   ├── katech.sqlite       (si DB_DRIVER=sqlite)
+│   └── backups/
+└── public_html/
+    ├── index.html, assets/
+    ├── uploads/            ← images produits (servis par HTTP)
+    └── api/                ← backend PHP
+```
+
+### Moteurs de base supportés
+
+| `DB_DRIVER` | Quand l'utiliser |
+|-------------|-----------------|
+| `mysql`     | Recommandé chez Hostinger — garanti, sans prérequis |
+| `sqlite`    | Si `pdo_sqlite` est activé et un dossier hors web est inscriptible |
+| `pgsql`     | Si vous utilisez Supabase, Neon, Railway ou un PostgreSQL dédié |
+
+Les données peuvent migrer d'un moteur à l'autre depuis `/admin/developpeur`.
+
+### Fallback SPA (configurations autres que Hostinger)
+
+Le `.htaccess` livré dans `public/` gère le fallback SPA sur Apache/LiteSpeed.
+Sur d'autres serveurs :
+
+#### nginx
 
 ```nginx
-server {
-  listen 80;
-  server_name katech.dz;
-  root /var/www/katech;
-  index index.html;
-
-  # cache long pour les assets hashés
-  location /assets/ {
-    expires 1y;
-    add_header Cache-Control "public, immutable";
-  }
-
-  # fallback SPA
-  location / {
-    try_files $uri $uri/ /index.html;
-  }
+location / {
+  try_files $uri $uri/ /index.html;
 }
 ```
 
-### Apache (`.htaccess` à placer à côté de `index.html`)
-
-```apache
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.html [L]
-</IfModule>
-```
-
-### Caddy
+#### Caddy
 
 ```caddy
-katech.dz {
-  root * /var/www/katech
-  encode gzip
-  try_files {path} /index.html
-  file_server
-}
+try_files {path} /index.html
 ```
 
 ## Comptes de démonstration
@@ -226,10 +238,41 @@ bun run build
 
 ## Architecture
 
+### Frontend
+
 - **React 19** + **Vite 7** + **React Router v6** (SPA)
 - **Tailwind CSS v4** (via `@tailwindcss/vite`)
 - **shadcn/ui** (Radix + variantes), **lucide-react**, **framer-motion**
-- État global : `React Context` (`ThemeProvider`, `I18nProvider`, `AuthProvider`, `StoreProvider`)
-- Persistance client : `localStorage` (panier, favoris, auth mockée)
+- i18n : français / anglais / arabe, texte RTL
+- État global : `React Context` (`ThemeProvider`, `I18nProvider`, `AuthProvider`)
 
-Aucun serveur applicatif n'est requis en Phase 1. Le backend (Bun + Hono + SQLite) sera ajouté en Phase 2.
+### Backend
+
+- **PHP 8.2+**, sans framework ni Composer
+- Routeur maison, PDO, sessions PHP, cookie `httpOnly`
+- Triple pilote : **SQLite**, **MySQL/MariaDB**, **PostgreSQL**
+- Outbox vidée en fin de requête (pas de tâche planifiée pour les emails)
+
+### Où trouver quoi
+
+| Besoin | Fichier |
+|--------|---------|
+| Schéma des tables | `api/schema/` |
+| Contrôleurs API | `api/src/Controllers/` |
+| Connexion et dialectes SQL | `api/src/Db.php` |
+| Migrateur de données | `api/src/Migration/` |
+| Page Développeur (propriétaire) | `src/pages/admin/Developpeur.tsx` |
+| Sonde d'hébergement | `scripts/sonde-hebergeur.php` |
+
+### Quand ça casse
+
+1. Ouvrir `/api/health` — il doit renvoyer `{"data":{"status":"ok",...}}`.
+2. Si la réponse est vide ou en HTML : le `.htaccess` de `api/` est absent
+   ou non lu. Voir `docs/DEPLOIEMENT.md` §13.
+3. Si `/api/health` répond mais l'admin refuse la connexion : vérifier que
+   HTTPS est actif (les cookies de session exigent `Secure`).
+4. En production, les détails d'erreur sont dans le journal PHP du serveur,
+   préfixés `[katech-api]`, jamais dans la réponse au navigateur.
+5. Pour diagnostiquer une base inaccessible : `docs/DEPLOIEMENT.md` §13
+   liste tous les messages produits par `api/src/Db.php` et le geste
+   correctif pour chacun.
