@@ -765,9 +765,41 @@ installés en développement l'a fait apparaître immédiatement.
   (rang `owner`).
 - Vérificateur de parité des trois schémas (`api/tools/verifier-parite-schema.php`).
 
-#### Reste — vague 4.8
+#### Vague 4.8 — EN COURS (6 août 2026)
+
+**Documentation mise à jour** (agent intermédiaire, périmètre : `README.md`,
+`docs/DEPLOIEMENT.md`, `api/.env.example`, `PLAN.md`) :
+
+- `README.md` §"Où vit la base de développement" : section entièrement
+  réécrite. Le tableau des chemins OS (`%LOCALAPPDATA%`, `~/Library/…`,
+  `~/.local/share/…`) était FAUX depuis la migration dans `katech-data/`. La
+  phrase "le script refuse tout emplacement sous htdocs" était FAUSSE : il
+  détecte, protège, et avertit honnêtement — il ne refuse que si les protections
+  ne peuvent pas être posées sur un emplacement dangereux. La commande PowerShell
+  `Remove-Item $LOCALAPPDATA\ka-tech` pointait vers un dossier qui n'existe plus.
+  Ajout de la note "ceci concerne uniquement le dev" (en production : hors racine
+  web). Ajout de `index.php` dans l'arborescence de déploiement avec note PHP
+  obligatoire à la racine.
+
+- `docs/DEPLOIEMENT.md` §4 : `index.php` ajouté à l'arborescence cible
+  (manquant alors que le fichier existe dans `public/`). Troisième règle ajoutée
+  : PHP actif à la racine, déploiement en sous-dossier, nuance build vs
+  commerçant.
+
+- `api/.env.example` : titre de la section Outbox reformulé — "CRON d'émission
+  des événements" impliquait qu'un CRON est nécessaire, alors que l'émission se
+  fait en fin de requête depuis la vague 4.5. `vider-outbox.php` est un outil de
+  réessai manuel.
+
+**Ce qui reste :**
 
 - [ ] 4.8 — bascule `VITE_API_MODE=http` et recette de bout en bout
+
+**Ce qui reste à documenter une fois les autres agents rentrés :**
+les images du catalogue (`public/media/`) et les règles de cache
+(`public/.htaccess`) sont en cours de modification par deux autres agents en
+parallèle — leur état final n'est pas encore stabilisé et n'a pas été documenté
+ici intentionnellement.
 
 ---
 

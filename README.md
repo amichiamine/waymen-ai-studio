@@ -62,27 +62,27 @@ frontend en mode `mock`, pour que rien ne soit bloquant.
 
 ### Où vit la base de développement
 
-Dans le dossier de données de votre compte utilisateur — **jamais sous une
-racine web**, jamais dans le dépôt :
+**Ceci concerne uniquement le poste de développement.** En production, la base
+doit rester hors de la racine web — voir `docs/DEPLOIEMENT.md`.
 
-| Système | Chemin                                             |
-| ------- | -------------------------------------------------- |
-| Windows | `%LOCALAPPDATA%\ka-tech\dev.sqlite`                |
-| macOS   | `~/Library/Application Support/ka-tech/dev.sqlite` |
-| Linux   | `~/.local/share/ka-tech/dev.sqlite`                |
+La base vit dans le projet lui-même : `<projet>/katech-data/`. Son nom est tiré
+au sort au premier démarrage (`dev-2dd162e7e762.sqlite`, par exemple) — un nom
+non devinable est la seule protection qui tienne quel que soit le serveur web
+utilisé. Trois protections s'empilent dans ce dossier : un `.htaccess` (Apache
+et LiteSpeed uniquement — nginx les ignore), un `index.html` anti-listage, et le
+nom non devinable du fichier lui-même.
 
-C'est important : un projet cloné dans `C:\xampp\htdocs\ka-tech` a pour parent
-`htdocs`, la racine web d'Apache. Une base placée là serait téléchargeable à
-`http://localhost/…/dev.sqlite` — comptes, commandes et empreintes de mots de
-passe compris. Le script **refuse** désormais tout emplacement sous `htdocs`,
-`www`, `public_html` ou `wwwroot`.
+> **Si le projet est cloné sous une racine web** (`htdocs`, `www`, `public_html`,
+> `wwwroot`), le script détecte la situation, pose les protections disponibles et
+> affiche un avertissement. La base n'est pas refusée : le client a demandé cet
+> emplacement, il est servi — mais honnêtement informé de ce que les protections
+> ne couvrent pas (nginx notamment).
+>
+> Pour une sécurité qui ne dépend d'aucune de ces trois barrières, pointez la
+> base ailleurs avec `DB_SQLITE_PATH=<chemin hors racine web>`.
 
-Pour repartir de zéro, supprimez le fichier ; il sera recréé et rempli au
-démarrage suivant.
-
-```powershell
-Remove-Item -Recurse -Force $env:LOCALAPPDATA\ka-tech    # PowerShell
-```
+Pour repartir de zéro, supprimez le fichier (le dossier affiche son chemin
+exact au démarrage) ; il sera recréé et rempli au démarrage suivant.
 
 `DB_SQLITE_PATH` reste prioritaire si vous voulez choisir vous-même.
 
@@ -125,6 +125,12 @@ Résumé :
 `scripts/sonde-hebergeur.php` vérifie que les prérequis sont réunis avant
 l'achat de l'hébergement.
 
+**PHP doit être actif à la racine du site.** `public_html/index.php` sert
+`index.html` en y injectant la balise `<base>` calculée à l'exécution, ce qui
+permet de déployer le site dans un sous-dossier (`public_html/ma-boutique/`)
+sans reconstruire. Si PHP n'est pas actif à la racine, les routes profondes
+rechargées échoueront.
+
 ### Où vivent les données
 
 ```
@@ -133,6 +139,7 @@ l'achat de l'hébergement.
 │   ├── katech.sqlite       (si DB_DRIVER=sqlite)
 │   └── backups/
 └── public_html/
+    ├── index.php             ← injecte la balise <base>, permet le sous-dossier
     ├── index.html, assets/
     ├── uploads/            ← images produits (servis par HTTP)
     └── api/                ← backend PHP
@@ -194,7 +201,7 @@ En production, aucun compte n'est semé, aucun mot de passe n'est embarqué dans
 bun run build && grep -r "katech-dev-2026" dist/   # ne doit rien renvoyer
 ```
 
-L'authentification réelle (backend + base de données) sera introduite en phase 4 du `PLAN.md` ; jusque-là, aucune connexion n'est fonctionnelle sur un build de production.
+En mode `mock` (le défaut), la connexion est vérifiée localement dans le navigateur, sans appel serveur. En mode `http` (après la bascule `VITE_API_MODE=http` du build), la vérification passe par l'API PHP avec Argon2id — voir `PLAN.md` §8.
 
 ### Piège : les données semées ne le sont qu'une fois
 
@@ -234,7 +241,7 @@ La commande `bun run build:dev` exécute `vite build --mode development`. En mod
 bun run build
 ```
 
-`bun run build` produit un bundle optimisé sans aucun identifiant embarqué. Aucun accès administrateur n'est fonctionnel avant l'intégration du backend (phase 4 du `PLAN.md`) ; la page de connexion s'affiche mais toute tentative de connexion est refusée.
+`bun run build` produit un bundle optimisé sans aucun identifiant embarqué. En mode `mock` (le défaut), la page de connexion s'affiche mais aucun compte réel n'existe sur le serveur : la connexion fonctionnelle requiert un déploiement avec `VITE_API_MODE=http` et un `api/.env` renseigné — voir `docs/DEPLOIEMENT.md`.
 
 ## Architecture
 

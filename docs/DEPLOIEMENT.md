@@ -81,8 +81,24 @@ c'est ce qui décide si le pilote SQLite est utilisable.
 
 ```bash
 bun install
-bun run build      # produit dist/
+VITE_API_MODE=http bun run build      # produit dist/
 ```
+
+> **`VITE_API_MODE=http` est obligatoire pour un déploiement réel.** Le défaut
+> est `mock` : un build sans cette variable ne parlera jamais à l'API PHP, quelle
+> que soit la configuration du serveur. La valeur est figée au build ; changer
+> `api/.env` après coup n'y changera rien.
+>
+> `VITE_API_BASE_URL` n'est pas à modifier : sa valeur par défaut (`/api/v1`) est
+> un chemin relatif qui fonctionne aussi bien à la racine du domaine que dans un
+> sous-dossier. Une URL absolue briserait la détection automatique.
+>
+> `SITE_URL` fige le domaine dans le sitemap. Exemple :
+> `SITE_URL=https://www.katech.dz VITE_API_MODE=http bun run build`
+>
+> **Si vous recevez un `dist/` déjà construit** (produit par l'équipe de
+> développement), ces trois variables ont déjà été décidées. Vous n'avez que
+> `api/.env` à remplir — voir §7.
 
 ### Après le build — une vérification qui évite une panne difficile à diagnostiquer
 
@@ -121,8 +137,15 @@ gérée côté navigateur et qu'aucun fichier `produits` n'existe sur le disque.
 │
 └── public_html/                    ← LA RACINE WEB. Tout ce qui est ici est public.
     ├── .htaccess                      ← contenu de dist/.htaccess (repli SPA, sécurité, cache)
+    ├── index.php                      ← point d'entrée HTML — injecte la balise <base>
     ├── index.html                     ← contenu de dist/
     ├── favicon.ico
+    ├── favicon.svg
+    ├── apple-touch-icon.png
+    ├── icone-192.png
+    ├── icone-512.png
+    ├── og-image.png
+    ├── manifest.webmanifest
     ├── robots.txt
     ├── sitemap.xml
     ├── assets/                        ← contenu de dist/assets/ (JS, CSS, images empreintés)
@@ -142,7 +165,7 @@ gérée côté navigateur et qu'aucun fichier `produits` n'existe sur le disque.
             └── vider-outbox.php
 ```
 
-### Deux règles qui expliquent toute cette structure
+### Trois règles qui expliquent toute cette structure
 
 1. **Ce qui est dans `public_html` est téléchargeable par n'importe qui.** La
    base de données, les sauvegardes et les secrets n'y sont donc pas. Les
@@ -152,6 +175,31 @@ gérée côté navigateur et qu'aucun fichier `produits` n'existe sur le disque.
 2. **`uploads/` est dans `public_html` — c'est voulu.** Les images produits
    doivent être servies par HTTP. Le `.htaccess` racine y interdit en revanche
    l'exécution de tout `.php`, `.phar`, `.cgi` qui y serait déposé.
+3. **PHP doit être actif à la racine**, pas seulement sous `api/`. Le fichier
+   `public_html/index.php` sert `index.html` en y injectant une balise `<base>`
+   calculée à l'exécution : c'est ce qui permet de déployer le site dans un
+   sous-dossier (`public_html/ma-boutique/`) sans reconstruire. Si PHP n'est pas
+   actif à la racine, les routes rechargées échoueront en dehors de l'accueil.
+
+   > **Déploiement dans un sous-dossier.** Le site fonctionnera à
+   > `https://votre-domaine.dz/ma-boutique/` aussi bien qu'à la racine, sans
+   > reconstruire. Il suffit de téléverser le contenu de `dist/` dans le
+   > sous-dossier voulu. La balise `<base>` est calculée depuis l'URL réelle du
+   > document au moment où le visiteur charge la page.
+   >
+   > **Nuance côté build.** Si vous construisez vous-même le `dist/`, trois
+   > variables se décident AU BUILD et ne peuvent pas être changées après coup :
+   > - `VITE_API_MODE` doit valoir `http` (le défaut est `mock` ; un build en
+   >   `mock` ne parle jamais à l'API, quelle que soit la configuration du
+   >   serveur) ;
+   > - `VITE_API_BASE_URL` doit rester **vide ou un chemin relatif** (`/api/v1`
+   >   est le défaut correct) ; une URL absolue (`https://…`) annulerait la
+   >   détection automatique du sous-dossier ;
+   > - `SITE_URL` fige le domaine dans le sitemap — sans valeur, le sitemap
+   >   utilisera le domaine par défaut `katech.dz`.
+   >
+   > Si vous recevez un `dist/` déjà construit, ces trois variables ont déjà
+   > été décidées : vous n'avez que `api/.env` à remplir.
 
 ---
 
@@ -161,7 +209,8 @@ Avec le gestionnaire de fichiers de hPanel :
 
 1. **Le site** : envoyer le **contenu** de `dist/` dans `public_html/`
    (donc `index.html` directement dans `public_html`, pas dans un sous-dossier
-   `dist`). Vérifier que `public_html/.htaccess` est bien présent.
+   `dist`). Vérifier que `public_html/.htaccess` **et** `public_html/index.php`
+   sont bien présents.
 2. **L'API** : envoyer le dossier `api/` **entier** dans `public_html/`, pour
    obtenir `public_html/api/`. Vérifier que `public_html/api/.htaccess` est
    présent.
@@ -779,9 +828,10 @@ videz-le.
 
 1. **Sauvegarder d'abord** : lancer `api/tools/sauvegarder.php` à la main et
    vérifier que le fichier est bien créé.
-2. `bun run build` en local ; vérifier que `dist/.htaccess` existe.
-3. Remplacer dans `public_html/` : `index.html`, `assets/`, et les fichiers
-   statiques modifiés.
+2. `VITE_API_MODE=http bun run build` en local ; vérifier que `dist/.htaccess`
+   et `dist/index.php` existent.
+3. Remplacer dans `public_html/` : `index.php`, `index.html`, `assets/`, et les
+   fichiers statiques modifiés.
    **Ne pas supprimer** `uploads/`, `api/.env`, ni le dossier `katech-data/`.
 4. Si le code de l'API a changé, remplacer `api/src/`, `api/routes.php`,
    `api/index.php`, `api/schema/`, `api/tools/`. **Ne pas** re-téléverser
