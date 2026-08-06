@@ -40,56 +40,49 @@ PHP, il faut **deux serveurs en parallèle** et une bascule d'environnement.
 > conformes à ce jour. Le mode `http` n'est pas encore un mode de travail
 > confortable.
 
-### 1. Serveur 1 — l'API PHP
-
-Une base dédiée au développement, jamais celle d'un autre travail en cours :
+### 1. Serveur 1 — l'API PHP, en une commande
 
 ```bash
-# a. Installation du schéma + compte propriétaire (une seule fois)
-DB_DRIVER=sqlite DB_SQLITE_PATH=/tmp/katech-dev.sqlite APP_ENV=production \
-  API_BASE_PATH=/ \
-  INSTALL_OWNER_EMAIL=admin@katech.dz INSTALL_OWNER_PASSWORD='Mdp-Dev-2026!' \
-  php api/install.php
-
-# b. Données du frontend (catalogue, blog, tarifs, contenu) — idempotent
-DB_DRIVER=sqlite DB_SQLITE_PATH=/tmp/katech-dev.sqlite \
-  php api/tools/importer-donnees-front.php
-
-# c. Le serveur, à laisser tourner
-DB_DRIVER=sqlite DB_SQLITE_PATH=/tmp/katech-dev.sqlite APP_ENV=production \
-  API_BASE_PATH=/ php -S 127.0.0.1:8160 -t api
+bun run dev:api
 ```
 
-Sonde de disponibilité : `curl http://127.0.0.1:8160/v1/health`.
+Au premier lancement, le script crée la base, importe le catalogue et les
+contenus, puis sert l'API sur **http://127.0.0.1:8160**. Les fois suivantes, il
+démarre directement.
 
-### 2. Serveur 2 — Vite, avec le proxy
+La base vit **hors du dépôt**, dans `../katech-data/dev.sqlite` : elle n'est ni
+commitée, ni servie par un serveur web. Le compte propriétaire créé est
+`admin@katech.dz` / `Mdp-Dev-2026!`.
+
+Sous Windows, PHP doit être dans le `PATH` — XAMPP le fournit, il suffit
+d'ajouter `C:\xampp\php`. Le script le vérifie et le dit s'il manque.
+
+Variables utiles : `API_PORT` change le port, `DB_DRIVER=mysql` bascule de
+pilote, `APP_ENV=development` affiche les traces d'erreur.
+
+### 2. Serveur 2 — le frontend
+
+Dans un **second terminal**, créez `.env.local` avec :
+
+```
+VITE_API_MODE=http
+```
+
+puis :
 
 ```bash
-echo 'VITE_API_MODE=http' >> .env.local     # ou éditer .env.local
-API_PORT=8160 bun run dev
+bun run dev
 ```
 
-`vite.config.ts` achemine tout `/api` vers `http://127.0.0.1:$API_PORT`. Le
-port par défaut est **8160** ; `API_PORT` le change, comme `PORT` change celui
-de Vite.
+Vite achemine `/api` vers l'API PHP. La pilule en bas de l'écran affiche
+désormais **http** au lieu de **mock** : le `localStorage` n'est plus la source
+de vérité, tout passe par la base.
 
 **Pourquoi un proxy est indispensable.** Sans lui, le front (`:8080`) et l'API
-(`:8160`) sont deux **origines** distinctes. Le cookie de session `katech_sid`
-est `HttpOnly` + `SameSite=Lax` : il ne serait ni posé ni renvoyé sur une
-requête inter-origine, et toute route authentifiée répondrait `401`. Le proxy
-ramène l'API sur l'origine du front — exactement la situation de production, où
-front et API partagent le domaine.
-
-Le proxy vit sous `server.proxy` : il **n'existe qu'en développement**. Il
-n'entre dans aucun artefact de `bun run build`, et `bun run preview` n'en
-hérite pas.
-
-**Piège de préfixe.** En production, `api/.htaccess` est monté sous `/api` et
-PHP retire ce préfixe lui-même. En développement, `php -S -t api` a pour racine
-le dossier `api/` : le préfixe `/api` n'existe pas côté serveur. C'est le proxy
-qui le retire. Conséquence : `VITE_API_BASE_URL` doit rester un chemin relatif
-commençant par `/api` (défaut `/api/v1`). Une URL absolue ferait sortir les
-requêtes de l'origine du front et le cookie cesserait d'être envoyé.
+(`:8160`) seraient deux **origines** distinctes. Le cookie de session
+`katech_sid` est `HttpOnly` + `SameSite=Lax` : il ne serait ni posé ni renvoyé,
+et toute route authentifiée répondrait `401`. Le proxy ramène l'API sur
+l'origine du front — exactement la situation de production.
 
 ### 3. Revenir en mode `mock`
 
