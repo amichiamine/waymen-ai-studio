@@ -12,6 +12,9 @@
 
 declare(strict_types=1);
 
+use KaTech\Auth\Garde;
+use KaTech\Auth\MotDePasse;
+use KaTech\Controllers\ControleurAuth;
 use KaTech\Controllers\ControleurAvis;
 use KaTech\Controllers\ControleurBlog;
 use KaTech\Controllers\ControleurCategories;
@@ -45,6 +48,10 @@ $routeur->get('/health', static function (Requete $r) use ($db): Reponse {
         'status' => 'ok',
         'driver' => $db->pilote(),
         'time' => gmdate('c'),
+        // Rend visible l'algorithme qui protege reellement les mots de passe :
+        // Argon2id n'est pas disponible partout, le repli bcrypt ne doit pas
+        // etre silencieux (AGENTS.md section 7).
+        'passwordHashing' => MotDePasse::diagnostic(),
     ]);
 });
 
@@ -53,88 +60,88 @@ $produits = new ControleurProduits($db);
 $routeur->get('/products', [$produits, 'lister']);
 $routeur->get('/products/:id', [$produits, 'detail']);
 
-$routeur->post('/products', [$produits, 'creer']);
-$routeur->patch('/products/:id', [$produits, 'modifier']);
-$routeur->delete('/products/:id', [$produits, 'supprimer']);
-$routeur->patch('/products/:id/stock', [$produits, 'mettreAJourStock']);
+$routeur->post('/products', Garde::protege('create', [$produits, 'creer']));
+$routeur->patch('/products/:id', Garde::protege('update', [$produits, 'modifier']));
+$routeur->delete('/products/:id', Garde::protege('delete', [$produits, 'supprimer']));
+$routeur->patch('/products/:id/stock', Garde::protege('update', [$produits, 'mettreAJourStock']));
 
 $categories = new ControleurCategories($db);
 $routeur->get('/categories', [$categories, 'lister']);
-$routeur->post('/categories', [$categories, 'creer']);
+$routeur->post('/categories', Garde::protege('create', [$categories, 'creer']));
 $routeur->get('/categories/:slug', [$categories, 'detail']);
-$routeur->patch('/categories/:slug', [$categories, 'modifier']);
-$routeur->delete('/categories/:slug', [$categories, 'supprimer']);
+$routeur->patch('/categories/:slug', Garde::protege('update', [$categories, 'modifier']));
+$routeur->delete('/categories/:slug', Garde::protege('delete', [$categories, 'supprimer']));
 
 $marques = new ControleurMarques($db);
 $routeur->get('/brands', [$marques, 'lister']);
-$routeur->post('/brands', [$marques, 'creer']);
+$routeur->post('/brands', Garde::protege('create', [$marques, 'creer']));
 $routeur->get('/brands/:id', [$marques, 'detail']);
-$routeur->patch('/brands/:id', [$marques, 'modifier']);
-$routeur->delete('/brands/:id', [$marques, 'supprimer']);
+$routeur->patch('/brands/:id', Garde::protege('update', [$marques, 'modifier']));
+$routeur->delete('/brands/:id', Garde::protege('delete', [$marques, 'supprimer']));
 
 // ---------------------------------------------------------------- Commerce
 $commandes = new ControleurCommandes($db);
 // ATTENTION : /me/orders est déclarée AVANT /orders/:id, sinon « me » serait
 // capturé comme un identifiant de commande.
-$routeur->get('/me/orders', [$commandes, 'mesCommandes']);
-$routeur->get('/orders', [$commandes, 'lister']);
+$routeur->get('/me/orders', Garde::protegeConnecte([$commandes, 'mesCommandes']));
+$routeur->get('/orders', Garde::protege('read', [$commandes, 'lister']));
 $routeur->post('/orders', [$commandes, 'creer']);
-$routeur->get('/orders/:id', [$commandes, 'detail']);
-$routeur->patch('/orders/:id/status', [$commandes, 'changerStatut']);
-$routeur->delete('/orders/:id', [$commandes, 'supprimer']);
+$routeur->get('/orders/:id', Garde::protege('read', [$commandes, 'detail']));
+$routeur->patch('/orders/:id/status', Garde::protege('update', [$commandes, 'changerStatut']));
+$routeur->delete('/orders/:id', Garde::protege('delete', [$commandes, 'supprimer']));
 
 $clients = new ControleurClients($db);
-$routeur->get('/customers', [$clients, 'lister']);
-$routeur->post('/customers', [$clients, 'creer']);
-$routeur->get('/customers/:id', [$clients, 'detail']);
-$routeur->patch('/customers/:id', [$clients, 'majPartielle']);
-$routeur->delete('/customers/:id', [$clients, 'supprimer']);
+$routeur->get('/customers', Garde::protege('read', [$clients, 'lister']));
+$routeur->post('/customers', Garde::protege('create', [$clients, 'creer']));
+$routeur->get('/customers/:id', Garde::protege('read', [$clients, 'detail']));
+$routeur->patch('/customers/:id', Garde::protege('update', [$clients, 'majPartielle']));
+$routeur->delete('/customers/:id', Garde::protege('delete', [$clients, 'supprimer']));
 
 $coupons = new ControleurCoupons($db);
 // ATTENTION : /coupons/validate AVANT /coupons/:code, même raison.
 $routeur->post('/coupons/validate', [$coupons, 'valider']);
-$routeur->get('/coupons', [$coupons, 'lister']);
-$routeur->post('/coupons', [$coupons, 'creer']);
-$routeur->get('/coupons/:code', [$coupons, 'detail']);
-$routeur->patch('/coupons/:code', [$coupons, 'majPartielle']);
-$routeur->delete('/coupons/:code', [$coupons, 'supprimer']);
+$routeur->get('/coupons', Garde::protege('read', [$coupons, 'lister']));
+$routeur->post('/coupons', Garde::protege('create', [$coupons, 'creer']));
+$routeur->get('/coupons/:code', Garde::protege('read', [$coupons, 'detail']));
+$routeur->patch('/coupons/:code', Garde::protege('update', [$coupons, 'majPartielle']));
+$routeur->delete('/coupons/:code', Garde::protege('delete', [$coupons, 'supprimer']));
 
 // ------------------------------------------------------- Avis et comptes
 $avis = new ControleurAvis($db);
-$routeur->get('/reviews', [$avis, 'lister']);
+$routeur->get('/reviews', Garde::protege('read', [$avis, 'lister']));
 $routeur->get('/products/:id/reviews', [$avis, 'listerParProduit']);
-$routeur->post('/products/:id/reviews', [$avis, 'creer']);
-$routeur->patch('/reviews/:id/status', [$avis, 'moderer']);
-$routeur->delete('/reviews/:id', [$avis, 'supprimer']);
+$routeur->post('/products/:id/reviews', Garde::protegeConnecte([$avis, 'creer']));
+$routeur->patch('/reviews/:id/status', Garde::protege('update', [$avis, 'moderer']));
+$routeur->delete('/reviews/:id', Garde::protege('delete', [$avis, 'supprimer']));
 
 $utilisateurs = new ControleurUtilisateurs($db);
-$routeur->get('/admin/users', [$utilisateurs, 'lister']);
-$routeur->post('/admin/users', [$utilisateurs, 'creer']);
-$routeur->get('/admin/users/:id', [$utilisateurs, 'detail']);
-$routeur->patch('/admin/users/:id', [$utilisateurs, 'mettreAJour']);
-$routeur->patch('/admin/users/:id/password', [$utilisateurs, 'changerMotDePasse']);
-$routeur->delete('/admin/users/:id', [$utilisateurs, 'supprimer']);
+$routeur->get('/admin/users', Garde::protege('read', [$utilisateurs, 'lister']));
+$routeur->post('/admin/users', Garde::protege('manageUsers', [$utilisateurs, 'creer']));
+$routeur->get('/admin/users/:id', Garde::protege('read', [$utilisateurs, 'detail']));
+$routeur->patch('/admin/users/:id', Garde::protege('manageUsers', [$utilisateurs, 'mettreAJour']));
+$routeur->patch('/admin/users/:id/password', Garde::protege('manageUsers', [$utilisateurs, 'changerMotDePasse']));
+$routeur->delete('/admin/users/:id', Garde::protege('manageUsers', [$utilisateurs, 'supprimer']));
 
 // --------------------------------------------------------------- Éditorial
 $blog = new ControleurBlog($db);
 $routeur->get('/blog', [$blog, 'lister']);
-$routeur->post('/blog', [$blog, 'creer']);
+$routeur->post('/blog', Garde::protege('create', [$blog, 'creer']));
 $routeur->get('/blog/:slug', [$blog, 'detail']);
-$routeur->patch('/blog/:slug', [$blog, 'mettreAJour']);
-$routeur->delete('/blog/:slug', [$blog, 'supprimer']);
+$routeur->patch('/blog/:slug', Garde::protege('update', [$blog, 'mettreAJour']));
+$routeur->delete('/blog/:slug', Garde::protege('delete', [$blog, 'supprimer']));
 
 $contenu = new ControleurContenu($db);
 // ATTENTION : /content/home-reviews AVANT /content/:section/reset.
 $routeur->get('/content/home-reviews', [$contenu, 'lireHomeReviews']);
-$routeur->patch('/content/home-reviews', [$contenu, 'mettreAJourHomeReviews']);
+$routeur->patch('/content/home-reviews', Garde::protege('update', [$contenu, 'mettreAJourHomeReviews']));
 $routeur->get('/content', [$contenu, 'lireContenu']);
-$routeur->patch('/content', [$contenu, 'mettreAJourContenu']);
-$routeur->post('/content/:section/reset', [$contenu, 'reinitialiserSection']);
+$routeur->patch('/content', Garde::protege('update', [$contenu, 'mettreAJourContenu']));
+$routeur->post('/content/:section/reset', Garde::protege('update', [$contenu, 'reinitialiserSection']));
 
 $routeur->get('/settings/site', [$contenu, 'lireReglagesSite']);
-$routeur->patch('/settings/site', [$contenu, 'mettreAJourReglagesSite']);
+$routeur->patch('/settings/site', Garde::protege('manageSettings', [$contenu, 'mettreAJourReglagesSite']));
 $routeur->get('/settings/shipping', [$contenu, 'lireReglagesLivraison']);
-$routeur->patch('/settings/shipping', [$contenu, 'mettreAJourReglagesLivraison']);
+$routeur->patch('/settings/shipping', Garde::protege('manageSettings', [$contenu, 'mettreAJourReglagesLivraison']));
 
 // ARBITRAGE DE L'ORCHESTRATEUR — deux agents de la vague 4.2 ont implémenté
 // les tarifs de livraison et les modes de paiement. Le routage désigne les
@@ -142,46 +149,65 @@ $routeur->patch('/settings/shipping', [$contenu, 'mettreAJourReglagesLivraison']
 // les doublons de ControleurContenu ont été retirés.
 $livraison = new ControleurLivraison($db);
 $routeur->get('/settings/shipping/rates', [$livraison, 'lister']);
-$routeur->put('/settings/shipping/rates/:wilayaCode', [$livraison, 'upsertTarif']);
-$routeur->delete('/settings/shipping/rates/:wilayaCode', [$livraison, 'supprimer']);
+$routeur->put('/settings/shipping/rates/:wilayaCode', Garde::protege('manageSettings', [$livraison, 'upsertTarif']));
+$routeur->delete('/settings/shipping/rates/:wilayaCode', Garde::protege('manageSettings', [$livraison, 'supprimer']));
 
 $paiements = new ControleurPaiements($db);
 $routeur->get('/settings/payments', [$paiements, 'lister']);
-$routeur->put('/settings/payments/:id', [$paiements, 'upsertMode']);
-$routeur->delete('/settings/payments/:id', [$paiements, 'supprimer']);
+$routeur->put('/settings/payments/:id', Garde::protege('manageSettings', [$paiements, 'upsertMode']));
+$routeur->delete('/settings/payments/:id', Garde::protege('manageSettings', [$paiements, 'supprimer']));
 
 // ------------------------------------------------------------ Exploitation
 $medias = new ControleurMedias($db);
-$routeur->get('/media', [$medias, 'lister']);
-$routeur->post('/media', [$medias, 'televerser']);
-$routeur->get('/media/:id', [$medias, 'detail']);
-$routeur->delete('/media/:id', [$medias, 'supprimer']);
+$routeur->get('/media', Garde::protege('read', [$medias, 'lister']));
+$routeur->post('/media', Garde::protege('create', [$medias, 'televerser']));
+$routeur->get('/media/:id', Garde::protege('read', [$medias, 'detail']));
+$routeur->delete('/media/:id', Garde::protege('delete', [$medias, 'supprimer']));
 
 $notifs = new ControleurNotifications($db);
-$routeur->get('/notifications', [$notifs, 'lister']);
-$routeur->post('/notifications', [$notifs, 'creer']);
-$routeur->get('/notifications/:id', [$notifs, 'detail']);
-$routeur->patch('/notifications/:id', [$notifs, 'mettreAJour']);
-$routeur->delete('/notifications/:id', [$notifs, 'supprimer']);
+$routeur->get('/notifications', Garde::protege('read', [$notifs, 'lister']));
+$routeur->post('/notifications', Garde::protege('create', [$notifs, 'creer']));
+$routeur->get('/notifications/:id', Garde::protege('read', [$notifs, 'detail']));
+$routeur->patch('/notifications/:id', Garde::protege('update', [$notifs, 'mettreAJour']));
+$routeur->delete('/notifications/:id', Garde::protege('delete', [$notifs, 'supprimer']));
 
 $crm = new ControleurCrm($db);
-$routeur->get('/messages', [$crm, 'listerMessages']);
-$routeur->get('/messages/:id', [$crm, 'detailMessage']);
-$routeur->patch('/messages/:id', [$crm, 'mettreAJourMessage']);
-$routeur->delete('/messages/:id', [$crm, 'supprimerMessage']);
-$routeur->get('/subscribers', [$crm, 'listerAbonnes']);
+$routeur->get('/messages', Garde::protege('read', [$crm, 'listerMessages']));
+$routeur->get('/messages/:id', Garde::protege('read', [$crm, 'detailMessage']));
+$routeur->patch('/messages/:id', Garde::protege('update', [$crm, 'mettreAJourMessage']));
+$routeur->delete('/messages/:id', Garde::protege('delete', [$crm, 'supprimerMessage']));
+$routeur->get('/subscribers', Garde::protege('read', [$crm, 'listerAbonnes']));
 $routeur->post('/subscribers', [$crm, 'inscrire']);
-$routeur->delete('/subscribers/:id', [$crm, 'desinscrire']);
+$routeur->delete('/subscribers/:id', Garde::protege('delete', [$crm, 'desinscrire']));
 
 $journal = new ControleurJournal($db);
-$routeur->get('/analytics/audit', [$journal, 'lister']);
-$routeur->get('/analytics/audit/:id', [$journal, 'detail']);
+$routeur->get('/analytics/audit', Garde::protege('read', [$journal, 'lister']));
+$routeur->get('/analytics/audit/:id', Garde::protege('read', [$journal, 'detail']));
 
 // ----------------------------------------------------------- Stock
 $stock = new ControleurStock($db);
-$routeur->get('/inventory/movements', [$stock, 'lister']);
-$routeur->post('/inventory/:productId/adjust', [$stock, 'ajuster']);
+$routeur->get('/inventory/movements', Garde::protege('read', [$stock, 'lister']));
+$routeur->post('/inventory/:productId/adjust', Garde::protege('update', [$stock, 'ajuster']));
 
-// Reste à brancher : /auth (vague 4.3).
+// ------------------------------------------------------ Authentification
+// Les 8 routes du contrat sont SANS garde : elles gerent elles-memes leur
+// refus, et proteger /auth/login exigerait d'etre deja connecte.
+$auth = new ControleurAuth($db);
+$routeur->post('/auth/register', [$auth, 'inscription']);
+$routeur->post('/auth/login', [$auth, 'connexion']);
+$routeur->post('/auth/logout', [$auth, 'deconnexion']);
+$routeur->get('/auth/me', [$auth, 'session']);
+$routeur->post('/auth/refresh', [$auth, 'rafraichir']);
+$routeur->post('/auth/forgot-password', [$auth, 'motDePasseOublie']);
+$routeur->post('/auth/reset-password', [$auth, 'reinitialiserMotDePasse']);
+$routeur->post('/auth/change-password', [$auth, 'changerMotDePasse']);
+
+// ROUTES PUBLIQUES ASSUMEES, listees ici pour que l'absence de garde soit un
+// choix visible et non un oubli :
+//   GET  /products, /categories, /brands, /blog, /content, /settings/*  → vitrine
+//   POST /orders            → commande invite, usage courant en Algerie
+//   POST /coupons/validate  → verification au panier, avant connexion
+//   POST /subscribers       → inscription a l'infolettre
+//   GET  /products/:id/reviews → avis approuves uniquement (filtre en dur)
 
 return $routeur;
