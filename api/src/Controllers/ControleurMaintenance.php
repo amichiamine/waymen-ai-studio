@@ -16,14 +16,45 @@
  * base, d'en télécharger une sauvegarde et d'en migrer le contenu vers un autre
  * moteur, sans quitter son navigateur.
  *
- * Concernant api/tools/sauvegarder.php : ce script est un travailleur CRON,
- * conçu pour la ligne de commande. Il refuse explicitement tout appel HTTP
- * (§ GARDE D'EXÉCUTION) car son chemin de sauvegarde et sa connexion à la base
- * ne doivent pas être déclenchés depuis un navigateur. Sa logique n'est donc
- * pas réutilisable telle quelle depuis une requête HTTP : c'est la raison pour
- * laquelle le présent contrôleur la réimplémente — sans la dupliquer en douce,
- * mais en partageant les mêmes principes et garanties (cohérence, vérification,
- * en-têtes corrects, pas de fichier tronqué silencieux).
+ * ---------------------------------------------------------------------------
+ * UNE SEULE LOGIQUE DE SAUVEGARDE — et pourquoi ce fichier n'en porte plus
+ * ---------------------------------------------------------------------------
+ * Ce contrôleur a longtemps RÉIMPLÉMENTÉ la sauvegarde : son propre export
+ * MySQL, son propre instantané SQLite, sa propre vérification. Les deux
+ * versions ont divergé, exactement comme il fallait s'y attendre. Pendant que
+ * `api/tools/sauvegarder.php` apprenait à vérifier le CONTENU (empreintes par
+ * table, inscrites dans le fichier, capables de rejuger une archive), le
+ * contrôleur en restait à l'intégrité structurelle et au comptage de tables :
+ * une sauvegarde amputée d'une ligne y passait sans un mot. Le commerçant
+ * utilisait le chemin le moins sûr — celui-là même que personne ne testait —
+ * et il ne savait pas exporter une base PostgreSQL du tout.
+ *
+ * Il n'y a donc plus ici la moindre ligne d'export ni de vérification. La route
+ * `/maintenance/backup` DÉLÈGUE à `api/tools/sauvegarder.php`, l'outil éprouvé,
+ * puis se contente de renvoyer au navigateur le fichier qu'il a produit et
+ * validé. Un seul algorithme, un seul jeu de garanties, trois pilotes.
+ *
+ * COMMENT, PUISQUE L'OUTIL REFUSE D'ÊTRE APPELÉ EN HTTP.
+ * Sa garde (§ GARDE D'EXÉCUTION) refuse un SAPI web ou la présence de variables
+ * de requête HTTP. Elle protège contre l'appel de son URL par un navigateur —
+ * et elle a raison : ce script ne doit jamais être une page. Elle n'interdit
+ * pas, en revanche, qu'un processus PHP le lance EN LIGNE DE COMMANDE, ce qui
+ * est précisément le contexte pour lequel il est écrit. Le contrôleur ouvre
+ * donc un processus fils `php api/tools/sauvegarder.php …`, avec un
+ * environnement construit par LISTE BLANCHE : aucune variable de requête ne
+ * traverse, la garde est respectée dans sa lettre comme dans son intention.
+ * `require` était impossible (le fichier s'exécute à l'inclusion et sortirait
+ * en 403 avant tout) ; le sous-processus est la réutilisation propre.
+ *
+ * CE QUE ÇA COÛTE, ET CE QUE ÇA ÉVITE.
+ * Il faut un binaire PHP en ligne de commande et `proc_open`. Sur un mutualisé
+ * qui interdit l'un ou l'autre, la route échoue — bruyamment, en nommant la
+ * cause et le geste correctif (installer le CRON documenté). C'est un choix
+ * assumé : une sauvegarde produite par un second chemin non éprouvé est
+ * exactement l'accident dont ce commentaire décrit la réparation. Mieux vaut
+ * un écran qui dit « utilisez le CRON » qu'un fichier auquel on ne peut pas
+ * se fier. `PHP_CLI_BINARY` (api/.env) permet de nommer le binaire quand il
+ * n'est pas dans le PATH — cas fréquent : `/usr/local/bin/php8.2`.
  */
 
 declare(strict_types=1);
@@ -74,22 +105,18 @@ final class ControleurMaintenance
         $pilote = $this->db->pilote();
 
         // ---------- Identification de la base (sans exposer de secret) ----------
-        if ($this->db->estSqlite()) {
-            $chemin = (string) $this->db->cheminSqlite();
-            $nomBase = basename($chemin);
-            // La taille du fichier renseigne sur l'espace occupé sans révéler le chemin.
-            $tailleOctets = is_file($chemin) ? (int) filesize($chemin) : null;
-        } else {
-            // En MySQL, le nom de la base est public (CREATE DATABASE l'expose) ;
-            // en revanche le host, le port et l'utilisateur ne doivent PAS sortir.
-            $nomBase = (string) ($this->db->valeur('SELECT DATABASE()') ?? '');
-            // Taille agrégée des tables (information_schema est toujours lisible).
-            $tailleOctets = (int) $this->db->valeur(
-                "SELECT COALESCE(SUM(data_length + index_length), 0)
-                   FROM information_schema.tables
-                  WHERE table_schema = DATABASE()"
-            );
-        }
+        // UNE BRANCHE PAR PILOTE, sans branche par défaut. Le « si SQLite, sinon
+        // c'est forcément MySQL » qui régnait ici envoyait `SELECT DATABASE()`
+        // — fonction MySQL — à PostgreSQL, qui répond « function database() does
+        // not exist » : l'écran Développeur était en panne sèche sur une
+        // boutique en pgsql. Un quatrième pilote ajouté à `Db::PILOTES` lèvera
+        // ici une `UnhandledMatchError` visible, plutôt que d'emprunter en
+        // silence le dialecte d'un autre moteur (même règle qu'install.php).
+        [$nomBase, $tailleOctets] = match ($pilote) {
+            Db::PILOTE_SQLITE => $this->identiteSqlite(),
+            Db::PILOTE_MYSQL => $this->identiteMysql(),
+            Db::PILOTE_PGSQL => $this->identitePgsql(),
+        };
 
         // ---------- Nombre de lignes par table (tableau ordonné pour l'interface) ----------
         // L'interface affiche une liste ordonnée, pas une carte nom→nombre.
@@ -124,47 +151,48 @@ final class ControleurMaintenance
     /**
      * GET /maintenance/backup
      *
-     * Produit une sauvegarde de la base et l'envoie directement au navigateur
-     * en téléchargement. Aucun fichier n'est conservé sur le serveur.
+     * Produit une sauvegarde de la base et l'envoie au navigateur en
+     * téléchargement. Aucun fichier n'est conservé sur le serveur.
      *
-     * Garanties héritées de api/tools/sauvegarder.php :
-     *   1. Cohérence    — SQLite : VACUUM INTO (instantané dans une transaction
-     *                     de lecture, jamais de copie brute). MySQL : transaction
-     *                     REPEATABLE READ ouverte avant la première lecture.
-     *   2. Vérification — la sauvegarde est contrôlée AVANT d'être envoyée.
-     *   3. Pas de fichier tronqué — si l'envoi échoue en cours de route, le
-     *                     navigateur reçoit un fichier incomplet. Ce cas est
-     *                     inévitable avec un flux HTTP : voir la section
-     *                     LIMITATION FONDAMENTALE ci-dessous.
-     *   4. Nom parlant  — contient le pilote et l'horodatage UTC.
+     * CE QUE FAIT RÉELLEMENT CETTE MÉTHODE : presque rien. Elle demande à
+     * `api/tools/sauvegarder.php` de produire la sauvegarde dans un dossier
+     * temporaire privé, lui demande ensuite de la REJUGER (`--verifier=…`),
+     * et n'envoie le fichier que si les deux étapes ont réussi. Voir l'en-tête
+     * de ce fichier pour le pourquoi de cette délégation.
      *
-     * LIMITATION FONDAMENTALE.
-     * Le pire scénario d'une sauvegarde est un fichier tronqué que le
-     * propriétaire croit valide. En HTTP, ce risque ne peut pas être
-     * complètement éliminé : les en-têtes sont envoyés avant le corps, et si
-     * la connexion est coupée à mi-chemin, le navigateur enregistre ce qu'il a
-     * reçu. Deux mesures atténuent ce risque :
-     *   a) Pour SQLite : la sauvegarde est produite dans un fichier temporaire,
-     *      vérifiée (intégrité, nombre de tables), puis envoyée en une seule
-     *      passe depuis ce fichier — si la vérification échoue, rien n'est
-     *      envoyé du tout.
-     *   b) Pour MySQL : le corps SQL se termine par un marqueur « FIN DE
-     *      SAUVEGARDE » ; si le propriétaire voit ce marqueur en fin de fichier,
-     *      il sait que la sauvegarde est complète.
-     *   c) L'en-tête Content-Length est positionné pour SQLite (taille connue
-     *      à l'avance) : le navigateur peut ainsi détecter un fichier tronqué.
-     *   Pour MySQL, le flux est produit sans bufferiser l'intégralité en
-     *   mémoire (contrainte mutualisé 128 Mo), donc Content-Length ne peut pas
-     *   être posé à l'avance.
+     * Garanties, toutes tenues par l'outil et non par ce contrôleur :
+     *   1. Cohérence     — SQLite : « VACUUM INTO » ou `SQLite3::backup()`,
+     *                      jamais une copie brute. MySQL : transaction
+     *                      REPEATABLE READ avec instantané cohérent.
+     *                      PostgreSQL : REPEATABLE READ READ ONLY (MVCC).
+     *   2. Vérification  — par le CONTENU, empreinte par empreinte, table par
+     *                      table. Une sauvegarde amputée d'une seule ligne est
+     *                      REFUSÉE, et rien n'est envoyé au navigateur.
+     *   3. Trois pilotes — y compris PostgreSQL/Supabase, que l'ancienne
+     *                      version de cette route ne savait pas exporter.
+     *   4. Nom parlant   — `katech-AAAAMMJJ-HHMMSS.sqlite|.sql`, horodatage UTC,
+     *                      exactement le nom que le CRON écrit dans BACKUP_DIR.
      *
-     * Cette méthode NE RETOURNE PAS de Reponse : elle écrit directement sur la
-     * sortie PHP via les en-têtes HTTP et flush, puis arrête l'exécution.
-     * C'est le seul cas dans le projet où un contrôleur sort du cycle normal
-     * (Requete → Reponse) — justifié par la nature binaire/streaming de la
-     * sauvegarde.
+     * FICHIER TRONQUÉ EN COURS DE TRANSFERT.
+     * Le pire scénario reste un fichier incomplet que le propriétaire croit
+     * valide. Trois éléments le rendent détectable, et c'est un progrès sur
+     * l'état antérieur où l'export MySQL partait sans taille annoncée :
+     *   a) `Content-Length` est TOUJOURS posé — la taille est connue puisque le
+     *      fichier existe entièrement avant le premier octet envoyé. Un
+     *      navigateur signale un téléchargement plus court que l'annonce ;
+     *   b) `X-KaTech-Backup-SHA256` permet une vérification manuelle après
+     *      téléchargement (`sha256sum` / « Get-FileHash ») ;
+     *   c) le fichier lui-même porte ses empreintes et son marqueur de fin :
+     *      `php api/tools/sauvegarder.php --verifier=…` rejuge l'archive des
+     *      mois plus tard, sans la restaurer.
+     *
+     * Cette méthode NE RETOURNE PAS de Reponse : elle écrit le corps sur la
+     * sortie PHP puis arrête l'exécution. C'est le seul endroit du projet où un
+     * contrôleur sort du cycle Requete → Reponse, justifié par la nature
+     * binaire du téléchargement.
      *
      * @throws ApiException 403 si l'appelant n'est pas owner
-     * @throws ApiException 500 si la sauvegarde échoue
+     * @throws ApiException 503 si la sauvegarde échoue ou est refusée
      * @return never
      */
     public function sauvegarder(Requete $r): never
@@ -172,18 +200,22 @@ final class ControleurMaintenance
         // Un admin ne peut pas exfiltrer l'intégralité de la base : seul l'owner passe.
         Garde::exiger('owner');
 
-        $horodatage = gmdate('Ymd-His');
-        $pilote = $this->db->pilote();
+        $dossier = $this->dossierTemporaire();
 
-        if ($this->db->estSqlite()) {
-            $this->envoyerSqlite($horodatage);
-        } else {
-            $this->envoyerMysql($horodatage);
+        try {
+            $fichier = $this->produireSauvegarde($dossier);
+            $this->verifierSauvegarde($fichier);
+        } catch (\Throwable $e) {
+            // Aucun octet n'a encore été écrit : on peut encore répondre en
+            // JSON. Le dossier temporaire part avec l'échec — une sauvegarde
+            // refusée ne doit surtout pas rester traîner sur le disque, où
+            // quelqu'un finirait par la prendre pour bonne.
+            $this->effacerDossier($dossier);
+
+            throw $e;
         }
 
-        // envoyerSqlite / envoyerMysql terminent avec exit — cette ligne est
-        // morte mais satisfait le typage « never ».
-        exit(0);
+        $this->envoyerFichier($fichier, $dossier);
     }
 
     /**
@@ -329,417 +361,604 @@ final class ControleurMaintenance
     }
 
     // =========================================================================
-    // SQLite
+    // Délégation à api/tools/sauvegarder.php
     // =========================================================================
+    // Il n'y a volontairement AUCUNE logique d'export ni de vérification dans
+    // cette section : uniquement de quoi lancer l'outil, l'écouter, et rendre
+    // ses échecs lisibles par le propriétaire.
 
     /**
-     * Instantané cohérent puis envoi HTTP.
+     * Produit la sauvegarde en confiant le travail à l'outil.
      *
-     * Même logique que api/tools/sauvegarder.php → sauvegarderSqlite() :
-     * VACUUM INTO d'abord, SQLite3::backup() en repli. On refuse copy() :
-     * un instantané en milieu de transaction WAL produirait un fichier
-     * ouvert sans erreur mais potentiellement corrompu.
+     * @throws ApiException
+     * @return string chemin du fichier produit
+     */
+    private function produireSauvegarde(string $dossier): string
+    {
+        $resultat = $this->executerOutil([
+            '--destination=' . $dossier,
+            // Le dossier est privé et ne contient que cette sauvegarde : la
+            // rotation n'a rien à y supprimer. L'important est ailleurs —
+            // `--destination` détourne l'outil de BACKUP_DIR, où vivent les
+            // sauvegardes du CRON. Un simple téléchargement ne doit JAMAIS
+            // effacer l'une d'elles.
+            '--garder=1',
+            // Pas de gzip : le propriétaire reçoit un fichier directement
+            // restaurable, et la vérification porte sur ces octets-là.
+            '--sans-compression',
+        ], 'la production de la sauvegarde');
+
+        $fichiers = array_values(array_filter(
+            (array) glob($dossier . '/katech-*'),
+            static fn (string $f): bool => is_file($f)
+                && preg_match('/^katech-\d{8}-\d{6}\.(sqlite|sql)$/', basename($f)) === 1
+        ));
+
+        if ($fichiers === []) {
+            // L'outil sort en 0 sans rien produire dans un cas précis : une
+            // autre sauvegarde tient déjà le verrou (CRON en cours). Le dire
+            // clairement vaut mieux qu'un « erreur interne » : le geste
+            // correctif est d'attendre une minute.
+            if (str_contains($resultat['sortie'], 'déjà en cours')) {
+                throw new ApiException(503, 'BACKUP_ERROR',
+                    'Une sauvegarde est déjà en cours sur ce serveur (tâche planifiée). '
+                    . 'Attendez qu\'elle se termine, puis réessayez.'
+                );
+            }
+
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'L\'outil de sauvegarde s\'est terminé sans produire de fichier. '
+                . $this->extraitLisible($resultat['sortie'])
+            );
+        }
+
+        if (count($fichiers) > 1) {
+            // Impossible en théorie (dossier créé pour cette requête). Si cela
+            // arrive, on refuse plutôt que d'envoyer un fichier au hasard.
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'Plusieurs fichiers de sauvegarde ont été produits pour une seule demande : '
+                . 'situation anormale, aucun n\'est envoyé.'
+            );
+        }
+
+        return $fichiers[0];
+    }
+
+    /**
+     * Fait REJUGER par l'outil le fichier exact qui va partir vers le
+     * navigateur (`--verifier=…`).
      *
-     * La sauvegarde passe par un fichier temporaire pour permettre la
-     * vérification (intégrité + nombre de tables) AVANT l'envoi. Si la
-     * vérification échoue, aucun octet n'est envoyé au navigateur.
+     * Pourquoi une seconde passe, alors que l'outil vérifie déjà ce qu'il
+     * produit : la première vérification porte sur ce qui vient d'être écrit,
+     * celle-ci porte sur ce qu'on s'apprête à LIRE. Elle attrape ce qui
+     * pourrait avoir abîmé le fichier entre-temps (disque plein, système de
+     * fichiers réseau d'un mutualisé). Elle coûte une relecture ; la sûreté
+     * des sauvegardes est la priorité énoncée par le propriétaire.
+     *
+     * Ce que cette vérification sait refuser, parce que c'est celle de l'outil :
+     * une ligne modifiée, une ligne supprimée, un fichier tronqué. Les trois
+     * cas ont été éprouvés, pas seulement raisonnés.
+     *
+     * NUANCE SQLITE. Pour un instantané SQLite, `--verifier` compare l'archive
+     * à la base TELLE QU'ELLE EST maintenant. Si une commande est enregistrée
+     * pendant ces quelques secondes, l'outil le détecte (il relit la source
+     * deux fois) et se contente d'un avertissement. Le seul verdict fatal reste
+     * « base stable ET contenu divergent », c'est-à-dire une vraie infidélité.
+     *
+     * @throws ApiException
+     */
+    private function verifierSauvegarde(string $fichier): void
+    {
+        $this->exigerMarqueurDeFin($fichier);
+
+        $resultat = $this->executerOutil(
+            ['--verifier=' . $fichier],
+            'la vérification de la sauvegarde'
+        );
+
+        if ($resultat['code'] !== 0) {
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'SAUVEGARDE REFUSÉE : la vérification par le contenu a échoué, le fichier N\'A PAS '
+                . 'été envoyé. Ne vous fiez pas à une sauvegarde antérieure sans l\'avoir vérifiée. '
+                . $this->extraitLisible($resultat['sortie'])
+            );
+        }
+    }
+
+    /**
+     * Refuse un export SQL qui ne se termine pas par son marqueur de fin.
+     *
+     * TROU MESURÉ DANS `--verifier`, ET POURQUOI CES QUELQUES LIGNES EXISTENT.
+     * Un export MySQL tronqué à 60 % PASSE `--verifier` : les empreintes y sont
+     * écrites table par table, au fil de l'export, si bien que la partie
+     * conservée reste cohérente avec les empreintes qu'elle porte. La
+     * vérification faite au moment de la PRODUCTION, elle, contrôle le marqueur
+     * de fin (`verifierSauvegardeSql()`) et attrape le cas ; `--verifier`
+     * (`verifierSauvegardeExistante()`) ne le contrôle pas. Éprouvé : les trois
+     * autres formes de dégât (ligne modifiée, ligne supprimée, troncature d'un
+     * fichier SQLite ou PostgreSQL) sont bien refusées, celle-ci ne l'était pas.
+     *
+     * Le correctif propre appartient à `api/tools/sauvegarder.php` (ajouter le
+     * contrôle du marqueur dans `verifierSauvegardeExistante`), hors du
+     * périmètre de ce fichier. En attendant, la route refuse ici plutôt que
+     * d'envoyer un fichier amputé : c'est un contrôle d'exhaustivité sur les
+     * octets à expédier, pas une seconde implémentation de la vérification.
+     *
+     * Un instantané SQLite n'a pas de marqueur : sa troncature est déjà
+     * attrapée par `PRAGMA integrity_check` (« database disk image is
+     * malformed »), lui aussi éprouvé.
+     *
+     * @throws ApiException
+     */
+    private function exigerMarqueurDeFin(string $fichier): void
+    {
+        if (!str_ends_with($fichier, '.sql')) {
+            return;
+        }
+
+        $taille = (int) filesize($fichier);
+        $handle = @fopen($fichier, 'rb');
+        if ($handle === false) {
+            throw new ApiException(503, 'BACKUP_ERROR', 'La sauvegarde produite est illisible.');
+        }
+        fseek($handle, max(0, $taille - 200));
+        $fin = (string) fread($handle, 200);
+        fclose($handle);
+
+        if (!str_contains($fin, 'FIN DE SAUVEGARDE')) {
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'SAUVEGARDE REFUSÉE : le fichier ne se termine pas par son marqueur de fin, il est '
+                . 'donc TRONQUÉ (disque plein, ou délai d\'exécution dépassé). Rien n\'a été envoyé : '
+                . 'une sauvegarde amputée qu\'on croit valide est le pire des cas.'
+            );
+        }
+    }
+
+    /**
+     * Lance l'outil en ligne de commande et attend son verdict.
+     *
+     * Trois précautions portent la sûreté de cet appel :
+     *   - la commande est passée en TABLEAU : aucun shell n'est invoqué, donc
+     *     aucun caractère du chemin temporaire ne peut être interprété ;
+     *   - l'environnement du fils est construit par LISTE BLANCHE (voir
+     *     `environnementCli()`) : aucune variable de requête HTTP ne traverse,
+     *     la garde d'exécution de l'outil est respectée ;
+     *   - un budget de temps borne l'attente : un fils bloqué est tué et le
+     *     propriétaire reçoit un message qui nomme la cause.
+     *
+     * @param list<string> $arguments
+     * @param string       $quoi      Ce qu'on tentait de faire, pour les messages.
+     * @throws ApiException
+     * @return array{code:int,sortie:string}
+     */
+    private function executerOutil(array $arguments, string $quoi): array
+    {
+        if (!function_exists('proc_open')) {
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'La sauvegarde depuis le navigateur exige la fonction PHP « proc_open », désactivée '
+                . 'sur ce serveur (directive disable_functions). Deux issues : demander son activation '
+                . 'à l\'hébergeur, ou programmer la tâche CRON documentée dans docs/DEPLOIEMENT.md, '
+                . 'qui produit les mêmes sauvegardes sans passer par le navigateur. '
+                . 'Aucune sauvegarde de secours n\'est improvisée ici : elle ne serait pas vérifiée '
+                . 'par le même contrôle, et une sauvegarde à laquelle on ne peut pas se fier ne vaut '
+                . 'pas mieux que pas de sauvegarde.'
+            );
+        }
+
+        $script = dirname(__DIR__, 2) . '/tools/sauvegarder.php';
+        if (!is_file($script)) {
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'L\'outil de sauvegarde « api/tools/sauvegarder.php » est absent du serveur : '
+                . 'le téléversement du dossier api/tools/ est incomplet.'
+            );
+        }
+
+        $commande = array_merge([$this->binairePhpCli(), $script], $arguments);
+
+        $descripteurs = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $processus = @proc_open($commande, $descripteurs, $tuyaux, dirname($script), $this->environnementCli());
+        if (!is_resource($processus)) {
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'Impossible de lancer l\'outil de sauvegarde en ligne de commande. '
+                . 'Vérifiez que « proc_open » est autorisée et que PHP_CLI_BINARY désigne un binaire valide.'
+            );
+        }
+
+        // Le fils ne lit rien : fermer son entrée évite qu'il attende un EOF.
+        fclose($tuyaux[0]);
+        stream_set_blocking($tuyaux[1], false);
+        stream_set_blocking($tuyaux[2], false);
+
+        $budget = $this->budgetSecondes();
+        $limite = microtime(true) + $budget;
+        $sortie = '';
+
+        while (true) {
+            $sortie .= (string) stream_get_contents($tuyaux[1]);
+            $sortie .= (string) stream_get_contents($tuyaux[2]);
+
+            $etat = proc_get_status($processus);
+            if ($etat['running'] !== true) {
+                break;
+            }
+            if (microtime(true) > $limite) {
+                // Un fils qui dépasse le budget est tué : sans cela, la requête
+                // HTTP mourrait de son côté (max_execution_time) en laissant
+                // tourner un export orphelin qui écrit dans un dossier
+                // temporaire que plus personne ne supprimera.
+                proc_terminate($processus, 9);
+                fclose($tuyaux[1]);
+                fclose($tuyaux[2]);
+                proc_close($processus);
+
+                throw new ApiException(503, 'BACKUP_ERROR', sprintf(
+                    'La sauvegarde a dépassé le budget de %d secondes et a été interrompue : aucun '
+                    . 'fichier n\'est envoyé. Une base devenue trop volumineuse pour être sauvegardée '
+                    . 'depuis le navigateur doit l\'être par la tâche CRON (docs/DEPLOIEMENT.md), qui '
+                    . 'ne subit pas cette limite. Le budget se règle par BACKUP_HTTP_BUDGET_S.',
+                    $budget
+                ));
+            }
+
+            // 50 ms : assez court pour ne pas allonger la requête, assez long
+            // pour ne pas tourner à vide sur le processeur du mutualisé.
+            usleep(50000);
+        }
+
+        // Dernière lecture : ce que le fils a écrit juste avant de sortir.
+        $sortie .= (string) stream_get_contents($tuyaux[1]);
+        $sortie .= (string) stream_get_contents($tuyaux[2]);
+        fclose($tuyaux[1]);
+        fclose($tuyaux[2]);
+
+        $code = proc_close($processus);
+
+        if ($code !== 0) {
+            // L'outil échoue TOUJOURS en expliquant pourquoi (droits, espace
+            // disque, contenu divergent…). Ce message est justement ce dont le
+            // propriétaire a besoin : on le transmet plutôt que de le remplacer
+            // par « une erreur est survenue ».
+            Db::journaliserStatique('[maintenance] Outil de sauvegarde en échec (code ' . $code . ') : ' . $sortie);
+
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'Échec de ' . $quoi . '. ' . $this->extraitLisible($sortie)
+            );
+        }
+
+        return ['code' => $code, 'sortie' => $sortie];
+    }
+
+    /**
+     * Chemin du binaire PHP en ligne de commande.
+     *
+     * Trois sources, dans l'ordre :
+     *   1. `PHP_CLI_BINARY` (api/.env) — le seul réglage fiable chez un
+     *      mutualisé où `php` dans le PATH est un PHP 5.6 hérité et où le bon
+     *      binaire s'appelle `/usr/local/bin/php8.2` ;
+     *   2. `PHP_BINARY` quand on tourne déjà en CLI (outils, recette) ;
+     *   3. `PHP_BINDIR/php`, puis les noms usuels trouvés dans le PATH.
+     *
+     * Chaque candidat est SONDÉ avant d'être retenu, et la sonde est en lecture
+     * seule : on lui fait afficher son SAPI. Un `php-cgi` déguisé en `php`
+     * répondrait « cgi-fcgi » et serait écarté — il émettrait des en-têtes au
+     * milieu de la sauvegarde, et surtout la garde de l'outil le refuserait.
+     *
+     * @throws ApiException
+     */
+    private function binairePhpCli(): string
+    {
+        static $resolu = null;
+        if (is_string($resolu)) {
+            return $resolu;
+        }
+
+        $candidats = [];
+
+        $configure = trim((string) (\KaTech\Env::get('PHP_CLI_BINARY', '') ?? ''));
+        if ($configure !== '') {
+            $candidats[] = $configure;
+        }
+        if (PHP_SAPI === 'cli' && PHP_BINARY !== '') {
+            $candidats[] = PHP_BINARY;
+        }
+        if (PHP_BINDIR !== '') {
+            $candidats[] = PHP_BINDIR . '/php';
+        }
+        foreach (['php', 'php8', 'php8.4', 'php8.3', 'php8.2', 'php-cli'] as $nom) {
+            foreach (explode(PATH_SEPARATOR, (string) getenv('PATH')) as $dossier) {
+                if ($dossier !== '') {
+                    $candidats[] = rtrim($dossier, '/') . '/' . $nom;
+                }
+            }
+        }
+
+        $vus = [];
+        foreach ($candidats as $candidat) {
+            if (isset($vus[$candidat]) || !is_file($candidat) || !is_executable($candidat)) {
+                continue;
+            }
+            $vus[$candidat] = true;
+            if ($this->estBinaireCli($candidat)) {
+                return $resolu = $candidat;
+            }
+        }
+
+        throw new ApiException(503, 'BACKUP_ERROR',
+            'Aucun binaire PHP en ligne de commande n\'a été trouvé sur ce serveur. La sauvegarde '
+            . 'depuis le navigateur en a besoin, parce qu\'elle confie le travail à l\'outil éprouvé '
+            . 'api/tools/sauvegarder.php plutôt que d\'en refaire une seconde version. '
+            . 'Indiquez le chemin du binaire dans api/.env (PHP_CLI_BINARY=/usr/local/bin/php8.2, '
+            . 'chemin visible dans le panneau de l\'hébergeur, rubrique « Tâches CRON »), ou '
+            . 'programmez directement la tâche CRON de docs/DEPLOIEMENT.md.'
+        );
+    }
+
+    /** Sonde en lecture seule : le binaire répond-il « cli » ? */
+    private function estBinaireCli(string $binaire): bool
+    {
+        $descripteurs = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+        $processus = @proc_open(
+            [$binaire, '-r', 'echo PHP_SAPI;'],
+            $descripteurs,
+            $tuyaux,
+            null,
+            $this->environnementCli()
+        );
+        if (!is_resource($processus)) {
+            return false;
+        }
+
+        fclose($tuyaux[0]);
+        // La sonde est bornée : un binaire qui n'affiche rien ne doit pas
+        // bloquer la requête. `stream_set_timeout` suffit ici, la sortie
+        // attendue tient en trois octets.
+        stream_set_timeout($tuyaux[1], 5);
+        $sortie = trim((string) stream_get_contents($tuyaux[1]));
+        stream_get_contents($tuyaux[2]);
+        fclose($tuyaux[1]);
+        fclose($tuyaux[2]);
+        proc_close($processus);
+
+        return $sortie === 'cli';
+    }
+
+    /**
+     * Environnement du processus fils, construit par LISTE BLANCHE.
+     *
+     * Une liste noire serait un piège : il suffirait d'une variable de requête
+     * oubliée (`REQUEST_METHOD`, `HTTP_HOST`, `REQUEST_URI`…) pour que l'outil
+     * se croie appelé par un navigateur, refuse de s'exécuter et rende la
+     * sauvegarde impossible — sans que personne comprenne pourquoi. On ne
+     * transmet donc QUE ce dont l'outil a besoin.
+     *
+     * Les identifiants de base en font partie : quand la configuration vient de
+     * l'environnement réel plutôt que de api/.env (SetEnv Apache, conteneur),
+     * le fils ne les retrouverait nulle part sinon. Il tourne sous le même
+     * utilisateur système que ce processus : rien n'est exposé de plus.
+     *
+     * @return array<string,string>
+     */
+    private function environnementCli(): array
+    {
+        $cles = [
+            // Exécution
+            'PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL',
+            'SystemRoot', 'ComSpec', 'PHPRC', 'PHP_CLI_BINARY',
+            // Application
+            'APP_ENV',
+            // Base de données
+            'DB_DRIVER', 'DB_SQLITE_PATH', 'DB_HOST', 'DB_PORT', 'DB_NAME',
+            'DB_USER', 'DB_PASSWORD', 'DB_SSLMODE',
+            // Sauvegarde
+            'BACKUP_DIR', 'BACKUP_KEEP', 'BACKUP_COMPRESS',
+        ];
+
+        $env = [];
+        foreach ($cles as $cle) {
+            $valeur = getenv($cle);
+            if (is_string($valeur) && $valeur !== '') {
+                $env[$cle] = $valeur;
+            }
+        }
+
+        return $env;
+    }
+
+    /**
+     * Budget d'attente du processus fils, en secondes.
+     *
+     * Défaut 120 s : au-delà, sur un mutualisé, la requête HTTP est de toute
+     * façon condamnée, et la bonne réponse est le CRON.
+     */
+    private function budgetSecondes(): int
+    {
+        $budget = \KaTech\Env::int('BACKUP_HTTP_BUDGET_S', 120);
+
+        return $budget > 0 ? $budget : 120;
+    }
+
+    /**
+     * Dossier temporaire privé pour cette requête.
+     *
+     * Droits 0700 : le fichier contient TOUTE la base — clients, commandes,
+     * empreintes de mots de passe. Sur un mutualisé, les dossiers temporaires
+     * sont parfois partagés entre comptes.
+     *
+     * @throws ApiException
+     */
+    private function dossierTemporaire(): string
+    {
+        $dossier = sys_get_temp_dir() . '/katech-bak-' . bin2hex(random_bytes(8));
+
+        if (!@mkdir($dossier, 0700) && !is_dir($dossier)) {
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'Impossible de créer un dossier temporaire pour la sauvegarde. '
+                . 'Le dossier temporaire de PHP est-il plein ou en lecture seule ?'
+            );
+        }
+
+        return $dossier;
+    }
+
+    /** Supprime le dossier temporaire et tout ce qu'il contient. */
+    private function effacerDossier(string $dossier): void
+    {
+        foreach ((array) glob($dossier . '/*') as $fichier) {
+            if (is_string($fichier) && is_file($fichier)) {
+                @unlink($fichier);
+            }
+        }
+        @rmdir($dossier);
+    }
+
+    /**
+     * Envoie le fichier au navigateur, puis efface toute trace sur le serveur.
      *
      * @throws ApiException
      * @return never
      */
-    private function envoyerSqlite(string $horodatage): never
+    private function envoyerFichier(string $fichier, string $dossier): never
     {
-        $source = (string) $this->db->cheminSqlite();
-
-        if (!is_file($source)) {
-            throw new ApiException(503, 'BACKUP_ERROR',
-                "La base SQLite est introuvable. L'installation a-t-elle été effectuée ?"
-            );
-        }
-        if (!is_readable($source)) {
-            throw new ApiException(503, 'BACKUP_ERROR',
-                'La base SQLite n\'est pas lisible par PHP. Vérifiez les droits du fichier.'
-            );
-        }
-
-        // Fichier temporaire : s'il est valide, on l'envoie ; sinon on le supprime et on échoue proprement.
-        $tmp = tempnam(sys_get_temp_dir(), 'katech-bak-');
-        if ($tmp === false) {
-            throw new ApiException(503, 'BACKUP_ERROR',
-                'Impossible de créer un fichier temporaire pour la sauvegarde.'
-            );
-        }
-
-        // Le fichier créé par tempnam est vide ; VACUUM INTO exige qu'il n'existe pas
-        // encore, ou qu'il soit un fichier SQLite valide. On le supprime pour laisser
-        // SQLite le créer lui-même avec la bonne structure de page.
-        @unlink($tmp);
-
-        $methode = null;
-
-        // --- 1. VACUUM INTO (SQLite 3.27+, aucune extension supplémentaire) --
-        try {
-            $pdo = $this->db->pdo();
-            $pdo->exec('VACUUM INTO ' . $pdo->quote($tmp));
-            $methode = 'VACUUM INTO';
-        } catch (\Throwable $e) {
-            Db::journaliserStatique('[maintenance] VACUUM INTO indisponible : ' . $e->getMessage() . ', tentative SQLite3::backup().');
-            @unlink($tmp);
-        }
-
-        // --- 2. SQLite3::backup() (API officielle de sauvegarde en ligne) -----
-        if ($methode === null && class_exists('SQLite3') && method_exists('SQLite3', 'backup')) {
-            try {
-                $src = new \SQLite3($source, SQLITE3_OPEN_READONLY);
-                $dst = new \SQLite3($tmp, SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
-                $src->busyTimeout(10000);
-                if (!$src->backup($dst)) {
-                    throw new \RuntimeException('SQLite3::backup() a renvoyé false.');
-                }
-                $src->close();
-                $dst->close();
-                $methode = 'SQLite3::backup()';
-            } catch (\Throwable $e) {
-                @unlink($tmp);
-                throw new ApiException(503, 'BACKUP_ERROR',
-                    'Les deux mécanismes de sauvegarde SQLite ont échoué : ' . $e->getMessage()
-                    . ' — La copie brute n\'est pas proposée en repli car elle pourrait livrer un fichier corrompu.'
-                );
-            }
-        }
-
-        if ($methode === null) {
-            @unlink($tmp);
-            throw new ApiException(503, 'BACKUP_ERROR',
-                'Aucun mécanisme de sauvegarde SQLite disponible : VACUUM INTO a échoué et l\'extension '
-                . 'sqlite3 est absente. Activez l\'extension sqlite3 dans le panneau de l\'hébergeur, '
-                . 'ou basculez sur MySQL.'
-            );
-        }
-
-        // --- Vérification avant envoi (l'intégrité est contrôlée ici) --------
-        $this->verifierSauvegardeSqlite($tmp);
-
-        $taille = (int) filesize($tmp);
+        $taille = (int) filesize($fichier);
         if ($taille === 0) {
-            @unlink($tmp);
+            $this->effacerDossier($dossier);
+
             throw new ApiException(503, 'BACKUP_ERROR', 'La sauvegarde produite est vide.');
         }
 
-        // --- Envoi HTTP -------------------------------------------------------
-        $nomFichier = 'katech-' . $horodatage . '.sqlite';
+        $empreinte = hash_file('sha256', $fichier);
 
-        // SHA-256 du fichier : le propriétaire peut le vérifier après téléchargement
-        // pour s'assurer que le fichier n'a pas été altéré pendant le transit.
-        $empreinte = hash_file('sha256', $tmp);
-
-        $handle = @fopen($tmp, 'rb');
+        $handle = @fopen($fichier, 'rb');
         if ($handle === false) {
-            @unlink($tmp);
-            throw new ApiException(503, 'BACKUP_ERROR', 'Impossible d\'ouvrir le fichier temporaire pour l\'envoi.');
+            $this->effacerDossier($dossier);
+
+            throw new ApiException(503, 'BACKUP_ERROR',
+                'Impossible d\'ouvrir la sauvegarde pour l\'envoyer.'
+            );
         }
 
-        // Les en-têtes sont posés en une seule fois avant le premier octet du corps.
-        // Content-Length est connu : le navigateur peut détecter un fichier tronqué.
+        // index.php a ouvert un tampon de sortie pour capturer les sorties
+        // parasites. On le VIDE (et on le jette) avant le premier octet du
+        // corps : un avertissement PHP collé en tête d'un fichier SQLite le
+        // rendrait illisible.
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         if (!headers_sent()) {
             http_response_code(200);
             header('Content-Type: application/octet-stream');
-            // « attachment » force le téléchargement, « inline » afficherait le binaire.
-            header('Content-Disposition: attachment; filename="' . $nomFichier . '"');
+            // « attachment » force le téléchargement ; « inline » afficherait
+            // le binaire dans l'onglet.
+            header('Content-Disposition: attachment; filename="' . basename($fichier) . '"');
+            // Toujours connu, pour les trois pilotes : le fichier est complet
+            // avant que l'envoi ne commence. Un téléchargement plus court que
+            // cette annonce est signalé par le navigateur.
             header('Content-Length: ' . $taille);
-            // L'empreinte voyage dans un en-tête non standard, visible dans les outils
-            // de développement ou avec curl -I. Elle ne prouve pas l'intégrité de la
-            // transmission (man-in-the-middle), mais elle permet une vérification
-            // manuelle côté propriétaire.
             header('X-KaTech-Backup-SHA256: ' . ($empreinte !== false ? $empreinte : 'indisponible'));
-            header('X-KaTech-Backup-Method: ' . $methode);
+            // Trace explicite du producteur : si un jour deux chemins de
+            // sauvegarde réapparaissent, cet en-tête dira lequel a répondu.
+            header('X-KaTech-Backup-Producer: api/tools/sauvegarder.php');
+            header('X-KaTech-Backup-Verified: contenu (empreintes par table)');
             header('Cache-Control: no-store, no-cache, must-revalidate');
             header('Pragma: no-cache');
         }
 
-        // Envoi en blocs de 256 Ko : économise la mémoire sur mutualisé.
+        // Blocs de 256 Ko : la mémoire d'un mutualisé (128 Mo) ne doit jamais
+        // avoir à contenir la base entière.
         while (!feof($handle)) {
             $bloc = fread($handle, 262144);
-            if ($bloc !== false) {
-                echo $bloc;
+            if ($bloc === false) {
+                break;
             }
-            // flush() pousse le bloc vers le navigateur sans attendre la fin ;
-            // si la connexion est rompue en cours d'envoi, l'exécution continue
-            // jusqu'à la fin (PHP ne détecte pas la déconnexion dans ce contexte)
-            // mais le fichier téléchargé sera tronqué. Le Content-Length posé
-            // ci-dessus permet au navigateur de le détecter.
-            if (ob_get_level() > 0) {
-                ob_flush();
-            }
+            echo $bloc;
             flush();
         }
 
         fclose($handle);
-        @unlink($tmp);
+        $this->effacerDossier($dossier);
 
         exit(0);
     }
 
     /**
-     * Vérifie l'intégrité d'une sauvegarde SQLite et que le nombre de tables
-     * correspond à la base source. Lève une ApiException si la vérification échoue.
+     * Extrait présentable de la sortie de l'outil.
      *
-     * @throws ApiException
+     * On garde les DERNIÈRES lignes : le diagnostic utile de l'outil est
+     * toujours en fin de sortie (« ÉCHEC : … »), le début n'étant que le
+     * déroulé. La sortie passe par `sansDsn()` — l'outil ne journalise pas de
+     * DSN, mais un message d'erreur PDO remonté tel quel pourrait en contenir.
      */
-    private function verifierSauvegardeSqlite(string $cheminTmp): void
+    private function extraitLisible(string $sortie): string
     {
-        if (!is_file($cheminTmp) || filesize($cheminTmp) === 0) {
-            throw new ApiException(503, 'BACKUP_ERROR',
-                'La sauvegarde n\'a pas été écrite ou est vide après l\'instantané.'
-            );
-        }
-
-        try {
-            $copie = new \PDO('sqlite:' . $cheminTmp, null, null, [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            ]);
-
-            $integrite = (string) ($copie->query('PRAGMA integrity_check')?->fetchColumn() ?? '');
-            if (strtolower($integrite) !== 'ok') {
-                throw new ApiException(503, 'BACKUP_ERROR',
-                    "Contrôle d'intégrité de la sauvegarde ÉCHOUÉ : {$integrite}. Fichier non envoyé."
-                );
-            }
-
-            $nbCopie = (int) $copie->query(
-                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
-            )?->fetchColumn();
-
-            $nbSource = (int) $this->db->valeur(
-                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
-            );
-
-            if ($nbCopie !== $nbSource) {
-                throw new ApiException(503, 'BACKUP_ERROR',
-                    "La sauvegarde contient {$nbCopie} table(s) mais la base en compte {$nbSource}. "
-                    . 'Sauvegarde incomplète, fichier non envoyé.'
-                );
-            }
-        } catch (ApiException $e) {
-            throw $e;
-        } catch (\PDOException $e) {
-            throw new ApiException(503, 'BACKUP_ERROR',
-                'La sauvegarde produite est illisible : ' . $e->getMessage()
-            );
-        }
-    }
-
-    // =========================================================================
-    // MySQL
-    // =========================================================================
-
-    /**
-     * Export SQL complet d'une base MySQL, envoyé en streaming sans buffériser
-     * l'intégralité en mémoire.
-     *
-     * Cohérence : transaction REPEATABLE READ ouverte AVANT la première lecture,
-     * comme --single-transaction de mysqldump. Aucun verrou sur les tables InnoDB.
-     *
-     * Un marqueur « FIN DE SAUVEGARDE » est écrit en dernière ligne : son absence
-     * dans le fichier téléchargé signale un export tronqué.
-     *
-     * @throws ApiException
-     * @return never
-     */
-    private function envoyerMysql(string $horodatage): never
-    {
-        $pdo = $this->db->pdo();
-
-        $nomBase = (string) ($pdo->query('SELECT DATABASE()')?->fetchColumn() ?? '');
-        $nomFichier = 'katech-' . $horodatage . '.sql';
-
-        // En-têtes HTTP AVANT d'ouvrir la transaction : s'ils échouent, on n'a
-        // rien commencé. En MySQL, Content-Length est inconnu à l'avance
-        // (on ne bufférise pas) donc on n'en pose pas.
-        if (!headers_sent()) {
-            http_response_code(200);
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . $nomFichier . '"');
-            header('Cache-Control: no-store, no-cache, must-revalidate');
-            header('Pragma: no-cache');
-            // Le marqueur de fin est la seule preuve d'exhaustivité disponible ici.
-            header('X-KaTech-Backup-Verify: Fichier complet si la dernière ligne contient "FIN DE SAUVEGARDE"');
-        }
-
-        // Tampon de sortie : on s'assure que les blocs partent vers le navigateur
-        // au fil de l'export, pas accumulés en mémoire.
-        if (ob_get_level() > 0) {
-            ob_end_flush();
-        }
-
-        try {
-            $pdo->exec('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-            $pdo->exec('START TRANSACTION /*!40100 WITH CONSISTENT SNAPSHOT */');
-
-            $this->echoFlush("-- Sauvegarde KA Tech Hub\n");
-            $this->echoFlush('-- Base    : ' . $nomBase . "\n");
-            $this->echoFlush('-- Date    : ' . gmdate('c') . " (UTC)\n");
-            $this->echoFlush("-- Produit par ControleurMaintenance (compatible phpMyAdmin)\n");
-            $this->echoFlush("--\n-- Restauration : voir docs/DEPLOIEMENT.md\n\n");
-            $this->echoFlush("SET NAMES utf8mb4;\n");
-            $this->echoFlush("SET FOREIGN_KEY_CHECKS = 0;\n");
-            $this->echoFlush("SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n");
-            $this->echoFlush("SET time_zone = '+00:00';\n\n");
-
-            $tables = [];
-            $vues = [];
-            foreach ($pdo->query('SHOW FULL TABLES', \PDO::FETCH_NUM) as $ligne) {
-                if (strtoupper((string) $ligne[1]) === 'VIEW') {
-                    $vues[] = (string) $ligne[0];
-                } else {
-                    $tables[] = (string) $ligne[0];
-                }
-            }
-
-            if ($tables === [] && $vues === []) {
-                throw new ApiException(503, 'BACKUP_ERROR',
-                    "La base « {$nomBase} » ne contient aucune table. L'installation a-t-elle été effectuée ?"
-                );
-            }
-
-            $nbTables = 0;
-            $nbLignes = 0;
-
-            foreach ($tables as $table) {
-                $nbTables++;
-                $q = '`' . str_replace('`', '``', $table) . '`';
-
-                $creation = $pdo->query("SHOW CREATE TABLE {$q}", \PDO::FETCH_NUM)?->fetch();
-                if (!is_array($creation) || !isset($creation[1])) {
-                    throw new ApiException(503, 'BACKUP_ERROR',
-                        "Impossible de lire la structure de la table « {$table} »."
-                    );
-                }
-
-                $this->echoFlush("\n-- ---------------------------------------------------------\n");
-                $this->echoFlush("-- Table {$table}\n");
-                $this->echoFlush("-- ---------------------------------------------------------\n");
-                $this->echoFlush("DROP TABLE IF EXISTS {$q};\n");
-                $this->echoFlush($creation[1] . ";\n\n");
-
-                $nbLignes += $this->exporterLignesMysql($pdo, $table, $q);
-            }
-
-            foreach ($vues as $vue) {
-                $q = '`' . str_replace('`', '``', $vue) . '`';
-                $creation = $pdo->query("SHOW CREATE VIEW {$q}", \PDO::FETCH_NUM)?->fetch();
-                if (is_array($creation) && isset($creation[1])) {
-                    $this->echoFlush("\nDROP VIEW IF EXISTS {$q};\n");
-                    $this->echoFlush($creation[1] . ";\n");
-                }
-            }
-
-            $this->echoFlush("\nSET FOREIGN_KEY_CHECKS = 1;\n");
-            // Marqueur de fin : son absence dans le fichier téléchargé signale un export tronqué.
-            $this->echoFlush("-- FIN DE SAUVEGARDE {$nbTables} table(s), {$nbLignes} ligne(s)\n");
-
-            $pdo->exec('COMMIT');
-        } catch (ApiException $e) {
-            // On ne peut plus annuler les en-têtes HTTP déjà envoyés.
-            // On essaie d'écrire le message d'erreur dans le fichier pour que
-            // le propriétaire le voie plutôt qu'un fichier tronqué silencieux.
-            $this->echoFlush("\n-- ERREUR PENDANT L'EXPORT : " . $e->getMessage() . "\n");
-            $this->echoFlush("-- FICHIER INCOMPLET — NE PAS UTILISER POUR UNE RESTAURATION.\n");
-            Db::journaliserStatique('[maintenance] Échec export MySQL : ' . $e->getMessage());
-            try {
-                $pdo->exec('ROLLBACK');
-            } catch (\Throwable) {
-            }
-            exit(1);
-        } catch (\Throwable $e) {
-            $this->echoFlush("\n-- ERREUR INTERNE PENDANT L'EXPORT\n");
-            $this->echoFlush("-- FICHIER INCOMPLET — NE PAS UTILISER POUR UNE RESTAURATION.\n");
-            Db::journaliserStatique('[maintenance] Échec export MySQL inattendu : ' . $e->getMessage());
-            try {
-                $pdo->exec('ROLLBACK');
-            } catch (\Throwable) {
-            }
-            exit(1);
-        }
-
-        exit(0);
-    }
-
-    /**
-     * Exporte les lignes d'une table MySQL en INSERT, par paquets de 200.
-     * Ne charge jamais la table entière en mémoire (limite mutualisé : ~128 Mo).
-     *
-     * @return int nombre de lignes exportées
-     */
-    private function exporterLignesMysql(\PDO $pdo, string $table, string $tableQuotee): int
-    {
-        $st = $pdo->prepare("SELECT * FROM {$tableQuotee}");
-        $st->execute();
-
-        $nb = 0;
-        $tampon = [];
-        $colonnes = null;
-
-        while (($ligne = $st->fetch(\PDO::FETCH_ASSOC)) !== false) {
-            $colonnes ??= array_keys($ligne);
-
-            $valeurs = [];
-            foreach ($ligne as $valeur) {
-                $valeurs[] = $this->quoterValeurMysql($pdo, $valeur);
-            }
-            $tampon[] = '(' . implode(',', $valeurs) . ')';
-            $nb++;
-
-            if (count($tampon) >= 200) {
-                $this->viderTamponMysql($tableQuotee, $colonnes, $tampon);
-            }
-        }
-
-        if ($tampon !== [] && $colonnes !== null) {
-            $this->viderTamponMysql($tableQuotee, $colonnes, $tampon);
-        }
-
-        return $nb;
-    }
-
-    /**
-     * @param list<string> $colonnes
-     * @param list<string> $tampon
-     */
-    private function viderTamponMysql(string $tableQuotee, array $colonnes, array &$tampon): void
-    {
-        if ($tampon === []) {
-            return;
-        }
-        $liste = implode(',', array_map(
-            static fn (string $c): string => '`' . str_replace('`', '``', $c) . '`',
-            $colonnes
+        $lignes = array_values(array_filter(
+            array_map('trim', explode("\n", $sortie)),
+            static fn (string $l): bool => $l !== ''
         ));
-        $this->echoFlush("INSERT INTO {$tableQuotee} ({$liste}) VALUES\n" . implode(",\n", $tampon) . ";\n");
-        $tampon = [];
+
+        if ($lignes === []) {
+            return 'L\'outil n\'a produit aucun message ; consultez le journal d\'erreurs PHP du serveur.';
+        }
+
+        $extrait = implode(' | ', array_slice($lignes, -4));
+        if (strlen($extrait) > 1200) {
+            $extrait = substr($extrait, 0, 1200) . '…';
+        }
+
+        return 'Message de l\'outil : ' . $this->sansDsn($extrait);
     }
 
-    /** Rend une valeur PHP sous forme de littéral SQL sûr pour MySQL. */
-    private function quoterValeurMysql(\PDO $pdo, mixed $valeur): string
+    // =========================================================================
+    // Identité de la base — une méthode par pilote
+    // =========================================================================
+    // Chaque méthode rend le couple [nom affichable, taille en octets ou null].
+    // Le nom de la base est public (il figure dans le panneau de l'hébergeur) ;
+    // l'hôte, le port, l'utilisateur et le mot de passe ne sortent JAMAIS.
+
+    /** @return array{0:string,1:?int} */
+    private function identiteSqlite(): array
     {
-        if ($valeur === null) {
-            return 'NULL';
-        }
-        if (is_int($valeur) || is_float($valeur)) {
-            return (string) $valeur;
-        }
-        if (is_bool($valeur)) {
-            return $valeur ? '1' : '0';
-        }
+        $chemin = (string) $this->db->cheminSqlite();
 
-        $texte = (string) $valeur;
+        // Le nom de FICHIER suffit à s'y retrouver ; le chemin complet dirait à
+        // un visiteur où tenter de télécharger la base.
+        return [
+            basename($chemin),
+            is_file($chemin) ? (int) filesize($chemin) : null,
+        ];
+    }
 
-        // Les données binaires (BLOB) ne survivent pas à l'échappement textuel.
-        if (!mb_check_encoding($texte, 'UTF-8')) {
-            return '0x' . bin2hex($texte);
-        }
+    /** @return array{0:string,1:?int} */
+    private function identiteMysql(): array
+    {
+        return [
+            (string) ($this->db->valeur('SELECT DATABASE()') ?? ''),
+            // Taille agrégée des tables : information_schema est lisible par
+            // tout utilisateur, y compris le compte restreint d'un mutualisé.
+            (int) $this->db->valeur(
+                "SELECT COALESCE(SUM(data_length + index_length), 0)
+                   FROM information_schema.tables
+                  WHERE table_schema = DATABASE()"
+            ),
+        ];
+    }
 
-        return $pdo->quote($texte);
+    /** @return array{0:string,1:?int} */
+    private function identitePgsql(): array
+    {
+        // `current_database()` est l'équivalent PostgreSQL de `DATABASE()`.
+        // `pg_database_size()` donne la taille réelle sur disque, index compris
+        // — plus juste que la somme des tables rendue en MySQL, mais la
+        // grandeur affichée reste comparable.
+        return [
+            (string) ($this->db->valeur('SELECT current_database()') ?? ''),
+            (int) $this->db->valeur('SELECT pg_database_size(current_database())'),
+        ];
     }
 
     // =========================================================================
@@ -753,25 +972,33 @@ final class ControleurMaintenance
      * affiche les tables en liste ordonnée et non sous forme de carte clé→valeur.
      * L'ordre alphabétique est stable et indépendant du pilote.
      *
-     * Les noms de tables sont lus depuis le schéma interne de la base
-     * (sqlite_master / information_schema), jamais depuis une entrée utilisateur.
-     * Chaque nom est ensuite passé par Db::identifiant() avant interpolation.
+     * Les noms de tables sont lus depuis le catalogue interne de la base
+     * (sqlite_master / information_schema / pg_tables), jamais depuis une
+     * entrée utilisateur. Chaque nom est ensuite passé par Db::identifiant()
+     * avant interpolation.
+     *
+     * Ici encore, un `match` sans branche par défaut : `DATABASE()` envoyé à
+     * PostgreSQL était l'autre moitié de la panne de l'écran Développeur.
      *
      * @return list<array{name:string,rows:int}>
      */
     private function tablesEnListe(): array
     {
-        if ($this->db->estSqlite()) {
-            $lignes = $this->db->tous(
-                "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
-            );
-        } else {
-            $lignes = $this->db->tous(
-                "SELECT table_name AS name FROM information_schema.tables
-                  WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'
-                  ORDER BY table_name"
-            );
-        }
+        $sql = match ($this->db->pilote()) {
+            Db::PILOTE_SQLITE => "SELECT name FROM sqlite_master "
+                . "WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+            Db::PILOTE_MYSQL => 'SELECT table_name AS name FROM information_schema.tables '
+                . "WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' "
+                . 'ORDER BY table_name',
+            // `current_schemas(false)` suit le `search_path` réel : écrire
+            // « public » en dur casserait sur un Supabase au schéma
+            // personnalisé, et compterait les tables d'une autre application
+            // sur un serveur partagé (même raisonnement qu'install.php).
+            Db::PILOTE_PGSQL => 'SELECT tablename AS name FROM pg_catalog.pg_tables '
+                . 'WHERE schemaname = ANY (current_schemas(false)) ORDER BY tablename',
+        };
+
+        $lignes = $this->db->tous($sql);
 
         $resultat = [];
         foreach ($lignes as $l) {
@@ -952,20 +1179,5 @@ final class ControleurMaintenance
 
         // Retire aussi les mots de passe qui auraient pu se glisser (best-effort).
         return (string) preg_replace('/(password|pwd|motdepasse)[=:][^\s,;)\"\']+/i', '$1=[masqué]', $filtre);
-    }
-
-    /**
-     * Écrit du texte sur la sortie et vide immédiatement les tampons.
-     *
-     * Sur mutualisé, les tampons de sortie PHP peuvent retenir des données.
-     * flush() seul ne suffit pas si ob_start() a été appelé quelque part.
-     */
-    private function echoFlush(string $texte): void
-    {
-        echo $texte;
-        if (ob_get_level() > 0) {
-            ob_flush();
-        }
-        flush();
     }
 }
