@@ -653,6 +653,36 @@ function seedReviews(): Review[] {
  * Provisoire de la phase mock : remplacé en phase 4 (PLAN.md) par une
  * authentification serveur.
  */
+/**
+ * Mot de passe de développement par défaut des cinq comptes semés.
+ *
+ * Pourquoi il existe : sans lui, un développeur qui n'a pas créé de
+ * `.env.local` obtenait des comptes **sans aucun mot de passe**. La connexion
+ * était alors soit impossible, soit — pire, et c'est le défaut corrigé ici —
+ * accordée quel que soit le mot de passe saisi par un repli de `signIn`. Semer
+ * un mot de passe connu et identique pour les cinq comptes garde la démo
+ * utilisable sans configuration **tout en faisant réellement vérifier le mot
+ * de passe**.
+ *
+ * `VITE_DEV_SEED_CREDENTIALS` reste prioritaire : dès qu'un compte y figure,
+ * c'est ce mot de passe-là qui est semé, pas celui-ci.
+ *
+ * Garde fail-closed identique à celle de `readDevSeedCredentials` : la valeur
+ * n'est renvoyée que si `import.meta.env.MODE === "development"`. Elle est
+ * volontairement écrite **à l'intérieur** de la fonction, après la garde, afin
+ * que le remplacement statique de Vite (`MODE` → `"production"`) rende la
+ * ligne littéralement inatteignable et que le minifieur la supprime du bundle
+ * de production. Ne jamais la remonter au niveau du module : le littéral
+ * survivrait alors dans `dist/`.
+ *
+ * Provisoire de la phase mock, comme tout ce bloc : disparaît en phase 4 avec
+ * l'authentification serveur.
+ */
+export function devDefaultSeedPassword(): string {
+  if (import.meta.env.MODE !== "development") return "";
+  return "katech-dev-2026";
+}
+
 function readDevSeedCredentials(): Map<string, string> {
   const credentials = new Map<string, string>();
   if (import.meta.env.MODE !== "development") return credentials;
@@ -728,10 +758,12 @@ function seedUsers(): AdminUser[] {
     },
   ];
 
-  // En production `devCredentials` est toujours vide : la table `users` est
+  // En production `devCredentials` est toujours vide et
+  // `devDefaultSeedPassword()` renvoie une chaîne vide : la table `users` est
   // alors semée sans aucun mot de passe.
+  const fallback = devDefaultSeedPassword();
   return users.map((u) => {
-    const password = devCredentials.get(u.email.toLowerCase());
+    const password = devCredentials.get(u.email.toLowerCase()) || fallback;
     return password ? { ...u, password } : u;
   });
 }
@@ -2034,6 +2066,18 @@ export function verifyUserCredentials(email: string, password: string): AdminUse
   if (u.password !== password) return null;
   return u;
 }
+/**
+ * Emails des comptes actifs dépourvus de mot de passe — donc **incapables** de
+ * se connecter en mode mock.
+ *
+ * Sert à rendre cet état dégradé visible dans l'interface (`DataModeBadge`)
+ * plutôt que de le laisser silencieux (AGENTS.md §7). Ne renvoie aucun mot de
+ * passe, seulement des emails déjà présents dans l'état.
+ */
+export function listUsersWithoutPassword(): string[] {
+  return state.users.filter((u) => u.active && !u.password).map((u) => u.email);
+}
+
 export function findUserByEmail(email: string): AdminUser | undefined {
   return state.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
 }

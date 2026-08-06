@@ -9,8 +9,8 @@
  *
  * Pourquoi ici et pas dans `src/api/resources/auth.ts` : cette ressource-là est
  * volontairement http-seulement (elle lève une erreur explicite en mock). Le
- * chemin mock — le repli de développement, la vérification contre `users`, la
- * création de compte — vit donc dans ce module, qui possède les deux branches.
+ * chemin mock — la vérification contre `users`, la création de compte — vit donc
+ * dans ce module, qui possède les deux branches.
  *
  * Contrairement aux autres ressources, ce module n'utilise pas `useResource` :
  * une session n'est pas une entité listable et son cycle de vie est porté par
@@ -75,31 +75,22 @@ export const authProvider = {
       return { ok: true, user: session.user };
     }
 
+    // Un mot de passe faux est refusé en développement comme en production,
+    // sans exception : `verifyUserCredentials` est le seul juge.
+    //
+    // Il existait ici un repli conditionné à `import.meta.env.DEV` qui accordait
+    // la connexion lorsque le compte trouvé n'avait aucun mot de passe (comptes
+    // semés sans `VITE_DEV_SEED_CREDENTIALS`). Il a été supprimé : il
+    // transformait silencieusement une erreur de configuration en absence totale
+    // d'authentification, à l'endroit exact où l'on croit tester
+    // l'authentification. Ne jamais le réintroduire, sous aucune garde.
+    //
+    // La bonne intention d'origine — des comptes de démonstration utilisables
+    // sans configuration — est désormais tenue en amont : `admin-store` sème un
+    // mot de passe de développement par défaut (`DEV_DEFAULT_SEED_PASSWORD`)
+    // quand la variable est absente, et la vérification a réellement lieu.
     const found = verifyUserCredentials(input.email, input.password);
-    if (!found) {
-      // Commodité de développement uniquement : les comptes semés (seed) n'ont
-      // pas de mot de passe en production (voir import.meta.env.MODE dans
-      // admin-store). En DEV, on autorise l'accès si un compte de même email
-      // existe sans mot de passe, afin que les comptes de démonstration soient
-      // utilisables sans avoir configuré .env.local.
-      // Ce chemin est INTERDIT en production : un compte sans mot de passe ne
-      // doit jamais permettre une connexion, quelle que soit la valeur saisie.
-      // La garde `import.meta.env.DEV` est éliminée du build de production par
-      // le remplacement statique de Vite : ne jamais la remplacer par une
-      // variable d'environnement lisible à l'exécution.
-      if (import.meta.env.DEV) {
-        const known = findUserByEmail(input.email);
-        if (known && !known.password) {
-          console.warn(
-            "[auth] auth de développement : connexion accordée sans vérification du mot de passe" +
-              " — ce chemin est absent du build de production",
-          );
-          touchUserLogin(known.email);
-          return { ok: true, user: toAuthUser(known) };
-        }
-      }
-      return { ok: false, message: "Identifiants invalides." };
-    }
+    if (!found) return { ok: false, message: "Identifiants invalides." };
 
     touchUserLogin(found.email);
     return { ok: true, user: toAuthUser(found) };
