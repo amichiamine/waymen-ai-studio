@@ -154,7 +154,8 @@ final class ControleurCrm
 
     /**
      * GET /messages
-     * Filtres : isRead (booléen), search (name, email, subject, body).
+     * Filtres : read (booléen, `isRead` toléré en repli), search (name, email,
+     * subject, message).
      * → { data: { items, total, page, perPage } }
      */
     public function listerMessages(Requete $r): Reponse
@@ -162,7 +163,13 @@ final class ControleurCrm
         $where  = [];
         $params = [];
 
-        if (($v = $r->queryBool('isRead')) !== null) {
+        // Même nom que le champ rendu par le DTO (`read`), pour que filtrer
+        // s'écrive comme lire. `isRead` reste accepté en repli.
+        $lu = $r->queryBool('read');
+        if ($lu === null) {
+            $lu = $r->queryBool('isRead');
+        }
+        if (($v = $lu) !== null) {
             $where[] = 'is_read = :isRead';
             $params[':isRead'] = $v ? 1 : 0;
         }
@@ -211,8 +218,15 @@ final class ControleurCrm
 
     /**
      * PATCH /messages/:id
-     * Corps : { isRead: bool }
-     * → { data: Message }
+     * Corps : { read: bool }
+     * → { data: ContactMessage }
+     *
+     * SYMÉTRIE LECTURE/ÉCRITURE (vague 4.9) : la lecture rend `read`, la mise à
+     * jour l'accepte sous le MÊME nom — c'est ce que le provider envoie
+     * (`crmApi.markRead()` → `http.patch(…, { read })`). L'ancien `isRead` reste
+     * toléré en repli, car un aller-retour asymétrique est le piège que ce
+     * correctif ferme : le refuser franchement casserait tout appelant resté sur
+     * l'ancien nom sans rien apporter.
      */
     public function mettreAJourMessage(Requete $r): Reponse
     {
@@ -223,7 +237,10 @@ final class ControleurCrm
             throw ApiException::introuvable("Aucun message ne porte l'identifiant « {$id} ».");
         }
 
-        $isRead = $r->corps('isRead');
+        $isRead = $r->corps('read');
+        if ($isRead === null) {
+            $isRead = $r->corps('isRead');
+        }
         if ($isRead === null) {
             // Aucun champ modifiable fourni : renvoi de la ressource telle quelle.
             return Reponse::ok($this->enDtoMessage($ligne));
@@ -376,6 +393,15 @@ final class ControleurCrm
     /**
      * Ligne SQL → DTO message.
      *
+     * NOMMAGE (vague 4.9, §4.2–4.3 de docs/CONFORMITE-API.md). Le DTO servait
+     * les noms des COLONNES (`body`, `is_read` → `isRead`) au lieu de ceux du
+     * type `ContactMessage` (src/lib/admin-store.tsx) : `message` et `read`.
+     * Le contrat fait foi et le frontend est déjà écrit contre lui — c'est donc
+     * ici que ça se corrige, pas dans les composants d'administration.
+     *
+     * Les colonnes SQL, elles, ne bougent pas : `messages.body` et
+     * `messages.is_read` restent le stockage, la traduction se fait au bord.
+     *
      * @param array<string,mixed> $l
      * @return array<string,mixed>
      */
@@ -386,8 +412,8 @@ final class ControleurCrm
             'name'      => (string) $l['name'],
             'email'     => (string) $l['email'],
             'subject'   => (string) $l['subject'],
-            'body'      => (string) $l['body'],
-            'isRead'    => (bool) (int) $l['is_read'],
+            'message'   => (string) $l['body'],
+            'read'      => (bool) (int) $l['is_read'],
             'createdAt' => (string) $l['created_at'],
         ];
 

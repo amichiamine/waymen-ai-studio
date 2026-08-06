@@ -36,7 +36,7 @@ final class ControleurNotifications
 
     /**
      * GET /notifications
-     * Filtres : isRead (booléen), level, search.
+     * Filtres : read (booléen, `isRead` toléré en repli), level, search.
      * → { data: { items, total, page, perPage } }
      */
     public function lister(Requete $r): Reponse
@@ -44,7 +44,12 @@ final class ControleurNotifications
         $where  = [];
         $params = [];
 
-        if (($v = $r->queryBool('isRead')) !== null) {
+        // Filtrer s'écrit comme lire : le champ rendu est `read`.
+        $lu = $r->queryBool('read');
+        if ($lu === null) {
+            $lu = $r->queryBool('isRead');
+        }
+        if (($v = $lu) !== null) {
             $where[] = 'is_read = :isRead';
             $params[':isRead'] = $v ? 1 : 0;
         }
@@ -149,8 +154,12 @@ final class ControleurNotifications
 
     /**
      * PATCH /notifications/:id
-     * Corps partiel : { isRead?, title?, body?, level?, link? }
-     * → { data: Notification }
+     * Corps partiel : { read?, title?, body?, level?, link? }
+     * → { data: AdminNotification }
+     *
+     * SYMÉTRIE LECTURE/ÉCRITURE (vague 4.9) : la lecture rend `read`, la mise à
+     * jour l'accepte sous le MÊME nom. `isRead` reste toléré en repli pour ne
+     * casser aucun appelant existant.
      */
     public function mettreAJour(Requete $r): Reponse
     {
@@ -164,8 +173,11 @@ final class ControleurNotifications
         $set    = [];
         $params = [':id' => $id];
 
-        // Mise à jour du statut lu / non lu.
-        $isRead = $r->corps('isRead');
+        // Mise à jour du statut lu / non lu, sous le nom du contrat (`read`).
+        $isRead = $r->corps('read');
+        if ($isRead === null) {
+            $isRead = $r->corps('isRead');
+        }
         if ($isRead !== null) {
             $set[] = 'is_read = :isRead';
             $params[':isRead'] = $isRead ? 1 : 0;
@@ -264,12 +276,18 @@ final class ControleurNotifications
      */
     private function enDto(array $l): array
     {
+        // NOMMAGE (vague 4.9, §4.4 de docs/CONFORMITE-API.md) : le type
+        // `AdminNotification` (src/lib/admin-store.tsx) déclare `read`, pas
+        // `isRead` — le DTO reprenait le nom de la colonne `is_read`. En
+        // revanche `body` EST le nom du contrat ici (contrairement aux
+        // messages de contact, où c'est `message`) : ne pas « harmoniser » les
+        // deux ressources, elles ne portent pas les mêmes noms.
         $dto = [
             'id'        => (string) $l['id'],
             'title'     => (string) $l['title'],
             'body'      => (string) $l['body'],
             'level'     => (string) $l['level'],
-            'isRead'    => (bool) (int) $l['is_read'],
+            'read'      => (bool) (int) $l['is_read'],
             'createdAt' => (string) $l['created_at'],
         ];
 
