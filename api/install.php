@@ -66,6 +66,23 @@ try {
     // message de Db dit déjà quoi corriger, et aucun témoin n'est posé.
     $db->pdo();
 
+    // TOUT OU RIEN quand le moteur le permet.
+    //
+    // Une installation qui échoue à mi-parcours laisse une base à demi peuplée :
+    // le témoin n'est pas posé, l'exploitant relance, et `CREATE TABLE IF NOT
+    // EXISTS` ne recrée pas ce qui existe déjà — la base reste bancale sans que
+    // rien ne le dise. SQLite et PostgreSQL savent annuler du DDL : on englobe
+    // schéma ET compte propriétaire dans une seule transaction, si bien qu'un
+    // échec quelconque rend la base exactement telle qu'elle était.
+    //
+    // MySQL en est incapable : chaque `CREATE TABLE` y valide implicitement la
+    // transaction en cours. Ouvrir une transaction y donnerait une fausse
+    // garantie ; on ne l'ouvre donc pas, et on DIT quoi faire en cas d'échec.
+    $ddlTransactionnel = $pilote !== Db::PILOTE_MYSQL;
+    if ($ddlTransactionnel) {
+        $db->beginWrite();
+    }
+
     $instructions = decouperSql((string) file_get_contents($fichierSchema));
     $executees = 0;
     foreach ($instructions as $sql) {
@@ -159,6 +176,12 @@ try {
         echoLigne('haché ; le laisser en clair dans un fichier du serveur annule tout le bénéfice.');
     }
 
+    // Le témoin n'est posé qu'APRÈS validation : un témoin déposé sur une
+    // transaction annulée interdirait de réinstaller une base vide.
+    if ($ddlTransactionnel) {
+        $db->commit();
+    }
+
     file_put_contents(TEMOIN, 'installé le ' . gmdate('c') . ' — pilote ' . $pilote . PHP_EOL);
 
     echoLigne('');
@@ -173,6 +196,7 @@ try {
         echoLigne('  ' . $champ . ' : ' . implode(' ', $messages));
     }
     echoLigne('');
+    echoLigne(annulerEtDecrire($db ?? null, $ddlTransactionnel ?? false));
     echoLigne('Aucun témoin n\'a été posé : corrigez, puis relancez ce script.');
     terminer($e->statut() >= 500 ? 500 : $e->statut());
 } catch (Throwable $e) {
@@ -183,6 +207,7 @@ try {
         ? 'Erreur interne. Le détail a été écrit dans le journal d\'erreurs PHP du serveur.'
         : $e::class . ' : ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ')');
     echoLigne('');
+    echoLigne(annulerEtDecrire($db ?? null, $ddlTransactionnel ?? false));
     echoLigne('Aucun témoin n\'a été posé : corrigez, puis relancez ce script.');
     terminer(500);
 }
@@ -289,17 +314,60 @@ function motDePasseTropPrevisible(string $motDePasse): bool
     return false;
 }
 
+/**
+ * Compte les tables réellement présentes après application du schéma.
+ *
+ * TROIS branches EXPLICITES, une par pilote, et surtout PAS un « sinon, donc
+ * MySQL ». Ce raccourci — légitime tant qu'il n'y avait que deux pilotes — a
+ * produit la pire panne possible à l'arrivée de `pgsql` : `DATABASE()` n'existe
+ * pas en PostgreSQL, l'installation créait donc les 23 tables PUIS échouait
+ * ICI, c'est-à-dire AVANT la création du compte propriétaire et AVANT la pose
+ * du témoin. Le commerçant se retrouvait avec une base à moitié installée et un
+ * message qui ne parlait pas d'installation.
+ *
+ * Le `match` sans branche par défaut est volontaire : un quatrième pilote
+ * ajouté un jour à `Db::PILOTES` fera lever une `UnhandledMatchError` ici, à
+ * l'installation, plutôt que de retomber en silence sur le dialecte d'un autre
+ * moteur.
+ */
 function compterTables(Db $db): int
 {
-    if ($db->estSqlite()) {
-        return (int) $db->valeur(
-            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
-        );
+    $sql = match ($db->pilote()) {
+        Db::PILOTE_SQLITE => "SELECT COUNT(*) FROM sqlite_master "
+            . "WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+        Db::PILOTE_MYSQL => 'SELECT COUNT(*) FROM information_schema.tables '
+            . "WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'",
+        // `current_schemas(false)` suit le `search_path` réel de la connexion :
+        // écrire « public » en dur casserait sur un Supabase dont le schéma est
+        // personnalisé, et compterait les tables d'un autre schéma sur un
+        // serveur mutualisé où plusieurs applications cohabitent.
+        Db::PILOTE_PGSQL => 'SELECT COUNT(*) FROM pg_catalog.pg_tables '
+            . 'WHERE schemaname = ANY (current_schemas(false))',
+    };
+
+    return (int) $db->valeur($sql);
+}
+
+/**
+ * Annule l'installation en cours si le moteur le permet, et rend la phrase
+ * exacte à afficher — l'exploitant doit savoir dans quel état est SA base, pas
+ * lire une formule générale.
+ */
+function annulerEtDecrire(?Db $db, bool $ddlTransactionnel): string
+{
+    if ($db === null) {
+        return 'Rien n\'a été écrit : l\'échec a eu lieu avant la connexion à la base.';
     }
 
-    return (int) $db->valeur(
-        'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()'
-    );
+    if ($ddlTransactionnel) {
+        $db->rollback();
+
+        return 'La transaction a été ANNULÉE : la base est revenue exactement à son état d\'avant.';
+    }
+
+    return 'ATTENTION : MySQL ne sait pas annuler la création de tables. Des tables ont pu être '
+        . 'créées avant l\'erreur. Videz la base (phpMyAdmin : « Opérations » → supprimer les tables) '
+        . 'AVANT de relancer, sinon l\'installation repartira sur un schéma partiel.';
 }
 
 function echoLigne(string $l): void

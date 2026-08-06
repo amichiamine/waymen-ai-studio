@@ -881,14 +881,21 @@ final class ControleurAuth
     /**
      * Garantit l'existence de `password_resets`.
      *
-     * La table est déclarée dans `api/schema/schema.{sqlite,mysql}.sql`, donc
-     * présente sur toute installation neuve. Ce filet ne sert qu'aux bases
+     * La table est déclarée dans `api/schema/schema.{sqlite,mysql,pgsql}.sql`,
+     * donc présente sur toute installation neuve. Ce filet ne sert qu'aux bases
      * installées AVANT la vague 4.3 : `api/install.php` refuse de rejouer le
      * schéma une fois son témoin posé, et l'exploitant ne doit pas avoir à
      * effacer ce témoin — ce qui l'exposerait à réinstaller par mégarde.
      *
      * Appelée uniquement sur les chemins de réinitialisation, une seule fois
      * par processus, et strictement idempotente.
+     *
+     * UNE BRANCHE PAR PILOTE, jamais de « sinon, donc MySQL » : ce raccourci
+     * envoyait `INDEX …` dans le corps de la table et `ENGINE=InnoDB` à
+     * PostgreSQL, qui les refuse — toutes les routes de réinitialisation de mot
+     * de passe répondaient 500 en pgsql. Le `match` sans branche par défaut
+     * fera échouer bruyamment tout quatrième pilote qui oublierait de passer
+     * ici, plutôt que d'hériter en silence du dialecte du voisin.
      */
     private function assurerTableJetons(): void
     {
@@ -897,33 +904,44 @@ final class ControleurAuth
         }
         self::$tableJetonsVerifiee = true;
 
-        if ($this->db->estSqlite()) {
-            $this->db->pdo()->exec(
+        $instructions = match ($this->db->pilote()) {
+            Db::PILOTE_SQLITE => [
                 'CREATE TABLE IF NOT EXISTS password_resets ('
                 . ' id TEXT NOT NULL PRIMARY KEY,'
                 . ' user_id TEXT NOT NULL,'
                 . ' token_hash TEXT NOT NULL,'
                 . ' expires_at TEXT NOT NULL,'
                 . ' used_at TEXT NULL,'
-                . ' created_at TEXT NOT NULL)'
-            );
-            $this->db->pdo()->exec(
-                'CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id)'
-            );
+                . ' created_at TEXT NOT NULL)',
+                'CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id)',
+            ],
+            // Seul MySQL accepte la déclaration d'index DANS le corps de la
+            // table ; les deux autres exigent un CREATE INDEX séparé.
+            Db::PILOTE_MYSQL => [
+                'CREATE TABLE IF NOT EXISTS password_resets ('
+                . ' id VARCHAR(96) NOT NULL PRIMARY KEY,'
+                . ' user_id VARCHAR(96) NOT NULL,'
+                . ' token_hash VARCHAR(128) NOT NULL,'
+                . ' expires_at VARCHAR(32) NOT NULL,'
+                . ' used_at VARCHAR(32) NULL,'
+                . ' created_at VARCHAR(32) NOT NULL,'
+                . ' INDEX idx_password_resets_user (user_id)'
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+            ],
+            Db::PILOTE_PGSQL => [
+                'CREATE TABLE IF NOT EXISTS password_resets ('
+                . ' id VARCHAR(96) NOT NULL PRIMARY KEY,'
+                . ' user_id VARCHAR(96) NOT NULL,'
+                . ' token_hash VARCHAR(128) NOT NULL,'
+                . ' expires_at VARCHAR(32) NOT NULL,'
+                . ' used_at VARCHAR(32) NULL,'
+                . ' created_at VARCHAR(32) NOT NULL)',
+                'CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id)',
+            ],
+        };
 
-            return;
+        foreach ($instructions as $sql) {
+            $this->db->pdo()->exec($sql);
         }
-
-        $this->db->pdo()->exec(
-            'CREATE TABLE IF NOT EXISTS password_resets ('
-            . ' id VARCHAR(96) NOT NULL PRIMARY KEY,'
-            . ' user_id VARCHAR(96) NOT NULL,'
-            . ' token_hash VARCHAR(128) NOT NULL,'
-            . ' expires_at VARCHAR(32) NOT NULL,'
-            . ' used_at VARCHAR(32) NULL,'
-            . ' created_at VARCHAR(32) NOT NULL,'
-            . ' INDEX idx_password_resets_user (user_id)'
-            . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
-        );
     }
 }
