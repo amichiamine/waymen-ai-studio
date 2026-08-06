@@ -187,6 +187,11 @@ final class Migrateur
             $this->rapport->conclure($this->rapport->erreurs() === [], null);
         } catch (Throwable $e) {
             $this->annulerTransaction();
+            // Un échec PROPRE (annulation réussie) n'a pas laissé la cible à
+            // moitié remplie : le témoin passe donc à « annulee ». Seule une
+            // mort brutale du processus laisse « en_cours » — et c'est bien
+            // le seul cas où la migration suivante doit exiger un arbitrage.
+            $this->marquerTemoin('annulee', $e->getMessage());
             $this->rapport->anomalie(Rapport::ERREUR, $e->getMessage(), [
                 'origine' => basename($e->getFile()) . ':' . $e->getLine(),
             ]);
@@ -205,6 +210,18 @@ final class Migrateur
         $reelle = $this->options['mode'] === Rapport::MODE_REELLE;
 
         if ($this->options['creer_schema'] === true) {
+            // SEULE écriture admise en simulation, et elle est annoncée.
+            // Créer des tables VIDES ne détruit rien (« IF NOT EXISTS »), et
+            // sans cela une simulation vers une base fraîchement créée serait
+            // impossible — donc la première migration réelle se ferait sans
+            // répétition générale, ce qui est bien pire.
+            if (!$reelle) {
+                $this->rapport->anomalie(
+                    Rapport::INFO,
+                    "Simulation : les tables absentes de la cible ont été CRÉÉES (vides) pour pouvoir "
+                    . "contrôler les types. Aucune donnée n'est écrite.",
+                );
+            }
             $this->appliquerSchema();
         }
 
@@ -241,10 +258,13 @@ final class Migrateur
 
         // --- Passe 2 : empreintes de la cible et comparaison --------------
         // En mode réel elle a lieu AVANT le commit : une divergence annule
-        // tout. En simulation elle donne gratuitement un outil de contrôle
-        // a posteriori (source et cible déjà peuplées : on compare, c'est tout).
+        // tout. En simulation, elle n'a de sens que sur une table cible déjà
+        // peuplée — et elle offre alors gratuitement le contrôle d'après-coup
+        // de deux bases censées être identiques.
         foreach ($plan as $table => $descripteur) {
-            $this->controlerEmpreinte($table, $descripteur);
+            if ($reelle || ($occupation[$table] ?? 0) > 0) {
+                $this->controlerEmpreinte($table, $descripteur);
+            }
         }
 
         if (!$reelle) {
@@ -588,7 +608,16 @@ final class Migrateur
         $tampon = [];
         $parLot = max(1, (int) floor((int) $this->options['variables_max'] / max(1, count($noms))));
 
-        foreach ($this->parcourir($this->source, $this->piloteSource, $table, $noms, $descripteur['cle']) as $ligne) {
+        $parcours = $this->parcourir(
+            $this->source,
+            $this->piloteSource,
+            $table,
+            $noms,
+            $descripteur['cle'],
+            $this->textuelles($colonnes, 'source'),
+        );
+
+        foreach ($parcours as $ligne) {
             $lues++;
             $this->cumuler($agregat, $this->empreinteLigne($ligne, $colonnes, $table));
             $this->controlerLigne($table, $ligne, $colonnes, $descripteur['cle']);
@@ -630,7 +659,16 @@ final class Migrateur
 
         $agregat = $this->nouvelAgregat();
         $nb = 0;
-        foreach ($this->parcourir($this->cible, $this->piloteCible, $table, $noms, $descripteur['cle_cible']) as $ligne) {
+        $parcours = $this->parcourir(
+            $this->cible,
+            $this->piloteCible,
+            $table,
+            $noms,
+            $descripteur['cle_cible'],
+            $this->textuelles($colonnes, 'cible'),
+        );
+
+        foreach ($parcours as $ligne) {
             $nb++;
             $this->cumuler($agregat, $this->empreinteLigne($ligne, $colonnes, $table));
         }
@@ -684,10 +722,17 @@ final class Migrateur
      *
      * @param list<string> $noms
      * @param list<string> $cle
+     * @param array<string,bool> $textuelles colonne → est-elle textuelle de ce côté
      * @return \Generator<int,array<string,mixed>>
      */
-    private function parcourir(PDO $pdo, string $pilote, string $table, array $noms, array $cle): \Generator
-    {
+    private function parcourir(
+        PDO $pdo,
+        string $pilote,
+        string $table,
+        array $noms,
+        array $cle,
+        array $textuelles,
+    ): \Generator {
         $projection = implode(', ', array_map(fn (string $c): string => $this->q($pilote, $c), $noms));
         $qTable = $this->q($pilote, $table);
         $taille = (int) $this->options['lignes_par_lot'];
@@ -703,13 +748,22 @@ final class Migrateur
                 ['table' => $table],
             );
 
-            yield from $this->parcourirParOffset($pdo, $pilote, $qTable, $projection, $noms, $taille);
+            yield from $this->parcourirParOffset(
+                $pdo,
+                $pilote,
+                $qTable,
+                $projection,
+                $noms,
+                $textuelles,
+                $taille
+            );
 
             return;
         }
 
         $colonneCle = $cle[0];
-        $ordre = $this->exprOrdre($pilote, $colonneCle);
+        $texteCle = $textuelles[$colonneCle] ?? true;
+        $ordre = $this->exprOrdre($pilote, $colonneCle, $texteCle);
         $borne = null;
 
         while (true) {
@@ -719,7 +773,7 @@ final class Migrateur
                 $st->execute();
             } else {
                 $sql = "SELECT {$projection} FROM {$qTable} WHERE {$ordre} > "
-                    . $this->exprBorne($pilote) . " ORDER BY {$ordre} LIMIT {$taille}";
+                    . $this->exprBorne($pilote, $texteCle) . " ORDER BY {$ordre} LIMIT {$taille}";
                 $st = $pdo->prepare($sql);
                 $st->execute([$borne]);
             }
@@ -748,6 +802,7 @@ final class Migrateur
 
     /**
      * @param list<string> $noms
+     * @param array<string,bool> $textuelles
      * @return \Generator<int,array<string,mixed>>
      */
     private function parcourirParOffset(
@@ -756,9 +811,13 @@ final class Migrateur
         string $qTable,
         string $projection,
         array $noms,
+        array $textuelles,
         int $taille,
     ): \Generator {
-        $ordre = implode(', ', array_map(fn (string $c): string => $this->exprOrdre($pilote, $c), $noms));
+        $ordre = implode(', ', array_map(
+            fn (string $c): string => $this->exprOrdre($pilote, $c, $textuelles[$c] ?? true),
+            $noms
+        ));
         $decalage = 0;
         while (true) {
             $st = $pdo->prepare(
@@ -941,6 +1000,26 @@ final class Migrateur
                 );
 
                 continue;
+            }
+
+            // Débordement d'entier. SQLite stocke un INTEGER sur 64 bits sans
+            // le déclarer ; MySQL et PostgreSQL bornent INT à 2 147 483 647.
+            // Une valeur qui tient en SQLite peut donc être refusée ailleurs —
+            // ou pire, écrêtée en silence par un MySQL non strict.
+            if ($colonne['type'] === 'entier' && is_numeric($valeur) && $this->piloteCible !== 'sqlite') {
+                // SQLite exclu : son INTEGER est un entier signé 64 bits, quel
+                // que soit le mot écrit dans le CREATE TABLE.
+                $bornes = $this->bornesEntier((string) $cibleDesc['type_complet']);
+                $entier = (int) $valeur;
+                if ($bornes !== null && ($entier < $bornes[0] || $entier > $bornes[1])) {
+                    $this->rapport->anomalie(
+                        Rapport::ERREUR,
+                        "{$table}.{$nom} vaut {$entier}, hors des bornes de la colonne cible "
+                        . "« {$cibleDesc['type_complet']} » ({$bornes[0]} … {$bornes[1]}). "
+                        . 'La valeur serait refusée ou écrêtée.',
+                        ['table' => $table, 'colonne' => $nom, 'ligne' => $this->etiquetteLigne($ligne, $cle)],
+                    );
+                }
             }
 
             // Longueur : MySQL en mode non strict TRONQUE, PostgreSQL refuse,
@@ -1373,23 +1452,37 @@ final class Migrateur
 
     private function cloreTemoin(): void
     {
+        $resume = (string) json_encode(
+            $this->rapport->versTableau()['totaux'],
+            JSON_UNESCAPED_UNICODE
+        );
+        $this->marquerTemoin('terminee', $resume);
+    }
+
+    /**
+     * Fait passer le témoin dans son état final. Best-effort : si la connexion
+     * est morte, on ne masque pas l'erreur d'origine derrière celle-ci.
+     */
+    private function marquerTemoin(string $etat, string $detail): void
+    {
         if ($this->jetonTemoin === null) {
             return;
         }
 
-        $resume = $this->rapport->versTableau()['totaux'];
-        $st = $this->cible->prepare(
-            'UPDATE ' . $this->q($this->piloteCible, self::TABLE_TEMOIN)
-            . ' SET etat = ?, termine_a = ?, detail = ? WHERE id = ?'
-        );
-        $st->execute([
-            'terminee',
-            gmdate('c'),
-            (string) json_encode($resume, JSON_UNESCAPED_UNICODE),
-            $this->jetonTemoin,
-        ]);
-
-        $this->rapport->noter('Témoin clos : la cible est marquée « terminee ».');
+        try {
+            $st = $this->cible->prepare(
+                'UPDATE ' . $this->q($this->piloteCible, self::TABLE_TEMOIN)
+                . ' SET etat = ?, termine_a = ?, detail = ? WHERE id = ?'
+            );
+            $st->execute([$etat, gmdate('c'), mb_substr($detail, 0, 2000), $this->jetonTemoin]);
+            $this->rapport->noter("Témoin clos : la cible est marquée « {$etat} ».");
+        } catch (Throwable $e) {
+            $this->rapport->anomalie(
+                Rapport::AVERTISSEMENT,
+                "Témoin non mis à jour ({$e->getMessage()}) : la cible restera marquée « en_cours » "
+                . 'et la prochaine migration demandera un arbitrage.',
+            );
+        }
     }
 
     // =================================================================
@@ -1596,6 +1689,7 @@ final class Migrateur
                 $type = strtolower((string) $c['type']);
                 $colonnes[(string) $c['name']] = [
                     'type' => $type,
+                    'type_complet' => $type,
                     'nullable' => ((int) $c['notnull']) === 0,
                     'defaut' => $c['dflt_value'],
                     'longueur' => $this->longueurDeclaree($type),
@@ -1622,14 +1716,18 @@ final class Migrateur
         }
 
         if ($pilote === 'mysql') {
+            // `column_type` en plus de `data_type` : lui seul porte le
+            // « unsigned », qui double la borne haute d'un entier.
             $st = $pdo->prepare(
-                'SELECT column_name, data_type, is_nullable, column_default, character_maximum_length, extra '
+                'SELECT column_name, data_type, column_type AS type_complet, is_nullable, column_default, '
+                . 'character_maximum_length, extra '
                 . 'FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? '
                 . 'ORDER BY ordinal_position'
             );
         } else {
             $st = $pdo->prepare(
-                'SELECT column_name, data_type, is_nullable, column_default, character_maximum_length, '
+                'SELECT column_name, data_type, data_type AS type_complet, is_nullable, column_default, '
+                . 'character_maximum_length, '
                 . "COALESCE(is_identity, 'NO') AS extra "
                 . 'FROM information_schema.columns '
                 . 'WHERE table_schema = ANY (current_schemas(false)) AND table_name = ? '
@@ -1648,6 +1746,7 @@ final class Migrateur
 
             $colonnes[(string) $c['column_name']] = [
                 'type' => strtolower((string) $c['data_type']),
+                'type_complet' => strtolower((string) $c['type_complet']),
                 'nullable' => strtoupper((string) $c['is_nullable']) === 'YES',
                 'defaut' => $defaut,
                 'longueur' => $c['character_maximum_length'] === null
@@ -1856,6 +1955,37 @@ final class Migrateur
         return 'texte';
     }
 
+    /**
+     * Bornes d'un type entier, ou null si le type ne les impose pas (SQLite
+     * range tout sur 64 bits).
+     *
+     * @return array{0:int,1:int}|null
+     */
+    private function bornesEntier(string $typeComplet): ?array
+    {
+        $typeComplet = strtolower($typeComplet);
+        $nonSigne = str_contains($typeComplet, 'unsigned');
+        $base = trim((string) preg_replace('/[\s(].*$/', '', $typeComplet));
+
+        $bornes = match ($base) {
+            'tinyint' => [-128, 127],
+            'smallint', 'int2' => [-32768, 32767],
+            'mediumint' => [-8388608, 8388607],
+            'int', 'integer', 'int4' => [-2147483648, 2147483647],
+            'bigint', 'int8' => [PHP_INT_MIN, PHP_INT_MAX],
+            default => null,
+        };
+
+        if ($bornes === null) {
+            return null;
+        }
+        if ($nonSigne) {
+            return [0, $bornes[1] === PHP_INT_MAX ? PHP_INT_MAX : $bornes[1] * 2 + 1];
+        }
+
+        return $bornes;
+    }
+
     private function estTypeBooleenNatif(string $natif): bool
     {
         return $this->typeLogique($natif) === 'booleen';
@@ -1876,10 +2006,20 @@ final class Migrateur
         return $pilote === 'mysql' ? '`' . $identifiant . '`' : '"' . $identifiant . '"';
     }
 
-    /** Expression de tri en collation binaire — voir `parcourir()`. */
-    private function exprOrdre(string $pilote, string $colonne): string
+    /**
+     * Expression de tri en collation binaire — voir `parcourir()`.
+     *
+     * La collation ne s'applique QU'AUX colonnes textuelles : PostgreSQL
+     * refuse net « ORDER BY id COLLATE "C" » sur un bigint (« collations are
+     * not supported by type bigint »), et forcer un entier en binaire côté
+     * MySQL trierait 50 avant 7.
+     */
+    private function exprOrdre(string $pilote, string $colonne, bool $texte): string
     {
         $q = $this->q($pilote, $colonne);
+        if (!$texte) {
+            return $q;
+        }
 
         return match ($pilote) {
             'mysql' => "CAST({$q} AS BINARY)",
@@ -1889,9 +2029,38 @@ final class Migrateur
     }
 
     /** Côté droit de la comparaison de pagination, cohérent avec `exprOrdre()`. */
-    private function exprBorne(string $pilote): string
+    private function exprBorne(string $pilote, bool $texte): string
     {
-        return $pilote === 'mysql' ? 'CAST(? AS BINARY)' : '?';
+        return ($pilote === 'mysql' && $texte) ? 'CAST(? AS BINARY)' : '?';
+    }
+
+    /**
+     * Nature textuelle de chaque colonne, du côté demandé (« source » ou
+     * « cible ») : la même colonne peut être JSON ici et TEXT là.
+     *
+     * @param array<string,array<string,mixed>> $colonnes
+     * @return array<string,bool>
+     */
+    private function textuelles(array $colonnes, string $cote): array
+    {
+        $carte = [];
+        foreach ($colonnes as $nom => $colonne) {
+            $carte[$nom] = $this->estColonneTexte($colonne[$cote] ?? null);
+        }
+
+        return $carte;
+    }
+
+    /**
+     * @param array<string,mixed>|null $descripteur
+     */
+    private function estColonneTexte(?array $descripteur): bool
+    {
+        if ($descripteur === null) {
+            return true; // Prudence : la collation binaire est sans risque sur du texte.
+        }
+
+        return in_array($this->typeLogique((string) $descripteur['type']), ['texte', 'json'], true);
     }
 
     /**
