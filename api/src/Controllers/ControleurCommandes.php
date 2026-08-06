@@ -31,8 +31,12 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Auth\Garde;
+use KaTech\Courriel;
 use KaTech\Db;
+use KaTech\Env;
 use KaTech\Factures;
+use KaTech\Modeles\ConfirmationCommande;
+use KaTech\Modeles\NouvelleCommande;
 use KaTech\Outbox;
 use KaTech\Pagination;
 use KaTech\Reponse;
@@ -391,8 +395,9 @@ final class ControleurCommandes
             //
             // Aucun appel réseau n'est effectué ici. Les événements sont écrits
             // dans la même transaction que la commande : si la transaction est
-            // annulée, il n'y a pas d'événement fantôme. Un travailleur CRON les
-            // dépile ensuite (api/tools/vider-outbox.php).
+            // annulée, il n'y a pas d'événement fantôme. Le vidage est déclenché
+            // en fin de requête (register_shutdown_function ci-dessous), et
+            // api/tools/vider-outbox.php reste le filet de secours manuel.
             // ----------------------------------------------------------------
             $payloadCommande = [
                 'commandeId'    => $commandeId,
@@ -451,6 +456,42 @@ final class ControleurCommandes
 
             throw $e;
         }
+
+        // ----------------------------------------------------------------
+        // Vidage de l'outbox en fin de requête (PLAN.md §8).
+        //
+        // La commande est DÉJÀ enregistrée — le commit() ci-dessus a réussi.
+        // On enregistre maintenant une fonction de fin de script pour dépiler
+        // l'outbox APRÈS que la réponse HTTP a été envoyée au client.
+        //
+        // Pourquoi en fin de script et non ici ?
+        //   Appeler l'émetteur de courriel ici bloquerait le client pendant
+        //   tout l'envoi SMTP (plusieurs secondes). Un acheteur qui attend
+        //   recliquerait, et on se retrouverait avec une double commande.
+        //   En enregistrant une shutdown function, la réponse HTTP part d'abord,
+        //   puis l'envoi se fait dans la foulée, invisible pour le client.
+        //
+        // Sur LiteSpeed/FastCGI (production) : fastcgi_finish_request() libère
+        // le navigateur avant l'envoi ; latence observable = 0 ms pour le client.
+        //
+        // Sur le serveur intégré `php -S` (développement avec SMTP_SIMULATE=1) :
+        // fastcgi_finish_request() n'existe pas et le client attend la fin
+        // complète du script. En simulation, l'écriture sur disque est
+        // quasi-instantanée (< 10 ms) : l'impact est imperceptible. C'est
+        // une LIMITE CONNUE ET DOCUMENTÉE du serveur intégré, non un bug.
+        //
+        // Isolation : un échec d'envoi ne peut plus annuler la commande — elle
+        // est déjà commitée. L'événement reste en file pour réessai (recul
+        // progressif géré par Outbox::marquerEchec).
+        // ----------------------------------------------------------------
+        $appUrl = rtrim((string) Env::get('APP_URL', ''), '/');
+
+        $this->outbox->enregistrerVidageEnSortie(
+            static function (array $evt) use ($appUrl): ?string {
+                return self::emettreEvenement($evt, $appUrl);
+            },
+            Outbox::LIMITE_EN_SORTIE,
+        );
 
         $ligne = $this->db->un('SELECT * FROM orders WHERE id = :id', [':id' => $commandeId]);
 
@@ -1286,6 +1327,115 @@ final class ControleurCommandes
         }
 
         return $dto;
+    }
+
+    // =================================================================
+    // Émission d'événements outbox — partagée entre le vidage en sortie
+    // (fin de requête HTTP) et, à terme, vider-outbox.php si refactorisé.
+    // =================================================================
+
+    /**
+     * Tente d'émettre un événement issu de l'outbox.
+     *
+     * Cette méthode est statique pour pouvoir être passée comme callable à
+     * `Outbox::enregistrerVidageEnSortie()` sans capturer `$this` (le
+     * contrôleur n'est pas disponible dans une shutdown function après que
+     * l'objet peut avoir été détruit).
+     *
+     * Structure extensible : les topics nommés (order.created) sont traités
+     * en premier ; tout autre topic est journalisé et considéré émis (pas
+     * d'échec pour un topic inconnu, qui serait bloquant indéfiniment).
+     *
+     * Aucune transaction n'est ouverte ici. Le marquage (marquerEmis /
+     * marquerEchec) est fait par l'appelant dans Outbox::enregistrerVidageEnSortie.
+     *
+     * @param array<string,mixed> $evt   Ligne de la table outbox
+     * @param string              $appUrl URL de base de l'application (APP_URL)
+     * @return string|null null si succès, message d'erreur sinon
+     */
+    private static function emettreEvenement(array $evt, string $appUrl): ?string
+    {
+        $topic      = (string) $evt['topic'];
+        $payloadBrut = $evt['payload'];
+
+        $payload = is_string($payloadBrut)
+            ? (array) (json_decode($payloadBrut, true) ?? [])
+            : (array) $payloadBrut;
+
+        switch ($topic) {
+            case 'order.created':
+                return self::emettreEmailCommande($payload);
+
+            case 'stock.rupture':
+                // La rupture de stock est une notification au commerçant.
+                // Elle passe par le même canal que la confirmation de commande
+                // mais avec un message différent. Pour l'instant, on logue et
+                // on marque émis — la notification spécifique sera ajoutée
+                // quand un modèle de courriel de rupture sera disponible.
+                Db::journaliserStatique(
+                    '[outbox] stock.rupture ignoré (pas de handler dédié) — '
+                    . 'produitId=' . ($payload['produitId'] ?? '?')
+                );
+
+                return null;
+
+            default:
+                // Topic inconnu : on ne fait pas échouer pour éviter de bloquer
+                // la file indéfiniment. On logue pour que l'exploitant soit au
+                // courant (AGENTS.md §7, rendre les échecs visibles).
+                Db::journaliserStatique(
+                    "[outbox] Topic « {$topic} » ignoré : aucun handler local. "
+                    . 'Configurez OUTBOX_WEBHOOK_URL pour les topics génériques.'
+                );
+
+                return null;
+        }
+    }
+
+    /**
+     * Émet un email de confirmation de commande (client) et de notification
+     * au commerçant.
+     *
+     * Factorisation : la même logique se trouve dans api/tools/vider-outbox.php.
+     * Quand ce fichier sera refactorisé, il appellera cette méthode (ou une
+     * méthode équivalente dans Outbox) plutôt que de dupliquer le dispatch.
+     *
+     * @param array<string,mixed> $payload
+     * @return string|null null si succès, message d'erreur sinon
+     */
+    private static function emettreEmailCommande(array $payload): ?string
+    {
+        try {
+            // ---- Email au client -------------------------------------------
+            $emailClient = (string) ($payload['clientEmail'] ?? '');
+            if ($emailClient !== '' && filter_var($emailClient, FILTER_VALIDATE_EMAIL)) {
+                $msg = ConfirmationCommande::generer($payload);
+                Courriel::envoyer(
+                    $emailClient,
+                    (string) ($payload['clientNom'] ?? ''),
+                    $msg['sujet'],
+                    $msg['texte'],
+                    $msg['html'],
+                );
+            }
+
+            // ---- Notification au commerçant --------------------------------
+            $emailCommerçant = (string) Env::get('NOTIFY_OWNER_EMAIL', '');
+            if ($emailCommerçant !== '' && filter_var($emailCommerçant, FILTER_VALIDATE_EMAIL)) {
+                $msg = NouvelleCommande::generer($payload);
+                Courriel::envoyer(
+                    $emailCommerçant,
+                    (string) Env::get('NOTIFY_OWNER_NAME', 'KA Tech Hub'),
+                    $msg['sujet'],
+                    $msg['texte'],
+                    $msg['html'],
+                );
+            }
+
+            return null;
+        } catch (\Throwable $e) {
+            return 'Envoi email order.created : ' . $e->getMessage();
+        }
     }
 
     /**
