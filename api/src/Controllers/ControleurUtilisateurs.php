@@ -13,9 +13,13 @@
  *      La mise à jour générique (mettre_a_jour) REFUSE tout champ password/password_hash
  *      dans le corps, et renvoie une erreur explicite.
  *
- *   3. VAGUE 4.3 : le hachage Argon2id n'est pas encore implémenté.
- *      La route changerMotDePasse refuse l'opération avec un message clair
- *      plutôt que d'écrire un mot de passe en clair — jamais de plain-text en base.
+ *   3. VAGUE 4.3 : le hachage est ACTIF. `changerMotDePasse` délègue à
+ *      `Auth\MotDePasse` (Argon2id, ou bcrypt si l'hébergeur ne fournit pas
+ *      Argon2id) — jamais de plain-text en base, sur aucun chemin.
+ *      Cette route attribue le mot de passe d'un AUTRE compte : elle doit être
+ *      posée derrière `Garde::protege('manageUsers', …)` dans api/routes.php.
+ *      Le changement de SON PROPRE mot de passe passe par
+ *      POST /auth/change-password, qui exige en plus le mot de passe actuel.
  *
  * Sécurité générale :
  *   - Requêtes préparées exclusivement.
@@ -28,6 +32,7 @@ declare(strict_types=1);
 namespace KaTech\Controllers;
 
 use KaTech\ApiException;
+use KaTech\Auth\MotDePasse;
 use KaTech\Db;
 use KaTech\Pagination;
 use KaTech\Reponse;
@@ -129,8 +134,8 @@ final class ControleurUtilisateurs
      * Corps : { name, email, role, phone? }
      *
      * Le champ `password` n'est pas accepté ici. L'attribution d'un mot de passe
-     * initial passe par la route dédiée POST /admin/users/:id/password, qui sera
-     * opérationnelle en vague 4.3.
+     * initial passe par la route dédiée PATCH /admin/users/:id/password,
+     * opérationnelle depuis la vague 4.3.
      *
      * La réponse ne contient jamais le champ `password_hash`.
      */
@@ -140,7 +145,7 @@ final class ControleurUtilisateurs
         if ($r->corps('password') !== null || $r->corps('password_hash') !== null) {
             throw ApiException::validation(
                 'Le mot de passe ne peut pas être défini via cette route.'
-                . ' Utilisez POST /admin/users/:id/password (disponible en vague 4.3).',
+                . ' Utilisez PATCH /admin/users/:id/password.',
                 ['password' => ['Route dédiée requise.']]
             );
         }
@@ -183,9 +188,13 @@ final class ControleurUtilisateurs
         $actif = (int) (bool) $r->corps('active', true);
 
         // password_hash est NOT NULL en base — on insère un marqueur non fonctionnel.
-        // JAMAIS de plain-text. Le vrai hachage Argon2id sera câblé en vague 4.3.
-        // VAGUE 4.3 : remplacer cette valeur par password_hash($motDePasse, PASSWORD_ARGON2ID)
-        //             après réception du mot de passe initial via la route dédiée.
+        // JAMAIS de plain-text, et JAMAIS une valeur qui ouvrirait le compte : ce
+        // marqueur n'est pas un hachage valide, `MotDePasse::verifier()` le rejette
+        // donc systématiquement (le compte reste inutilisable tant qu'un mot de
+        // passe n'a pas été attribué via PATCH /admin/users/:id/password).
+        // VAGUE 4.3 : c'est le seul chemin restant, et il est délibéré — la création
+        //             d'un compte par un administrateur ne doit pas transporter de
+        //             mot de passe dans le corps d'une requête de liste de champs.
         $marqueurMotDePasse = '!!non-defini!!';
 
         $this->db->transaction(fn (Db $d) => $d->inserer('users', [
@@ -221,7 +230,7 @@ final class ControleurUtilisateurs
      *
      * Toute tentative de modifier `password` ou `password_hash` via cette route
      * est rejetée avec un message explicite. La route dédiée est
-     * PATCH /admin/users/:id/password, opérationnelle en vague 4.3.
+     * PATCH /admin/users/:id/password, opérationnelle depuis la vague 4.3.
      *
      * La réponse ne contient jamais le champ `password_hash`.
      */
@@ -242,7 +251,7 @@ final class ControleurUtilisateurs
         if ($r->corps('password') !== null || $r->corps('password_hash') !== null) {
             throw ApiException::validation(
                 'Le mot de passe ne peut pas être modifié via cette route.'
-                . ' Utilisez PATCH /admin/users/:id/password (disponible en vague 4.3).',
+                . ' Utilisez PATCH /admin/users/:id/password.',
                 ['password' => ['Route dédiée requise.']]
             );
         }
@@ -344,11 +353,16 @@ final class ControleurUtilisateurs
      *
      * Corps : { password: string }
      *
-     * Cette route est le SEUL endroit où un mot de passe peut être mis à jour.
-     * Elle impose le hachage Argon2id — implémenté en vague 4.3.
+     * Cette route est le SEUL endroit où un administrateur peut attribuer ou
+     * réinitialiser le mot de passe d'un AUTRE compte. Elle est réservée au
+     * rôle `owner` : le câblage `Garde::protege('manageUsers', …)` dans
+     * `api/routes.php` en est la contrepartie obligatoire, sans laquelle
+     * n'importe qui pourrait s'emparer du compte du propriétaire.
      *
-     * En attendant la vague 4.3, l'opération est REFUSÉE explicitement plutôt
-     * que d'écrire un mot de passe en clair en base.
+     * VAGUE 4.3 : le hachage est désormais actif. Il est délégué à
+     * `Auth\MotDePasse`, qui choisit Argon2id ou, à défaut, bcrypt — un
+     * `password_hash()` écrit à la main ici ferait diverger les paramètres du
+     * reste du projet et provoquerait un re-hachage à chaque connexion.
      *
      * Ne renvoie jamais le champ password_hash — réponse 204 (opération réussie
      * sans données à retourner).
@@ -367,25 +381,34 @@ final class ControleurUtilisateurs
         }
 
         $motDePasse = $r->corps('password');
-        if ($motDePasse === null || trim((string) $motDePasse) === '') {
-            throw ApiException::validation('Mot de passe invalide.', [
-                'password' => ['Champ obligatoire.'],
-            ]);
+        $motDePasse = $motDePasse === null ? null : (string) $motDePasse;
+
+        // Politique commune à toute l'API (longueur, octet nul, et plafond des
+        // 72 octets quand bcrypt remplace Argon2id — bcrypt tronquerait sans
+        // rien dire, ce qui raccourcirait le secret à l'insu de tout le monde).
+        $refus = MotDePasse::valider($motDePasse);
+        if ($refus !== []) {
+            throw ApiException::validation('Mot de passe invalide.', ['password' => $refus]);
         }
 
-        // VAGUE 4.3 : implémenter le hachage ici.
-        //   $hache = password_hash((string) $motDePasse, PASSWORD_ARGON2ID);
-        //   $this->db->run(
-        //       'UPDATE users SET password_hash = :hash, updated_at = :updated_at WHERE id = :id',
-        //       [':hash' => $hache, ':updated_at' => gmdate('c'), ':id' => $id],
-        //   );
-        //   return Reponse::vide();
-
-        // Refus explicite jusqu'à la vague 4.3 — jamais de plain-text en base.
-        throw ApiException::requeteInvalide(
-            'Le hachage des mots de passe (Argon2id) sera activé en vague 4.3.'
-            . ' Cette route n\'est pas encore opérationnelle.'
+        $this->db->run(
+            'UPDATE users SET password_hash = :hash, updated_at = :updated_at WHERE id = :id',
+            [
+                ':hash' => MotDePasse::hacher((string) $motDePasse),
+                ':updated_at' => gmdate('c'),
+                ':id' => $id,
+            ],
         );
+
+        // Trace d'exploitation : un mot de passe changé par un tiers est
+        // exactement le genre d'événement qu'on veut pouvoir dater après coup.
+        // Le mot de passe lui-même n'apparaît évidemment nulle part.
+        Db::journaliserStatique(
+            'Mot de passe réattribué par un administrateur pour le compte ' . $id
+            . ' (algorithme : ' . MotDePasse::nomAlgorithme() . ').'
+        );
+
+        return Reponse::vide();
     }
 
     // ----------------------------------------------------------------
