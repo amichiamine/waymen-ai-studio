@@ -32,7 +32,11 @@
     <meta property="og:locale" content="fr_DZ" />
     <!-- WhatsApp — canal de vente principal en Algérie — n'accepte QUE des URL
          absolues pour og:image : un chemin relatif ne produit aucune vignette.
-         Domaine aligné sur le défaut de scripts/generate-sitemap.ts. -->
+         Les URL ci-dessous sont des valeurs de REPLI : elles restent correctes
+         sur le domaine de production (katech.dz). Quand le site est servi par
+         public/index.php (cas normal), PHP les réécrit à la volée avec l'origine
+         réelle de la requête (protocole + hôte), ce qui les rend portables sur
+         tout hébergement ou sous-domaine sans reconstruire. -->
     <meta property="og:url" content="https://katech.dz/" />
     <meta property="og:image" content="https://katech.dz/og-image.png" />
     <meta property="og:image:type" content="image/png" />

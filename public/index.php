@@ -54,11 +54,125 @@
  * Le chemin est déduit de `SCRIPT_NAME`, exactement comme le fait déjà
  * `api/src/Requete.php` pour retirer son propre préfixe. Rien n'est écrit en
  * dur, ni d'un côté ni de l'autre.
+ *
+ * =====================================================================
+ * BALISES OG ET JSON-LD — DOMAINE DÉDUIT À L'EXÉCUTION
+ * =====================================================================
+ * og:image, og:url, twitter:image et le bloc JSON-LD contiennent dans
+ * index.html des URL absolues figées sur « https://katech.dz ». Cette valeur
+ * de repli est correcte en production sur ce domaine, mais elle est fausse
+ * sur tout autre hébergement (recette, sous-domaine, client white-label…).
+ *
+ * Ces balises DOIVENT être absolues — Facebook, WhatsApp et les robots SEO
+ * récupèrent la page depuis leurs propres serveurs ; un chemin relatif ne
+ * produit aucune vignette.
+ *
+ * Deux voies sont possibles pour les rendre portables :
+ *
+ *  a) Variable d'environnement VITE_SITE_URL au moment du build.
+ *     Avantage : simple. Inconvénient : fige le domaine dans le livrable ;
+ *     le commerçant qui reçoit un dist/ tout fait ne peut plus rien changer
+ *     sans reconstruire — c'est exactement le problème que ce projet évite.
+ *
+ *  b) Réécriture à l'exécution par PHP (approche retenue).
+ *     Ce fichier connaît déjà le protocole (HTTPS ou non, via
+ *     $_SERVER['HTTPS'] et X-Forwarded-Proto) et le chemin. Il suffit
+ *     d'ajouter la lecture de HTTP_HOST pour obtenir l'origine complète.
+ *
+ * Sécurité de HTTP_HOST : l'en-tête vient du navigateur, pas du serveur.
+ * Mais nous ne le stockons pas, n'y faisons aucune décision de sécurité,
+ * et nous le reflètons uniquement dans les balises meta de la page HTML
+ * (non dans un cookie, non dans une session). C'est exactement l'usage
+ * décrit dans les recommandations OWASP pour les URL canoniques.
+ * Le format est validé par un masque strict avant utilisation.
+ *
+ * Repli propre : si index.html est servi directement (sans PHP, sans Host),
+ * les URL de repli « https://katech.dz/… » restent en place — c'est le
+ * domaine de production réel, donc les vignettes fonctionnent quand même.
  */
 
 declare(strict_types=1);
 
 $fichier = __DIR__ . '/index.html';
+
+// -----------------------------------------------------------------------
+// Origine calculée à l'exécution — sert à réécrire les URL absolues OG/LD
+// -----------------------------------------------------------------------
+
+/**
+ * Vrai si la requête courante arrive en HTTPS.
+ *
+ * Copie fidèle de la logique de api/src/Auth/Session.php::estHttps() :
+ * le projet a une position documentée sur ce sujet — ne pas diverger.
+ * X-Forwarded-Proto est pris en compte car, derrière le proxy d'un
+ * hébergeur mutualisé, $_SERVER['HTTPS'] est vide alors que le visiteur
+ * est bien en HTTPS.
+ */
+function katech_est_https(): bool
+{
+    $https = (string) ($_SERVER['HTTPS'] ?? '');
+    if ($https !== '' && strtolower($https) !== 'off') {
+        return true;
+    }
+
+    if ((int) ($_SERVER['SERVER_PORT'] ?? 0) === 443) {
+        return true;
+    }
+
+    $transmis = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+
+    return str_contains($transmis, 'https');
+}
+
+/**
+ * Hôte HTTP validé, ou null si absent ou invalide.
+ *
+ * HTTP_HOST est fourni par le navigateur. On ne l'utilise que pour construire
+ * une URL de partage (balises OG/JSON-LD) — jamais pour une décision de
+ * sécurité, jamais dans un cookie. On valide son format pour rejeter toute
+ * valeur malformée avant de l'injecter dans le HTML.
+ *
+ * Format accepté : lettres, chiffres, tirets, points, deux-points (port
+ * optionnel), entre 1 et 253 caractères. Les crochets IPv6 sont aussi tolérés.
+ */
+function katech_hote_valide(): ?string
+{
+    $hote = (string) ($_SERVER['HTTP_HOST'] ?? '');
+    if ($hote === '') {
+        return null;
+    }
+
+    // Longueur maximale d'un nom d'hôte + port
+    if (strlen($hote) > 253) {
+        return null;
+    }
+
+    // Format strict : hôte DNS avec port optionnel, ou adresse IPv6 entre crochets
+    if (!preg_match('/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(:\d{1,5})?$/', $hote)
+        && !preg_match('/^\[[\da-fA-F:]+\](:\d{1,5})?$/', $hote)) {
+        return null;
+    }
+
+    return $hote;
+}
+
+/**
+ * Origine complète déduite de la requête, ex. « https://katech.dz » ou
+ * « http://localhost:8080 ».
+ *
+ * Si HTTP_HOST est absent ou invalide, on retourne null : les URL de repli
+ * codées dans index.html (« https://katech.dz/… ») seront conservées telles
+ * quelles, ce qui est correct sur le domaine de production.
+ */
+function katech_origine(): ?string
+{
+    $hote = katech_hote_valide();
+    if ($hote === null) {
+        return null;
+    }
+
+    return (katech_est_https() ? 'https' : 'http') . '://' . $hote;
+}
 
 // Échec visible plutôt que silencieux : sans index.html il n'y a pas de site,
 // et une page blanche n'expliquerait rien. Le cas se produit pour de bon —
@@ -78,6 +192,45 @@ $base = str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/in
 $base = rtrim($base, '/') . '/';
 
 $html = (string) file_get_contents($fichier);
+
+// -----------------------------------------------------------------------
+// Réécriture des URL absolues OG/JSON-LD selon le domaine réel de la requête.
+//
+// index.html contient des URL figées sur « https://katech.dz » dans :
+//   - og:url, og:image
+//   - twitter:image
+//   - le bloc JSON-LD (clés "url" et "logo")
+//
+// Ces balises DOIVENT être absolues (Facebook, WhatsApp, robots SEO les
+// récupèrent depuis leurs propres serveurs). Elles doivent aussi pointer
+// vers le bon domaine, y compris sur un hébergement de recette ou après un
+// déplacement du site.
+//
+// On remplace « https://katech.dz » (la valeur de repli dans index.html) par
+// l'origine calculée à la requête. Si l'hôte est absent ou invalide, la
+// valeur de repli reste en place — correcte sur le domaine de production.
+//
+// On remplace ensuite « https://katech.dz/ » (URL racine codée dans og:url et
+// le JSON-LD) par l'URL racine réelle de CE déploiement — qui peut être en
+// sous-dossier. Cela garantit que l'URL partagée sur WhatsApp correspond à
+// l'adresse réellement accessible, même si le site tourne dans
+// public_html/boutique/.
+// -----------------------------------------------------------------------
+$origine = katech_origine();
+if ($origine !== null) {
+    // Étape 1 : adapter l'origine (protocole + hôte)
+    if ($origine !== 'https://katech.dz') {
+        $html = str_replace('https://katech.dz', $origine, $html);
+    }
+
+    // Étape 2 : si le site tourne en sous-dossier, corriger og:url et l'URL
+    // du JSON-LD qui pointent sur la racine (ex. "https://katech.dz/") vers
+    // la racine réelle de l'application (ex. "https://katech.dz/boutique/").
+    // On ne modifie que "origin/" pour éviter de toucher og:image.
+    if ($base !== '/') {
+        $html = str_replace($origine . '/', $origine . $base, $html);
+    }
+}
 
 // Insertion juste après <head> : la balise doit précéder TOUTE URL relative du
 // document, sinon celles qui la précèdent seraient résolues autrement.
