@@ -994,7 +994,7 @@ final class Migrateur
             if ($colonne['type'] === 'json' && $this->canoniserJson($valeur) === null) {
                 $this->rapport->anomalie(
                     Rapport::ERREUR,
-                    "{$table}.{$nom} n'est pas du JSON valide alors que la colonne cible l'exige : «  "
+                    "{$table}.{$nom} n'est pas du JSON valide alors que la colonne cible l'exige : « "
                     . mb_substr((string) $valeur, 0, 60) . ' ».',
                     ['table' => $table, 'colonne' => $nom, 'ligne' => $this->etiquetteLigne($ligne, $cle)],
                 );
@@ -1064,10 +1064,10 @@ final class Migrateur
         }
 
         throw new RuntimeException(sprintf(
-            'Budget de temps de %.0f s épuisé pendant « %s » (%d ligne(s) traitées). Tout est annulé : '
+            'Budget de temps de %s s épuisé pendant « %s » (%d ligne(s) traitées). Tout est annulé : '
             . "la base cible n'a pas été modifiée. Relancez en ligne de commande, ou augmentez le budget "
             . 'si votre hébergeur le permet.',
-            (float) $this->options['budget_s'],
+            rtrim(rtrim(number_format((float) $this->options['budget_s'], 2, '.', ''), '0'), '.'),
             $table,
             $lues,
         ));
