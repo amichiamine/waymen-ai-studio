@@ -31,6 +31,8 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Factures;
+use KaTech\Outbox;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -56,8 +58,13 @@ final class ControleurCommandes
     private const SEUIL_RUPTURE_DEFAUT = 0;
     private const SEUIL_BAS_DEFAUT = 5;
 
+    private readonly Outbox $outbox;
+    private readonly Factures $factures;
+
     public function __construct(private readonly Db $db)
     {
+        $this->outbox   = new Outbox($db);
+        $this->factures = new Factures($db);
     }
 
     // =================================================================
@@ -297,6 +304,84 @@ final class ControleurCommandes
                     . 'updated_at = :maj WHERE id = :client',
                     [':montant' => $total, ':maj' => $maintenant, ':client' => $client['id']],
                 );
+            }
+
+            // ----------------------------------------------------------------
+            // Facture — snapshot immuable de la commande.
+            //
+            // Écrit dans la même transaction : une commande ne peut pas exister
+            // sans sa facture, et une facture ne peut pas exister sans commande.
+            // Si la transaction est annulée (rollback), la facture disparaît aussi.
+            // ----------------------------------------------------------------
+            $this->factures->creer(
+                commandeId:   $commandeId,
+                client:       $client,
+                livraison:    $livraison,
+                lignes:       $lignesCommande,
+                sousTotal:    $sousTotal,
+                remise:       $remise,
+                codeApplique: $codeApplique,
+                fraisPort:    $fraisPort,
+                total:        $total,
+                paiement:     $paiement,
+                maintenant:   $maintenant,
+            );
+
+            // ----------------------------------------------------------------
+            // Outbox — événements différés (PLAN.md §8, règle absolue).
+            //
+            // Aucun appel réseau n'est effectué ici. Les événements sont écrits
+            // dans la même transaction que la commande : si la transaction est
+            // annulée, il n'y a pas d'événement fantôme. Un travailleur CRON les
+            // dépile ensuite (api/tools/vider-outbox.php).
+            // ----------------------------------------------------------------
+            $payloadCommande = [
+                'commandeId'    => $commandeId,
+                'clientNom'     => $client['name'],
+                'clientEmail'   => $client['email'],
+                'clientTel'     => $client['phone'],
+                'wilaya'        => $livraison['wilaya'],
+                'modeLivraison' => $livraison['kind'],
+                'adresse'       => $livraison['address'],
+                'sousTotal'     => $sousTotal,
+                'remise'        => $remise,
+                'coupon'        => $codeApplique,
+                'fraisPort'     => $fraisPort,
+                'total'         => $total,
+                'modePaiement'  => $paiement['id'],
+                'nbLignes'      => count($lignesCommande),
+                'produits'      => array_map(
+                    static fn (array $l): array => [
+                        'produitId' => $l['produit'],
+                        'libelle'   => $l['libelle'],
+                        'prix'      => $l['prix'],
+                        'qte'       => $l['qte'],
+                    ],
+                    $lignesCommande,
+                ),
+                'createdAt'     => $maintenant,
+            ];
+            $this->outbox->deposer('order.created', $payloadCommande);
+
+            // Événement de rupture de stock : utile au commerçant pour réapprovisionner.
+            // Émis pour chaque produit que le décompte a fait descendre à zéro (ou
+            // dont le statut est désormais « out »).
+            foreach ($lignesCommande as $ligne) {
+                $stockRestant = $this->db->valeur(
+                    "SELECT stock_qty FROM products WHERE id = :produit AND stock = 'out'",
+                    [':produit' => $ligne['produit']],
+                );
+                // `valeur` renvoie `null` si aucune ligne ou si la colonne est NULL.
+                // Ici : si la requête renvoie une ligne, le produit est en rupture.
+                if ($stockRestant !== null) {
+                    $this->outbox->deposer('stock.rupture', [
+                        'produitId' => $ligne['produit'],
+                        'libelle'   => $ligne['libelle'],
+                        'stockQty'  => (int) $stockRestant,
+                        'commandeId' => $commandeId,
+                        'at'        => $maintenant,
+                    ]);
+                }
             }
 
             $this->db->commit();
