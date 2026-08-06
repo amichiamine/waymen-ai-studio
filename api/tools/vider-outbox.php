@@ -52,8 +52,12 @@ declare(strict_types=1);
 $racineApi = dirname(__DIR__);
 require $racineApi . '/src/bootstrap.php';
 
+use KaTech\Courriel;
 use KaTech\Db;
 use KaTech\Env;
+use KaTech\Modeles\ConfirmationCommande;
+use KaTech\Modeles\NouvelleCommande;
+use KaTech\Modeles\ReinitialisationMotDePasse;
 use KaTech\Outbox;
 
 $depart = microtime(true);
@@ -80,12 +84,11 @@ Env::charger();
 $webhookUrl    = (string) Env::get('OUTBOX_WEBHOOK_URL', '');
 $webhookSecret = (string) Env::get('OUTBOX_WEBHOOK_SECRET', '');
 $tailleLot     = max(1, min(500, (int) Env::get('OUTBOX_BATCH_SIZE', '50')));
+$appUrl        = rtrim((string) Env::get('APP_URL', ''), '/');
 
-if ($webhookUrl === '') {
-    echo "[outbox] Aucune destination configurée (OUTBOX_WEBHOOK_URL absent).\n";
-    echo "[outbox] Les événements restent en attente jusqu'à ce qu'une destination soit ajoutée.\n";
-    libererVerrouEtSortir($verrou, 0);
-}
+// On ne sort plus si OUTBOX_WEBHOOK_URL est absent : les topics email
+// (order.created, password_reset) sont gérés localement et ne nécessitent
+// pas de webhook externe.
 
 // ---- Initialisation ---------------------------------------------------------
 $db     = Db::instance();
@@ -112,7 +115,7 @@ foreach ($evenements as $evt) {
 
     echo "[outbox] #{$id} topic={$topic} tentative=" . ($tentatives + 1) . '/' . Outbox::MAX_TENTATIVES . ' … ';
 
-    $erreur = emettre($id, $topic, $evt['payload'], $evt['created_at'], $webhookUrl, $webhookSecret);
+    $erreur = emettre($id, $topic, $evt['payload'], $evt['created_at'], $webhookUrl, $webhookSecret, $appUrl);
 
     if ($erreur === null) {
         $outbox->marquerEmis($id);
@@ -137,13 +140,14 @@ libererVerrouEtSortir($verrou, 0);
 // =============================================================================
 
 /**
- * Tente d'émettre un événement vers le webhook générique.
+ * Tente d'émettre un événement.
  *
- * Structure extensible : ajoutez ici des `case` pour Telegram, Notion, etc.
- * Le webhook générique est le repli par défaut pour tous les topics non gérés.
+ * Structure extensible : les topics nommés (order.created, password_reset)
+ * sont traités en premier ; le webhook générique est le repli par défaut.
  *
  * Aucune transaction n'est ouverte ici. Le marquage (marquerEmis / marquerEchec)
  * est fait par l'appelant, APRÈS le retour de cette fonction.
+ * Aucun appel réseau ne se fait dans une transaction (garantie 4 du script).
  *
  * @return string|null  null si succès, message d'erreur sinon
  */
@@ -154,15 +158,108 @@ function emettre(
     mixed $createdAt,
     string $webhookUrl,
     string $webhookSecret,
+    string $appUrl = '',
 ): ?string {
-    // Intégrations nommées — à étoffer au fur et à mesure.
-    // Exemple :
-    //   case 'order.created':
-    //       return emettreVersTelegram($id, $payload, $config);
-    //
-    // Pour l'instant : toujours le webhook générique.
+    $payload = is_string($payloadBrut)
+        ? (array) (json_decode($payloadBrut, true) ?? [])
+        : (array) $payloadBrut;
+
+    // ---- Topics email -------------------------------------------------------
+    // Traités localement, sans webhook externe. Chaque case renvoie null si
+    // l'envoi réussit, ou un message d'erreur en cas d'échec.
+
+    switch ($topic) {
+        case 'order.created':
+            return emettreEmailCommande($payload, $appUrl);
+
+        case 'password_reset':
+            return emettreEmailReset($payload, $appUrl);
+    }
+
+    // ---- Webhook générique (repli pour tous les autres topics) ---------------
+    if ($webhookUrl === '') {
+        // Pas de webhook configuré et topic non géré localement : on logue mais
+        // on ne traite pas comme un échec — l'événement sera marqué émis.
+        Db::journaliserStatique(
+            "[outbox] Topic « {$topic} » ignoré : OUTBOX_WEBHOOK_URL absent et aucun handler local."
+        );
+
+        return null;
+    }
 
     return emettreWebhookGenerique($id, $topic, $payloadBrut, $createdAt, $webhookUrl, $webhookSecret);
+}
+
+/**
+ * Émet un email de confirmation de commande (client) et de notification
+ * au commerçant.
+ *
+ * Aucune transaction n'est ouverte dans cette fonction.
+ *
+ * @param array<string,mixed> $payload
+ * @return string|null null si succès, message d'erreur sinon
+ */
+function emettreEmailCommande(array $payload, string $appUrl): ?string
+{
+    try {
+        // ---- Email au client ------------------------------------------------
+        $emailClient = (string) ($payload['customerEmail'] ?? '');
+        if ($emailClient !== '' && filter_var($emailClient, FILTER_VALIDATE_EMAIL)) {
+            $msg = ConfirmationCommande::generer($payload);
+            Courriel::envoyer(
+                $emailClient,
+                (string) ($payload['customerName'] ?? ''),
+                $msg['sujet'],
+                $msg['texte'],
+                $msg['html'],
+            );
+        }
+
+        // ---- Notification au commerçant ------------------------------------
+        $emailCommerçant = (string) Env::get('NOTIFY_OWNER_EMAIL', '');
+        if ($emailCommerçant !== '' && filter_var($emailCommerçant, FILTER_VALIDATE_EMAIL)) {
+            $msg = NouvelleCommande::generer($payload);
+            Courriel::envoyer(
+                $emailCommerçant,
+                (string) Env::get('NOTIFY_OWNER_NAME', 'KA Tech Hub'),
+                $msg['sujet'],
+                $msg['texte'],
+                $msg['html'],
+            );
+        }
+
+        return null;
+    } catch (\Throwable $e) {
+        return 'Envoi email order.created : ' . $e->getMessage();
+    }
+}
+
+/**
+ * Émet un email de réinitialisation de mot de passe.
+ *
+ * @param array<string,mixed> $payload
+ * @return string|null null si succès, message d'erreur sinon
+ */
+function emettreEmailReset(array $payload, string $appUrl): ?string
+{
+    try {
+        $email = (string) ($payload['email'] ?? '');
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'password_reset : adresse email absente ou invalide dans le payload.';
+        }
+
+        // Enrichit le payload avec l'URL de l'application si elle n'y est pas.
+        if (!isset($payload['appUrl']) || $payload['appUrl'] === '') {
+            $payload['appUrl'] = $appUrl;
+        }
+
+        $msg = ReinitialisationMotDePasse::generer($payload);
+        Courriel::envoyer($email, '', $msg['sujet'], $msg['texte'], $msg['html']);
+
+        return null;
+    } catch (\Throwable $e) {
+        return 'Envoi email password_reset : ' . $e->getMessage();
+    }
 }
 
 /**
