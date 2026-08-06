@@ -19,7 +19,27 @@ démarrage est immédiat. Le frontend s'ouvre sur **http://localhost:8080** et l
 pilule en bas de l'écran affiche **http** : les données viennent de la base, plus
 du `localStorage`.
 
-Compte propriétaire : `admin@katech.dz` / `Mdp-Dev-2026!`
+Compte propriétaire : `admin@katech.dz` / `katech-dev-2026`
+
+### Quel identifiant pour quel mode
+
+**Un seul mot de passe de développement : `katech-dev-2026`.** Il vaut dans les
+deux modes, c'est voulu — trois mots de passe pour un même écran de connexion,
+c'est une connexion refusée sans raison visible.
+
+| Mode                   | Comptes                                                 | Mot de passe                        | Où il est créé                                   |
+| ---------------------- | ------------------------------------------------------- | ----------------------------------- | ------------------------------------------------ |
+| `http` (`bun run dev`) | `admin@katech.dz` (owner), en base                      | `katech-dev-2026`                   | `scripts/api-dev.mjs` → `api/install.php`        |
+| `mock` (`dev:mock`)    | Les cinq comptes semés `*@katech.dz`, dans localStorage | `katech-dev-2026`                   | `src/lib/admin-store.tsx` (`dev` uniquement)     |
+| `mock` + `.env.local`  | Les mêmes cinq comptes                                  | ceux de `VITE_DEV_SEED_CREDENTIALS` | `.env.example` recopié (`admin123`, `sarah123`…) |
+
+Autrement dit : `admin123` et ses voisins n'existent **que** si vous avez recopié
+`.env.example` en `.env.local` pour une démonstration en mode `mock`. Sans ce
+fichier, il n'y a qu'un seul mot de passe à retenir.
+
+En **production**, rien de tout cela ne s'applique : aucun compte n'est semé et
+`INSTALL_OWNER_PASSWORD` est obligatoire, sans valeur par défaut — l'installateur
+refuse de créer un propriétaire dont le mot de passe serait devinable.
 
 **Aucun fichier de configuration à créer.** Le mode est injecté par
 l'environnement au démarrage.
@@ -55,7 +75,7 @@ de production, où les deux partagent le domaine.
 
 ```bash
 API_URL=http://127.0.0.1:8160/v1 API_EMAIL=admin@katech.dz \
-  API_PASSWORD='Mdp-Dev-2026!' bunx tsx scripts/conformite-api.ts
+  API_PASSWORD='katech-dev-2026' bunx tsx scripts/conformite-api.ts
 ```
 
 Le harnais appelle les 27 ressources et compare la réponse réelle à la forme
@@ -114,6 +134,11 @@ katech.dz {
 ```
 
 ## Comptes de démonstration
+
+Toute cette section décrit le mode **`mock`** : ces comptes vivent dans le
+`localStorage`, jamais en base. En mode **`http`**, le seul compte existant est le
+propriétaire créé en base (`admin@katech.dz` / `katech-dev-2026`) — voir
+[Quel identifiant pour quel mode](#quel-identifiant-pour-quel-mode).
 
 Les comptes de démonstration sont semés uniquement lorsque le build est en mode `development` (serveur `bun run dev` et `bun run build:dev`).
 

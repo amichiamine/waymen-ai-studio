@@ -42,7 +42,17 @@ const env = {
   API_BASE_PATH: "/",
   SMTP_SIMULATE: process.env.SMTP_SIMULATE ?? "1",
   INSTALL_OWNER_EMAIL: process.env.INSTALL_OWNER_EMAIL ?? "admin@katech.dz",
-  INSTALL_OWNER_PASSWORD: process.env.INSTALL_OWNER_PASSWORD ?? "Mdp-Dev-2026!",
+  // UN SEUL mot de passe de développement, identique en mock et en http :
+  // celui que `admin-store` sème pour les comptes de démonstration
+  // (`devDefaultSeedPassword()`). Ce script créait auparavant le propriétaire
+  // avec « Mdp-Dev-2026! » : passer de `mock` à `http` changeait donc le mot de
+  // passe sans le dire, et la connexion était refusée sans raison visible.
+  //
+  // Ceci ne concerne QUE le développement. `api/install.php` continue d'exiger
+  // INSTALL_OWNER_PASSWORD, sans aucune valeur par défaut, lors d'une vraie
+  // installation : c'est ce script de dev qui la fournit, pas l'installateur qui
+  // l'invente.
+  INSTALL_OWNER_PASSWORD: process.env.INSTALL_OWNER_PASSWORD ?? "katech-dev-2026",
   INSTALL_OWNER_NAME: process.env.INSTALL_OWNER_NAME ?? "Propriétaire",
 };
 
