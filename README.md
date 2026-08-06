@@ -6,108 +6,62 @@ Application 100 % client, sans backend. `bun run build` produit un dossier `dist
 
 ```bash
 bun install
-bun run dev        # http://localhost:8080 (ou le premier port libre au-dessus)
-bun run build      # produit ./dist
-bun run preview    # sert ./dist localement
 ```
 
-### Choisir le port
-
-Le serveur démarre sur **8080** par défaut. Si le port est occupé — Tomcat de
-XAMPP l'utilise, et une fenêtre de terminal fermée sans `Ctrl+C` laisse un
-serveur en vie — Vite **balaie automatiquement** les ports suivants (8081,
-8082…) et affiche l'URL retenue au démarrage.
-
-Pour imposer un port de départ :
-
-```bash
-PORT=5173 bun run dev              # macOS / Linux
-$env:PORT=5173; bun run dev        # Windows PowerShell
-set PORT=5173 && bun run dev       # Windows cmd
-bunx vite --port 5173              # ponctuel, sans variable
-```
-
-`PREVIEW_PORT` fait de même pour `bun run preview`.
-
-## Développement à deux serveurs (API PHP + Vite)
-
-Par défaut, le frontend tourne **seul** : `VITE_API_MODE=mock` lit tout dans le
-`localStorage`, aucun serveur n'est requis. Pour travailler contre la vraie API
-PHP, il faut **deux serveurs en parallèle** et une bascule d'environnement.
-
-> **Avant de basculer, lisez `docs/CONFORMITE-API.md`.** Toutes les ressources
-> ne concordent pas encore entre le provider et l'API : 10 sur 27 sont
-> conformes à ce jour. Le mode `http` n'est pas encore un mode de travail
-> confortable.
-
-### 1. Serveur 1 — l'API PHP, en une commande
-
-```bash
-bun run dev:api
-```
-
-Au premier lancement, le script crée la base, importe le catalogue et les
-contenus, puis sert l'API sur **http://127.0.0.1:8160**. Les fois suivantes, il
-démarre directement.
-
-La base vit **hors du dépôt**, dans `../katech-data/dev.sqlite` : elle n'est ni
-commitée, ni servie par un serveur web. Le compte propriétaire créé est
-`admin@katech.dz` / `Mdp-Dev-2026!`.
-
-Sous Windows, PHP doit être dans le `PATH` — XAMPP le fournit, il suffit
-d'ajouter `C:\xampp\php`. Le script le vérifie et le dit s'il manque.
-
-Variables utiles : `API_PORT` change le port, `DB_DRIVER=mysql` bascule de
-pilote, `APP_ENV=development` affiche les traces d'erreur.
-
-### 2. Serveur 2 — le frontend
-
-Dans un **second terminal**, créez `.env.local` avec :
-
-```
-VITE_API_MODE=http
-```
-
-puis :
+Une seule commande démarre **tout** : l'API PHP et le frontend.
 
 ```bash
 bun run dev
 ```
 
-Vite achemine `/api` vers l'API PHP. La pilule en bas de l'écran affiche
-désormais **http** au lieu de **mock** : le `localStorage` n'est plus la source
-de vérité, tout passe par la base.
+Au premier lancement, la base est créée et le catalogue importé. Ensuite le
+démarrage est immédiat. Le frontend s'ouvre sur **http://localhost:8080** et la
+pilule en bas de l'écran affiche **http** : les données viennent de la base, plus
+du `localStorage`.
 
-**Pourquoi un proxy est indispensable.** Sans lui, le front (`:8080`) et l'API
-(`:8160`) seraient deux **origines** distinctes. Le cookie de session
-`katech_sid` est `HttpOnly` + `SameSite=Lax` : il ne serait ni posé ni renvoyé,
-et toute route authentifiée répondrait `401`. Le proxy ramène l'API sur
-l'origine du front — exactement la situation de production.
+Compte propriétaire : `admin@katech.dz` / `Mdp-Dev-2026!`
 
-### 3. Revenir en mode `mock`
+**Aucun fichier de configuration à créer.** Le mode est injecté par
+l'environnement au démarrage.
 
-```bash
-# retirer VITE_API_MODE=http de .env.local (ou le remettre à "mock")
-bun run dev
-```
+Sous **Windows**, PHP doit être dans le `PATH` — XAMPP le fournit, ajoutez
+`C:\xampp\php`. Si PHP manque, `bun run dev` le dit et démarre quand même le
+frontend en mode `mock`, pour que rien ne soit bloquant.
 
-`VITE_API_MODE` est lu **à la compilation** : un simple rechargement de page ne
-suffit pas, il faut redémarrer Vite. Les données du `localStorage` ne sont pas
-effacées par la bascule — le mode `mock` retrouve l'état exact qu'il avait.
+### Les autres entrées
 
-### 4. Vérifier que les deux moitiés s'accordent
+| Commande           | Ce qu'elle fait                               |
+| ------------------ | --------------------------------------------- |
+| `bun run dev`      | API + frontend, données en base               |
+| `bun run dev:mock` | Frontend seul, données dans le `localStorage` |
+| `bun run dev:api`  | API seule, pour la sonder au `curl`           |
+
+La base de développement vit **hors du dépôt**, dans `../katech-data/dev.sqlite` :
+jamais commitée, jamais servie par un serveur web. Pour repartir de zéro,
+supprimez ce fichier — il sera recréé et rempli au prochain démarrage.
+
+Variables utiles : `PORT` (frontend), `API_PORT` (API), `DB_DRIVER=mysql` pour
+changer de pilote, `APP_ENV=development` pour voir les traces d'erreur.
+
+### Pourquoi un proxy
+
+Le frontend et l'API sont sur deux ports. Sans proxy, ce seraient deux
+**origines** distinctes : le cookie de session `katech_sid`, qui est `HttpOnly`
+et `SameSite=Lax`, ne serait ni posé ni renvoyé, et toute route authentifiée
+répondrait `401`. Vite achemine donc `/api` vers l'API — exactement la situation
+de production, où les deux partagent le domaine.
+
+### Vérifier que les deux moitiés s'accordent
 
 ```bash
 API_URL=http://127.0.0.1:8160/v1 API_EMAIL=admin@katech.dz \
   API_PASSWORD='Mdp-Dev-2026!' bunx tsx scripts/conformite-api.ts
 ```
 
-Le harnais appelle les 27 ressources et compare la réponse réelle à la forme que
-`src/data-provider` attend. Sortie `0` si tout concorde, `1` en cas d'écart,
-`2` s'il n'a pas pu travailler (API injoignable, connexion refusée) — un
-harnais muet n'est jamais compté comme un succès. Il **écrit** dans la base
-(amorçage d'un jeu d'essai) et refuse de tourner ailleurs qu'en loopback.
-Rapport commenté : `docs/CONFORMITE-API.md`.
+Le harnais appelle les 27 ressources et compare la réponse réelle à la forme
+attendue par `src/data-provider`. Sortie `0` si tout concorde, `1` en cas
+d'écart, `2` s'il n'a pas pu travailler — un harnais muet n'est jamais compté
+comme un succès. Rapport : `docs/CONFORMITE-API.md`.
 
 ## Déploiement
 

@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "predev": "bunx tsx scripts/generate-sitemap.ts",
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
+    "dev:mock": "vite",
     "dev:api": "node scripts/api-dev.mjs",
     "prebuild": "bunx tsx scripts/generate-sitemap.ts",
     "build": "vite build",
