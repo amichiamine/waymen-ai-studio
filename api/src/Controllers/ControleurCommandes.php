@@ -30,6 +30,7 @@ declare(strict_types=1);
 namespace KaTech\Controllers;
 
 use KaTech\ApiException;
+use KaTech\Auth\Garde;
 use KaTech\Db;
 use KaTech\Factures;
 use KaTech\Outbox;
@@ -122,37 +123,87 @@ final class ControleurCommandes
     /**
      * GET /me/orders → { data: Order[] } (tableau nu, cf. ordersApi.mine()).
      *
-     * SÉCURITÉ vague 4.3 : l'identifiant du client DEVRA provenir de la SESSION
-     * (cookie httpOnly), jamais du paramètre `customerId` lu ici. Tant que
-     * l'authentification n'est pas livrée, ce paramètre est le seul porteur
-     * d'identité disponible — mais il est falsifiable, donc cette route reste
-     * inexploitable en production tant que 4.3 n'a pas remplacé la ligne
-     * ci-dessous par la lecture de la session.
+     * SÉCURITÉ (vague 4.9, §4.1 de docs/CONFORMITE-API.md) : l'identité vient
+     * de la SESSION (cookie httpOnly `katech_sid`), JAMAIS d'un paramètre de
+     * requête. Le provisoire `?customerId=` de la vague 4.2 est supprimé sans
+     * repli : un repli sur la query rendrait la fuite entre clients possible
+     * en changeant un chiffre dans l'URL. Il ne doit jamais revenir.
      *
      * Le défaut historique corrigé en phase 2 était l'inverse : en l'absence
      * d'identité, la route renvoyait TOUTES les commandes de TOUS les clients.
-     * Ici, pas d'identité = 401, jamais un jeu de données élargi.
+     * Ici, pas de session = 401 (posé par `Garde::protegeConnecte` sur la route
+     * et revérifié ici), et une session sans fiche client = liste VIDE, jamais
+     * un jeu de données élargi.
+     *
+     * Le paramètre `$r` n'est pas lu : c'est volontaire et c'est la garantie.
      */
     public function mesCommandes(Requete $r): Reponse
     {
-        // SÉCURITÉ vague 4.3 : remplacer par l'identifiant de la session.
-        $clientId = trim((string) $r->query('customerId', ''));
+        // Revérification volontaire : la route est déjà derrière
+        // `Garde::protegeConnecte`, mais le contrôleur ne dépend pas de la
+        // pose d'un intergiciel pour ne pas fuir de données.
+        $utilisateur = Garde::exigerConnexion();
 
-        if ($clientId === '') {
-            throw ApiException::nonAuthentifie(
-                'Identité du client absente : /me/orders ne renvoie jamais les commandes de tout le monde. '
-                . 'La session sera fournie par l\'authentification (vague 4.3).'
-            );
+        $clientIds = $this->fichesClientDuCompte((string) $utilisateur['email']);
+
+        // Aucune fiche client rattachée au compte : le compte n'a pas d'historique.
+        // Pas de 401 (l'appelant EST authentifié), pas de liste élargie non plus.
+        if ($clientIds === []) {
+            return Reponse::ok([]);
         }
 
         // Le filtrage par client est la RAISON D'ÊTRE de cette route : sans ce
         // WHERE, c'est une fuite de données entre clients.
+        //
+        // PIÈGE DE DIALECTE (docs/BACKEND.md §4, piège n°1) : un paramètre nommé
+        // ne se réutilise pas sous MySQL. Chaque identifiant reçoit donc SON
+        // propre nom (`:client0`, `:client1`, …).
+        $noms = [];
+        $params = [':limite' => Pagination::PAR_PAGE_MAX];
+        foreach (array_values($clientIds) as $index => $clientId) {
+            $nom = ':client' . $index;
+            $noms[] = $nom;
+            $params[$nom] = $clientId;
+        }
+
         $lignes = $this->db->tous(
-            'SELECT * FROM orders WHERE customer_id = :client ORDER BY created_at DESC, id ASC LIMIT :limite',
-            [':client' => $clientId, ':limite' => Pagination::PAR_PAGE_MAX],
+            'SELECT * FROM orders WHERE customer_id IN (' . implode(', ', $noms) . ') '
+            . 'ORDER BY created_at DESC, id ASC LIMIT :limite',
+            $params,
         );
 
         return Reponse::ok($this->enDtos($lignes));
+    }
+
+    /**
+     * Correspondance compte ↔ fiche(s) client.
+     *
+     * `users` et `customers` sont deux tables distinctes et le schéma ne porte
+     * AUCUNE clé étrangère entre elles (pas de `customers.user_id`). Le seul
+     * rattachement fiable disponible est le COURRIEL, qui est déjà celui
+     * qu'utilise `clientValide()` pour rattacher une commande à une fiche
+     * existante, et qui est indexé (`idx_customers_email`). Les deux moitiés du
+     * code se rejoignent donc sur la même règle.
+     *
+     * Un courriel vide ne rattache rien : `customers.email` vaut `''` par
+     * défaut pour les fiches créées à la main, et `'' = ''` rattacherait tout
+     * le monde à tout le monde.
+     *
+     * @return list<string>
+     */
+    private function fichesClientDuCompte(string $courriel): array
+    {
+        $courriel = mb_strtolower(trim($courriel));
+        if ($courriel === '') {
+            return [];
+        }
+
+        $lignes = $this->db->tous(
+            'SELECT id FROM customers WHERE LOWER(email) = :courriel AND email <> \'\' ORDER BY id ASC',
+            [':courriel' => $courriel],
+        );
+
+        return array_map(static fn (array $l): string => (string) $l['id'], $lignes);
     }
 
     // =================================================================
@@ -245,6 +296,14 @@ final class ControleurCommandes
 
             $paiement = $this->paiementValide($r);
             $commandeId = $this->identifiantCommandeLibre();
+
+            // Un client CONNECTÉ doit toujours repartir avec une commande
+            // rattachée : sinon `/me/orders` resterait vide sans le dire.
+            // Créée dans la MÊME transaction : pas de fiche orpheline si la
+            // commande est annulée.
+            if ($client['id'] === null && $client['compte'] !== null) {
+                $client['id'] = $this->ficheClientGarantie($client, $livraison['wilaya'], $maintenant);
+            }
 
             $this->db->inserer('orders', [
                 'id' => $commandeId,
@@ -668,20 +727,43 @@ final class ControleurCommandes
     /**
      * Identité de l'acheteur.
      *
-     * SÉCURITÉ vague 4.3 : `customerId` est ici lu dans le corps de la requête
-     * faute de session. Il DEVRA provenir de la session authentifiée — un
-     * client ne doit pas pouvoir rattacher sa commande au compte d'un autre.
+     * SÉCURITÉ (vague 4.9) : quand la requête porte une session de rôle
+     * `customer`, le COURRIEL et le rattachement viennent de la session, et le
+     * `customer.id` du corps est IGNORÉ. Sans cela, un client connecté pourrait
+     * rattacher sa commande à la fiche d'un autre — et la verrait ensuite
+     * apparaître, ou disparaître, dans le mauvais `/me/orders`.
      *
-     * @return array{id:?string,name:string,email:?string,phone:string,note:?string}
+     * Le back-office (rôle `viewer`+) conserve le comportement d'origine : il
+     * saisit des commandes POUR un client, `customer.id` y est légitime. Et une
+     * commande INVITÉ (sans session) n'est pas modifiée du tout — c'est l'usage
+     * courant, il reste additif.
+     *
+     * @return array{id:?string,name:string,email:?string,phone:string,note:?string,compte:?string}
      */
     private function clientValide(Requete $r): array
     {
         $client = $r->corps('customer');
         $client = is_array($client) ? $client : [];
 
+        // Session éventuelle. `Garde::utilisateur()` ne lève jamais : une
+        // commande invité doit continuer de passer.
+        $session = Garde::utilisateur();
+        $compte = ($session !== null && $session['role'] === 'customer') ? $session : null;
+
         $nom = trim((string) ($client['name'] ?? $r->corps('customerName', '')));
         $telephone = trim((string) ($client['phone'] ?? $r->corps('phone', '')));
         $courriel = trim((string) ($client['email'] ?? $r->corps('customerEmail', '')));
+
+        if ($compte !== null) {
+            // L'identité prime sur le corps de la requête.
+            $courriel = trim((string) $compte['email']);
+            if ($nom === '') {
+                $nom = trim((string) $compte['name']);
+            }
+            if ($telephone === '' && ($compte['phone'] ?? null) !== null) {
+                $telephone = trim((string) $compte['phone']);
+            }
+        }
 
         $champs = [];
         if ($nom === '') {
@@ -697,8 +779,9 @@ final class ControleurCommandes
             throw ApiException::validation('Coordonnées client incomplètes.', $champs);
         }
 
-        // SÉCURITÉ vague 4.3 : remplacer par l'identifiant de la session.
-        $id = trim((string) ($client['id'] ?? $r->corps('customerId', '')));
+        // Un client connecté ne choisit PAS sa fiche : elle est déduite de son
+        // courriel de session, plus bas. Le back-office, lui, la désigne.
+        $id = $compte !== null ? '' : trim((string) ($client['id'] ?? $r->corps('customerId', '')));
         $resolu = null;
 
         if ($id !== '') {
@@ -726,7 +809,74 @@ final class ControleurCommandes
             'email' => $courriel === '' ? null : $courriel,
             'phone' => $telephone,
             'note' => ($note === null || $note === '') ? null : (string) $note,
+            // Identifiant `users.id` du client connecté, ou null (invité,
+            // back-office). Sert à garantir une fiche client à la commande.
+            'compte' => $compte === null ? null : (string) $compte['id'],
         ];
+    }
+
+    /**
+     * Fiche client garantie pour un compte connecté, DANS la transaction de la
+     * commande.
+     *
+     * Cas visé : un compte créé avant la vague 4.9 (donc sans fiche `customers`)
+     * qui passe commande. Sans cette création, la commande partirait avec
+     * `customer_id = NULL` et son auteur ne la reverrait jamais dans
+     * `/me/orders` — un échec silencieux, donc interdit (AGENTS.md §6).
+     *
+     * La relecture par courriel est refaite ici : entre `clientValide()` et
+     * l'écriture, une autre requête a pu créer la fiche.
+     *
+     * @param array{name:string,email:?string,phone:string} $client
+     */
+    private function ficheClientGarantie(array $client, string $wilaya, string $maintenant): ?string
+    {
+        $courriel = mb_strtolower(trim((string) ($client['email'] ?? '')));
+        if ($courriel === '') {
+            return null;
+        }
+
+        $existante = $this->db->valeur(
+            'SELECT id FROM customers WHERE LOWER(email) = :courriel AND email <> \'\'',
+            [':courriel' => $courriel],
+        );
+        if ($existante !== null) {
+            return (string) $existante;
+        }
+
+        $id = $this->identifiantClientLibre();
+
+        $this->db->inserer('customers', [
+            'id' => $id,
+            'name' => $client['name'] === '' ? $courriel : $client['name'],
+            'email' => $courriel,
+            'phone' => $client['phone'],
+            'wilaya' => $wilaya,
+            'orders_count' => 0,
+            'total_spent' => 0,
+            'created_at' => $maintenant,
+            'updated_at' => $maintenant,
+        ]);
+
+        return $id;
+    }
+
+    /** Identifiant de fiche client libre, au format `cus_…` de ControleurClients. */
+    private function identifiantClientLibre(): string
+    {
+        for ($essai = 0; $essai < 8; $essai++) {
+            $id = 'cus_' . bin2hex(random_bytes(6));
+            if ($this->db->valeur('SELECT id FROM customers WHERE id = :id', [':id' => $id]) === null) {
+                return $id;
+            }
+        }
+
+        // Jamais d'échec silencieux : mieux vaut une 500 nommée qu'une collision.
+        throw new ApiException(
+            500,
+            'INTERNAL_ERROR',
+            'Impossible de tirer un identifiant client libre après 8 tentatives.'
+        );
     }
 
     /**
