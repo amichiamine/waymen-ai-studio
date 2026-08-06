@@ -20,6 +20,7 @@ import { authApi } from "@/api/resources/auth";
 import type { AuthSession, SignInInput, SignUpInput } from "@/api/types";
 import {
   findUserByEmail,
+  listUsersWithoutPassword,
   setUserPassword,
   touchUserLogin,
   upsertUser,
@@ -66,6 +67,25 @@ export type UpdateProfileInput = { name: string; phone?: string };
  */
 function toAuthUser(u: AdminUser, phone?: string): AuthUser {
   return { id: u.id, email: u.email, name: u.name, phone, role: u.role };
+}
+
+/**
+ * Diagnostic de développement : emails des comptes actifs qui, faute de mot de
+ * passe, ne peuvent pas se connecter en mode mock.
+ *
+ * Vit ici parce que ce module est le seul autorisé à connaître `admin-store`
+ * (doctrine `docs/DATA-PROVIDER.md`) : l'interface consomme ce diagnostic sans
+ * importer le magasin mock. Renvoie toujours un tableau vide en production et
+ * en mode http — un état dégradé du magasin mock n'y a aucun sens.
+ *
+ * Destiné à `DataModeBadge` : un état dégradé ne doit jamais rester silencieux
+ * (AGENTS.md §7). C'est l'absence de ce signal qui a laissé passer un repli
+ * d'authentification accordant la connexion sans mot de passe.
+ */
+export function listPasswordlessAccounts(): string[] {
+  if (!import.meta.env.DEV) return [];
+  if (isHttpData()) return [];
+  return listUsersWithoutPassword();
 }
 
 export const authProvider = {

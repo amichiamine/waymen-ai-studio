@@ -12,15 +12,28 @@
  * Affiche également le nombre d'échecs de ressources journalisés par le socle
  * (`getResourceFailures`) pour rendre visibles les dégradations gracieuses
  * silencieuses (AGENTS.md §7).
+ *
+ * Signale enfin les comptes d'administration dépourvus de mot de passe
+ * (`listPasswordlessAccounts`) : de tels comptes ne peuvent pas se connecter en
+ * mode mock. Cet état dégradé était auparavant invisible — c'est précisément ce
+ * silence qui a permis à un repli d'authentification de passer inaperçu.
+ * Développement uniquement, comme tout ce composant.
+ *
+ * Le diagnostic est lu via `@/data-provider/auth` et non `@/lib/admin-store` :
+ * seul le fournisseur de données connaît le magasin mock (DATA-PROVIDER.md).
  */
 import { DATA_MODE } from "@/data-provider/mode";
 import { getResourceFailures } from "@/data-provider";
+import { listPasswordlessAccounts } from "@/data-provider/auth";
 
 export function DataModeBadge() {
   if (!import.meta.env.DEV) return null;
 
   const failures = getResourceFailures();
   const failureCount = failures.length;
+
+  const usersWithoutPassword = listPasswordlessAccounts();
+  const passwordlessCount = usersWithoutPassword.length;
 
   const isHttp = DATA_MODE === "http";
 
@@ -47,7 +60,15 @@ export function DataModeBadge() {
         backgroundColor: isHttp ? "#0ea5e9" : "#8b5cf6",
         color: "#fff",
       }}
-      title={`Mode de données : ${DATA_MODE}${failureCount > 0 ? ` — ${failureCount} échec(s) de ressource` : ""}`}
+      title={
+        `Mode de données : ${DATA_MODE}` +
+        (failureCount > 0 ? ` — ${failureCount} échec(s) de ressource` : "") +
+        (passwordlessCount > 0
+          ? ` — ${passwordlessCount} compte(s) sans mot de passe, connexion impossible : ` +
+            `${usersWithoutPassword.join(", ")}. Renseigner VITE_DEV_SEED_CREDENTIALS dans .env.local, ` +
+            "puis réinitialiser les données semées via /admin/reset (elles ne sont semées qu'une fois)."
+          : "")
+      }
     >
       <span>{DATA_MODE}</span>
       {failureCount > 0 && (
@@ -60,6 +81,20 @@ export function DataModeBadge() {
           }}
         >
           {failureCount}
+        </span>
+      )}
+      {passwordlessCount > 0 && (
+        <span
+          style={{
+            backgroundColor: "#f59e0b",
+            color: "#1c1917",
+            borderRadius: "9999px",
+            padding: "0 0.35rem",
+            fontSize: "0.65rem",
+            textAlign: "end",
+          }}
+        >
+          {`${passwordlessCount} sans mdp`}
         </span>
       )}
     </div>

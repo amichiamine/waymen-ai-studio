@@ -81,9 +81,33 @@ katech.dz {
 
 ## Comptes de démonstration
 
-Les comptes de démonstration sont semés uniquement lorsque le build n'est pas en mode `production` (voir ci-dessous). Pour les utiliser en développement local, copiez `.env.example` vers `.env.local` ; la variable `VITE_DEV_SEED_CREDENTIALS` y définit les identifiants des comptes semés.
+Les comptes de démonstration sont semés uniquement lorsque le build est en mode `development` (serveur `bun run dev` et `bun run build:dev`).
 
-En production, aucun compte n'est semé et aucun compte sans mot de passe ne peut se connecter. L'authentification réelle (backend + base de données) sera introduite en phase 4 du `PLAN.md` ; jusque-là, aucune connexion n'est fonctionnelle sur un build de production.
+### Mot de passe de développement par défaut
+
+Aucune configuration n'est nécessaire : sans `.env.local`, les cinq comptes semés reçoivent tous le même mot de passe de développement par défaut.
+
+| Mot de passe par défaut | S'applique à                                     |
+| ----------------------- | ------------------------------------------------ |
+| `katech-dev-2026`       | Les cinq comptes semés (`*@katech.dz`), en `dev` |
+
+`VITE_DEV_SEED_CREDENTIALS` (voir `.env.example`) **remplace** ce défaut, compte par compte : un compte qui y figure prend le mot de passe indiqué, les autres gardent `katech-dev-2026`.
+
+Ce mot de passe est réellement vérifié. **Un mot de passe faux est refusé en développement comme en production**, sans exception : il n'existe aucun repli qui accorderait la connexion à un compte dépourvu de mot de passe. Un tel repli a existé — il acceptait n'importe quelle saisie dès que `.env.local` manquait — il a été supprimé et ne doit pas être réintroduit.
+
+En production, aucun compte n'est semé, aucun mot de passe n'est embarqué dans le bundle et aucun compte sans mot de passe ne peut se connecter. Vérifiable :
+
+```bash
+bun run build && grep -r "katech-dev-2026" dist/   # ne doit rien renvoyer
+```
+
+L'authentification réelle (backend + base de données) sera introduite en phase 4 du `PLAN.md` ; jusque-là, aucune connexion n'est fonctionnelle sur un build de production.
+
+### Piège : les données semées ne le sont qu'une fois
+
+Le seed ne s'exécute que si le `localStorage` du navigateur est **vide** (clé `katech.admin.state.v1`). Conséquence : modifier `VITE_DEV_SEED_CREDENTIALS` **après** avoir lancé l'application ne change pas les comptes déjà enregistrés. Pour repartir d'un état propre, utilisez la page **`/admin/reset`**.
+
+Une seule exception est rattrapée automatiquement, et uniquement en mode `development` : un compte semé enregistré **sans aucun mot de passe** (état créé avant l'existence du mot de passe par défaut) est complété à l'hydratation, sans toucher aux comptes créés par l'utilisateur ni à un mot de passe existant. Le badge de mode, en bas de l'écran, signale en jaune les comptes qui restent dépourvus de mot de passe et donc incapables de se connecter.
 
 ## Déployer une démonstration
 
@@ -97,9 +121,9 @@ cp .env.example .env.local
 bun run build:dev
 ```
 
-La commande `bun run build:dev` exécute `vite build --mode development`. En mode `development`, Vite injecte la valeur de `VITE_DEV_SEED_CREDENTIALS` dans le bundle ; les comptes de démonstration sont alors disponibles sans serveur de développement.
+La commande `bun run build:dev` exécute `vite build --mode development`. En mode `development`, Vite injecte la valeur de `VITE_DEV_SEED_CREDENTIALS` dans le bundle ; les comptes de démonstration sont alors disponibles sans serveur de développement. Sans `.env.local`, ce build embarque à la place le mot de passe par défaut `katech-dev-2026` pour les cinq comptes.
 
-**Comptes disponibles après déploiement :**
+**Comptes disponibles après déploiement** (avec le `.env.example` recopié tel quel ; sans `.env.local`, lisez `katech-dev-2026` dans toute la colonne) **:**
 
 | E-mail            | Mot de passe | Rôle   |
 | ----------------- | ------------ | ------ |
