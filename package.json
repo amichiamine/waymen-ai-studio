@@ -7,6 +7,7 @@
     "dev": "node scripts/dev.mjs",
     "dev:mock": "vite",
     "dev:api": "node scripts/api-dev.mjs",
+    "preparer-env": "node scripts/preparer-env.mjs",
     "parcours": "node scripts/parcours.mjs",
     "prebuild": "bunx tsx scripts/generate-sitemap.ts",
     "build": "vite build",

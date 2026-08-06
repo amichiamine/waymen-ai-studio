@@ -24,6 +24,9 @@ use KaTech\Env;
 
 const TEMOIN = __DIR__ . '/installed.lock';
 
+// Chemin de référence : le fichier d'exemple livré avec le projet.
+const EXEMPLE_ENV = __DIR__ . '/.env.example';
+
 $cli = PHP_SAPI === 'cli';
 if (!$cli) {
     header('Content-Type: text/plain; charset=utf-8');
@@ -33,6 +36,141 @@ if (!$cli) {
 }
 
 try {
+    // ------------------------------------------------------------------
+    // Vérification du fichier .env — AVANT toute tentative de connexion.
+    //
+    // Si .env est absent, le message est la PREMIÈRE chose que lit le
+    // commerçant. Il doit dire quoi faire exactement, pas « configuration
+    // invalide » : le commerçant est devant le panneau hPanel de son
+    // hébergeur, avec un nom de base, un utilisateur et un mot de passe
+    // sous les yeux, et il ne sait pas où les mettre.
+    //
+    // On n'invente rien : pas de .env généré automatiquement, pas de
+    // valeur par défaut qui masque une absence.
+    // ------------------------------------------------------------------
+    $cheminEnv = __DIR__ . '/.env';
+    if (!is_file($cheminEnv)) {
+        echoLigne('');
+        echoLigne('ÉTAPE MANQUANTE : le fichier api/.env n\'existe pas encore.');
+        echoLigne('');
+        echoLigne('Ce fichier contient vos identifiants de base de données. Il doit');
+        echoLigne('être créé AVANT l\'installation — personne d\'autre ne peut le');
+        echoLigne('remplir à votre place, car lui seul connaît votre mot de passe.');
+        echoLigne('');
+        echoLigne('── Marche à suivre ──────────────────────────────────────────────');
+        echoLigne('');
+        echoLigne('1. Dans le gestionnaire de fichiers de votre hébergeur (hPanel →');
+        echoLigne('   « Fichiers » → « Gestionnaire de fichiers »), ouvrez le dossier');
+        echoLigne('   api/ de votre site.');
+        echoLigne('');
+        echoLigne('2. Cherchez le fichier « .env.example » — il est déjà là, téléversé');
+        echoLigne('   avec le projet. Copiez-le et nommez la copie « .env » (sans');
+        echoLigne('   guillemets). Chez Hostinger : clic droit → Copier → coller dans');
+        echoLigne('   le même dossier → renommer en « .env ».');
+        echoLigne('');
+        echoLigne('3. Ouvrez « .env » avec l\'éditeur de texte du gestionnaire de');
+        echoLigne('   fichiers. Renseignez les six lignes suivantes avec les valeurs');
+        echoLigne('   que vous trouvez dans hPanel → « Bases de données » :');
+        echoLigne('');
+        echoLigne('     DB_DRIVER=mysql');
+        echoLigne('     DB_HOST=localhost');
+        echoLigne('     DB_PORT=3306');
+        echoLigne('     DB_NAME=  ← nom de votre base');
+        echoLigne('     DB_USER=  ← utilisateur de la base');
+        echoLigne('     DB_PASSWORD=  ← mot de passe de la base');
+        echoLigne('');
+        echoLigne('4. Plus bas dans « .env », renseignez aussi :');
+        echoLigne('');
+        echoLigne('     INSTALL_OWNER_EMAIL=  ← votre adresse e-mail');
+        echoLigne('     INSTALL_OWNER_PASSWORD=  ← mot de passe FORT (10 car. min.)');
+        echoLigne('');
+        echoLigne('   Ce sera le compte administrateur du site.');
+        echoLigne('');
+        echoLigne('5. Enregistrez « .env », puis rechargez cette page.');
+        echoLigne('');
+        echoLigne('── Si le fichier « .env.example » est introuvable ─────────────────');
+        echoLigne('');
+        echoLigne('Il n\'a peut-être pas été téléversé. Téléchargez le projet complet');
+        echoLigne('depuis GitHub, vérifiez que le dossier api/ contient bien');
+        echoLigne('« .env.example », puis téléversez-le entièrement.');
+        echoLigne('');
+        terminer(503);
+    }
+
+    // ------------------------------------------------------------------
+    // Vérification des variables minimales — après chargement du .env.
+    //
+    // Un .env vide (copié mais non rempli) donne les mêmes symptômes
+    // qu'une absence : la connexion échoue, mais avec un message parlant
+    // de « connexion refusée » qui n'oriente pas vers la vraie cause.
+    // On détecte ici les champs obligatoires vides AVANT de tenter PDO.
+    // ------------------------------------------------------------------
+    $variantesAbsentes = [];
+    $piloteDecide = strtolower((string) Env::get('DB_DRIVER', ''));
+
+    if ($piloteDecide === '' || $piloteDecide === 'mysql' || $piloteDecide === 'pgsql') {
+        // SQLite n'a pas besoin de DB_NAME/USER/PASSWORD.
+        foreach (['DB_NAME', 'DB_USER'] as $cle) {
+            if (Env::get($cle) === null || trim((string) Env::get($cle)) === '') {
+                $variantesAbsentes[] = $cle;
+            }
+        }
+        // DB_PASSWORD peut légitimement être vide pour certains PostgreSQL
+        // locaux, mais chez un hébergeur mutualisé c'est presque toujours
+        // un oubli — on avertit sans bloquer.
+    }
+
+    if ($variantesAbsentes !== []) {
+        echoLigne('');
+        echoLigne('CONFIGURATION INCOMPLÈTE : le fichier api/.env existe mais des');
+        echoLigne('variables obligatoires sont vides ou absentes.');
+        echoLigne('');
+        echoLigne('Variables à renseigner dans api/.env :');
+        foreach ($variantesAbsentes as $cle) {
+            echoLigne('  ' . $cle . '=  ← valeur manquante');
+        }
+        echoLigne('');
+        echoLigne('Ouvrez api/.env dans le gestionnaire de fichiers de votre');
+        echoLigne('hébergeur, complétez ces valeurs, enregistrez, puis rechargez');
+        echoLigne('cette page.');
+        echoLigne('');
+        terminer(503);
+    }
+
+    // ------------------------------------------------------------------
+    // Permissions du .env — défense en profondeur sur serveur mutualisé.
+    //
+    // Sur un mutualisé, plusieurs comptes client cohabitent sous le même
+    // serveur Apache/Nginx. Si .env est lisible par « other » (mode 644
+    // ou plus large), un processus tournant sous un autre compte client
+    // peut le lire. Le mode cible est 640 (propriétaire + groupe PHP)
+    // ou 600 (propriétaire seul).
+    //
+    // On tente la restriction. Si elle échoue (NFS, SELinux…), on
+    // AVERTIT sans bloquer : un .env accessible vaut mieux qu'une
+    // installation impossible. Le message est explicite pour que le
+    // commerçant sache quoi demander à son hébergeur.
+    // ------------------------------------------------------------------
+    $permsActuelles = fileperms($cheminEnv);
+    if ($permsActuelles !== false) {
+        $permsOctal = $permsActuelles & 0777;
+        // Le bit « other readable » (0004) est la menace principale.
+        if ($permsOctal & 0004) {
+            $apres = @chmod($cheminEnv, 0640);
+            if ($apres) {
+                echoLigne('Permissions de api/.env corrigées : 0640 (groupe-lisible, autres : aucun).');
+            } else {
+                echoLigne('AVERTISSEMENT : api/.env est lisible par tous les processus du serveur');
+                echoLigne('(mode ' . sprintf('%04o', $permsOctal) . '). Tentative de restriction à 0640 échouée.');
+                echoLigne('Signalez-le à votre hébergeur ou passez le fichier en 0640 via le gestionnaire');
+                echoLigne('de fichiers (hPanel → clic droit sur .env → Permissions → 640).');
+                echoLigne('');
+                // On ne stoppe pas : mieux vaut installer avec un avertissement
+                // que refuser d'installer pour un problème de droits hors contrôle.
+            }
+        }
+    }
+
     if (is_file(TEMOIN)) {
         echoLigne('INSTALLATION DÉJÀ EFFECTUÉE.');
         echoLigne('');
