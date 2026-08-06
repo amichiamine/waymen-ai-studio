@@ -1338,6 +1338,50 @@ function seedSubscribers(): Subscriber[] {
 // ---------- Store ----------
 const LS_KEY = "katech.admin.state.v1";
 
+/**
+ * Rattrape les états déjà enregistrés dans le `localStorage`.
+ *
+ * Le piège réparé ici : `loadState` ne sème que si le `localStorage` est vide.
+ * Un développeur ayant lancé l'application **avant** de créer son `.env.local`
+ * gardait donc à jamais des comptes semés sans mot de passe — ajouter la
+ * variable ensuite ne changeait plus rien, et il fallait vider ses données.
+ *
+ * Le rattrapage est **strictement additif** :
+ *   - il n'agit que si `import.meta.env.MODE === "development"` (même garde
+ *     fail-closed que le seed : un build de production ne complète rien) ;
+ *   - il ne touche qu'aux comptes dont l'email figure parmi les comptes semés —
+ *     jamais un compte créé par l'utilisateur ;
+ *   - il ne remplace jamais un mot de passe existant, seulement une absence.
+ */
+function repairSeededUserPasswords(persisted: AdminUser[], seeded: AdminUser[]): AdminUser[] {
+  if (import.meta.env.MODE !== "development") return persisted;
+
+  const seededPasswords = new Map<string, string>();
+  for (const u of seeded) {
+    if (u.password) seededPasswords.set(u.email.toLowerCase(), u.password);
+  }
+  if (seededPasswords.size === 0) return persisted;
+
+  let repaired = 0;
+  const next = persisted.map((u) => {
+    if (u.password) return u;
+    const password = seededPasswords.get(u.email.toLowerCase());
+    if (!password) return u;
+    repaired += 1;
+    return { ...u, password };
+  });
+
+  if (repaired > 0) {
+    // Dégradation rattrapée, mais jamais en silence (AGENTS.md §7).
+    console.warn(
+      `[admin-store] ${repaired} compte(s) semé(s) enregistré(s) sans mot de passe ont été complétés ` +
+        "à l'hydratation (état créé avant la configuration des identifiants de développement). " +
+        "Pour repartir d'un état propre : page /admin/reset.",
+    );
+  }
+  return next;
+}
+
 function loadState(): AdminState {
   if (typeof window === "undefined") return seedAll();
   try {
@@ -1364,7 +1408,7 @@ function loadState(): AdminState {
       customers: parsed.customers ?? seed.customers,
       coupons: parsed.coupons ?? seed.coupons,
       reviews: parsed.reviews ?? seed.reviews,
-      users: parsed.users ?? seed.users,
+      users: repairSeededUserPasswords(parsed.users ?? seed.users, seed.users),
       blogPosts: parsed.blogPosts ?? seed.blogPosts,
       homeReviews: parsed.homeReviews ?? seed.homeReviews,
       tickerMessages: parsed.tickerMessages ?? seed.tickerMessages,
