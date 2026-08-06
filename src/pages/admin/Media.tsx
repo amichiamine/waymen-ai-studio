@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useLocalize } from "@/lib/i18n";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ const fmtSize = (b: number) =>
       : `${(b / 1048576).toFixed(2)} Mo`;
 
 export default function AdminMedia() {
+  const L = useLocalize();
   const { data: mediaAssets, loading, error } = useMediaAssetList();
   const { data: products } = useProductList();
   const { upload, rename: renameMutation, remove } = useMediaAssetMutations();
@@ -69,7 +71,12 @@ export default function AdminMedia() {
           (p) =>
             ({
               id: `cat_${p.id}`,
-              name: p.name,
+              // `Product.name` est un `Localized<string>` depuis la phase 3 : le
+              // rendre tel quel dans le JSX faisait planter la page entière
+              // (« Objects are not valid as a React child »). Le `as MediaAsset`
+              // plus bas masquait l'erreur à TypeScript — d'où un défaut que
+              // seul un vrai navigateur pouvait révéler.
+              name: L(p.name) ?? p.id,
               src: p.image,
               mime: "image/*",
               size: 0,
