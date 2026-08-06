@@ -1506,7 +1506,51 @@ function verifierSauvegardeExistante(Db $db, string $chemin): void
             return;
         }
 
+        // EXHAUSTIVITE D'ABORD. Les empreintes sont ecrites table par table :
+        // un fichier coupe en deux conserve donc, pour les tables qui ont
+        // survecu, des donnees parfaitement coherentes avec leurs empreintes.
+        // Le controle de coherence interne le declare alors sain. Ce n'est pas
+        // theorique : un export MySQL tronque a 60 % passait ce mode sans un
+        // mot, et le commercant aurait cru ses donnees a l'abri.
+        //
+        // Le marqueur de fin est le seul temoin qu'aucune table ne MANQUE. On
+        // le controle donc avant tout le reste.
+        $fin = lireFinDeFichier($chemin, 200);
+        if (!str_contains($fin, 'FIN DE SAUVEGARDE')) {
+            sortirErreur(
+                "ARCHIVE TRONQUEE : « {$chemin} » ne porte pas son marqueur de fin. L'export a ete "
+                . 'interrompu (disque plein, delai depasse, transfert coupe). Les tables presentes '
+                . 'peuvent sembler intactes ; celles qui manquent, elles, ne laissent aucune trace.'
+            );
+        }
+
         $lu = analyserExportSql($chemin, $pilote);
+
+        // EXHAUSTIVITE. Le marqueur de fin ne dit pas seulement « le fichier
+        // est complet » : il DECLARE combien de tables et de lignes il devait
+        // contenir. Se contenter de constater sa presence laissait passer le
+        // pire cas, qui a ete mesure ici : une coupure NETTE a une frontiere de
+        // table, marqueur recolle. Les 14 tables survivantes restaient
+        // coherentes avec leurs 14 empreintes, et la comparaison a la base ne
+        // portait que sur ces 14 — les 10 disparues n'etaient comparees a rien.
+        // Verdict rendu : « archive IDENTIQUE a la base actuelle ». Sur une
+        // sauvegarde amputee de 40 % de la boutique.
+        //
+        // On lit donc le compte annonce, et on le confronte a ce qu'on a trouve.
+        $attendu = compteAnnonceParLeMarqueur($fin);
+        if ($attendu !== null) {
+            $trouvees = count($lu['empreintes_annoncees']);
+            $lignes = array_sum(array_map('nombreDeLignesEmpreinte', $lu['empreintes_calculees']));
+            if ($trouvees !== $attendu['tables'] || $lignes !== $attendu['lignes']) {
+                sortirErreur(
+                    "ARCHIVE INCOMPLETE : le fichier annonce {$attendu['tables']} table(s) et "
+                    . "{$attendu['lignes']} ligne(s), on en trouve {$trouvees} et {$lignes}. "
+                    . 'Une partie du contenu a disparu — les tables restantes peuvent etre '
+                    . 'parfaitement coherentes, la sauvegarde n\'en est pas moins amputee.'
+                );
+            }
+        }
+
         if ($lu['empreintes_annoncees'] === []) {
             sortirErreur(
                 "L'export « {$chemin} » ne porte aucune ligne « -- EMPREINTE » : il a été produit "
@@ -1942,6 +1986,29 @@ function ecrire(mixed $handle, string $texte): void
     if ($ecrit === false || $ecrit < strlen($texte)) {
         throw new RuntimeException('Écriture incomplète dans le fichier de sauvegarde (disque plein ?).');
     }
+}
+
+/**
+ * Lit le compte que le marqueur de fin DECLARE : « -- FIN DE SAUVEGARDE 24
+ * table(s), 147 ligne(s) ».
+ *
+ * C'est la seule assertion du fichier sur sa propre exhaustivite. Les empreintes,
+ * elles, sont ecrites table par table : elles attestent que chaque table presente
+ * est intacte, jamais qu'aucune ne manque.
+ *
+ * Renvoie null si le marqueur ne porte pas de compte — les archives produites
+ * par une version anterieure du script. Un fichier ancien ne doit pas etre
+ * rejete pour un format qui n'existait pas quand il a ete ecrit.
+ *
+ * @return array{tables:int,lignes:int}|null
+ */
+function compteAnnonceParLeMarqueur(string $fin): ?array
+{
+    if (preg_match('/FIN DE SAUVEGARDE\s+(\d+)\s+table\(s\),\s*(\d+)\s+ligne\(s\)/u', $fin, $m) !== 1) {
+        return null;
+    }
+
+    return ['tables' => (int) $m[1], 'lignes' => (int) $m[2]];
 }
 
 function lireFinDeFichier(string $chemin, int $octets): string
