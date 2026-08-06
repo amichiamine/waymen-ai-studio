@@ -18,6 +18,12 @@
 
 import { useCallback } from "react";
 
+// Pourquoi importer depuis les chemins profonds et non depuis @/api ?
+// L'import depuis le baril @/data-provider créerait une dépendance circulaire
+// signalée par Rollup au build. On importe donc directement depuis les modules.
+import { http } from "@/api/client";
+import { API_BASE_URL, AUTH_STRATEGY } from "@/api/config";
+
 import { useResource } from "./use-resource";
 import { runMutation } from "./use-resource";
 import { isHttpData } from "./mode";
@@ -124,14 +130,9 @@ export function useEtatBase(): ResourceState<EtatBase> {
     // En mode mock, le store local n'a pas de section "maintenance". On renvoie
     // la donnée fictive directement — le sélecteur doit rester pur (pas d'effets).
     fromStore: () => ETAT_MOCK,
-    fromHttp: async () => {
-      const resp = await fetch("/maintenance/etat", { credentials: "same-origin" });
-      if (!resp.ok) {
-        const texte = await resp.text().catch(() => "");
-        throw new Error(texte || `Erreur HTTP ${resp.status}`);
-      }
-      return (await resp.json()) as EtatBase;
-    },
+    // http.get gère le préfixe API_BASE_URL, le délai d'expiration, les cookies
+    // de session et la traduction des erreurs (ApiError avec code et message).
+    fromHttp: () => http.get<EtatBase>("/maintenance/etat"),
     fallback: ETAT_VIDE,
   });
 }
@@ -177,10 +178,18 @@ export function useSauvegarde() {
       return;
     }
 
-    // Mode http : fetch avec credentials pour que le cookie de session HttpOnly
-    // soit transmis automatiquement — un lien <a> ou window.open ne ferait pas
-    // cela de façon fiable.
-    const resp = await fetch("/maintenance/sauvegarde", { credentials: "same-origin" });
+    // Mode http : la réponse est un flux binaire (SQL dump), pas du JSON.
+    // Le client http.get() tente de parser la réponse en JSON et ne convient
+    // donc pas ici. On utilise fetch() directement, mais en construisant l'URL
+    // depuis API_BASE_URL pour que le préfixe (/api/v1 par défaut, ou toute
+    // autre valeur de VITE_API_BASE_URL) soit respecté — c'est exactement le
+    // défaut que ce module corrige.
+    // Les credentials sont calés sur la même stratégie que le client HTTP du
+    // projet : "include" pour les cookies, "same-origin" pour le bearer.
+    const urlSauvegarde = `${API_BASE_URL}/maintenance/sauvegarde`;
+    const credentialsSauvegarde: RequestCredentials =
+      AUTH_STRATEGY === "cookie" ? "include" : "same-origin";
+    const resp = await fetch(urlSauvegarde, { credentials: credentialsSauvegarde });
     if (!resp.ok) {
       const texte = await resp.text().catch(() => "");
       throw new Error(texte || `Erreur HTTP ${resp.status} — la sauvegarde a échoué`);
@@ -251,20 +260,11 @@ export function useMigrationMutations(): MigrationMutations {
         return mockMigrationResult(input);
       }
 
-      const resp = await fetch("/maintenance/migration", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        // Le mot de passe est transmis dans le corps JSON — jamais dans l'URL.
-        body: JSON.stringify(input),
-      });
-
-      if (!resp.ok) {
-        const texte = await resp.text().catch(() => "");
-        throw new Error(texte || `Erreur HTTP ${resp.status}`);
-      }
-
-      return (await resp.json()) as MigrationResult;
+      // http.post gère le préfixe API_BASE_URL, le Content-Type JSON, les cookies
+      // de session et la traduction des erreurs — cohérent avec les 24 autres
+      // ressources du projet. Le mot de passe est dans le corps JSON, jamais
+      // dans l'URL.
+      return http.post<MigrationResult>("/maintenance/migration", input);
     });
   }, []);
 
