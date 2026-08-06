@@ -40,8 +40,12 @@ export default function ResetPassword() {
     try {
       const outcome = await resetPassword({ email, password, token });
       if (!outcome.ok) {
+        // En http, le fournisseur fournit un message précis (jeton expiré,
+        // service injoignable) que `reason` seul ne peut pas porter : on le
+        // préfère. En mock il est absent et la traduction reprend la main.
         return toast.error(
-          outcome.reason === "no-account" ? t("reset.err.noAccount") : t("reset.err.update"),
+          outcome.message ??
+            (outcome.reason === "no-account" ? t("reset.err.noAccount") : t("reset.err.update")),
         );
       }
       toast.success(t("reset.ok"));

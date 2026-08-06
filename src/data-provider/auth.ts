@@ -16,6 +16,7 @@
  * une session n'est pas une entité listable et son cycle de vie est porté par
  * le contexte React (`AuthProvider`), pas par le cache de ressources.
  */
+import type { ApiError } from "@/api/client";
 import { authApi } from "@/api/resources/auth";
 import type { AuthSession, SignInInput, SignUpInput } from "@/api/types";
 import {
@@ -56,7 +57,14 @@ export type SessionProbe = { source: "local" } | { source: "server"; user: AuthU
 /** Motif d'échec d'une réinitialisation — traduit par la page appelante. */
 export type ResetFailure = "no-account" | "update-failed";
 
-export type ResetOutcome = { ok: true } | { ok: false; reason: ResetFailure };
+/**
+ * `message` est AJOUTÉ (optionnel) : la branche mock n'en produit pas et
+ * continue de ne renvoyer qu'un `reason`, comme avant. La branche http, elle,
+ * dispose d'un message précis (jeton expiré, trop de tentatives, service
+ * injoignable) que `reason` seul ne peut pas porter — la page l'affiche en
+ * priorité et retombe sur sa traduction quand il est absent.
+ */
+export type ResetOutcome = { ok: true } | { ok: false; reason: ResetFailure; message?: string };
 
 export type ResetPasswordInput = {
   email: string;
@@ -98,11 +106,104 @@ export function listPasswordlessAccounts(): string[] {
   return listUsersWithoutPassword();
 }
 
+// =====================================================================
+// Refus métier contre panne technique
+// =====================================================================
+//
+// En mode http, `authApi` LÈVE une `ApiError` dès que la réponse n'est pas 2xx.
+// Laissée passer, cette exception traversait `authProvider`, remontait jusqu'au
+// composant, et personne ne l'attrapait : un mot de passe faux ne produisait
+// AUCUN message — juste un `Uncaught (in promise) ApiError` dans la console.
+// Le type `AuthOutcome` promettait pourtant `{ ok: false, message }` ; seule la
+// branche mock le respectait. Les helpers ci-dessous existent pour que les DEUX
+// branches aient le même contrat de sortie.
+//
+// La distinction refus / panne n'est pas cosmétique : afficher « Identifiants
+// invalides. » alors que le serveur est éteint envoie l'utilisateur chercher une
+// faute dans son mot de passe, là où rien de ce qu'il saisira ne peut aboutir.
+
+/**
+ * Statuts qui expriment un REFUS MÉTIER : le serveur a compris la demande et la
+ * rejette pour un motif que l'utilisateur peut comprendre, voire corriger.
+ * Liste calquée sur les fabriques réellement utilisées par `ControleurAuth`
+ * (`api/src/ApiException.php`) :
+ *
+ *   400 BAD_REQUEST · 401 UNAUTHORIZED · 403 FORBIDDEN
+ *   409 CONFLICT    · 422 VALIDATION_ERROR · 429 TOO_MANY_REQUESTS
+ *
+ * Tout le reste est une PANNE, y compris les cas qu'on pourrait croire
+ * « métier » :
+ *   - 404 / 405 : la route n'existe pas sous ce verbe → API mal déployée ou
+ *     `VITE_API_URL` erroné, pas un refus ;
+ *   - 408 : le délai a expiré côté client (`apiRequest`), personne n'a répondu ;
+ *   - 0   : `network_error` (serveur injoignable) ou `provider_error` ;
+ *   - 5xx : dont 503 DATABASE_UNAVAILABLE.
+ */
+const STATUTS_DE_REFUS: ReadonlySet<number> = new Set([400, 401, 403, 409, 422, 429]);
+
+/**
+ * Message d'une panne. Il doit rester DIFFÉRENT de tout message de refus :
+ * c'est précisément ce qui empêche de mentir à l'utilisateur.
+ */
+const MESSAGE_PANNE =
+  "Service d'authentification injoignable. Ce n'est pas un refus de vos identifiants : " +
+  "réessayez dans un instant.";
+
+type NatureEchec = "refus" | "panne";
+
+type EchecHttp = { nature: NatureEchec; message: string; erreur: ApiError };
+
+/** Détail de validation (`ApiError.fields`) rendu lisible — un 422 exploitable. */
+function detailChamps(fields: ApiError["fields"]): string {
+  if (!fields) return "";
+  const lignes = Object.entries(fields)
+    .map(([champ, messages]) => `${champ} : ${messages.join(", ")}`)
+    .filter((ligne) => ligne.trim() !== "");
+
+  return lignes.length > 0 ? ` (${lignes.join(" ; ")})` : "";
+}
+
+/**
+ * Classe un échec http en refus métier ou en panne technique, et JOURNALISE la
+ * cause dans le second cas — le message rendu à l'utilisateur étant générique,
+ * la console est la seule trace de la cause réelle. Jamais d'échec silencieux
+ * (AGENTS.md §7).
+ *
+ * @param operation Nom de la méthode, pour un journal localisable.
+ * @param repli     Message affiché si le serveur n'a rien fourni d'exploitable
+ *                  (corps avalé par un proxy, 401 sans JSON).
+ */
+function classerEchec(operation: string, cause: unknown, repli: string): EchecHttp {
+  const erreur = toApiError(cause);
+
+  if (!STATUTS_DE_REFUS.has(erreur.status)) {
+    console.error(
+      `[authProvider.${operation}] panne technique — status ${erreur.status}, code ${erreur.code} : ` +
+        `${erreur.message}. Aucun refus n'a été prononcé par le serveur.`,
+      erreur,
+    );
+
+    return { nature: "panne", message: MESSAGE_PANNE, erreur };
+  }
+
+  const message = erreur.message.trim() !== "" ? erreur.message : repli;
+
+  return { nature: "refus", message: `${message}${detailChamps(erreur.fields)}`, erreur };
+}
+
 export const authProvider = {
   async signIn(input: SignInInput): Promise<AuthOutcome> {
     if (isHttpData()) {
-      const session = await authApi.signIn(input);
-      return { ok: true, user: session.user };
+      try {
+        const session = await authApi.signIn(input);
+        return { ok: true, user: session.user };
+      } catch (cause) {
+        // Refus (401 identifiants, 429 trop de tentatives) comme panne
+        // ressortent en `{ ok: false }` — jamais en exception non attrapée —
+        // avec deux messages distincts.
+        const echec = classerEchec("signIn", cause, "Identifiants invalides.");
+        return { ok: false, message: echec.message };
+      }
     }
 
     // Un mot de passe faux est refusé en développement comme en production,
@@ -128,8 +229,13 @@ export const authProvider = {
 
   async signUp(input: SignUpInput): Promise<AuthOutcome> {
     if (isHttpData()) {
-      const session = await authApi.signUp(input);
-      return { ok: true, user: session.user };
+      try {
+        const session = await authApi.signUp(input);
+        return { ok: true, user: session.user };
+      } catch (cause) {
+        const echec = classerEchec("signUp", cause, "Création du compte refusée.");
+        return { ok: false, message: echec.message };
+      }
     }
 
     const existing = findUserByEmail(input.email);
@@ -149,10 +255,29 @@ export const authProvider = {
     return { ok: true, user: toAuthUser(created, input.phone) };
   },
 
+  /**
+   * Déconnexion.
+   *
+   * `POST /auth/logout` est idempotent (204 même sans session) : un échec ici ne
+   * peut donc être qu'une panne. Elle est JOURNALISÉE mais pas propagée, parce
+   * que l'appelant (`AuthProvider.signOut`) efface la session locale APRÈS cet
+   * appel : une exception le laisserait croire l'utilisateur encore connecté
+   * alors qu'il a demandé le contraire. Le cookie serveur, lui, expirera.
+   */
   async signOut(): Promise<void> {
     // En mock, la déconnexion se résume à effacer la session locale — c'est le
     // contexte qui s'en charge.
-    if (isHttpData()) await authApi.signOut();
+    if (!isHttpData()) return;
+    try {
+      await authApi.signOut();
+    } catch (cause) {
+      // `classerEchec` journalise déjà les pannes ; un refus sur une route
+      // idempotente serait anormal et mérite sa propre trace.
+      const echec = classerEchec("signOut", cause, "Déconnexion serveur refusée.");
+      if (echec.nature === "refus") {
+        console.warn(`[authProvider.signOut] refus inattendu du serveur : ${echec.message}`);
+      }
+    }
   },
 
   /**
@@ -168,34 +293,61 @@ export const authProvider = {
    *  - exception — vraie panne (réseau, 500) : le contexte conserve la session
    *    locale plutôt que de déconnecter sur un aléa.
    *
-   * `GET /auth/me` répond 401 à un visiteur sans session. C'est la réponse
-   * NORMALE d'une route protégée, pas un incident : on la traduit en
-   * `user: null` au lieu de la propager en erreur. Elle polluait sinon la
-   * console à chaque chargement, et la session périmée qu'elle laissait en place
-   * déclenchait à son tour un `GET /me/orders` en 401 — celui-là compté comme
-   * échec par le badge de mode.
+   * `GET /auth/me` répond désormais **200 avec `user: null`** à un visiteur sans
+   * session : « qui suis-je ? » est une question, pas une ressource protégée, et
+   * « personne » est une réponse valide. Un 401 y était compté comme une erreur
+   * par le navigateur, par la console et par le compteur d'échecs du badge de
+   * mode, pour un état parfaitement normal (`ControleurAuth::session`).
+   *
+   * Le repli sur 401 est CONSERVÉ : une API déployée avant ce correctif répond
+   * encore 401, et l'application ne doit pas régresser contre elle.
    *
    * ATTENTION à ne pas généraliser : seul le 401 de CETTE sonde est anodin. Un
    * 401 sur une route censée être publique est un vrai défaut, et le socle
-   * (`useResource` → `logResourceFailure`) doit continuer de le crier.
+   * (`useResource` → `logResourceFailure`) doit continuer de le crier. Les vraies
+   * routes protégées gardent leur 401.
+   *
+   * Une PANNE reste propagée (contrairement à `signIn`) : c'est le seul moyen de
+   * dire au contexte « je ne sais pas », pour qu'il conserve la session locale
+   * au lieu de déconnecter sur un aléa réseau. Un 429 ou un 403 ne signifient
+   * pas « personne » et ne sont donc pas traduits en `user: null`.
    */
   async me(): Promise<SessionProbe> {
     if (!isHttpData()) return { source: "local" };
     try {
       const session = await authApi.me();
+      // `user` absent ou nul = « personne », pas « je ne sais pas ».
       return { source: "server", user: session?.user ?? null };
     } catch (cause) {
-      if (toApiError(cause).status === 401) return { source: "server", user: null };
-      throw cause;
+      const erreur = toApiError(cause);
+      if (erreur.status === 401) return { source: "server", user: null };
+      classerEchec("me", cause, "Session refusée par le serveur.");
+      throw erreur;
     }
   },
 
   /**
    * Demande d'envoi d'un lien de réinitialisation. Sans effet en mock : le
    * parcours mock saisit directement le nouveau mot de passe.
+   *
+   * `POST /auth/forgot-password` répond TOUJOURS 204 — délibérément, pour ne pas
+   * révéler si l'adresse est inscrite. Le seul échec possible est donc une panne,
+   * ou un 429 du limiteur ; ni l'un ni l'autre ne doit être révélé à
+   * l'utilisateur, sous peine de reconstituer l'oracle que l'API refuse d'être.
+   * L'échec est JOURNALISÉ (jamais silencieux) et non propagé : le type de retour
+   * n'a aucun canal de message, et une exception non attrapée ici reproduirait
+   * exactement le défaut corrigé sur `signIn`.
    */
   async forgotPassword(email: string): Promise<void> {
-    if (isHttpData()) await authApi.forgotPassword(email);
+    if (!isHttpData()) return;
+    try {
+      await authApi.forgotPassword(email);
+    } catch (cause) {
+      const echec = classerEchec("forgotPassword", cause, "Demande refusée.");
+      if (echec.nature === "refus") {
+        console.warn(`[authProvider.forgotPassword] refus du serveur : ${echec.message}`);
+      }
+    }
   },
 
   async resetPassword(input: ResetPasswordInput): Promise<ResetOutcome> {
@@ -205,13 +357,32 @@ export const authProvider = {
         // changement de mot de passe non authentifié exige le jeton reçu par
         // courriel. Accepter la requête sans jeton reviendrait à laisser
         // n'importe qui réinitialiser le mot de passe d'autrui.
-        throw new Error(
+        //
+        // Rendu en refus plutôt qu'en exception : l'utilisateur arrivé sans
+        // `?token=` doit LIRE pourquoi son formulaire n'aboutit pas, et le
+        // développeur garde sa trace en console.
+        console.error(
           "[authProvider.resetPassword] Jeton absent : en mode http, la réinitialisation " +
             "exige le jeton reçu par courriel (paramètre ?token= du lien).",
         );
+
+        return {
+          ok: false,
+          reason: "update-failed",
+          message:
+            "Lien de réinitialisation incomplet : ouvrez le lien reçu par courriel, " +
+            "ou demandez-en un nouveau.",
+        };
       }
-      await authApi.resetPassword(input.token, input.password);
-      return { ok: true };
+      try {
+        await authApi.resetPassword(input.token, input.password);
+        return { ok: true };
+      } catch (cause) {
+        // Refus (jeton expiré → 422, trop de tentatives → 429) et panne
+        // ressortent tous deux en `{ ok: false }`, avec des messages distincts.
+        const echec = classerEchec("resetPassword", cause, "Réinitialisation impossible.");
+        return { ok: false, reason: "update-failed", message: echec.message };
+      }
     }
 
     if (!findUserByEmail(input.email)) return { ok: false, reason: "no-account" };
@@ -220,11 +391,30 @@ export const authProvider = {
       : { ok: false, reason: "update-failed" };
   },
 
-  /** Changement de mot de passe d'un utilisateur déjà connecté. */
+  /**
+   * Changement de mot de passe d'un utilisateur déjà connecté.
+   *
+   * Le retour est un booléen : `false` signifie « le serveur a refusé » (mot de
+   * passe actuel faux, nouveau mot de passe invalide, trop de tentatives) — le
+   * même sens qu'en mock. Une PANNE ne peut PAS être rendue par `false` sans
+   * mentir (« votre mot de passe actuel est faux » alors que le serveur est
+   * éteint) : elle est journalisée puis propagée, à charge de l'appelant de
+   * l'afficher comme telle. `src/pages/Account.tsx` entoure déjà ses appels au
+   * contexte d'un `try/catch` qui affiche un échec.
+   */
   async changePassword(email: string, currentPassword: string, password: string): Promise<boolean> {
     if (isHttpData()) {
-      await authApi.changePassword(currentPassword, password);
-      return true;
+      try {
+        await authApi.changePassword(currentPassword, password);
+        return true;
+      } catch (cause) {
+        const echec = classerEchec("changePassword", cause, "Changement de mot de passe refusé.");
+        if (echec.nature === "refus") {
+          console.warn(`[authProvider.changePassword] refus du serveur : ${echec.message}`);
+          return false;
+        }
+        throw echec.erreur;
+      }
     }
     if (!verifyUserCredentials(email, currentPassword)) return false;
     return setUserPassword(email, password);

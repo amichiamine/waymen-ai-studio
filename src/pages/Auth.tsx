@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { z } from "zod";
+import { toApiError } from "@/data-provider";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -36,15 +37,30 @@ export default function Auth() {
       return;
     }
     setBusy(true);
-    if (mode === "signup") {
-      await signUp(email, password, { name: fullName });
-      toast.success(t("auth.toast.created"));
-    } else {
-      await signIn(email, password);
-      toast.success(t("auth.toast.welcome"));
+    try {
+      // Le retour du contexte PORTE le refus (`{ error: { message } }`) : l'ignorer
+      // rendait un mot de passe faux totalement muet — ni message, ni retour
+      // visuel — pendant qu'une `ApiError` non attrapée filait dans la console.
+      // Un refus doit se voir, et ne doit surtout pas être suivi d'une
+      // redirection ni d'un toast de succès.
+      const { error } = await (mode === "signup"
+        ? signUp(email, password, { name: fullName })
+        : signIn(email, password));
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success(t(mode === "signup" ? "auth.toast.created" : "auth.toast.welcome"));
+      navigate(redirectTo, { replace: true });
+    } catch (cause) {
+      // Filet : le fournisseur traduit déjà refus et panne en `error.message`.
+      // Ce qui arrive ici est imprévu — visible plutôt que silencieux.
+      toast.error(toApiError(cause).message);
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
-    navigate(redirectTo, { replace: true });
   };
 
   const handleForgotPassword = () => {
