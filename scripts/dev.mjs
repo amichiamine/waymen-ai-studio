@@ -15,10 +15,41 @@
  */
 
 import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const racine = resolve(import.meta.dirname, "..");
 const portApi = Number(process.env.API_PORT ?? 8160);
+
+/**
+ * Chemin du binaire Vite, résolu par Node — jamais par le shell.
+ *
+ * POURQUOI : appeler `bunx vite` exigeait `shell: true` sous Windows (bunx y
+ * est un `.cmd`). Or avec `shell: true`, Node concatène les arguments sans les
+ * échapper : `C:\Program Files\nodejs\node.exe` était coupé au premier espace
+ * et cmd répondait « 'C:\Program' n'est pas reconnu ». C'est arrivé.
+ *
+ * On lance donc le script Vite avec l'interpréteur courant, sans shell : plus
+ * d'espaces à échapper, plus de `.cmd` à résoudre, et l'avertissement de
+ * dépréciation DEP0190 disparaît.
+ */
+function binaireVite() {
+  const exiger = createRequire(import.meta.url);
+  const candidats = [
+    () => exiger.resolve("vite/bin/vite.js"),
+    () => resolve(racine, "node_modules", "vite", "bin", "vite.js"),
+  ];
+  for (const candidat of candidats) {
+    try {
+      const chemin = candidat();
+      if (existsSync(chemin)) return chemin;
+    } catch {
+      // Candidat suivant.
+    }
+  }
+  return null;
+}
 
 const COULEURS = { api: "\x1b[36m", web: "\x1b[35m", gris: "\x1b[90m", fin: "\x1b[0m" };
 
@@ -41,7 +72,7 @@ function lancer(nom, commande, args, env) {
     cwd: racine,
     env: { ...process.env, ...env },
     stdio: ["inherit", "pipe", "pipe"],
-    shell: process.platform === "win32",
+    // Jamais de `shell: true` : voir le commentaire de `binaireVite()`.
   });
   brancher(nom, p.stdout);
   brancher(nom, p.stderr);
@@ -80,6 +111,17 @@ async function attendreApi(limiteMs = 45000) {
   return false;
 }
 
+/** Lance Vite dans le mode demandé, sans passer par le shell. */
+function lancerVite(mode) {
+  const vite = binaireVite();
+  if (!vite) {
+    console.error("\nVite est introuvable dans node_modules. Lance d'abord : bun install\n");
+    arreter(1);
+    return;
+  }
+  lancer("web", process.execPath, [vite], { VITE_API_MODE: mode });
+}
+
 console.log(`${COULEURS.gris}Démarrage de l'API puis du frontend…${COULEURS.fin}\n`);
 
 lancer("api", process.execPath, [resolve(racine, "scripts", "api-dev.mjs")], {});
@@ -93,8 +135,8 @@ if (!prete) {
       `localStorage, sans base. Regarde les lignes [api] ci-dessus pour la cause\n` +
       `— le plus souvent, PHP absent du PATH (Windows : ajoute C:\\xampp\\php).\n`,
   );
-  lancer("web", "bunx", ["vite"], { VITE_API_MODE: "mock" });
+  lancerVite("mock");
 } else {
   console.log(`\n${COULEURS.gris}API prête. Frontend en mode « http ».${COULEURS.fin}\n`);
-  lancer("web", "bunx", ["vite"], { VITE_API_MODE: "http" });
+  lancerVite("http");
 }
