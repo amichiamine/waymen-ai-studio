@@ -31,6 +31,7 @@ import {
   LogOut,
   Store,
   User,
+  Terminal,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
@@ -112,6 +113,7 @@ export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
       { to: "/admin/audit", label: "Journal d'audit", Icon: ScrollText, minRole: "admin" },
       { to: "/admin/settings", label: "Paramètres", Icon: SettingsIcon, minRole: "admin" },
       { to: "/admin/reset", label: "Réinitialiser", Icon: RotateCcw, minRole: "owner" },
+      { to: "/admin/developpeur", label: "Développeur", Icon: Terminal, minRole: "owner" },
     ],
   },
 ];

@@ -140,6 +140,22 @@ export type { TickerMessageMutations } from "./ticker-messages";
 export { USERS_RESOURCE, useUserDetail, useUserList, useUserMutations } from "./users";
 export type { UserMutations } from "./users";
 
+// Maintenance — phase 4 (état de la base, sauvegarde, migration).
+export {
+  MAINTENANCE_RESOURCE,
+  useEtatBase,
+  useSauvegarde,
+  useMigrationMutations,
+} from "./maintenance";
+export type {
+  EtatBase,
+  TableStat,
+  MigrationInput,
+  MigrationResult,
+  MigrationResultTable,
+  MigrationMutations,
+} from "./maintenance";
+
 // Authentification — vague 2.5.
 export { AUTH_RESOURCE, authProvider } from "./auth";
 export type {
