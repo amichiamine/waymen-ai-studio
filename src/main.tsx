@@ -31,7 +31,20 @@ createRoot(document.getElementById("root")!).render(
                 `deduireCheminBase` dans `src/api/config.ts`), sinon le dossier
                 cesserait d'être renommable sans reconstruction.
               */}
-              <BrowserRouter basename={CHEMIN_BASE}>
+              {/*
+                La barre finale est retirée : React Router compare `basename`
+                au chemin de l'URL, et « /boutique/ » ne reconnaît PAS l'URL
+                « /boutique » — sans barre, aucune route ne correspond et
+                l'application rend une page VIDE. Mesuré : 0 caractère, sans
+                la moindre erreur réseau ni de console, donc invisible partout
+                sauf dans un vrai navigateur.
+                Apache et LiteSpeed ajoutent d'ordinaire la barre par une
+                redirection 301 (DirectorySlash), mais compter là-dessus, c'est
+                confier l'affichage du site à un réglage du serveur.
+                À la racine, `CHEMIN_BASE` vaut « / » : le retirer donnerait
+                une chaîne vide, d'où le repli.
+              */}
+              <BrowserRouter basename={CHEMIN_BASE.replace(/\/+$/, "") || "/"}>
                 <App />
               </BrowserRouter>
             </StoreProvider>

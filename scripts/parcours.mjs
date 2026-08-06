@@ -16,6 +16,13 @@
 import { chromium } from "playwright";
 
 const BASE = process.env.APP_URL ?? "http://127.0.0.1:8080";
+
+// Le site est deployable dans un SOUS-DOSSIER (public_html/ma-boutique/). Les
+// appels d'API doivent donc etre prefixes comme le fait l'application, sinon le
+// parcours vise la racine du domaine et echoue pour une raison qui n'a rien a
+// voir avec le produit. `APP_URL=http://hote/ma-boutique` suffit a le dire.
+const PREFIXE = new URL(BASE).pathname.replace(/\/+$/, "");
+const API = `${PREFIXE}/api/v1`;
 const EMAIL = process.env.APP_EMAIL ?? "admin@katech.dz";
 const MOTDEPASSE = process.env.APP_PASSWORD ?? "katech-dev-2026";
 
@@ -109,9 +116,11 @@ let idProduit = null;
 await etape("Fiche produit", async () => {
   await page.goto(`${BASE}/category/laptops`, { waitUntil: "domcontentloaded" });
   await pageNonVide();
-  const lien = page.locator('a[href^="/product/"]').first();
+  // Le lien porte le prefixe de deploiement : `/depot/product/xyz` en
+  // sous-dossier, `/product/xyz` a la racine. On vise donc les deux.
+  const lien = page.locator('a[href*="/product/"]').first();
   await lien.waitFor({ timeout: 10000 });
-  idProduit = (await lien.getAttribute("href")).replace("/product/", "");
+  idProduit = (await lien.getAttribute("href")).split("/product/")[1];
   await lien.click();
   await pageNonVide(300);
 });
@@ -183,10 +192,10 @@ await etape("Connexion", async () => {
   await page.waitForTimeout(3000);
   if (page.url().includes("/auth")) throw new Error("toujours sur la page de connexion");
   // Preuve que la session est réelle : le serveur nous reconnaît.
-  const moi = await page.evaluate(async () => {
-    const r = await fetch("/api/v1/auth/me", { credentials: "include" });
+  const moi = await page.evaluate(async (API) => {
+    const r = await fetch(`${API}/auth/me`, { credentials: "include" });
     return (await r.json())?.data?.user?.email ?? null;
-  });
+  }, API);
   if (moi !== EMAIL) throw new Error(`session non reconnue par le serveur (${moi})`);
 });
 
@@ -246,10 +255,10 @@ console.log("\nMAINTENANCE");
 // ne prouve pas qu'elles repondent : on les appelle depuis la session reelle du
 // navigateur, cookie compris.
 await etape("Etat de la base", async () => {
-  const etat = await page.evaluate(async () => {
-    const r = await fetch("/api/v1/maintenance/status", { credentials: "include" });
+  const etat = await page.evaluate(async (API) => {
+    const r = await fetch(`${API}/maintenance/status`, { credentials: "include" });
     return { status: r.status, corps: await r.json().catch(() => null) };
-  });
+  }, API);
   if (etat.status !== 200) throw new Error(`HTTP ${etat.status}`);
   const d = etat.corps?.data;
   if (!d?.driver) throw new Error("aucun pilote annonce");
@@ -259,8 +268,8 @@ await etape("Etat de la base", async () => {
 });
 
 await etape("Simulation de migration", async () => {
-  const res = await page.evaluate(async () => {
-    const r = await fetch("/api/v1/maintenance/migrate", {
+  const res = await page.evaluate(async (API) => {
+    const r = await fetch(`${API}/maintenance/migrate`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -274,7 +283,7 @@ await etape("Simulation de migration", async () => {
       }),
     });
     return { status: r.status, corps: await r.json().catch(() => null) };
-  });
+  }, API);
   // MySQL peut ne pas tourner sur la machine qui lance ce parcours : un refus
   // de connexion est alors un resultat legitime, pas un echec du produit. Ce
   // qu'on exige, c'est que la route reponde et que la simulation reste vraie.
