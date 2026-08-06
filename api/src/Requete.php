@@ -152,4 +152,49 @@ final class Requete
     {
         return $this->corps[$nom] ?? $defaut;
     }
+
+    /**
+     * Adresse IP du client, aussi fiable que possible.
+     *
+     * En production derrière un proxy de confiance (Cloudflare, Nginx…),
+     * l'IP réelle est dans `X-Forwarded-For` ou `X-Real-IP`. On ne lit ces
+     * en-têtes QUE si la requête vient d'une adresse de loopback ou privée,
+     * pour éviter qu'un client quelconque ne forge l'en-tête et contourne
+     * la limitation de débit.
+     *
+     * Si aucune IP n'est lisible, on retourne « 0.0.0.0 » : un cas
+     * impossible en production, mais qui évite un null inattendu en CLI.
+     */
+    public function ip(): string
+    {
+        $remote = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+
+        // Proxy de confiance (loopback ou RFC 1918) : on accepte X-Forwarded-For.
+        if ($this->estIpPrivee($remote)) {
+            $xff = trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''))[0]);
+            if ($xff !== '' && filter_var($xff, FILTER_VALIDATE_IP)) {
+                return $xff;
+            }
+            $xri = trim((string) ($_SERVER['HTTP_X_REAL_IP'] ?? ''));
+            if ($xri !== '' && filter_var($xri, FILTER_VALIDATE_IP)) {
+                return $xri;
+            }
+        }
+
+        return $remote !== '' ? $remote : '0.0.0.0';
+    }
+
+    /** Vrai si l'adresse est une loopback ou une plage RFC 1918. */
+    private function estIpPrivee(string $ip): bool
+    {
+        if ($ip === '' || $ip === '::1' || $ip === '127.0.0.1') {
+            return true;
+        }
+
+        return filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE,
+        ) === false;
+    }
 }

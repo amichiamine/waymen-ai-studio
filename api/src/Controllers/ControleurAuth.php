@@ -54,6 +54,8 @@ use KaTech\Auth\Garde;
 use KaTech\Auth\MotDePasse;
 use KaTech\Auth\Session;
 use KaTech\Db;
+use KaTech\Limiteur;
+use KaTech\Outbox;
 use KaTech\Reponse;
 use KaTech\Requete;
 
@@ -77,6 +79,25 @@ final class ControleurAuth
 
     public function __construct(private readonly Db $db)
     {
+    }
+
+    // ---- VAGUE 4.5 : limiteur instancié à la demande -----------------------
+
+    /**
+     * Retourne le limiteur partagé pour ce processus (construction paresseuse).
+     *
+     * En construisant le Limiteur ici plutôt que dans le constructeur, on garde
+     * la signature de `new ControleurAuth($db)` inchangée dans routes.php
+     * (interdit à modifier).
+     */
+    private function limiteur(): Limiteur
+    {
+        static $instance = null;
+        if ($instance === null) {
+            $instance = new Limiteur($this->db);
+        }
+
+        return $instance;
     }
 
     // ==================================================================
@@ -184,6 +205,18 @@ final class ControleurAuth
         $email = strtolower(trim((string) $r->corps('email', '')));
         $motDePasse = (string) $r->corps('password', '');
 
+        // VAGUE 4.5 — limitation des tentatives.
+        // Appelé EN AMONT de la vérification du mot de passe : même si l'email
+        // est inconnu, la tentative est comptabilisée. Le message de refus du
+        // limiteur est délibérément identique à IDENTIFIANTS_INVALIDES : un
+        // message distinct (« trop de tentatives ») confirmerait que ce compte
+        // existe et a déjà été ciblé.
+        $this->limiteur()->verifier(
+            $r->ip(),
+            $email !== '' ? $email : '__vide__',
+            'login',
+        );
+
         // Une ligne absente donne `$hache = null` : `verifierEtRehacher()`
         // consomme quand même son leurre. Pas de branchement anticipé.
         $ligne = $email === '' ? null : $this->db->un(
@@ -227,11 +260,15 @@ final class ControleurAuth
                 );
             }
 
-            // VAGUE 4.5 : brancher ici un compteur de tentatives par adresse IP
-            //             et par compte (table dédiée + temporisation), une fois
-            //             l'outbox et le CRON disponibles pour la notification.
+            // VAGUE 4.5 — le compteur a déjà été incrémenté dans verifier()
+            // ci-dessus. Pas d'incrément supplémentaire ici : la tentative est
+            // comptée une fois, qu'elle échoue par mot de passe erroné ou par
+            // compte inexistant.
             throw ApiException::nonAuthentifie(self::IDENTIFIANTS_INVALIDES);
         }
+
+        // Connexion réussie : on efface les tentatives pour cette IP/cible.
+        $this->limiteur()->reinitialiser($r->ip(), $email, 'login');
 
         /** @var array<string,mixed> $ligne */
         unset($ligne['password_hash']); // Ceinture : le DTO ne le lit pas non plus.
@@ -345,6 +382,12 @@ final class ControleurAuth
             return Reponse::vide();
         }
 
+        // VAGUE 4.5 — limitation des tentatives sur forgot-password.
+        // Sans cette garde, l'endpoint devient un outil d'envoi massif d'emails.
+        // Le refus lève une ApiException 429 avec le MÊME message qu'un refus
+        // de connexion : on ne confirme pas que l'email ciblé existe.
+        $this->limiteur()->verifier($r->ip(), $email, 'forgot-password');
+
         $ligne = $this->db->un(
             'SELECT id, email, active FROM users WHERE LOWER(email) = :email',
             [':email' => $email],
@@ -365,8 +408,21 @@ final class ControleurAuth
         $idJeton = bin2hex(random_bytes(8));
         $secret = bin2hex(random_bytes(32)); // 256 bits — hors de portée d'un tirage au sort.
         $maintenant = time();
+        $expiresAt = gmdate('c', $maintenant + self::DUREE_JETON);
 
-        $this->db->transaction(function (Db $d) use ($idUtilisateur, $idJeton, $secret, $maintenant): void {
+        $jeton = $idJeton . '.' . $secret;
+
+        // VAGUE 4.5 — l'email est déposé dans l'outbox DANS la même transaction
+        // que le jeton : si la transaction est annulée, le message n'est pas
+        // envoyé ; si elle réussit, le CRON l'envoie. Atomicité garantie.
+        // Le jeton en clair (lien de réinitialisation) est dans la charge utile
+        // de l'outbox — jamais en base sous forme lisible, uniquement son hash.
+        $outbox = new Outbox($this->db);
+
+        $this->db->transaction(function (Db $d) use (
+            $idUtilisateur, $idJeton, $secret, $maintenant, $expiresAt,
+            $email, $jeton, $outbox
+        ): void {
             // Un nouveau jeton annule les précédents : deux liens valides en
             // circulation doublent la surface d'attaque pour zéro bénéfice.
             $d->run(
@@ -378,23 +434,24 @@ final class ControleurAuth
                 'id' => $idJeton,
                 'user_id' => $idUtilisateur,
                 'token_hash' => hash('sha256', $secret),
-                'expires_at' => gmdate('c', $maintenant + self::DUREE_JETON),
+                'expires_at' => $expiresAt,
                 'used_at' => null,
                 'created_at' => gmdate('c', $maintenant),
             ]);
+
+            // VAGUE 4.5 : dépôt dans l'outbox, DANS la transaction.
+            // Le CRON (vider-outbox.php) lit ce topic et appelle Courriel::envoyer().
+            // Aucun appel réseau ici — uniquement de l'écriture en base.
+            $outbox->deposer('password_reset', [
+                'email'     => $email,
+                'token'     => $jeton,    // jeton en clair, à usage unique
+                'expiresAt' => $expiresAt,
+                'appUrl'    => (string) (\KaTech\Env::get('APP_URL', '') ?? ''),
+            ]);
         });
 
-        $jeton = $idJeton . '.' . $secret;
-
-        // VAGUE 4.5 : l'envoi de l'e-mail se branche ICI. Écrire une ligne dans
-        //             la table `outbox` (topic « password_reset », charge utile
-        //             { email, token, expiresAt }) DANS la transaction
-        //             ci-dessus, et laisser le CRON d'émission la dépiler.
-        //             Tant que cet envoi n'existe pas, le lien n'est
-        //             transmissible que par le journal ci-dessous.
-
         Db::journaliserStatique(sprintf(
-            'Jeton de réinitialisation émis pour %s, valable %d minutes (envoi e-mail : vague 4.5).',
+            'Jeton de réinitialisation émis pour %s, valable %d minutes — email en outbox.',
             $email,
             (int) (self::DUREE_JETON / 60),
         ));

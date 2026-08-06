@@ -319,3 +319,17 @@ CREATE TABLE IF NOT EXISTS password_resets (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX idx_password_resets_user ON password_resets (user_id);
 CREATE INDEX idx_password_resets_expires ON password_resets (expires_at);
+
+-- ---------------------------------------------------------------- 23
+-- Tentatives de connexion — limitation de débit (vague 4.5).
+-- On ne stocke QUE le hash SHA-256 de l'IP et de l'email (champ `cle`) :
+-- une fuite de cette table ne révèle ni adresses IP ni emails.
+-- Les lignes expirées sont purgées par le CRON.
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id            BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  axe           VARCHAR(16) NOT NULL,
+  cle           VARCHAR(64) NOT NULL,
+  action        VARCHAR(64) NOT NULL DEFAULT 'login',
+  created_at    VARCHAR(32) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX idx_login_attempts_axe_cle ON login_attempts (axe, cle, action, created_at);

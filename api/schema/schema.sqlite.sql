@@ -326,3 +326,17 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id);
 CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets (expires_at);
+
+-- ---------------------------------------------------------------- 23
+-- Tentatives de connexion — limitation de débit (vague 4.5).
+-- On ne stocke QUE le hash SHA-256 de l'IP et de l'email (champ `cle`) :
+-- une fuite de cette table ne révèle ni adresses IP ni emails.
+-- Les lignes expirées sont purgées par le CRON.
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id            INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  axe           TEXT NOT NULL,
+  cle           TEXT NOT NULL,
+  action        TEXT NOT NULL DEFAULT 'login',
+  created_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_axe_cle ON login_attempts (axe, cle, action, created_at);

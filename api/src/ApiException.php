@@ -84,6 +84,18 @@ class ApiException extends RuntimeException
     }
 
     /**
+     * Trop de requêtes — limite de débit dépassée (HTTP 429).
+     *
+     * Le message par défaut est identique à celui des échecs de connexion :
+     * un message distinct trahirait qu'un compte a été visé assez souvent
+     * pour déclencher le limiteur, révélant ainsi son existence.
+     */
+    public static function trop(string $message = 'Identifiants invalides.'): self
+    {
+        return new self(429, 'TOO_MANY_REQUESTS', $message);
+    }
+
+    /**
      * Base injoignable ou mal configurée. Le message doit dire QUOI VÉRIFIER,
      * jamais recracher la trace PDO.
      */
