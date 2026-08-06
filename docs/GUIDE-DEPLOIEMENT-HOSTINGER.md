@@ -30,7 +30,7 @@ demande jamais d'en avoir un.
 | Diagnostiquer une panne de déploiement                      | Oui — chapitre dédié   |
 | Créer et choisir la base de données, sauvegarder, restaurer | **Non — guide séparé** |
 
-Les bases de données font l'objet d'un **guide dédié**, écrit à part. Ce guide-ci
+Les bases de données font l'objet d'un guide dédié : **`docs/GUIDE-BASES-DE-DONNEES.md`**. Ce guide-ci
 s'y réfère chaque fois qu'il faut une valeur venant de la base. La référence
 technique déjà existante est `docs/DEPLOIEMENT.md` — plus complète, mais écrite
 comme un ouvrage de référence, pas comme une marche à suivre.
@@ -81,7 +81,7 @@ est la première cause d'abandon en milieu d'installation.
 | Domaine actif                    | Le domaine répond déjà, même par une page vide               |
 | Certificat HTTPS                 | Activé dans hPanel. À faire **avant** l'étape 7.             |
 | Le projet KA Tech                | Le dépôt complet, téléchargé sur votre ordinateur            |
-| Les valeurs de la base           | Fournies par le **guide des bases de données**               |
+| Les valeurs de la base           | Fournies par le guide `docs/GUIDE-BASES-DE-DONNEES.md`       |
 | Un gestionnaire de mots de passe | Vous allez créer un mot de passe fort et devoir le retrouver |
 
 **Version de PHP.** Le projet exige **PHP 8.2 au minimum**. Dans hPanel, la
@@ -126,7 +126,7 @@ Indiquer votre choix dans api/.env → DB_DRIVER=…
 Recommandation chez un hébergeur mutualisé : DB_DRIVER=mysql (garanti, sans prérequis).
 ```
 
-Notez cette liste. Le guide des bases de données en a besoin. Continuez.
+Notez cette liste. Le guide `docs/GUIDE-BASES-DE-DONNEES.md` en a besoin. Continuez.
 
 **Cas 2 — la sonde écrit `BLOCAGES À TRAITER :`**
 Elle énumère alors, ligne par ligne, ce qui manque **et** où le corriger. Ne
@@ -439,8 +439,7 @@ CORS_ORIGINS=
 
 **Les lignes de la base de données :**
 
-Elles dépendent du moteur choisi. **Elles sont décrites dans le guide dédié aux
-bases de données**, qui vous donne les valeurs exactes à recopier. Ne les
+Elles dépendent du moteur choisi. **Elles sont décrites dans `docs/GUIDE-BASES-DE-DONNEES.md`**, qui vous donne les valeurs exactes à recopier. Ne les
 inventez pas.
 
 **Le compte propriétaire :**
@@ -475,7 +474,7 @@ pas, et apparaissent comme cassées. Le détail est au chapitre « Défauts
 connus ». Le chemin absolu exact de `public_html` est affiché par la sonde de
 l'étape 1, à la ligne `Racine web détectée`, et par le gestionnaire de fichiers.
 
-**Les sauvegardes :** ces lignes appartiennent au guide des bases de données.
+**Les sauvegardes :** ces lignes appartiennent à `docs/GUIDE-BASES-DE-DONNEES.md`.
 Renseignez-les en suivant ce guide-là.
 
 5. Enregistrez le fichier.
@@ -556,8 +555,8 @@ Le message qui suit nomme la cause. Il se termine toujours par une phrase qui
 décrit l'état réel de votre base — soit `La transaction a été ANNULÉE : la base
 est revenue exactement à son état d'avant.`, soit un avertissement propre à
 MySQL. Lisez cette phrase : elle dit s'il faut vider la base avant de
-recommencer. Les causes liées à la base de données sont traitées dans le guide
-dédié.
+recommencer. Les causes liées à la base de données sont traitées dans
+`docs/GUIDE-BASES-DE-DONNEES.md`.
 
 **« INSTALLATION DÉJÀ EFFECTUÉE. »**
 L'installateur a déjà tourné. Il refuse de recommencer, car il détruirait vos
@@ -702,7 +701,7 @@ en ligne de commande.` avec un code 403.
 
 ### Les sauvegardes
 
-Elles relèvent du guide des bases de données. **Ne considérez pas le
+Elles relèvent de `docs/GUIDE-BASES-DE-DONNEES.md`. **Ne considérez pas le
 déploiement terminé tant qu'une sauvegarde n'a pas été produite et qu'une
 restauration n'a pas été essayée au moins une fois.**
 
@@ -873,7 +872,7 @@ casser le site.
 
 ## Mettre le site à jour plus tard
 
-1. **Sauvegardez d'abord.** Suivez le guide des bases de données, et vérifiez
+1. **Sauvegardez d'abord.** Suivez `docs/GUIDE-BASES-DE-DONNEES.md`, et vérifiez
    que le fichier de sauvegarde existe bien avant de continuer.
 2. Recompilez à l'étape 3, avec les mêmes variables.
 3. Refaites les trois vérifications de l'étape 3, y compris celle de
@@ -987,8 +986,8 @@ vide. La compilation de l'étape 3 ne demande aucun fichier `.env`.
 
 ## Voir aussi
 
-- Le **guide des bases de données** — création, choix du moteur, sauvegarde,
-  restauration
+- `docs/GUIDE-BASES-DE-DONNEES.md` — création de la base, choix du moteur,
+  sauvegarde, restauration
 - `docs/DEPLOIEMENT.md` — la référence technique complète du déploiement
 - `api/.env.example` — toutes les variables de configuration, commentées
 - `scripts/sonde-hebergeur.php` — la sonde de l'étape 1
