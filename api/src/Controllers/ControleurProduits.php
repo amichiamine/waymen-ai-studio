@@ -48,6 +48,30 @@ final class ControleurProduits
     /** Valeurs autorisées pour la colonne `stock`. */
     private const STOCK_STATUTS = ['in', 'low', 'out'];
 
+    /**
+     * Liste de colonnes commune à TOUTES les lectures de produit.
+     *
+     * Les deux sous-requêtes agrègent les avis **approuvés** du produit. Elles
+     * existent pour une raison précise : la vitrine affiche une note sur chaque
+     * carte produit. Sans cet agrégat, la seule source disponible était
+     * `GET /reviews` — la liste d'administration, protégée par la permission
+     * `read` — appelée une fois par carte : 12 requêtes et 12 réponses 401 pour
+     * un seul chargement d'accueil. La note voyage désormais avec le produit,
+     * dans la réponse publique déjà demandée : zéro requête supplémentaire,
+     * aucune route protégée sollicitée.
+     *
+     * Sous-requêtes corrélées sur `products.id` plutôt que jointure + GROUP BY :
+     * elles restent valides quelle que soit la clause WHERE construite par
+     * `filtres()` (qui nomme les colonnes sans préfixe) et n'altèrent ni le
+     * comptage total ni le tri. Portables SQLite/MySQL sans un seul test de
+     * `DB_DRIVER`.
+     */
+    private const SELECTION = 'products.*, '
+        . "(SELECT COUNT(*) FROM reviews "
+        . "WHERE reviews.product_id = products.id AND reviews.status = 'approved') AS reviews_count, "
+        . "(SELECT AVG(reviews.rating) FROM reviews "
+        . "WHERE reviews.product_id = products.id AND reviews.status = 'approved') AS reviews_average";
+
     public function __construct(private readonly Db $db)
     {
     }
@@ -73,7 +97,7 @@ final class ControleurProduits
 
         // `id` en tri secondaire : sans lui, deux lignes de même prix peuvent
         // changer de page d'un appel à l'autre et l'utilisateur voit un doublon.
-        $sql = "SELECT * FROM products{$clause} ORDER BY {$colonne} {$sens}, id ASC LIMIT :limite OFFSET :decalage";
+        $sql = 'SELECT ' . self::SELECTION . " FROM products{$clause} ORDER BY {$colonne} {$sens}, id ASC LIMIT :limite OFFSET :decalage";
 
         $lignes = $this->db->tous($sql, $params + [
             ':limite' => $pagination->perPage,
@@ -95,7 +119,7 @@ final class ControleurProduits
     public function detail(Requete $r): Reponse
     {
         $id = $r->param('id');
-        $ligne = $this->db->un('SELECT * FROM products WHERE id = :id', [':id' => $id]);
+        $ligne = $this->db->un('SELECT ' . self::SELECTION . ' FROM products WHERE id = :id', [':id' => $id]);
 
         if ($ligne === null) {
             throw ApiException::introuvable("Aucun produit ne porte l'identifiant « {$id} ».");
@@ -131,7 +155,7 @@ final class ControleurProduits
         ]), ['id'], $colsMaj));
 
         return Reponse::cree($this->enDto(
-            (array) $this->db->un('SELECT * FROM products WHERE id = :id', [':id' => $donnees['id']])
+            (array) $this->db->un('SELECT ' . self::SELECTION . ' FROM products WHERE id = :id', [':id' => $donnees['id']])
         ));
     }
 
@@ -145,7 +169,7 @@ final class ControleurProduits
     {
         $id = $r->param('id');
 
-        $existant = $this->db->un('SELECT * FROM products WHERE id = :id', [':id' => $id]);
+        $existant = $this->db->un('SELECT ' . self::SELECTION . ' FROM products WHERE id = :id', [':id' => $id]);
         if ($existant === null) {
             throw ApiException::introuvable("Aucun produit ne porte l'identifiant « {$id} ».");
         }
@@ -171,7 +195,7 @@ final class ControleurProduits
         );
 
         return Reponse::ok($this->enDto(
-            (array) $this->db->un('SELECT * FROM products WHERE id = :id', [':id' => $id])
+            (array) $this->db->un('SELECT ' . self::SELECTION . ' FROM products WHERE id = :id', [':id' => $id])
         ));
     }
 
@@ -508,6 +532,15 @@ final class ControleurProduits
             'price' => (int) $l['price'],
             'stock' => (string) $l['stock'],
             'image' => (string) $l['image'],
+            // Agrégat des avis approuvés (cf. self::SELECTION). Toujours rendu,
+            // même à zéro : la carte produit doit pouvoir distinguer « aucun
+            // avis » d'un champ absent, sans avoir à interroger la liste
+            // d'administration `GET /reviews`. `AVG()` rend NULL sur un
+            // ensemble vide, d'où le repli à 0.
+            'rating' => [
+                'average' => round((float) ($l['reviews_average'] ?? 0), 2),
+                'count' => (int) ($l['reviews_count'] ?? 0),
+            ],
         ];
 
         if ($l['old_price'] !== null) {

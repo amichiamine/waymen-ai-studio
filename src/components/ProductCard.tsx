@@ -1,17 +1,28 @@
-import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Check, AlertTriangle, Star, Zap } from "lucide-react";
 import { type Product, formatDZD } from "@/data/products";
 import { toast } from "sonner";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
-import { useReviewList, useSiteSettings } from "@/data-provider";
+import { useProductRating, useSiteSettings } from "@/data-provider";
 
 export function ProductCard({ p }: { p: Product }) {
   const { t } = useI18n();
   const L = useLocalize();
   const { isFavorite, toggleFavorite, addToCart } = useStore();
-  const { data: reviews } = useReviewList();
+  /**
+   * Note du produit affiché — et RIEN d'autre.
+   *
+   * Cette carte lisait `useReviewList()`, c'est-à-dire `GET /reviews` : la liste
+   * d'administration, protégée par la permission `read`. Sur une page publique,
+   * chacune des douze cartes de l'accueil la réclamait, et un visiteur non
+   * connecté récoltait douze 401 par chargement. Le défaut était l'appel, jamais
+   * la garde : `useProductRating` prend la note là où elle est déjà disponible —
+   * dans le produit lui-même en mode http (agrégat public livré par
+   * `GET /products`), dans le magasin local en mode mock. Zéro requête émise par
+   * la carte, dans les deux modes.
+   */
+  const stats = useProductRating(p);
   const { data: siteSettings } = useSiteSettings();
   const liked = isFavorite(p.id);
   const discount = p.oldPrice ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : 0;
@@ -23,13 +34,7 @@ export function ProductCard({ p }: { p: Product }) {
    */
   const name = L(p.name) ?? "";
   const specLine = L(p.specLine) ?? "";
-  const stats = useMemo(() => {
-    const approved = reviews.filter((r) => r.productId === p.id && r.status === "approved");
-    const count = approved.length;
-    const avg = count ? approved.reduce((s, r) => s + r.rating, 0) / count : 0;
-    return { avg, count, approved };
-  }, [p.id, reviews]);
-  const avgRounded = Math.round(stats.avg * 2) / 2; // half-star precision
+  const avgRounded = Math.round(stats.average * 2) / 2; // half-star precision
   const showRating = stats.count > 0 || !siteSettings.hideRatingWhenNoReviews;
 
   return (
@@ -80,7 +85,7 @@ export function ProductCard({ p }: { p: Product }) {
           <div
             className="flex items-center gap-1"
             aria-label={
-              stats.count ? `${stats.avg.toFixed(1)} sur 5 (${stats.count} avis)` : "Aucun avis"
+              stats.count ? `${stats.average.toFixed(1)} sur 5 (${stats.count} avis)` : "Aucun avis"
             }
           >
             {[1, 2, 3, 4, 5].map((n) => {
@@ -94,7 +99,7 @@ export function ProductCard({ p }: { p: Product }) {
               );
             })}
             <span className="text-[11px] text-muted-foreground ms-1">
-              {stats.count > 0 ? `${stats.avg.toFixed(1)} (${stats.count})` : t("pc.noReviews")}
+              {stats.count > 0 ? `${stats.average.toFixed(1)} (${stats.count})` : t("pc.noReviews")}
             </span>
           </div>
         )}

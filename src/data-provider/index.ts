@@ -101,6 +101,7 @@ export {
 export type { PaymentMethodMutations } from "./payment-methods";
 export {
   REVIEWS_RESOURCE,
+  useProductRating,
   useProductReviewList,
   useReviewList,
   useReviewMutations,

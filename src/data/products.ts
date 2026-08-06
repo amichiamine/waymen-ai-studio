@@ -83,7 +83,21 @@ export type Product = {
    * marqueur est un produit de catalogue ordinaire.
    */
   customBuild?: boolean;
+  /**
+   * Agrégat des avis **approuvés** du produit, calculé par l'API et livré avec
+   * le produit lui-même (`GET /products`, route publique).
+   *
+   * Champ optionnel et additif : les données mock du dépôt ne le portent pas
+   * (en mode mock, la note se dérive du magasin local, qui contient les avis).
+   * Il existe pour que la vitrine affiche une note **sans** interroger
+   * `GET /reviews` — la liste d'administration protégée — et sans un appel par
+   * carte produit.
+   */
+  rating?: ProductRating;
 };
+
+/** Note moyenne et nombre d'avis approuvés. `average` vaut 0 quand `count` vaut 0. */
+export type ProductRating = { average: number; count: number };
 
 /** Vrai pour une configuration client, jamais catalogable. */
 export const isCustomBuild = (p: Product): boolean => p.customBuild === true;

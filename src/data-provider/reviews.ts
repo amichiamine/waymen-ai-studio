@@ -2,7 +2,10 @@ import { useCallback, useMemo } from "react";
 
 import { reviewsApi } from "@/api/resources/reviews";
 import type { Review, ReviewStatus } from "@/api/types";
+import type { Product, ProductRating } from "@/data/products";
+import { useAdminState } from "@/lib/admin-store";
 
+import { isHttpData } from "./mode";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -64,6 +67,55 @@ export function useProductReviewList(productId?: string): ResourceState<Review[]
     },
     fallback: NO_REVIEWS,
   });
+}
+
+/** Aucun avis : référence stable au niveau module. */
+const NO_RATING: ProductRating = { average: 0, count: 0 };
+
+/** Moyenne et nombre d'avis approuvés d'un produit, dérivés d'une liste d'avis. */
+function agreger(reviews: readonly Review[], productId: string): ProductRating {
+  let somme = 0;
+  let count = 0;
+  for (const r of reviews) {
+    if (r.productId !== productId || r.status !== "approved") continue;
+    somme += r.rating;
+    count += 1;
+  }
+  return count === 0 ? NO_RATING : { average: somme / count, count };
+}
+
+/**
+ * Note moyenne et nombre d'avis approuvés d'un produit — surface **vitrine**.
+ *
+ * Pourquoi ce hook existe : la carte produit lisait `useReviewList()`, c'est-à-dire
+ * `GET /reviews`, la liste d'**administration** protégée par la permission `read`.
+ * Sur l'accueil, douze cartes en faisaient douze appels, et un visiteur non
+ * connecté récoltait douze 401. Deux défauts en un — une route protégée sollicitée
+ * depuis une page publique, et un appel par carte pour une seule et même liste.
+ *
+ * Source retenue, par mode :
+ *   - **http** : l'agrégat livré par l'API **avec le produit** (`Product.rating`,
+ *     calculé par `ControleurProduits::SELECTION` sur les avis approuvés). La
+ *     donnée arrive dans la réponse publique `GET /products` déjà demandée par la
+ *     page : **zéro requête supplémentaire**, aucune route protégée.
+ *   - **mock** : dérivation depuis le magasin local, qui contient déjà les avis —
+ *     comportement rigoureusement identique à l'existant, sans réseau.
+ *
+ * Aucun cache de ressource ici : en http la valeur voyage avec le produit, donc
+ * elle est déjà aussi fraîche que lui. La mémoriser à part ne ferait que créer
+ * une fenêtre de péremption sans rien économiser.
+ */
+export function useProductRating(product: Pick<Product, "id" | "rating">): ProductRating {
+  // Toujours souscrit : un hook ne peut pas être appelé conditionnellement. En
+  // mode http la souscription est inerte, exactement comme le moteur mock de
+  // `useResource`.
+  const state = useAdminState();
+  const { id, rating } = product;
+
+  return useMemo(
+    () => (isHttpData() ? (rating ?? NO_RATING) : agreger(state.reviews, id)),
+    [id, rating, state],
+  );
 }
 
 export type ReviewMutations = {
