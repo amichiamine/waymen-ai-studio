@@ -8,10 +8,16 @@
 # (voir docs/DEPLOIEMENT.md, « Après le build »)
 #
 # Ce fichier fait quatre choses :
-#   1. le repli SPA — toute route inconnue sert index.html ;
+#   1. la réécriture — canonicalisation des ressources, puis repli SPA ;
 #   2. les en-têtes de sécurité ;
 #   3. la compression ;
 #   4. le cache — long pour les fichiers empreintés, NUL pour index.html.
+#
+# DOSSIER RENOMMABLE ET DÉPLAÇABLE. Ce fichier ne contient aucun chemin de
+# déploiement en dur : il fonctionne à l'identique à la racine du domaine
+# (public_html/) et dans un sous-dossier de nom quelconque
+# (public_html/ma-boutique/), sans reconstruire ni éditer quoi que ce soit.
+# Les deux mécanismes qui le permettent sont commentés en §1.
 #
 # RÈGLE ABSOLUE : ne jamais intercepter /api. L'API a son propre
 # .htaccess dans public_html/api/, et ses 93 routes sont des URL
@@ -26,14 +32,33 @@ Options -Indexes
   Options -MultiViews
 </IfModule>
 
-DirectoryIndex index.html
+# index.php AVANT index.html : c'est lui le point d'entrée. Il sert
+# index.html en y insérant la balise <base> qui rend le dossier
+# renommable et déplaçable (voir public/index.php, qui explique
+# pourquoi aucune règle de réécriture ne peut le remplacer).
+DirectoryIndex index.php index.html
 
 # =====================================================================
 # 1. Réécriture
 # =====================================================================
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /
+
+  # --- PAS DE RewriteBase, ET C'EST VOULU ----------------------------
+  # Ce fichier portait « RewriteBase / ». Déposé dans public_html/boutique/,
+  # cela rendait toute substitution relative absolue par rapport à la RACINE
+  # DU DOMAINE : le repli SPA servait /index.html au lieu de
+  # /boutique/index.html, et le site ne fonctionnait qu'à la racine.
+  #
+  # Sans directive, mod_rewrite fait mieux tout seul : en contexte
+  # .htaccess il retire le préfixe du répertoire courant avant de comparer
+  # (« boutique/product/x » est confronté aux motifs comme « product/x »),
+  # puis le remet devant toute substitution relative. La base est donc
+  # déduite de l'emplacement réel du fichier, à chaque requête.
+  #
+  # COROLLAIRE À RESPECTER : toutes les substitutions ci-dessous sont
+  # RELATIVES (« index.html », « $1 »). Une seule commençant par « / »
+  # réintroduirait le chemin en dur.
 
   # --- L'API d'abord, et on s'arrête là ------------------------------
   # [L] sans substitution : la requête poursuit son chemin normal et
@@ -61,17 +86,38 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # --- Un asset absent doit échouer franchement -----------------------
-  # Sans cette règle, /assets/index-ABCDEFGH.js manquant recevrait
-  # index.html avec un code 200 : le navigateur afficherait une erreur de
-  # type MIME incompréhensible. Un 404 dit la vérité — le déploiement est
-  # incomplet ou un onglet ouvert réclame une ancienne empreinte.
-  RewriteRule ^assets/ - [R=404,L]
+  # --- Une ressource absente doit échouer franchement -----------------
+  # Deux cas, une seule raison : ne JAMAIS laisser le repli SPA répondre
+  # à la place d'un fichier statique. Il renverrait index.html avec un
+  # code 200, et le navigateur recevrait du HTML là où il attend du
+  # JavaScript ou une image — l'erreur de type MIME, illisible.
+  #
+  #   a) /assets/index-ABCDEFGH.js absent : déploiement incomplet, ou un
+  #      onglet resté ouvert réclame une empreinte périmée.
+  #   b) la même demande à une profondeur quelconque
+  #      (/boutique/product/assets/index-ABCDEFGH.js) : c'est le symptôme
+  #      d'une balise <base> absente du document. Elle est posée par
+  #      index.php ; si PHP n'a pas tourné, on veut le voir tout de
+  #      suite, pas récupérer la panne en silence.
+  RewriteRule (^|/)assets/ - [R=404,L]
+
+  # Même chose pour les fichiers de public/ posés à la racine de
+  # l'application (favicon, manifeste, icônes) réclamés en profondeur.
+  # uploads/ est exclu : ses médias vivent bel et bien dans un
+  # sous-dossier et sont servis par la règle « fichiers réels » ci-dessus.
+  RewriteCond %{REQUEST_URI} !/uploads/
+  RewriteRule ^.+/[^/]+\.(?:ico|png|svg|webp|avif|jpe?g|gif|webmanifest|json|txt|xml|css|js|mjs|map|woff2?)$ - [R=404,L]
 
   # --- Repli SPA ------------------------------------------------------
-  # Tout le reste est une route côté client (React Router) : on sert
-  # index.html et le navigateur résout la route.
-  RewriteRule ^ index.html [L]
+  # Tout le reste est une route côté client (React Router) : on sert le
+  # document d'amorçage et le navigateur résout la route.
+  #
+  # Vers index.php et non index.html : c'est lui qui calcule et insère la
+  # balise <base>, sans laquelle une route profonde rechargée irait
+  # chercher ses ressources à côté. La substitution est RELATIVE, donc
+  # préfixée par mod_rewrite du répertoire réel — c'est ce qui remplace
+  # l'ancien « RewriteBase / » codé en dur.
+  RewriteRule ^ index.php [L]
 </IfModule>
 
 # Sécurité indépendante de mod_rewrite : même refus, par nom de fichier.
@@ -208,7 +254,7 @@ DirectoryIndex index.html
   </FilesMatch>
 
   # --- index.html : jamais de cache ----------------------------------
-  <FilesMatch "^index\.html$">
+  <FilesMatch "^index\.(html|php)$">
     Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
     Header set Pragma "no-cache"
     Header set Expires "0"

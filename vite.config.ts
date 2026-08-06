@@ -58,6 +58,43 @@ const reecrireCheminApi = (chemin: string): string =>
   chemin.replace(new RegExp(`^${API_PREFIXE}`), "") || "/";
 
 export default defineConfig({
+  // ---------------------------------------------------------------------
+  // Base des URL produites par le build — clé de la portabilité du dossier.
+  //
+  // Avec la valeur par defaut ("/"), `dist/index.html` reference
+  // `src="/assets/index-XXXX.js"` : depose dans `public_html/ma-boutique/`,
+  // le site reclame `https://domaine.dz/assets/...` et tout echoue en 404.
+  // Le dossier n'etait donc renommable et deplacable qu'au prix d'un rebuild.
+  //
+  // CE QUE "./" CHANGE EXACTEMENT :
+  //   - index.html : `./assets/...`, `./favicon.ico` (Vite reecrit aussi les
+  //     fichiers de public/ references en absolu) ;
+  //   - assets references depuis le JS : `new URL("img-XXXX.webp",
+  //     import.meta.url)` — resolus contre l'URL du chunk, donc justes ;
+  //   - imports differes : `import("./Page-XXXX.js", import.meta.url)` — idem ;
+  //   - `url()` des CSS : relatifs au fichier CSS emis.
+  //
+  // CE QUE "./" NE CHANGE PAS, ET QU'IL FAUT TRAITER AILLEURS :
+  //   1. les URL relatives d'index.html sont resolues contre l'URL du
+  //      DOCUMENT. Sur un rafraichissement de route profonde, le repli SPA
+  //      sert le document a l'URL `/ma-boutique/product/xyz` : `./assets/x.js`
+  //      y deviendrait `/ma-boutique/product/assets/x.js`, qui n'existe pas.
+  //      C'est `public/index.php` qui corrige ce point, en inserant une
+  //      balise `<base>` calculee cote serveur. Ce fichier explique en detail
+  //      pourquoi aucune regle de reecriture ne peut s'y substituer — la
+  //      variante par redirection fait evaluer DEUX FOIS le chunk d'entree.
+  //   2. `import.meta.env.BASE_URL` vaut litteralement "./" dans le bundle :
+  //      il ne renseigne PAS le chemin de depot. Le routeur et l'API le
+  //      lisent dans la balise `<base>` (voir `src/api/config.ts`).
+  //   3. rien de ce qui est ecrit a la main dans `index.html`, ni le contenu
+  //      des fichiers de `public/` (manifeste, sitemap), qui sont copies tels
+  //      quels : leurs chemins doivent etre relatifs a la source.
+  //
+  // En developpement Vite ignore cette valeur et sert depuis "/", ce qui rend
+  // `import.meta.env.BASE_URL` egal a "/" : la distinction absolu/relatif est
+  // exactement ce sur quoi `src/api/config.ts` s'appuie pour choisir sa
+  // methode de deduction.
+  base: "./",
   plugins: [react(), tsconfigPaths(), tailwindcss()],
   server: {
     host: "::",
@@ -102,6 +139,15 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
+
+    // Valeur par defaut de Vite, rendue EXPLICITE parce que deux autres
+    // fichiers en dependent et casseraient en silence si elle changeait :
+    //   - `public/.htaccess` renvoie 404 sur un `assets/` absent, a toute
+    //     profondeur, plutot que de laisser le repli SPA repondre du HTML ;
+    //   - docs/DEPLOIEMENT.md decrit l'arborescence a televerser.
+    // Toute modification ici doit etre repercutee la-bas.
+    assetsDir: "assets",
+
     sourcemap: false,
     // Plafond d'alerte abaisse de 500 a 450 kB (taille brute, avant gzip).
     // Ce n'est PAS un contournement : apres decoupage, le plus gros chunk est
