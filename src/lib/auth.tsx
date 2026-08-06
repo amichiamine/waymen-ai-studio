@@ -126,10 +126,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const stored = readStored();
       if (!cancelled) setUser(stored);
       try {
-        // En mock, `me()` renvoie `null` : le localStorage reste la source de
-        // vérité. En http, la session serveur prime lorsqu'elle répond.
-        const remote = await authProvider.me();
-        if (!cancelled && remote) setUser(remote);
+        // En mock (`source: "local"`), le localStorage reste la source de vérité.
+        // En http, le serveur s'est prononcé : on le croit, y compris quand il
+        // dit « personne ». Sans ce dernier point, une session laissée en
+        // localStorage (bascule de mode, cookie expiré) survivait à un serveur
+        // qui ne la reconnaît pas, et l'application appelait aussitôt
+        // `GET /me/orders` en 401 pour un visiteur en réalité anonyme.
+        const probe = await authProvider.me();
+        if (!cancelled && probe.source === "server") persist(probe.user);
       } catch (e) {
         // Échec visible plutôt que silencieux (AGENTS.md §7) : on conserve la
         // session locale au lieu de déconnecter sur un simple aléa réseau.
@@ -143,7 +147,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+    // `persist` est un `useCallback([])` : référence stable, la reprise ne
+    // s'exécute donc bien qu'une fois, au montage.
+  }, [persist]);
 
   const signIn = useCallback<AuthCtx["signIn"]>(
     async (email, password) => {

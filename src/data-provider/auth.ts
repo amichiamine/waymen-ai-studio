@@ -28,6 +28,7 @@ import {
   type AdminUser,
 } from "@/lib/admin-store";
 
+import { toApiError } from "./errors";
 import { isHttpData } from "./mode";
 
 /** Préfixe de ressource — réservé pour une future invalidation de cache. */
@@ -42,6 +43,15 @@ export type AuthUser = AuthSession["user"];
 
 /** Résultat d'une tentative de connexion / inscription. */
 export type AuthOutcome = { ok: true; user: AuthUser } | { ok: false; message: string };
+
+/**
+ * Issue de la sonde de session au démarrage (`authProvider.me()`).
+ *
+ * Le `source` est ce qui permet au contexte de rester ignorant du mode : il n'a
+ * pas à savoir s'il tourne en mock ou en http, seulement si le serveur s'est
+ * prononcé — et, dans ce cas, de le croire.
+ */
+export type SessionProbe = { source: "local" } | { source: "server"; user: AuthUser | null };
 
 /** Motif d'échec d'une réinitialisation — traduit par la page appelante. */
 export type ResetFailure = "no-account" | "update-failed";
@@ -146,13 +156,38 @@ export const authProvider = {
   },
 
   /**
-   * Session courante côté serveur. `null` en mock : la source de vérité y est
-   * le localStorage, lu par le contexte.
+   * Sonde la session courante au démarrage de l'application.
+   *
+   * Trois issues, et c'est le point de tout ce code :
+   *
+   *  - `{ source: "local" }` — mode mock : le serveur n'a rien à dire, le
+   *    localStorage reste la source de vérité (comportement inchangé).
+   *  - `{ source: "server", user }` — mode http, le serveur a répondu. `user` à
+   *    `null` signifie « aucune session », pas « je ne sais pas » : le contexte
+   *    doit alors effacer la session locale.
+   *  - exception — vraie panne (réseau, 500) : le contexte conserve la session
+   *    locale plutôt que de déconnecter sur un aléa.
+   *
+   * `GET /auth/me` répond 401 à un visiteur sans session. C'est la réponse
+   * NORMALE d'une route protégée, pas un incident : on la traduit en
+   * `user: null` au lieu de la propager en erreur. Elle polluait sinon la
+   * console à chaque chargement, et la session périmée qu'elle laissait en place
+   * déclenchait à son tour un `GET /me/orders` en 401 — celui-là compté comme
+   * échec par le badge de mode.
+   *
+   * ATTENTION à ne pas généraliser : seul le 401 de CETTE sonde est anodin. Un
+   * 401 sur une route censée être publique est un vrai défaut, et le socle
+   * (`useResource` → `logResourceFailure`) doit continuer de le crier.
    */
-  async me(): Promise<AuthUser | null> {
-    if (!isHttpData()) return null;
-    const session = await authApi.me();
-    return session?.user ?? null;
+  async me(): Promise<SessionProbe> {
+    if (!isHttpData()) return { source: "local" };
+    try {
+      const session = await authApi.me();
+      return { source: "server", user: session?.user ?? null };
+    } catch (cause) {
+      if (toApiError(cause).status === 401) return { source: "server", user: null };
+      throw cause;
+    }
   },
 
   /**
