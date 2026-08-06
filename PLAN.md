@@ -824,6 +824,64 @@ serveur. Le frontend ne change pas d'une ligne.
 
 ---
 
+## 9 ter. Phase 6 — troisième pilote et migration assistée (décidée le 6 août 2026)
+
+**Séquencement retenu** : après la bascule `http`, pas avant. Un moteur de
+migration ne se teste sérieusement que contre un système qui tourne déjà avec de
+vraies données ; le construire à vide reviendrait à le valider sur rien.
+
+### Portée
+
+1. **Pilote `pgsql`** — un troisième dialecte SQL derrière PDO, comme SQLite et
+   MySQL. Il ouvre Supabase, mais aussi Neon, Railway ou tout PostgreSQL : pas
+   d'enfermement chez un fournisseur.
+2. **Moteur de migration** entre les trois pilotes, avec comptages de contrôle.
+3. **Menu « développeur »** dans l'administration : choisir et changer de base
+   après déploiement.
+
+### Pourquoi le pilote SQL et non l'API HTTPS de Supabase
+
+L'API HTTPS de Supabase (PostgREST) **n'a pas de transactions multi-requêtes**.
+La création de commande — décompte de stock, commande, lignes, mouvement,
+outbox — deviendrait cinq appels web sans annulation possible. Le refus de
+survente, prouvé sous six commandes concurrentes, serait perdu.
+
+Le retrouver exigerait de réécrire la logique de commande **en PL/pgSQL chez
+Supabase** : déplacer le cœur métier hors du projet, dans un autre langage, chez
+un tiers. Coût estimé 15-20 h contre 4 h, pour un seul avantage — fonctionner si
+l'hébergeur bloque le trafic sortant hors HTTP.
+
+Or dans ce cas, SQLite et MySQL restent disponibles et testés. Supabase serait
+simplement indisponible, jamais bloquant.
+
+**Note** : Supabase Auth et les Row Level Security ne sont pas utilisés.
+L'authentification PHP par session reste maîtresse. Supabase sert de base de
+données hébergée, pas de plateforme.
+
+### Garde-fous imposés au menu développeur
+
+Une interface web qui change la base de production et réécrit la configuration
+serveur est l'outil le plus dangereux du projet. Non négociable :
+
+- **Propriétaire uniquement**, jamais un administrateur
+- **Sauvegarde automatique** avant toute migration
+- **Simulation d'abord** : compter et valider sans écrire
+- **Test de connexion** à la cible avant toute bascule
+- **Les identifiants ne transitent jamais vers le navigateur**
+- **Réversible** : l'ancienne base reste intacte, bascule après vérification des comptages
+
+### Effort
+
+| Lot                                       | Agent     |
+| ----------------------------------------- | --------- |
+| Pilote `pgsql`, 3ᵉ schéma, parité à trois | 4 h       |
+| Moteur de migration                       | 5 h       |
+| Menu développeur et garde-fous            | 5 h       |
+| Recette des 6 chemins de migration        | 3 h       |
+| **Total**                                 | **~17 h** |
+
+---
+
 ## 10. Décisions prises
 
 | Décision              | Choix                                                                                                | Date        |
