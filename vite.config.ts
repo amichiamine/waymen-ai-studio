@@ -18,12 +18,82 @@ import tailwindcss from "@tailwindcss/vite";
  */
 const DEV_PORT = Number(process.env.PORT ?? 8080);
 
+/**
+ * Port du serveur PHP de l'API en developpement, configurable par `API_PORT`.
+ *
+ * Comme `PORT` ci-dessus, cette variable se lit dans l'environnement du shell
+ * et NON dans un fichier `.env` : Vite n'injecte pas les fichiers `.env` dans
+ * `process.env`. Voir README.md section « Developpement a deux serveurs ».
+ */
+const API_DEV_PORT = Number(process.env.API_PORT ?? 8160);
+
+/**
+ * Prefixe HTTP sous lequel le navigateur appelle l'API.
+ *
+ * Il DOIT correspondre a `VITE_API_BASE_URL` (defaut `/api/v1`, cf.
+ * `src/api/config.ts`), sinon chaque appel part sur une URL non proxifiee et
+ * Vite renvoie l'index HTML de la SPA : le client recoit du HTML la ou il
+ * attend du JSON, et l'erreur est incomprehensible.
+ *
+ * On ne proxifie que le premier segment (`/api`) : la version (`/v1`) est
+ * transmise telle quelle au PHP, qui sait la retirer lui-meme
+ * (`Requete::retirerPrefixe`).
+ */
+const API_PREFIXE = "/api";
+
+/**
+ * Reecriture du chemin, miroir exact de ce que fait Apache en production.
+ *
+ * En production, `api/.htaccess` est monte SOUS `/api` : PHP voit
+ * `SCRIPT_NAME=/api/index.php`, en deduit le prefixe `/api` et le retire.
+ * En developpement, `php -S -t api` a pour racine le dossier `api/` lui-meme :
+ * le prefixe `/api` n'existe pas cote serveur. C'est le proxy qui doit le
+ * retirer, faute de quoi TOUTES les routes repondent 404.
+ *
+ *   navigateur      /api/v1/products
+ *   proxy      ->       /v1/products     (ce qui suit)
+ *   Requete    ->          /products     (retrait de la version)
+ */
+const reecrireCheminApi = (chemin: string): string =>
+  chemin.replace(new RegExp(`^${API_PREFIXE}`), "") || "/";
+
 export default defineConfig({
   plugins: [react(), tsconfigPaths(), tailwindcss()],
   server: {
     host: "::",
     port: DEV_PORT,
     strictPort: false,
+
+    // -----------------------------------------------------------------------
+    // Proxy de developpement vers l'API PHP — DEVELOPPEMENT UNIQUEMENT.
+    //
+    // `server.proxy` n'est lu que par `vite dev`. Il n'entre dans aucun
+    // artefact de `vite build`, et `preview` n'en herite pas (il possede sa
+    // propre cle `preview.proxy`, laissee vide a dessein). En production, le
+    // frontend et l'API sont servis par le MEME domaine : aucun proxy n'a de
+    // raison d'exister, et `api/.htaccess` fait le routage.
+    //
+    // POURQUOI CE PROXY EST INDISPENSABLE : sans lui, le front (:8080) et
+    // l'API (:8160) sont deux origines distinctes. Le cookie de session
+    // `katech_sid` est `httpOnly` + `SameSite=Lax` ; il ne serait ni pose ni
+    // renvoye sur une requete inter-origine, et TOUTE route authentifiee
+    // repondrait 401. Le proxy ramene l'API sur l'origine du front : le
+    // cookie redevient un cookie de premiere partie, exactement comme en
+    // production.
+    // -----------------------------------------------------------------------
+    proxy: {
+      [API_PREFIXE]: {
+        target: `http://127.0.0.1:${API_DEV_PORT}`,
+        changeOrigin: false,
+        secure: false,
+        // Aucun `Domain` n'est pose par PHP : le cookie est deja lie a l'hote.
+        // On neutralise malgre tout tout `Domain` eventuel, sinon un cookie
+        // annonce pour `127.0.0.1` serait rejete par un navigateur qui parle a
+        // `localhost` — deux noms pour la meme machine, deux hotes pour lui.
+        cookieDomainRewrite: "",
+        rewrite: reecrireCheminApi,
+      },
+    },
   },
   preview: {
     host: "::",
