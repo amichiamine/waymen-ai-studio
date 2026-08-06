@@ -16,7 +16,13 @@
  * Garanties :
  *  - Idempotent : peut être relancé sans créer de doublon (upsert par clé).
  *  - Multilingue : les champs Localized<string> sont stockés en JSON, sans
- *    aplatissement (conformément à docs/LOCALIZED-DATA.md).
+ *    aplatissement (conformément à docs/LOCALIZED-DATA.md) — TOUJOURS encodés,
+ *    y compris quand la valeur est une chaîne simple (`"texte"`, guillemets
+ *    compris). Une chaîne stockée brute dans une colonne JSON est illisible à la
+ *    relecture et fait journaliser un repli à chaque requête.
+ *  - Rattrapage : les bases déjà remplies avec des valeurs brutes sont
+ *    réencodées au passage (voir `rattraperColonnesJson()`), sans jamais
+ *    réencoder une valeur déjà valide.
  *  - Empreintes historiques : order_items.name, stock_movements.product_name,
  *    reviews.product_name sont des chaînes simples (non concernées ici — les
  *    commandes et avis de démo ne sont pas importés par cet outil).
@@ -41,6 +47,65 @@ if (PHP_SAPI !== 'cli') {
 require_once __DIR__ . '/../src/bootstrap.php';
 
 use KaTech\Db;
+
+/**
+ * Rattrapage : réencode les colonnes JSON restées en clair.
+ *
+ * Une version précédente de cet outil n'encodait que les valeurs multilingues et
+ * écrivait la chaîne simple telle quelle (`ASUS ROG Strix G16` au lieu de
+ * `"ASUS ROG Strix G16"`). Les bases déjà remplies portent donc des valeurs que
+ * `json_decode()` refuse : le repli de lecture les affiche correctement, mais
+ * journalise à chaque requête. Réencoder à l'import est le seul moyen de rendre
+ * le journal réellement propre sur une base existante.
+ *
+ * IDEMPOTENT PAR CONSTRUCTION : une valeur qui se décode déjà est laissée
+ * strictement intacte. Relancer l'import ne réencode donc jamais deux fois (ce
+ * qui aurait produit `"\"texte\""`), et un import déjà correct ne bouge pas.
+ *
+ * @param string[] $colonnes Colonnes JSON de la table.
+ * @return int Nombre de lignes réellement corrigées.
+ */
+function rattraperColonnesJson(Db $db, string $table, string $cle, array $colonnes): int
+{
+    $projection = implode(', ', array_map(
+        [Db::class, 'identifiant'],
+        array_merge([$cle], $colonnes),
+    ));
+
+    $lignes = $db->tous('SELECT ' . $projection . ' FROM ' . Db::identifiant($table));
+    $corrigees = 0;
+
+    foreach ($lignes as $ligne) {
+        $set = [];
+        $params = [':cle_rattrapage' => $ligne[$cle]];
+
+        foreach ($colonnes as $colonne) {
+            $brut = $ligne[$colonne];
+            if (!is_string($brut) || $brut === '') {
+                continue; // NULL ou vide : `Db::dejson()` rend le repli sans rien journaliser.
+            }
+            json_decode($brut, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                continue; // Déjà du JSON valide — on n'y touche pas.
+            }
+            $set[] = Db::identifiant($colonne) . ' = :' . $colonne;
+            $params[':' . $colonne] = Db::json($brut);
+        }
+
+        if ($set === []) {
+            continue;
+        }
+
+        $db->run(
+            'UPDATE ' . Db::identifiant($table) . ' SET ' . implode(', ', $set)
+                . ' WHERE ' . Db::identifiant($cle) . ' = :cle_rattrapage',
+            $params,
+        );
+        $corrigees++;
+    }
+
+    return $corrigees;
+}
 
 // ------------------------------------------------------------------ Chargement du JSON
 $cheminJson = __DIR__ . '/donnees-front.json';
@@ -113,31 +178,31 @@ $compteurs['brands'] = (int) $db->valeur('SELECT COUNT(*) FROM brands');
  *            best_seller, sale, custom_build, created_at, updated_at.
  *
  * Les champs Localized<string> (name, spec_line, specs et ses valeurs) sont
- * stockés en JSON sans être aplatis — une chaîne nue est un JSON valide.
+ * stockés en JSON sans être aplatis.
+ *
+ * TOUJOURS ENCODER, chaîne simple comprise. La version précédente n'encodait que
+ * les valeurs multilingues et stockait la chaîne simple telle quelle :
+ * `json_decode("ASUS ROG Strix G16")` échoue à la lecture, et le serveur
+ * journalisait « Colonne JSON illisible, repli appliqué » pour chaque produit, à
+ * chaque requête — des centaines de lignes de bruit masquant les vraies erreurs.
+ * `Db::json("texte")` rend `"texte"`, guillemets compris : du JSON valide, et
+ * exactement la forme que le contrôleur écrit sur POST /products.
  *
  * Clé d'upsert : id.
  */
 $produits = (array) ($donnees['products'] ?? []);
 
 foreach ($produits as $p) {
-    // name peut être une chaîne simple (invariant) ou un objet {fr,en,ar}.
-    $name = is_array($p['name']) ? json_encode($p['name'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : (string) $p['name'];
+    // name : chaîne simple (invariant) ou objet {fr,en,ar} — encodé dans les deux cas.
+    $name = Db::json($p['name']);
 
     // spec_line idem.
-    $specLine = null;
-    if (isset($p['spec_line'])) {
-        $specLine = is_array($p['spec_line'])
-            ? json_encode($p['spec_line'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)
-            : (string) $p['spec_line'];
-    }
+    $specLine = isset($p['spec_line']) ? Db::json($p['spec_line']) : null;
 
     // specs : dictionnaire dont les valeurs peuvent être Localized.
-    $specs = null;
-    if (isset($p['specs']) && is_array($p['specs'])) {
-        $specs = json_encode($p['specs'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-    }
+    $specs = isset($p['specs']) && is_array($p['specs']) ? Db::json($p['specs']) : null;
 
-    $useTags = json_encode($p['use_tags'] ?? [], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    $useTags = Db::json($p['use_tags'] ?? []);
 
     $db->upsert('products', [
         'id'           => (string) $p['id'],
@@ -174,11 +239,13 @@ $compteurs['products'] = (int) $db->valeur('SELECT COUNT(*) FROM products');
 $articles = (array) ($donnees['blogPosts'] ?? []);
 
 foreach ($articles as $a) {
-    // title, excerpt, content : toujours des objets {fr,en,ar} dans le JSON d'extraction.
-    $title   = json_encode($a['title'],   JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-    $excerpt = isset($a['excerpt']) ? json_encode($a['excerpt'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : null;
-    $content = isset($a['content']) ? json_encode($a['content'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : null;
-    $tags    = json_encode($a['tags'] ?? [], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    // Objets {fr,en,ar} dans le JSON d'extraction d'aujourd'hui, mais une chaîne
+    // simple y est légitime (LOCALIZED-DATA.md §1) : `Db::json()` encode les deux,
+    // là où un `is_array()` en amont laissait passer la chaîne brute.
+    $title   = Db::json($a['title']);
+    $excerpt = isset($a['excerpt']) ? Db::json($a['excerpt']) : null;
+    $content = isset($a['content']) ? Db::json($a['content']) : null;
+    $tags    = Db::json($a['tags'] ?? []);
 
     $db->upsert('blog_posts', [
         'id'           => (string) $a['id'],
@@ -248,7 +315,7 @@ $contenu = (array) ($donnees['siteContent'] ?? []);
 foreach ($contenu as $section => $payload) {
     $db->upsert('site_content', [
         'section'    => (string) $section,
-        'payload'    => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+        'payload'    => Db::json($payload),
         'updated_at' => $maintenant,
     ], ['section']);
 }
@@ -266,7 +333,7 @@ $shippingSettings = $donnees['shippingSettings'] ?? null;
 if ($siteSettings !== null) {
     $db->upsert('settings', [
         'scope'      => 'site',
-        'payload'    => json_encode($siteSettings, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+        'payload'    => Db::json($siteSettings),
         'updated_at' => $maintenant,
     ], ['scope']);
 }
@@ -274,12 +341,29 @@ if ($siteSettings !== null) {
 if ($shippingSettings !== null) {
     $db->upsert('settings', [
         'scope'      => 'shipping',
-        'payload'    => json_encode($shippingSettings, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+        'payload'    => Db::json($shippingSettings),
         'updated_at' => $maintenant,
     ], ['scope']);
 }
 
 $compteurs['settings'] = (int) $db->valeur('SELECT COUNT(*) FROM settings');
+
+// ------------------------------------------------------------------ Rattrapage des colonnes JSON
+/**
+ * Après les upserts : les lignes que cet import vient de réécrire sont déjà
+ * correctes, ce passage ne concerne donc que l'héritage — les lignes laissées en
+ * clair par une version antérieure de l'outil, y compris celles qui ne figurent
+ * plus dans le JSON d'extraction.
+ *
+ * Les tables `orders` (status_history, invoice_snapshot) ne sont pas listées :
+ * cet outil n'y écrit rien, et elles sont exclusivement alimentées par le
+ * contrôleur, qui passe déjà par `Db::json()`.
+ */
+$rattrapees = 0;
+$rattrapees += rattraperColonnesJson($db, 'products', 'id', ['name', 'use_tags', 'spec_line', 'specs']);
+$rattrapees += rattraperColonnesJson($db, 'blog_posts', 'id', ['title', 'excerpt', 'content', 'tags']);
+$rattrapees += rattraperColonnesJson($db, 'site_content', 'section', ['payload']);
+$rattrapees += rattraperColonnesJson($db, 'settings', 'scope', ['payload']);
 
 // ------------------------------------------------------------------ Rapport final
 $pilote = $db->pilote();
@@ -291,6 +375,9 @@ foreach ($compteurs as $table => $nb) {
     $ligne = "  {$table} : {$nb} ligne(s) en base";
     echo "║" . $ligne . str_repeat(' ', max(0, 62 - strlen($ligne))) . "║\n";
 }
+echo "╠══════════════════════════════════════════════════════════════╣\n";
+$ligneRattrapage = "  rattrapage JSON : {$rattrapees} ligne(s) réencodée(s)";
+echo "║" . $ligneRattrapage . str_repeat(' ', max(0, 62 - mb_strlen($ligneRattrapage))) . "║\n";
 echo "╠══════════════════════════════════════════════════════════════╣\n";
 echo "║  JSON source : " . basename($cheminJson);
 echo str_repeat(' ', max(0, 47 - strlen(basename($cheminJson)))) . "║\n";
