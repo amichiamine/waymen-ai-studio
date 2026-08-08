@@ -41,6 +41,7 @@ import {
 } from "@/data-provider";
 import type { ShippingRate } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 // Les tarifs par wilaya, le franco de port et les modes de livraison sont des
 // réglages commerciaux de boutique. Toutes les mutations utilisent
@@ -66,14 +67,19 @@ export default function AdminShipping() {
   // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ShippingRate | null>(null);
   const [form, setForm] = useState<ShippingRate>({ wilayaCode: "", home: 0, desk: 0 });
   const [saving, setSaving] = useState(false);
 
+  // Noms de wilayas : DONNÉES (référentiel administratif algérien), jamais dans
+  // un dictionnaire. Seuls les libellés d'interface se traduisent.
   const wilayaLabel = (code: string) =>
-    code === "*" ? "Par défaut (toutes)" : (WILAYAS.find((w) => w.code === code)?.name_fr ?? code);
+    code === "*"
+      ? t("admin.reglages.livraison.wilaya_defaut_label")
+      : (WILAYAS.find((w) => w.code === code)?.name_fr ?? code);
 
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase();
@@ -106,23 +112,35 @@ export default function AdminShipping() {
   async function save() {
     // Niveau 2 — vérification dans le handler avant toute mutation.
     // Ordre : garde de permission → mutation → retour d'erreur.
-    if (!guard("manageSettings", editing ? "Modifier le tarif" : "Ajouter un tarif")) return;
+    if (
+      !guard(
+        "manageSettings",
+        editing
+          ? t("admin.reglages.livraison.garde_modifier")
+          : t("admin.reglages.livraison.garde_ajouter"),
+      )
+    )
+      return;
     if (!form.wilayaCode) {
-      toast.error("Choisissez une wilaya");
+      toast.error(t("admin.reglages.livraison.toast_wilaya_requise"));
       return;
     }
     if (!editing && shippingRates.some((r) => r.wilayaCode === form.wilayaCode)) {
-      toast.error("Une règle existe déjà pour cette wilaya");
+      toast.error(t("admin.reglages.livraison.toast_regle_existe"));
       return;
     }
     if (form.home < 0 || form.desk < 0) {
-      toast.error("Tarifs invalides");
+      toast.error(t("admin.reglages.livraison.toast_tarifs_invalides"));
       return;
     }
     setSaving(true);
     try {
       await upsertRate(form);
-      toast.success(editing ? "Tarif mis à jour" : "Tarif ajouté");
+      toast.success(
+        editing
+          ? t("admin.reglages.livraison.toast_tarif_mis_a_jour")
+          : t("admin.reglages.livraison.toast_tarif_ajoute"),
+      );
       setOpen(false);
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -135,16 +153,17 @@ export default function AdminShipping() {
   // Mutation asynchrone — désactive le bouton pendant l'appel.
   async function onDelete(code: string) {
     if (code === "*") {
-      toast.error("Le tarif par défaut ne peut pas être supprimé");
+      toast.error(t("admin.reglages.livraison.toast_defaut_non_supprimable"));
       return;
     }
-    if (!confirm(`Supprimer le tarif pour ${wilayaLabel(code)} ?`)) return;
+    if (!confirm(t("admin.reglages.livraison.confirm_supprimer", { wilaya: wilayaLabel(code) })))
+      return;
     // Niveau 2 — vérification dans le handler.
-    if (!guard("manageSettings", "Supprimer le tarif")) return;
+    if (!guard("manageSettings", t("admin.reglages.livraison.garde_supprimer"))) return;
     setSaving(true);
     try {
       await removeRate(code);
-      toast.success("Tarif supprimé");
+      toast.success(t("admin.reglages.livraison.toast_tarif_supprime"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -155,7 +174,7 @@ export default function AdminShipping() {
 
   async function handleFreeShippingChange(e: React.ChangeEvent<HTMLInputElement>) {
     // Niveau 2 — vérification dans le handler.
-    if (!guard("manageSettings", "Modifier le franco de port")) return;
+    if (!guard("manageSettings", t("admin.reglages.livraison.garde_franco"))) return;
     setSaving(true);
     try {
       await updateSettings({
@@ -171,7 +190,7 @@ export default function AdminShipping() {
 
   async function handleHomeToggle(val: boolean) {
     // Niveau 2 — vérification dans le handler.
-    if (!guard("manageSettings", "Activer / désactiver la livraison à domicile")) return;
+    if (!guard("manageSettings", t("admin.reglages.livraison.garde_domicile"))) return;
     setSaving(true);
     try {
       await updateSettings({ homeEnabled: val });
@@ -185,7 +204,7 @@ export default function AdminShipping() {
 
   async function handleDeskToggle(val: boolean) {
     // Niveau 2 — vérification dans le handler.
-    if (!guard("manageSettings", "Activer / désactiver le retrait bureau")) return;
+    if (!guard("manageSettings", t("admin.reglages.livraison.garde_bureau"))) return;
     setSaving(true);
     try {
       await updateSettings({ deskEnabled: val });
@@ -204,20 +223,32 @@ export default function AdminShipping() {
   const isLoading = loadingRates || loadingSettings;
   const anyError = errorRates ?? errorSettings;
 
+  // En-têtes de colonnes : text-start explicite pour écraser le text-left en dur
+  // de ui/table.tsx (motif identique à Products.tsx — voir convention §7).
+  // Le tableau des 58 wilayas est le plus large du back-office : en arabe, on
+  // évite tout débordement en ne forçant aucun alignement physique.
+  const COLONNES: { key: string; align?: "end"; width?: string }[] = [
+    { key: "admin.reglages.livraison.col_code" },
+    { key: "admin.reglages.livraison.col_wilaya" },
+    { key: "admin.reglages.livraison.col_domicile", align: "end" },
+    { key: "admin.reglages.livraison.col_bureau", align: "end" },
+    { key: "", width: "w-[100px]" }, // colonne actions : pas de libellé
+  ];
+
   return (
     <AdminPageShell
-      title="Livraison"
-      description="Tarifs par wilaya et règles de livraison."
+      title={t("admin.reglages.livraison.titre")}
+      description={t("admin.reglages.livraison.description")}
       actions={
         // Niveau 1 — affichage. Niveau 3 — le <span> porte l'infobulle.
         can("manageSettings") ? (
           <Button onClick={openNew}>
-            <Plus className="me-2 h-4 w-4" /> Ajouter un tarif
+            <Plus className="me-2 h-4 w-4" /> {t("admin.reglages.livraison.ajouter_tarif")}
           </Button>
         ) : (
           <span title={denyReason("manageSettings")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Ajouter un tarif
+              <Plus className="me-2 h-4 w-4" /> {t("admin.reglages.livraison.ajouter_tarif")}
             </Button>
           </span>
         )
@@ -237,7 +268,7 @@ export default function AdminShipping() {
       {/* Squelette de chargement pour les cartes de réglages (§5.3). */}
       {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-3" aria-busy="true">
-          <span className="sr-only">Chargement des réglages de livraison…</span>
+          <span className="sr-only">{t("admin.reglages.livraison.chargement_reglages")}</span>
           {Array.from({ length: 3 }, (_, i) => (
             <div key={i} className="h-24 animate-pulse rounded-lg border bg-card" />
           ))}
@@ -246,10 +277,12 @@ export default function AdminShipping() {
         <div className="grid gap-4 lg:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Franco de port</CardTitle>
+              <CardTitle className="text-base">
+                {t("admin.reglages.livraison.carte_franco_titre")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Label className="text-xs">Livraison offerte à partir de (DA)</Label>
+              <Label className="text-xs">{t("admin.reglages.livraison.carte_franco_label")}</Label>
               {/* Niveau 3 — le <span> porte l'infobulle car un Input disabled
                   a pointer-events-none. */}
               <span title={denyReason("manageSettings") ?? undefined} className="block">
@@ -261,16 +294,18 @@ export default function AdminShipping() {
                 />
               </span>
               <p className="text-xs text-muted-foreground">
-                Mettre 0 pour désactiver la livraison offerte.
+                {t("admin.reglages.livraison.carte_franco_aide")}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Livraison à domicile</CardTitle>
+              <CardTitle className="text-base">
+                {t("admin.reglages.livraison.carte_domicile_titre")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
-              <Label>Activée</Label>
+              <Label>{t("admin.reglages.livraison.carte_domicile_label")}</Label>
               {/* Niveau 3 — le <span> porte l'infobulle. */}
               <span title={denyReason("manageSettings") ?? undefined} className="inline-flex">
                 <Switch
@@ -283,10 +318,12 @@ export default function AdminShipping() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Retrait bureau</CardTitle>
+              <CardTitle className="text-base">
+                {t("admin.reglages.livraison.carte_bureau_titre")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
-              <Label>Activé</Label>
+              <Label>{t("admin.reglages.livraison.carte_bureau_label")}</Label>
               <span title={denyReason("manageSettings") ?? undefined} className="inline-flex">
                 <Switch
                   checked={shippingSettings.deskEnabled}
@@ -302,22 +339,29 @@ export default function AdminShipping() {
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Rechercher une wilaya…"
+          placeholder={t("admin.reglages.livraison.recherche_placeholder")}
+          aria-label={t("admin.reglages.livraison.recherche_placeholder")}
           className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
       </div>
 
-      <div className="overflow-hidden rounded-lg border">
+      {/* overflow-x-auto : empêche le tableau des 58 wilayas de déborder en RTL */}
+      <div className="overflow-x-auto overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Wilaya</TableHead>
-              <TableHead className="text-end">Domicile</TableHead>
-              <TableHead className="text-end">Bureau</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              {COLONNES.map((c, i) => (
+                <TableHead
+                  key={c.key || `col-actions-${i}`}
+                  className={[c.width, c.align === "end" ? "text-end" : "text-start"]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {c.key ? t(c.key) : null}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -325,7 +369,7 @@ export default function AdminShipping() {
             {loadingRates ? (
               <>
                 <tr className="sr-only" aria-busy="true">
-                  <td>Chargement des tarifs…</td>
+                  <td>{t("admin.reglages.livraison.chargement_tarifs")}</td>
                 </tr>
                 {Array.from({ length: 5 }, (_, i) => (
                   <TableRow key={i}>
@@ -345,8 +389,13 @@ export default function AdminShipping() {
                 {rows.map((r) => (
                   <TableRow key={r.wilayaCode}>
                     <TableCell className="font-mono text-xs">
-                      {r.wilayaCode === "*" ? <Badge>défaut</Badge> : r.wilayaCode}
+                      {r.wilayaCode === "*" ? (
+                        <Badge>{t("admin.reglages.livraison.badge_defaut")}</Badge>
+                      ) : (
+                        r.wilayaCode
+                      )}
                     </TableCell>
+                    {/* Nom de wilaya : DONNÉE (référentiel algérien), pas traduite */}
                     <TableCell>{wilayaLabel(r.wilayaCode)}</TableCell>
                     <TableCell className="text-end">{fmt(r.home)}</TableCell>
                     <TableCell className="text-end">{fmt(r.desk)}</TableCell>
@@ -357,14 +406,20 @@ export default function AdminShipping() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openEdit(r)}
-                          title="Modifier"
+                          title={t("admin.reglages.livraison.aria_modifier")}
+                          aria-label={t("admin.reglages.livraison.aria_modifier")}
                           disabled={saving}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                       ) : (
                         <span title={denyReason("manageSettings")} className="inline-flex">
-                          <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled
+                            aria-label={t("admin.reglages.livraison.aria_modifier")}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
                         </span>
@@ -372,13 +427,16 @@ export default function AdminShipping() {
                       {r.wilayaCode !== "*" && (
                         /* Niveau 1 — bouton supprimer. */
                         <span
-                          title={denyReason("manageSettings") ?? "Supprimer"}
+                          title={
+                            denyReason("manageSettings") ??
+                            t("admin.reglages.livraison.aria_supprimer")
+                          }
                           className="inline-flex align-middle"
                         >
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Supprimer"
+                            aria-label={t("admin.reglages.livraison.aria_supprimer")}
                             disabled={!can("manageSettings") || saving}
                             onClick={() => onDelete(r.wilayaCode)}
                           >
@@ -392,10 +450,10 @@ export default function AdminShipping() {
                 {rows.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={COLONNES.length}
                       className="h-24 text-center text-sm text-muted-foreground"
                     >
-                      Aucun tarif.
+                      {t("admin.reglages.livraison.vide_aucun")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -408,11 +466,15 @@ export default function AdminShipping() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? "Modifier le tarif" : "Nouveau tarif"}</DialogTitle>
+            <DialogTitle>
+              {editing
+                ? t("admin.reglages.livraison.dialog_modifier_titre")
+                : t("admin.reglages.livraison.dialog_nouveau_titre")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Wilaya</Label>
+              <Label>{t("admin.reglages.livraison.champ_wilaya")}</Label>
               {editing ? (
                 <Input value={wilayaLabel(form.wilayaCode)} disabled />
               ) : (
@@ -422,11 +484,14 @@ export default function AdminShipping() {
                   disabled={saving}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Choisir une wilaya" />
+                    <SelectValue
+                      placeholder={t("admin.reglages.livraison.champ_wilaya_placeholder")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {availableWilayas.map((w) => (
                       <SelectItem key={w.code} value={w.code}>
+                        {/* Code et nom fr : DONNÉES, pas dans le dictionnaire */}
                         {w.code} — {w.name_fr}
                       </SelectItem>
                     ))}
@@ -436,7 +501,7 @@ export default function AdminShipping() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Domicile (DA)</Label>
+                <Label>{t("admin.reglages.livraison.champ_domicile")}</Label>
                 <Input
                   type="number"
                   value={form.home}
@@ -445,7 +510,7 @@ export default function AdminShipping() {
                 />
               </div>
               <div>
-                <Label>Bureau (DA)</Label>
+                <Label>{t("admin.reglages.livraison.champ_bureau")}</Label>
                 <Input
                   type="number"
                   value={form.desk}
@@ -457,10 +522,14 @@ export default function AdminShipping() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-              Annuler
+              {t("admin.socle.confirmation.annuler")}
             </Button>
             <Button onClick={save} disabled={saving}>
-              {saving ? "Enregistrement…" : editing ? "Enregistrer" : "Créer"}
+              {saving
+                ? t("admin.reglages.livraison.btn_enregistrement")
+                : editing
+                  ? t("admin.socle.commun.enregistrer")
+                  : t("admin.reglages.livraison.btn_creer")}
             </Button>
           </DialogFooter>
         </DialogContent>
