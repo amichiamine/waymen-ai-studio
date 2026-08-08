@@ -1,22 +1,165 @@
 /**
  * Groupe « contenu » — dictionnaire ar (arabe).
  *
- * PROPRIÉTAIRE : l'agent de réplication chargé du groupe « contenu ». Aucun autre
- * agent n'écrit dans ce fichier ; en échange, cet agent n'écrit dans aucun
- * autre — c'est ce qui permet à cinq agents de travailler en parallèle sans
- * conflit de fusion.
- *
- * Écrans couverts : Content, BlogList, BlogNew, BlogEdit, BlogForm, Reviews, Messages, Subscribers. Attention aux trois « text-right » volontaires de Content.tsx — voir §7 de la convention.
- *
- * Seul préfixe autorisé ici : `admin.contenu.<page>.<cle>`.
- * Convention obligatoire (nommage, pluriels, RTL, qualité de l'arabe) :
- * `src/lib/i18n/admin/index.ts`. Vocabulaire partagé déjà traduit, à réutiliser
- * plutôt qu'à recopier : `admin.socle.commun.*`, `admin.socle.confirmation.*`,
- * `admin.socle.roles.*`.
- *
- * Les trois langues doivent porter EXACTEMENT les mêmes clés :
- * `bun run verifier-i18n` échoue sinon.
+ * PROPRIÉTAIRE : l'agent de réplication chargé du groupe « contenu ». Mêmes clés,
+ * exactement, que `contenu/fr.ts` : `bun run verifier-i18n` échoue à la moindre divergence.
+ * Convention complète : `src/lib/i18n/admin/index.ts`.
  */
-const contenuAr: Record<string, string> = {};
+const contenuAr: Record<string, string> = {
+  // ── BlogList ─────────────────────────────────────────────────────────────
+  "admin.contenu.blog.titre": "المدونة",
+  "admin.contenu.blog.description_un": "{n} مقالة · {publie} منشورة.",
+  "admin.contenu.blog.description_autre": "{n} مقالات · {publie} منشورة.",
+  "admin.contenu.blog.nouvel_article": "مقالة جديدة",
+  "admin.contenu.blog.recherche_placeholder": "البحث في المقالات…",
+  "admin.contenu.blog.statut_publie": "منشور",
+  "admin.contenu.blog.statut_brouillon": "مسودة",
+  "admin.contenu.blog.vide_aucun_article":
+    "لا توجد مقالات بعد. أنشئ مقالة أو أعد تهيئة البيانات لاستعادة المقالات الأولية.",
+  "admin.contenu.blog.vide_aucun_resultat": "لا توجد مقالات تطابق بحثك.",
+  "admin.contenu.blog.voir_article": "عرض",
+  "admin.contenu.blog.editer_article": "تعديل",
+  "admin.contenu.blog.supprimer_titre": "حذف « {titre} »؟",
+  "admin.contenu.blog.supprimer_titre_generique": "حذف هذه المقالة؟",
+  "admin.contenu.blog.supprimer_description": "لا يمكن التراجع عن هذه العملية.",
+  "admin.contenu.blog.garde_supprimer": "حذف المقالة",
+  "admin.contenu.blog.toast_supprime": "تم حذف المقالة",
+
+  // ── BlogForm ──────────────────────────────────────────────────────────────
+  "admin.contenu.blog.titre_edition": "تعديل المقالة",
+  "admin.contenu.blog.titre_nouveau": "مقالة جديدة",
+  "admin.contenu.blog.description_form": "تحرير ونشر مقالة في المدونة.",
+  "admin.contenu.blog.retour": "رجوع",
+  "admin.contenu.blog.article_introuvable": "المقالة غير موجودة",
+  "admin.contenu.blog.garde_creer": "إنشاء مقالة",
+  "admin.contenu.blog.garde_modifier": "تعديل المقالة",
+  "admin.contenu.blog.erreur_formulaire": "يرجى تصحيح أخطاء النموذج",
+  "admin.contenu.blog.toast_mis_a_jour": "تم تحديث المقالة",
+  "admin.contenu.blog.toast_cree": "تم إنشاء المقالة",
+  "admin.contenu.blog.traduction_manquante": "الترجمة مفقودة",
+  "admin.contenu.blog.facultatif": "(اختياري)",
+  "admin.contenu.blog.facultatif_ar": "(اختياري)",
+  "admin.contenu.blog.facultatif_en": "(optional)",
+  "admin.contenu.blog.section_contenu": "المحتوى",
+  "admin.contenu.blog.champ_titre": "العنوان",
+  "admin.contenu.blog.placeholder_titre": "عنوان المقالة",
+  "admin.contenu.blog.champ_extrait": "مقتطف",
+  "admin.contenu.blog.placeholder_extrait": "ملخص قصير",
+  "admin.contenu.blog.champ_corps": "المحتوى (Markdown)",
+  "admin.contenu.blog.champ_corps_en": "Body (Markdown)",
+  "admin.contenu.blog.champ_corps_ar": "المحتوى (Markdown)",
+  "admin.contenu.blog.placeholder_corps":
+    "محتوى المقالة. استخدم # عنوان، ## عنوان فرعي، **غامق**، قوائم 1. 2. 3.",
+  "admin.contenu.blog.section_publication": "النشر",
+  "admin.contenu.blog.champ_auteur": "المؤلف",
+  "admin.contenu.blog.placeholder_auteur": "اسم المؤلف",
+  "admin.contenu.blog.champ_etiquettes": "الوسوم (مفصولة بفواصل)",
+  "admin.contenu.blog.statut_actuel": "الحالة الحالية:",
+  "admin.contenu.blog.section_couverture": "صورة الغلاف",
+  "admin.contenu.blog.alt_apercu": "معاينة",
+  "admin.contenu.blog.aucune_image": "لا توجد صورة",
+  "admin.contenu.blog.enregistrer_brouillon": "حفظ كمسودة",
+  "admin.contenu.blog.publier": "نشر",
+  "admin.contenu.blog.doc_title_edition": "تعديل مقالة — KA Tech",
+  "admin.contenu.blog.doc_title_nouveau": "مقالة جديدة — KA Tech",
+  // Zod validation messages
+  "admin.contenu.blog.zod_titre_court": "العنوان (FR) قصير جداً",
+  "admin.contenu.blog.zod_slug_requis": "الرابط المختصر مطلوب",
+  "admin.contenu.blog.zod_slug_format": "الرابط المختصر: أحرف صغيرة، أرقام، شرطات",
+  "admin.contenu.blog.zod_extrait_court": "المقتطف (FR) قصير جداً",
+  "admin.contenu.blog.zod_corps_court": "المحتوى (FR) قصير جداً",
+  "admin.contenu.blog.zod_url_invalide": "رابط الصورة غير صالح",
+  "admin.contenu.blog.zod_auteur_requis": "المؤلف مطلوب",
+
+  // ── Content (contenu du site) ─────────────────────────────────────────────
+  "admin.contenu.contenu.titre": "محتوى الموقع",
+  "admin.contenu.contenu.description": "كل قسم في الصفحة الرئيسية قابل للتعديل هنا.",
+  "admin.contenu.contenu.toast_enregistre": "تم حفظ المحتوى",
+  "admin.contenu.contenu.toast_reinitialise": "تم إعادة تعيين القسم",
+  "admin.contenu.contenu.garde_enregistrer": "حفظ القسم",
+  "admin.contenu.contenu.garde_reinitialiser": "إعادة تعيين القسم",
+  "admin.contenu.contenu.btn_reinitialiser": "إعادة تعيين",
+  "admin.contenu.contenu.btn_enregistrer": "حفظ",
+  // Section labels (tabs)
+  "admin.contenu.contenu.section_header": "الرأس",
+  "admin.contenu.contenu.section_footer": "التذييل",
+  "admin.contenu.contenu.section_hero": "الواجهة الرئيسية",
+  "admin.contenu.contenu.section_flash_sale": "تخفيضات سريعة",
+  "admin.contenu.contenu.section_categories": "الفئات",
+  "admin.contenu.contenu.section_use_chips": "حسب الاستخدام",
+  "admin.contenu.contenu.section_best_sellers": "الأكثر مبيعاً",
+  "admin.contenu.contenu.section_featured_tabs": "تبويبات مميزة",
+  "admin.contenu.contenu.section_brands_marquee": "العلامات التجارية",
+  "admin.contenu.contenu.section_why_us": "لماذا نحن",
+  "admin.contenu.contenu.section_builder_teaser": "معاينة المُجمِّع",
+  "admin.contenu.contenu.section_reviews": "التقييمات (العناوين)",
+  "admin.contenu.contenu.section_contact_cta": "دعوة التواصل",
+  "admin.contenu.contenu.section_floating_wa": "واتساب عائم",
+  "admin.contenu.contenu.section_mobile_bar": "شريط الجوال",
+  // Field labels
+  "admin.contenu.contenu.champ_badge": "الشارة",
+  "admin.contenu.contenu.champ_titre_ligne1": "العنوان السطر 1",
+  "admin.contenu.contenu.champ_titre_ligne2": "العنوان السطر 2 (بارز)",
+  "admin.contenu.contenu.champ_sous_titre": "العنوان الفرعي",
+  "admin.contenu.contenu.champ_titre": "العنوان",
+  "admin.contenu.contenu.champ_kicker": "النص التمهيدي",
+  "admin.contenu.contenu.champ_libelle": "التسمية",
+  "admin.contenu.contenu.champ_lien": "الرابط",
+  "admin.contenu.contenu.champ_icone": "الأيقونة",
+  "admin.contenu.contenu.champ_valeur": "القيمة",
+  "admin.contenu.contenu.champ_description": "الوصف",
+  "admin.contenu.contenu.champ_categorie": "الفئة",
+  "admin.contenu.contenu.champ_auteur": "المؤلف (إمكانية الوصول)",
+  "admin.contenu.contenu.hero_afficher_image": "عرض صورة الواجهة",
+  "admin.contenu.contenu.hero_kpis": "مؤشرات الأداء",
+  "admin.contenu.contenu.hero_cta_principal_label": "زر الدعوة الرئيسي — التسمية",
+  "admin.contenu.contenu.hero_cta_principal_lien": "زر الدعوة الرئيسي — الرابط",
+  "admin.contenu.contenu.hero_cta_secondaire_label": "زر الدعوة الثانوي — التسمية",
+  "admin.contenu.contenu.hero_cta_secondaire_lien": "زر الدعوة الثانوي — الرابط",
+  "admin.contenu.contenu.header_recherche_placeholder": "نص تلميح حقل البحث",
+  "admin.contenu.contenu.header_afficher_recherche": "عرض شريط البحث",
+  "admin.contenu.contenu.header_btn_principal_label": "الزر الرئيسي — التسمية",
+  "admin.contenu.contenu.header_btn_principal_lien": "الزر الرئيسي — الرابط",
+  "admin.contenu.contenu.header_menu_categories": "قائمة «الفئات»",
+  "admin.contenu.contenu.header_menu_label": "تسمية القائمة",
+  "admin.contenu.contenu.header_menu_titre": "العنوان داخل القائمة",
+  "admin.contenu.contenu.header_menu_voir_toutes_label": "تسمية «عرض الكل»",
+  "admin.contenu.contenu.header_menu_voir_toutes_lien": "رابط «عرض الكل»",
+  "admin.contenu.contenu.header_entrees_menu": "عناصر قائمة الفئات",
+  "admin.contenu.contenu.header_accent": "بارز",
+  "admin.contenu.contenu.header_nav_principaux": "روابط التنقل الرئيسية",
+  "admin.contenu.contenu.footer_baseline": "الشعار التوضيحي (أسفل الشعار)",
+  "admin.contenu.contenu.footer_copyright": "حقوق النشر",
+  "admin.contenu.contenu.footer_made_in": "إشارة «صُنع في…»",
+  "admin.contenu.contenu.footer_reseaux": "الشبكات الاجتماعية",
+  "admin.contenu.contenu.footer_libelle_a11y": "التسمية (إمكانية الوصول)",
+  "admin.contenu.contenu.footer_colonnes": "أعمدة الروابط",
+  "admin.contenu.contenu.footer_titre_colonne": "عنوان العمود",
+  "admin.contenu.contenu.footer_ajouter_colonne": "إضافة عمود",
+  "admin.contenu.contenu.flash_voir_tout_label": "تسمية «عرض الكل»",
+  "admin.contenu.contenu.flash_voir_tout_lien": "رابط «عرض الكل»",
+  "admin.contenu.contenu.flash_countdown": "مدة العد التنازلي (ساعات)",
+  "admin.contenu.contenu.categories_note": "تُدار تسميات وصور البطاقات الأربع من قسم الفئات.",
+  "admin.contenu.contenu.categories_parcourir": "تسمية «تصفح»",
+  "admin.contenu.contenu.categories_ref": "الفئات",
+  "admin.contenu.contenu.featured_onglets": "التبويبات",
+  "admin.contenu.contenu.why_us_arguments": "الحجج",
+  "admin.contenu.contenu.builder_cartes": "بطاقات المكونات",
+  "admin.contenu.contenu.builder_cta_label": "زر الدعوة — التسمية",
+  "admin.contenu.contenu.builder_cta_lien": "زر الدعوة — الرابط",
+  "admin.contenu.contenu.contact_wa_label": "تسمية واتساب",
+  "admin.contenu.contenu.contact_wa_note": "رقم واتساب مُعدَّل في الإعدادات.",
+  "admin.contenu.contenu.contact_parametres": "الإعدادات",
+  "admin.contenu.contenu.wa_afficher": "عرض زر واتساب العائم",
+  "admin.contenu.contenu.wa_note": "يظهر فقط إذا تم إدخال رقم في الإعدادات.",
+  "admin.contenu.contenu.wa_aria_label": "تسمية إمكانية الوصول",
+  "admin.contenu.contenu.mobile_items": "العناصر (يُنصح بـ 3 إلى 5)",
+  "admin.contenu.contenu.mobile_primaire": "رئيسي",
+  "admin.contenu.contenu.mobile_auth": "مصادقة",
+  "admin.contenu.contenu.btn_ajouter": "إضافة",
+  "admin.contenu.contenu.btn_ajouter_lien": "رابط",
+  "admin.contenu.contenu.aria_supprimer": "حذف",
+  "admin.contenu.contenu.aria_supprimer_colonne": "حذف العمود",
+};
 
 export default contenuAr;

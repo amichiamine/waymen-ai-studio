@@ -15,11 +15,12 @@ import { useBlogPostDetail, useBlogPostMutations, toApiError } from "@/data-prov
 import type { BlogPost } from "@/api/types";
 import { usePermissions } from "@/lib/admin-auth";
 import type { Localized } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type Mode = "new" | "edit";
 
-// ---- Localisation helpers (copied from the Content.tsx pilot) ----
+// ---- Localisation helpers ----
 
 type LangCode = "fr" | "en" | "ar";
 const LANGS: LangCode[] = ["fr", "en", "ar"];
@@ -41,30 +42,6 @@ function toMap(v: Localized<string> | undefined): Record<LangCode, string> {
 function isMissing(map: Record<LangCode, string>, lang: LangCode): boolean {
   return lang !== "fr" && map[lang].trim() === "";
 }
-
-// ---- Zod schema — only FR variants are required ----
-
-const schema = z.object({
-  titleFr: z.string().trim().min(3, "Titre (FR) trop court").max(200),
-  titleEn: z.string().trim().max(200).optional(),
-  titleAr: z.string().trim().max(200).optional(),
-  slug: z
-    .string()
-    .trim()
-    .min(2, "Slug requis")
-    .max(120)
-    .regex(/^[a-z0-9-]+$/, "Slug: minuscules, chiffres, tirets"),
-  excerptFr: z.string().trim().min(10, "Extrait (FR) trop court").max(400),
-  excerptEn: z.string().trim().max(400).optional(),
-  excerptAr: z.string().trim().max(400).optional(),
-  contentFr: z.string().trim().min(20, "Contenu (FR) trop court"),
-  contentEn: z.string().trim().optional(),
-  contentAr: z.string().trim().optional(),
-  cover: z.string().trim().url("URL image invalide").max(500).or(z.literal("")),
-  author: z.string().trim().min(2, "Auteur requis").max(120),
-  tagsRaw: z.string().max(300),
-  status: z.enum(["draft", "published"]),
-});
 
 // ---- Slug helper ----
 
@@ -168,7 +145,10 @@ function LLocalizedInput({
   onChangeEn,
   onChangeAr,
   placeholderFr,
+  placeholderEn,
+  placeholderAr,
   errorFr,
+  missingLabel,
   disabled,
 }: {
   labelFr: string;
@@ -181,7 +161,10 @@ function LLocalizedInput({
   onChangeEn: (v: string) => void;
   onChangeAr: (v: string) => void;
   placeholderFr?: string;
+  placeholderEn?: string;
+  placeholderAr?: string;
   errorFr?: string;
+  missingLabel: string;
   disabled?: boolean;
 }) {
   const map: Record<LangCode, string> = { fr: valueFr, en: valueEn, ar: valueAr };
@@ -195,7 +178,7 @@ function LLocalizedInput({
             {isMissing(map, l) && (
               <span
                 className="absolute end-0.5 top-0.5 size-1.5 rounded-full bg-amber-400"
-                aria-label="traduction manquante"
+                aria-label={missingLabel}
               />
             )}
           </TabsTrigger>
@@ -217,7 +200,7 @@ function LLocalizedInput({
         <Label>{labelEn ?? labelFr}</Label>
         <Input
           value={valueEn}
-          placeholder="(facultatif)"
+          placeholder={placeholderEn}
           disabled={disabled}
           onChange={(e) => onChangeEn(e.target.value)}
         />
@@ -229,7 +212,7 @@ function LLocalizedInput({
           dir="rtl"
           className="text-start"
           value={valueAr}
-          placeholder="(اختياري)"
+          placeholder={placeholderAr}
           disabled={disabled}
           onChange={(e) => onChangeAr(e.target.value)}
         />
@@ -253,9 +236,12 @@ function LLocalizedTextarea({
   onChangeEn,
   onChangeAr,
   placeholderFr,
+  placeholderEn,
+  placeholderAr,
   rowsFr,
   rowsOther,
   errorFr,
+  missingLabel,
   disabled,
 }: {
   labelFr: string;
@@ -268,9 +254,12 @@ function LLocalizedTextarea({
   onChangeEn: (v: string) => void;
   onChangeAr: (v: string) => void;
   placeholderFr?: string;
+  placeholderEn?: string;
+  placeholderAr?: string;
   rowsFr?: number;
   rowsOther?: number;
   errorFr?: string;
+  missingLabel: string;
   disabled?: boolean;
 }) {
   const map: Record<LangCode, string> = { fr: valueFr, en: valueEn, ar: valueAr };
@@ -284,7 +273,7 @@ function LLocalizedTextarea({
             {isMissing(map, l) && (
               <span
                 className="absolute end-0.5 top-0.5 size-1.5 rounded-full bg-amber-400"
-                aria-label="traduction manquante"
+                aria-label={missingLabel}
               />
             )}
           </TabsTrigger>
@@ -308,7 +297,7 @@ function LLocalizedTextarea({
         <Textarea
           rows={rowsOther ?? 4}
           value={valueEn}
-          placeholder="(optional)"
+          placeholder={placeholderEn}
           disabled={disabled}
           onChange={(e) => onChangeEn(e.target.value)}
         />
@@ -321,7 +310,7 @@ function LLocalizedTextarea({
           className={cn("text-start")}
           rows={rowsOther ?? 4}
           value={valueAr}
-          placeholder="(اختياري)"
+          placeholder={placeholderAr}
           disabled={disabled}
           onChange={(e) => onChangeAr(e.target.value)}
         />
@@ -335,6 +324,7 @@ function LLocalizedTextarea({
 export function BlogFormPage({ mode }: { mode: Mode }) {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
+  const { t } = useI18n();
 
   // Niveau 1, 2, 3 — toute la garde vit ici, dans le composant qui contient
   // les handlers de mutation. BlogNew et BlogEdit sont de simples enveloppes.
@@ -349,6 +339,34 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   // update pour une édition (y compris passage brouillon → publié).
   const permission = mode === "new" ? "create" : "update";
 
+  // Schéma Zod avec messages traduits — construit après l'appel aux hooks.
+  const schema = z.object({
+    titleFr: z.string().trim().min(3, t("admin.contenu.blog.zod_titre_court")).max(200),
+    titleEn: z.string().trim().max(200).optional(),
+    titleAr: z.string().trim().max(200).optional(),
+    slug: z
+      .string()
+      .trim()
+      .min(2, t("admin.contenu.blog.zod_slug_requis"))
+      .max(120)
+      .regex(/^[a-z0-9-]+$/, t("admin.contenu.blog.zod_slug_format")),
+    excerptFr: z.string().trim().min(10, t("admin.contenu.blog.zod_extrait_court")).max(400),
+    excerptEn: z.string().trim().max(400).optional(),
+    excerptAr: z.string().trim().max(400).optional(),
+    contentFr: z.string().trim().min(20, t("admin.contenu.blog.zod_corps_court")),
+    contentEn: z.string().trim().optional(),
+    contentAr: z.string().trim().optional(),
+    cover: z
+      .string()
+      .trim()
+      .url(t("admin.contenu.blog.zod_url_invalide"))
+      .max(500)
+      .or(z.literal("")),
+    author: z.string().trim().min(2, t("admin.contenu.blog.zod_auteur_requis")).max(120),
+    tagsRaw: z.string().max(300),
+    status: z.enum(["draft", "published"]),
+  });
+
   const [form, setForm] = useState<FormValues>(() => (existing ? toForm(existing) : emptyForm()));
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [touchedSlug, setTouchedSlug] = useState(mode === "edit");
@@ -362,16 +380,19 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   }, [existing]);
 
   useEffect(() => {
-    document.title = mode === "edit" ? `Édition article — KA Tech` : `Nouvel article — KA Tech`;
-  }, [mode]);
+    document.title =
+      mode === "edit"
+        ? t("admin.contenu.blog.doc_title_edition")
+        : t("admin.contenu.blog.doc_title_nouveau");
+  }, [mode, t]);
 
   // Garde d'article introuvable — rendu anticipé après tous les hooks (§6 piège).
   if (mode === "edit" && id && !existing) {
     return (
-      <AdminPageShell title="Article introuvable">
+      <AdminPageShell title={t("admin.contenu.blog.article_introuvable")}>
         <Link to="/admin/blog">
           <Button variant="outline">
-            <ArrowLeft className="me-2 h-4 w-4" /> Retour
+            <ArrowLeft className="me-2 h-4 w-4" /> {t("admin.contenu.blog.retour")}
           </Button>
         </Link>
       </AdminPageShell>
@@ -390,7 +411,15 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
 
   async function onSubmit(nextStatus?: "draft" | "published") {
     // Niveau 2 — vérification dans l'action, pas seulement dans le rendu.
-    if (!guard(permission, mode === "new" ? "Créer l'article" : "Modifier l'article")) return;
+    if (
+      !guard(
+        permission,
+        mode === "new"
+          ? t("admin.contenu.blog.garde_creer")
+          : t("admin.contenu.blog.garde_modifier"),
+      )
+    )
+      return;
     const candidate = { ...form, status: nextStatus ?? form.status };
     const parsed = schema.safeParse(candidate);
     if (!parsed.success) {
@@ -400,13 +429,13 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
         if (!map[k]) map[k] = issue.message;
       }
       setErrors(map);
-      toast.error("Corrigez les erreurs du formulaire");
+      toast.error(t("admin.contenu.blog.erreur_formulaire"));
       return;
     }
 
     const tags = parsed.data.tagsRaw
       .split(",")
-      .map((t) => t.trim())
+      .map((tag) => tag.trim())
       .filter(Boolean);
     const now = new Date().toISOString();
 
@@ -442,10 +471,10 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
     try {
       if (mode === "edit" && existing) {
         await update(existing.id, post);
-        toast.success("Article mis à jour");
+        toast.success(t("admin.contenu.blog.toast_mis_a_jour"));
       } else {
         await create(post);
-        toast.success("Article créé");
+        toast.success(t("admin.contenu.blog.toast_cree"));
       }
       nav("/admin/blog");
     } catch (cause) {
@@ -457,15 +486,23 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
   }
 
   const saveDisabled = !can(permission) || saving;
+  const missingLabel = t("admin.contenu.blog.traduction_manquante");
+  const facultatifFr = t("admin.contenu.blog.facultatif");
+  const facultatifEn = t("admin.contenu.blog.facultatif_en");
+  const facultatifAr = t("admin.contenu.blog.facultatif_ar");
 
   return (
     <AdminPageShell
-      title={mode === "edit" ? "Éditer l'article" : "Nouvel article"}
-      description="Rédiger et publier un article de blog."
+      title={
+        mode === "edit"
+          ? t("admin.contenu.blog.titre_edition")
+          : t("admin.contenu.blog.titre_nouveau")
+      }
+      description={t("admin.contenu.blog.description_form")}
       actions={
         <Link to="/admin/blog">
           <Button variant="outline">
-            <ArrowLeft className="me-2 h-4 w-4" /> Retour
+            <ArrowLeft className="me-2 h-4 w-4" /> {t("admin.contenu.blog.retour")}
           </Button>
         </Link>
       }
@@ -473,54 +510,63 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <Card>
           <CardHeader>
-            <CardTitle>Contenu</CardTitle>
+            <CardTitle>{t("admin.contenu.blog.section_contenu")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Titre — champ court, trois langues */}
             <LLocalizedInput
-              labelFr="Titre"
+              labelFr={t("admin.contenu.blog.champ_titre")}
               valueFr={form.titleFr}
               valueEn={form.titleEn}
               valueAr={form.titleAr}
               onChangeFr={(v) => updateField("titleFr", v)}
               onChangeEn={(v) => updateField("titleEn", v)}
               onChangeAr={(v) => updateField("titleAr", v)}
-              placeholderFr="Titre de l'article"
+              placeholderFr={t("admin.contenu.blog.placeholder_titre")}
+              placeholderEn={facultatifEn}
+              placeholderAr={facultatifAr}
               errorFr={errors.titleFr}
+              missingLabel={missingLabel}
               disabled={saveDisabled}
             />
 
             {/* Extrait — champ court, trois langues */}
             <LLocalizedTextarea
-              labelFr="Extrait"
+              labelFr={t("admin.contenu.blog.champ_extrait")}
               valueFr={form.excerptFr}
               valueEn={form.excerptEn}
               valueAr={form.excerptAr}
               onChangeFr={(v) => updateField("excerptFr", v)}
               onChangeEn={(v) => updateField("excerptEn", v)}
               onChangeAr={(v) => updateField("excerptAr", v)}
-              placeholderFr="Court résumé"
+              placeholderFr={t("admin.contenu.blog.placeholder_extrait")}
+              placeholderEn={facultatifEn}
+              placeholderAr={facultatifAr}
               rowsFr={3}
               rowsOther={3}
               errorFr={errors.excerptFr}
+              missingLabel={missingLabel}
               disabled={saveDisabled}
             />
 
             {/* Corps — champ long Markdown, trois langues */}
             <LLocalizedTextarea
-              labelFr="Corps (Markdown)"
-              labelEn="Body (Markdown)"
-              labelAr="المحتوى (Markdown)"
+              labelFr={t("admin.contenu.blog.champ_corps")}
+              labelEn={t("admin.contenu.blog.champ_corps_en")}
+              labelAr={t("admin.contenu.blog.champ_corps_ar")}
               valueFr={form.contentFr}
               valueEn={form.contentEn}
               valueAr={form.contentAr}
               onChangeFr={(v) => updateField("contentFr", v)}
               onChangeEn={(v) => updateField("contentEn", v)}
               onChangeAr={(v) => updateField("contentAr", v)}
-              placeholderFr="Contenu de l'article. Utilisez # Titre, ## Sous-titre, **gras**, listes 1. 2. 3."
+              placeholderFr={t("admin.contenu.blog.placeholder_corps")}
+              placeholderEn={facultatifEn}
+              placeholderAr={facultatifAr}
               rowsFr={16}
               rowsOther={16}
               errorFr={errors.contentFr}
+              missingLabel={missingLabel}
               disabled={saveDisabled}
             />
           </CardContent>
@@ -529,7 +575,7 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Publication</CardTitle>
+              <CardTitle>{t("admin.contenu.blog.section_publication")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {/* Slug — URL technique, jamais traduit */}
@@ -544,15 +590,15 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                   disabled={saveDisabled}
                 />
               </FieldRow>
-              <FieldRow label="Auteur" error={errors.author}>
+              <FieldRow label={t("admin.contenu.blog.champ_auteur")} error={errors.author}>
                 <Input
                   value={form.author}
                   onChange={(e) => updateField("author", e.target.value)}
-                  placeholder="Nom de l'auteur"
+                  placeholder={t("admin.contenu.blog.placeholder_auteur")}
                   disabled={saveDisabled}
                 />
               </FieldRow>
-              <FieldRow label="Étiquettes (séparées par des virgules)" error={errors.tagsRaw}>
+              <FieldRow label={t("admin.contenu.blog.champ_etiquettes")} error={errors.tagsRaw}>
                 <Input
                   value={form.tagsRaw}
                   onChange={(e) => updateField("tagsRaw", e.target.value)}
@@ -561,15 +607,19 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
                 />
               </FieldRow>
               <div className="pt-2 text-xs text-muted-foreground">
-                Statut actuel :{" "}
-                <strong>{form.status === "published" ? "Publié" : "Brouillon"}</strong>
+                {t("admin.contenu.blog.statut_actuel")}{" "}
+                <strong>
+                  {form.status === "published"
+                    ? t("admin.contenu.blog.statut_publie")
+                    : t("admin.contenu.blog.statut_brouillon")}
+                </strong>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Image de couverture</CardTitle>
+              <CardTitle>{t("admin.contenu.blog.section_couverture")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Input
@@ -582,12 +632,12 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
               {form.cover ? (
                 <ImageCatalogue
                   src={form.cover}
-                  alt="Aperçu"
+                  alt={t("admin.contenu.blog.alt_apercu")}
                   className="mt-2 aspect-[16/9] w-full rounded-md border object-cover"
                 />
               ) : (
                 <div className="flex h-28 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
-                  Aucune image
+                  {t("admin.contenu.blog.aucune_image")}
                 </div>
               )}
             </CardContent>
@@ -599,12 +649,12 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
       <div className="flex flex-wrap justify-end gap-2">
         <span title={denyReason(permission)} className="inline-flex">
           <Button variant="outline" disabled={saveDisabled} onClick={() => onSubmit("draft")}>
-            <Save className="me-2 h-4 w-4" /> Enregistrer en brouillon
+            <Save className="me-2 h-4 w-4" /> {t("admin.contenu.blog.enregistrer_brouillon")}
           </Button>
         </span>
         <span title={denyReason(permission)} className="inline-flex">
           <Button disabled={saveDisabled} onClick={() => onSubmit("published")}>
-            <Save className="me-2 h-4 w-4" /> Publier
+            <Save className="me-2 h-4 w-4" /> {t("admin.contenu.blog.publier")}
           </Button>
         </span>
       </div>

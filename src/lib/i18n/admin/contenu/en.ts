@@ -1,22 +1,166 @@
 /**
  * Groupe « contenu » — dictionnaire en (anglais).
  *
- * PROPRIÉTAIRE : l'agent de réplication chargé du groupe « contenu ». Aucun autre
- * agent n'écrit dans ce fichier ; en échange, cet agent n'écrit dans aucun
- * autre — c'est ce qui permet à cinq agents de travailler en parallèle sans
- * conflit de fusion.
- *
- * Écrans couverts : Content, BlogList, BlogNew, BlogEdit, BlogForm, Reviews, Messages, Subscribers. Attention aux trois « text-right » volontaires de Content.tsx — voir §7 de la convention.
- *
- * Seul préfixe autorisé ici : `admin.contenu.<page>.<cle>`.
- * Convention obligatoire (nommage, pluriels, RTL, qualité de l'arabe) :
- * `src/lib/i18n/admin/index.ts`. Vocabulaire partagé déjà traduit, à réutiliser
- * plutôt qu'à recopier : `admin.socle.commun.*`, `admin.socle.confirmation.*`,
- * `admin.socle.roles.*`.
- *
- * Les trois langues doivent porter EXACTEMENT les mêmes clés :
- * `bun run verifier-i18n` échoue sinon.
+ * PROPRIÉTAIRE : l'agent de réplication chargé du groupe « contenu ». Mêmes clés,
+ * exactement, que `contenu/fr.ts` : `bun run verifier-i18n` échoue à la moindre divergence.
+ * Convention complète : `src/lib/i18n/admin/index.ts`.
  */
-const contenuEn: Record<string, string> = {};
+const contenuEn: Record<string, string> = {
+  // ── BlogList ─────────────────────────────────────────────────────────────
+  "admin.contenu.blog.titre": "Blog",
+  "admin.contenu.blog.description_un": "{n} post · {publie} published.",
+  "admin.contenu.blog.description_autre": "{n} posts · {publie} published.",
+  "admin.contenu.blog.nouvel_article": "New post",
+  "admin.contenu.blog.recherche_placeholder": "Search posts…",
+  "admin.contenu.blog.statut_publie": "Published",
+  "admin.contenu.blog.statut_brouillon": "Draft",
+  "admin.contenu.blog.vide_aucun_article":
+    "No posts yet. Create one or reset the data to restore seed posts.",
+  "admin.contenu.blog.vide_aucun_resultat": "No posts match your search.",
+  "admin.contenu.blog.voir_article": "View",
+  "admin.contenu.blog.editer_article": "Edit",
+  "admin.contenu.blog.supprimer_titre": "Delete « {titre} »?",
+  "admin.contenu.blog.supprimer_titre_generique": "Delete this post?",
+  "admin.contenu.blog.supprimer_description": "This action cannot be undone.",
+  "admin.contenu.blog.garde_supprimer": "Delete the post",
+  "admin.contenu.blog.toast_supprime": "Post deleted",
+
+  // ── BlogForm ──────────────────────────────────────────────────────────────
+  "admin.contenu.blog.titre_edition": "Edit post",
+  "admin.contenu.blog.titre_nouveau": "New post",
+  "admin.contenu.blog.description_form": "Write and publish a blog post.",
+  "admin.contenu.blog.retour": "Back",
+  "admin.contenu.blog.article_introuvable": "Post not found",
+  "admin.contenu.blog.garde_creer": "Create post",
+  "admin.contenu.blog.garde_modifier": "Edit post",
+  "admin.contenu.blog.erreur_formulaire": "Please fix the form errors",
+  "admin.contenu.blog.toast_mis_a_jour": "Post updated",
+  "admin.contenu.blog.toast_cree": "Post created",
+  "admin.contenu.blog.traduction_manquante": "translation missing",
+  "admin.contenu.blog.facultatif": "(optional)",
+  "admin.contenu.blog.facultatif_ar": "(اختياري)",
+  "admin.contenu.blog.facultatif_en": "(optional)",
+  "admin.contenu.blog.section_contenu": "Content",
+  "admin.contenu.blog.champ_titre": "Title",
+  "admin.contenu.blog.placeholder_titre": "Post title",
+  "admin.contenu.blog.champ_extrait": "Excerpt",
+  "admin.contenu.blog.placeholder_extrait": "Short summary",
+  "admin.contenu.blog.champ_corps": "Body (Markdown)",
+  "admin.contenu.blog.champ_corps_en": "Body (Markdown)",
+  "admin.contenu.blog.champ_corps_ar": "المحتوى (Markdown)",
+  "admin.contenu.blog.placeholder_corps":
+    "Post content. Use # Title, ## Subtitle, **bold**, lists 1. 2. 3.",
+  "admin.contenu.blog.section_publication": "Publishing",
+  "admin.contenu.blog.champ_auteur": "Author",
+  "admin.contenu.blog.placeholder_auteur": "Author name",
+  "admin.contenu.blog.champ_etiquettes": "Tags (comma-separated)",
+  "admin.contenu.blog.statut_actuel": "Current status:",
+  "admin.contenu.blog.section_couverture": "Cover image",
+  "admin.contenu.blog.alt_apercu": "Preview",
+  "admin.contenu.blog.aucune_image": "No image",
+  "admin.contenu.blog.enregistrer_brouillon": "Save as draft",
+  "admin.contenu.blog.publier": "Publish",
+  "admin.contenu.blog.doc_title_edition": "Edit post — KA Tech",
+  "admin.contenu.blog.doc_title_nouveau": "New post — KA Tech",
+  // Zod validation messages
+  "admin.contenu.blog.zod_titre_court": "Title (FR) too short",
+  "admin.contenu.blog.zod_slug_requis": "Slug required",
+  "admin.contenu.blog.zod_slug_format": "Slug: lowercase, digits, hyphens",
+  "admin.contenu.blog.zod_extrait_court": "Excerpt (FR) too short",
+  "admin.contenu.blog.zod_corps_court": "Content (FR) too short",
+  "admin.contenu.blog.zod_url_invalide": "Invalid image URL",
+  "admin.contenu.blog.zod_auteur_requis": "Author required",
+
+  // ── Content (contenu du site) ─────────────────────────────────────────────
+  "admin.contenu.contenu.titre": "Site content",
+  "admin.contenu.contenu.description": "Each block on the home page is editable here.",
+  "admin.contenu.contenu.toast_enregistre": "Content saved",
+  "admin.contenu.contenu.toast_reinitialise": "Section reset",
+  "admin.contenu.contenu.garde_enregistrer": "Save section",
+  "admin.contenu.contenu.garde_reinitialiser": "Reset section",
+  "admin.contenu.contenu.btn_reinitialiser": "Reset",
+  "admin.contenu.contenu.btn_enregistrer": "Save",
+  // Section labels (tabs)
+  "admin.contenu.contenu.section_header": "Header",
+  "admin.contenu.contenu.section_footer": "Footer",
+  "admin.contenu.contenu.section_hero": "Hero",
+  "admin.contenu.contenu.section_flash_sale": "Flash sale",
+  "admin.contenu.contenu.section_categories": "Categories",
+  "admin.contenu.contenu.section_use_chips": "By use",
+  "admin.contenu.contenu.section_best_sellers": "Best sellers",
+  "admin.contenu.contenu.section_featured_tabs": "Featured tabs",
+  "admin.contenu.contenu.section_brands_marquee": "Brands",
+  "admin.contenu.contenu.section_why_us": "Why us",
+  "admin.contenu.contenu.section_builder_teaser": "Builder teaser",
+  "admin.contenu.contenu.section_reviews": "Reviews (headings)",
+  "admin.contenu.contenu.section_contact_cta": "Contact CTA",
+  "admin.contenu.contenu.section_floating_wa": "Floating WhatsApp",
+  "admin.contenu.contenu.section_mobile_bar": "Mobile bar",
+  // Field labels
+  "admin.contenu.contenu.champ_badge": "Badge",
+  "admin.contenu.contenu.champ_titre_ligne1": "Title line 1",
+  "admin.contenu.contenu.champ_titre_ligne2": "Title line 2 (accent)",
+  "admin.contenu.contenu.champ_sous_titre": "Subtitle",
+  "admin.contenu.contenu.champ_titre": "Title",
+  "admin.contenu.contenu.champ_kicker": "Kicker",
+  "admin.contenu.contenu.champ_libelle": "Label",
+  "admin.contenu.contenu.champ_lien": "Link",
+  "admin.contenu.contenu.champ_icone": "Icon",
+  "admin.contenu.contenu.champ_valeur": "Value",
+  "admin.contenu.contenu.champ_description": "Description",
+  "admin.contenu.contenu.champ_categorie": "Category",
+  "admin.contenu.contenu.champ_auteur": "Author (a11y)",
+  "admin.contenu.contenu.hero_afficher_image": "Show hero image",
+  "admin.contenu.contenu.hero_kpis": "KPI indicators",
+  "admin.contenu.contenu.hero_cta_principal_label": "Primary CTA — label",
+  "admin.contenu.contenu.hero_cta_principal_lien": "Primary CTA — link",
+  "admin.contenu.contenu.hero_cta_secondaire_label": "Secondary CTA — label",
+  "admin.contenu.contenu.hero_cta_secondaire_lien": "Secondary CTA — link",
+  "admin.contenu.contenu.header_recherche_placeholder": "Search field placeholder",
+  "admin.contenu.contenu.header_afficher_recherche": "Show search bar",
+  "admin.contenu.contenu.header_btn_principal_label": "Primary button — label",
+  "admin.contenu.contenu.header_btn_principal_lien": "Primary button — link",
+  "admin.contenu.contenu.header_menu_categories": '"Categories" menu',
+  "admin.contenu.contenu.header_menu_label": "Menu label",
+  "admin.contenu.contenu.header_menu_titre": "Title inside the menu",
+  "admin.contenu.contenu.header_menu_voir_toutes_label": '"View all" label',
+  "admin.contenu.contenu.header_menu_voir_toutes_lien": '"View all" link',
+  "admin.contenu.contenu.header_entrees_menu": "Category menu entries",
+  "admin.contenu.contenu.header_accent": "Accent",
+  "admin.contenu.contenu.header_nav_principaux": "Primary navigation links",
+  "admin.contenu.contenu.footer_baseline": "Baseline (below logo)",
+  "admin.contenu.contenu.footer_copyright": "Copyright",
+  "admin.contenu.contenu.footer_made_in": '"Made in…" mention',
+  "admin.contenu.contenu.footer_reseaux": "Social networks",
+  "admin.contenu.contenu.footer_libelle_a11y": "Label (a11y)",
+  "admin.contenu.contenu.footer_colonnes": "Link columns",
+  "admin.contenu.contenu.footer_titre_colonne": "Column title",
+  "admin.contenu.contenu.footer_ajouter_colonne": "Add column",
+  "admin.contenu.contenu.flash_voir_tout_label": '"View all" label',
+  "admin.contenu.contenu.flash_voir_tout_lien": '"View all" link',
+  "admin.contenu.contenu.flash_countdown": "Countdown duration (hours)",
+  "admin.contenu.contenu.categories_note":
+    "Labels and images of the 4 cards are managed in Categories.",
+  "admin.contenu.contenu.categories_parcourir": '"Browse" label',
+  "admin.contenu.contenu.categories_ref": "Categories",
+  "admin.contenu.contenu.featured_onglets": "Tabs",
+  "admin.contenu.contenu.why_us_arguments": "Arguments",
+  "admin.contenu.contenu.builder_cartes": "Component cards",
+  "admin.contenu.contenu.builder_cta_label": "CTA — label",
+  "admin.contenu.contenu.builder_cta_lien": "CTA — link",
+  "admin.contenu.contenu.contact_wa_label": "WhatsApp label",
+  "admin.contenu.contenu.contact_wa_note": "The WhatsApp number is configured in Settings.",
+  "admin.contenu.contenu.contact_parametres": "Settings",
+  "admin.contenu.contenu.wa_afficher": "Show floating WhatsApp button",
+  "admin.contenu.contenu.wa_note": "Visible only if a number is configured in Settings.",
+  "admin.contenu.contenu.wa_aria_label": "Accessibility label",
+  "admin.contenu.contenu.mobile_items": "Items (3 to 5 recommended)",
+  "admin.contenu.contenu.mobile_primaire": "Primary",
+  "admin.contenu.contenu.mobile_auth": "Auth",
+  "admin.contenu.contenu.btn_ajouter": "Add",
+  "admin.contenu.contenu.btn_ajouter_lien": "Link",
+  "admin.contenu.contenu.aria_supprimer": "Delete",
+  "admin.contenu.contenu.aria_supprimer_colonne": "Delete column",
+};
 
 export default contenuEn;
