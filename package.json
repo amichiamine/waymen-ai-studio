@@ -11,6 +11,8 @@
     "parcours": "node scripts/parcours.mjs",
     "prebuild": "bunx tsx scripts/generate-sitemap.ts",
     "build": "vite build",
+    "postbuild": "bunx tsx scripts/prerendu.ts",
+    "prerendu": "bunx tsx scripts/prerendu.ts",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

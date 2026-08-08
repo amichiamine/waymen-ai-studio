@@ -81,6 +81,44 @@ DirectoryIndex index.php index.html
   # le servir, quelle que soit la configuration des handlers.
   RewriteRule ^uploads/.*\.(php|phtml|phps|php[0-9]|phar|pl|py|cgi|sh|jsp|asp|htaccess)$ - [F,L]
 
+  # --- Pages prérendues -----------------------------------------------
+  # `scripts/prerendu.ts` écrit au build le HTML rendu de chaque URL du
+  # sitemap dans `<route>/index.html`. Sans les deux règles ci-dessous, ces
+  # fichiers ne seraient JAMAIS servis à l'URL du sitemap : la règle
+  # « dossiers réels » juste en dessous rendrait la main à mod_dir, qui
+  # redirigerait en 301 vers la forme avec barre finale.
+  #
+  # POURQUOI CE N'EST PAS ACCEPTABLE. Une page prérendue est servie par
+  # Apache SANS passer par index.php : personne n'y insère la balise <base>,
+  # c'est donc le prérendu qui l'écrit, avec une valeur RELATIVE déduite de la
+  # profondeur de la route (« ../ » pour /product/xyz). Cette valeur n'est
+  # juste que pour UNE forme d'URL — celle du sitemap, sans barre finale.
+  # Laisser le serveur choisir la forme, c'est confier la résolution des
+  # scripts de la page à un réglage d'hébergeur (DirectorySlash) que
+  # src/main.tsx a déjà de bonnes raisons de ne pas croire.
+  #
+  # Ces deux règles sont donc placées AVANT la règle « fichiers et dossiers
+  # réels » : sinon /product/xyz, qui EST un dossier depuis le prérendu,
+  # s'arrêterait là et repartirait en redirection. L'ordre porte la
+  # correction, pas la condition.
+  #
+  # a) une seule forme d'URL, sans barre finale, identique au sitemap.
+  #    Conditionnée à la présence d'un index.html : les autres dossiers
+  #    (uploads/, media/) gardent exactement le comportement d'avant, et
+  #    aucune boucle de redirection n'est possible avec mod_dir.
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteCond %{REQUEST_FILENAME}/index.html -f
+  RewriteRule ^(.+?)/$ $1 [R=301,L]
+
+  # b) service SANS redirection de la page prérendue à l'URL du sitemap.
+  #    Substitution relative, donc préfixée par mod_rewrite du répertoire
+  #    réel : le dossier reste renommable et déplaçable.
+  #    Pas de boucle : au second passage, %{REQUEST_FILENAME} vaut déjà
+  #    « …/index.html », dont « /index.html » n'existe pas, et la règle
+  #    « fichiers réels » sert le document.
+  RewriteCond %{REQUEST_FILENAME}/index.html -f
+  RewriteRule ^(.+?)/?$ $1/index.html [L]
+
   # --- Fichiers et dossiers réels : servis tels quels -----------------
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
