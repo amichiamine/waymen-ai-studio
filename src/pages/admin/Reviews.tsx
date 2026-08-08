@@ -21,7 +21,23 @@ import {
 import type { HomeReview } from "@/api/types";
 import type { ReviewStatus } from "@/api/types";
 import { usePermissions } from "@/lib/admin-auth";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, useI18n } from "@/lib/i18n";
+
+/**
+ * Les valeurs techniques de statut d'avis (`pending`, `approved`, `rejected`)
+ * ne changent pas — seul leur libellé d'affichage est traduit.
+ */
+const REVIEW_STATUS_KEY: Record<ReviewStatus, string> = {
+  pending: "admin.ventes.commun.avis_pending",
+  approved: "admin.ventes.commun.avis_approved",
+  rejected: "admin.ventes.commun.avis_rejected",
+};
+
+const REVIEW_STATUS_VARIANT: Record<ReviewStatus, "default" | "secondary" | "destructive"> = {
+  pending: "secondary",
+  approved: "default",
+  rejected: "destructive",
+};
 
 export default function AdminReviews() {
   const { data: reviews, loading: loadingReviews, error: errorReviews } = useReviewList();
@@ -31,6 +47,7 @@ export default function AdminReviews() {
   const { upsert: upsertHomeReview, remove: removeHomeReview } = useHomeReviewMutations();
   const { can, guard, denyReason } = usePermissions();
   const L = useLocalize();
+  const { t } = useI18n();
   const [tab, setTab] = useState<"product" | "home">("product");
   const [statusTab, setStatusTab] = useState<"all" | ReviewStatus>("all");
   const [pendingDelete, setPendingDelete] = useState<{
@@ -68,7 +85,7 @@ export default function AdminReviews() {
   // Niveau 2 — vérification dans le handler de confirmation de suppression.
   const confirmDelete = async () => {
     if (!pendingDelete) return;
-    if (!guard("delete", "Supprimer l'avis")) return;
+    if (!guard("delete", t("admin.ventes.avis.garde_supprimer"))) return;
     setDeleting(true);
     try {
       if (pendingDelete.kind === "product") {
@@ -76,7 +93,7 @@ export default function AdminReviews() {
       } else {
         await removeHomeReview(pendingDelete.id);
       }
-      toast.success("Supprimé");
+      toast.success(t("admin.ventes.avis.toast_supprime"));
       setPendingDelete(null);
     } catch (cause) {
       const err = toApiError(cause);
@@ -90,7 +107,10 @@ export default function AdminReviews() {
 
   if (loading) {
     return (
-      <AdminPageShell title="Avis" description="Chargement…">
+      <AdminPageShell
+        title={t("admin.ventes.avis.titre")}
+        description={t("admin.socle.commun.chargement")}
+      >
         <div className="space-y-3" aria-busy="true">
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="h-32 animate-pulse rounded-lg border bg-muted" />
@@ -102,8 +122,11 @@ export default function AdminReviews() {
 
   return (
     <AdminPageShell
-      title="Avis"
-      description={`${reviews.length} avis produits · ${homeReviews.length} avis d'accueil.`}
+      title={t("admin.ventes.avis.titre")}
+      description={t("admin.ventes.avis.description", {
+        produits: reviews.length,
+        accueil: homeReviews.length,
+      })}
     >
       {(errorReviews || errorHome) && (
         <p
@@ -117,17 +140,29 @@ export default function AdminReviews() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "product" | "home")}>
         <TabsList>
-          <TabsTrigger value="product">Avis produits ({reviews.length})</TabsTrigger>
-          <TabsTrigger value="home">Avis d'accueil ({homeReviews.length})</TabsTrigger>
+          <TabsTrigger value="product">
+            {t("admin.ventes.avis.onglet_produits", { n: reviews.length })}
+          </TabsTrigger>
+          <TabsTrigger value="home">
+            {t("admin.ventes.avis.onglet_accueil", { n: homeReviews.length })}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="product" className="mt-4 space-y-4">
           <Tabs value={statusTab} onValueChange={(v) => setStatusTab(v as "all" | ReviewStatus)}>
             <TabsList>
-              <TabsTrigger value="all">Tous ({counts.all})</TabsTrigger>
-              <TabsTrigger value="pending">En attente ({counts.pending})</TabsTrigger>
-              <TabsTrigger value="approved">Approuvés ({counts.approved})</TabsTrigger>
-              <TabsTrigger value="rejected">Rejetés ({counts.rejected})</TabsTrigger>
+              <TabsTrigger value="all">
+                {t("admin.ventes.avis.filtre_tous", { n: counts.all })}
+              </TabsTrigger>
+              <TabsTrigger value="pending">
+                {t("admin.ventes.avis.filtre_pending", { n: counts.pending })}
+              </TabsTrigger>
+              <TabsTrigger value="approved">
+                {t("admin.ventes.avis.filtre_approuves", { n: counts.approved })}
+              </TabsTrigger>
+              <TabsTrigger value="rejected">
+                {t("admin.ventes.avis.filtre_rejetes", { n: counts.rejected })}
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="grid gap-3">
@@ -146,24 +181,15 @@ export default function AdminReviews() {
                         <span className="text-sm font-medium">{r.title}</span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Par <span className="font-medium text-foreground">{r.customerName}</span> ·
-                        sur {r.productName} · {new Date(r.createdAt).toLocaleDateString("fr-FR")}
+                        {t("admin.ventes.avis.meta", {
+                          auteur: r.customerName,
+                          produit: r.productName,
+                          date: new Date(r.createdAt).toLocaleDateString("fr-FR"),
+                        })}
                       </p>
                     </div>
-                    <Badge
-                      variant={
-                        r.status === "approved"
-                          ? "default"
-                          : r.status === "rejected"
-                            ? "destructive"
-                            : "secondary"
-                      }
-                    >
-                      {r.status === "pending"
-                        ? "En attente"
-                        : r.status === "approved"
-                          ? "Approuvé"
-                          : "Rejeté"}
+                    <Badge variant={REVIEW_STATUS_VARIANT[r.status]}>
+                      {t(REVIEW_STATUS_KEY[r.status])}
                     </Badge>
                   </div>
                   <p className="mt-3 text-sm">{r.body}</p>
@@ -176,22 +202,22 @@ export default function AdminReviews() {
                           variant="outline"
                           onClick={async () => {
                             // Niveau 2 — vérification dans le handler.
-                            if (!guard("update", "Approuver l'avis")) return;
+                            if (!guard("update", t("admin.ventes.avis.garde_approuver"))) return;
                             try {
                               await moderate(r.id, "approved");
-                              toast.success("Approuvé");
+                              toast.success(t("admin.ventes.avis.toast_approuve"));
                             } catch (cause) {
                               const err = toApiError(cause);
                               toast.error(err.message);
                             }
                           }}
                         >
-                          <Check className="me-2 h-4 w-4" /> Approuver
+                          <Check className="me-2 h-4 w-4" /> {t("admin.ventes.avis.approuver")}
                         </Button>
                       ) : (
                         <span title={denyReason("update")} className="inline-flex">
                           <Button size="sm" variant="outline" disabled>
-                            <Check className="me-2 h-4 w-4" /> Approuver
+                            <Check className="me-2 h-4 w-4" /> {t("admin.ventes.avis.approuver")}
                           </Button>
                         </span>
                       ))}
@@ -202,27 +228,30 @@ export default function AdminReviews() {
                           variant="outline"
                           onClick={async () => {
                             // Niveau 2 — vérification dans le handler.
-                            if (!guard("update", "Rejeter l'avis")) return;
+                            if (!guard("update", t("admin.ventes.avis.garde_rejeter"))) return;
                             try {
                               await moderate(r.id, "rejected");
-                              toast.success("Rejeté");
+                              toast.success(t("admin.ventes.avis.toast_rejete"));
                             } catch (cause) {
                               const err = toApiError(cause);
                               toast.error(err.message);
                             }
                           }}
                         >
-                          <X className="me-2 h-4 w-4" /> Rejeter
+                          <X className="me-2 h-4 w-4" /> {t("admin.ventes.avis.rejeter")}
                         </Button>
                       ) : (
                         <span title={denyReason("update")} className="inline-flex">
                           <Button size="sm" variant="outline" disabled>
-                            <X className="me-2 h-4 w-4" /> Rejeter
+                            <X className="me-2 h-4 w-4" /> {t("admin.ventes.avis.rejeter")}
                           </Button>
                         </span>
                       ))}
                     {/* Niveau 1 + 3 — supprimer (delete). */}
-                    <span title={denyReason("delete") ?? "Supprimer"} className="inline-flex">
+                    <span
+                      title={denyReason("delete") ?? t("admin.socle.commun.supprimer")}
+                      className="inline-flex"
+                    >
                       <Button
                         size="sm"
                         variant="ghost"
@@ -231,7 +260,8 @@ export default function AdminReviews() {
                           setPendingDelete({ kind: "product", id: r.id, label: r.title })
                         }
                       >
-                        <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer
+                        <Trash2 className="me-2 h-4 w-4 text-destructive" />{" "}
+                        {t("admin.socle.commun.supprimer")}
                       </Button>
                     </span>
                   </div>
@@ -240,7 +270,7 @@ export default function AdminReviews() {
             ))}
             {rows.length === 0 && (
               <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-                Aucun avis.
+                {t("admin.ventes.avis.vide")}
               </div>
             )}
           </div>
@@ -248,7 +278,7 @@ export default function AdminReviews() {
 
         <TabsContent value="home" className="mt-4 space-y-4">
           <p className="text-xs text-muted-foreground">
-            Ces témoignages sont affichés en page d'accueil, section « Avis de nos clients ».
+            {t("admin.ventes.avis.accueil_explication")}
           </p>
           <HomeReviewsEditor
             reviews={homeReviews}
@@ -270,9 +300,15 @@ export default function AdminReviews() {
         onOpenChange={(o) => {
           if (!o) setPendingDelete(null);
         }}
-        title={pendingDelete ? `Supprimer « ${pendingDelete.label} » ?` : "Supprimer ?"}
-        description="Cette action est irréversible."
-        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
+        title={
+          pendingDelete
+            ? t("admin.ventes.avis.supprimer_titre", { label: pendingDelete.label })
+            : t("admin.socle.commun.supprimer")
+        }
+        description={t("admin.ventes.avis.supprimer_description")}
+        confirmLabel={
+          deleting ? t("admin.ventes.avis.suppression_en_cours") : t("admin.socle.commun.supprimer")
+        }
         destructive
         onConfirm={confirmDelete}
       />
@@ -311,6 +347,7 @@ function HomeReviewsEditor({
   guardCreate: (label: string) => boolean;
   onUpsert: (review: HomeReview) => Promise<HomeReview>;
 }) {
+  const { t } = useI18n();
   const [editing, setEditing] = useState<HomeReview | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -332,19 +369,19 @@ function HomeReviewsEditor({
         {/* Niveau 1 + 3 — créer un avis d'accueil (create). */}
         {canCreate ? (
           <Button size="sm" onClick={startNew}>
-            <Plus className="me-2 h-4 w-4" /> Nouvel avis d'accueil
+            <Plus className="me-2 h-4 w-4" /> {t("admin.ventes.avis.accueil_nouveau")}
           </Button>
         ) : (
           <span title={denyReasonCreate} className="inline-flex">
             <Button size="sm" disabled>
-              <Plus className="me-2 h-4 w-4" /> Nouvel avis d'accueil
+              <Plus className="me-2 h-4 w-4" /> {t("admin.ventes.avis.accueil_nouveau")}
             </Button>
           </span>
         )}
       </div>
       {reviews.length === 0 && !editing && (
         <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-          Aucun avis d'accueil. Ajoutez-en ou réinitialisez les données.
+          {t("admin.ventes.avis.accueil_vide")}
         </div>
       )}
       <div className="grid gap-3">
@@ -359,7 +396,9 @@ function HomeReviewsEditor({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{r.name || "Sans nom"}</span>
+                  <span className="font-semibold">
+                    {r.name || t("admin.ventes.avis.accueil_sans_nom")}
+                  </span>
                   <span className="text-xs text-muted-foreground">· {r.city}</span>
                   <span className="ms-auto flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -372,24 +411,29 @@ function HomeReviewsEditor({
                 </div>
                 <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">"{r.text}"</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Produit : {products.find((p) => p.id === r.productId)?.name ?? <em>inconnu</em>}
+                  {t("admin.ventes.avis.accueil_produit", {
+                    nom:
+                      products.find((p) => p.id === r.productId)?.name ??
+                      t("admin.ventes.avis.accueil_produit_inconnu"),
+                  })}
                 </p>
               </div>
               <div className="flex gap-2">
                 {/* Niveau 1 + 3 — modifier un avis d'accueil (update). */}
                 {canUpdate ? (
                   <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
-                    <Pencil className="me-2 h-4 w-4" /> Éditer
+                    <Pencil className="me-2 h-4 w-4" /> {t("admin.ventes.avis.accueil_editer")}
                   </Button>
                 ) : (
                   <span title={denyReasonUpdate} className="inline-flex">
                     <Button size="sm" variant="outline" disabled>
-                      <Pencil className="me-2 h-4 w-4" /> Éditer
+                      <Pencil className="me-2 h-4 w-4" /> {t("admin.ventes.avis.accueil_editer")}
                     </Button>
                   </span>
                 )}
                 <Button size="sm" variant="ghost" onClick={() => onDeleteRequest(r)}>
-                  <Trash2 className="me-2 h-4 w-4 text-destructive" /> Supprimer
+                  <Trash2 className="me-2 h-4 w-4 text-destructive" />{" "}
+                  {t("admin.socle.commun.supprimer")}
                 </Button>
               </div>
             </CardContent>
@@ -401,26 +445,28 @@ function HomeReviewsEditor({
         <Card className="border-primary/60">
           <CardHeader>
             <CardTitle className="text-base">
-              {reviews.find((r) => r.id === editing.id) ? "Modifier l'avis" : "Nouvel avis"}
+              {reviews.find((r) => r.id === editing.id)
+                ? t("admin.ventes.avis.accueil_form_titre_modifier")
+                : t("admin.ventes.avis.accueil_form_titre_nouveau")}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
             <div>
-              <Label>Nom</Label>
+              <Label>{t("admin.ventes.avis.accueil_form_nom")}</Label>
               <Input
                 value={editing.name}
                 onChange={(e) => setEditing({ ...editing, name: e.target.value })}
               />
             </div>
             <div>
-              <Label>Ville</Label>
+              <Label>{t("admin.ventes.avis.accueil_form_ville")}</Label>
               <Input
                 value={editing.city}
                 onChange={(e) => setEditing({ ...editing, city: e.target.value })}
               />
             </div>
             <div className="md:col-span-2">
-              <Label>Texte</Label>
+              <Label>{t("admin.ventes.avis.accueil_form_texte")}</Label>
               <Textarea
                 rows={3}
                 value={editing.text}
@@ -428,7 +474,7 @@ function HomeReviewsEditor({
               />
             </div>
             <div>
-              <Label>Produit</Label>
+              <Label>{t("admin.ventes.avis.accueil_form_produit")}</Label>
               <select
                 className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                 value={editing.productId}
@@ -442,7 +488,7 @@ function HomeReviewsEditor({
               </select>
             </div>
             <div>
-              <Label>Note (1-5)</Label>
+              <Label>{t("admin.ventes.avis.accueil_form_note")}</Label>
               <Input
                 type="number"
                 min={1}
@@ -457,7 +503,7 @@ function HomeReviewsEditor({
               />
             </div>
             <div className="md:col-span-2">
-              <Label>Gradient</Label>
+              <Label>{t("admin.ventes.avis.accueil_form_gradient")}</Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {GRADIENTS.map((g) => (
                   <button
@@ -466,33 +512,33 @@ function HomeReviewsEditor({
                     onClick={() => setEditing({ ...editing, gradient: g })}
                     className={`h-8 w-16 rounded-md border-2 ${editing.gradient === g ? "border-primary" : "border-transparent"}`}
                     style={{ background: g }}
-                    aria-label="Gradient"
+                    aria-label={t("admin.ventes.avis.accueil_form_gradient")}
                   />
                 ))}
               </div>
             </div>
             <div className="md:col-span-2 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditing(null)}>
-                Annuler
+                {t("admin.socle.confirmation.annuler")}
               </Button>
               <Button
                 disabled={saving}
                 onClick={async () => {
                   if (!editing.name.trim() || !editing.text.trim()) {
-                    toast.error("Nom et texte requis");
+                    toast.error(t("admin.ventes.avis.accueil_err_champs"));
                     return;
                   }
                   // Niveau 2 — vérification dans le handler d'enregistrement.
                   const isNew = !reviews.find((r) => r.id === editing.id);
                   if (isNew) {
-                    if (!guardCreate("Créer l'avis d'accueil")) return;
+                    if (!guardCreate(t("admin.ventes.avis.accueil_garde_creer"))) return;
                   } else {
-                    if (!guardUpdate("Modifier l'avis d'accueil")) return;
+                    if (!guardUpdate(t("admin.ventes.avis.accueil_garde_modifier"))) return;
                   }
                   setSaving(true);
                   try {
                     await onUpsert(editing);
-                    toast.success("Avis enregistré");
+                    toast.success(t("admin.ventes.avis.toast_enregistre"));
                     setEditing(null);
                   } catch (cause) {
                     const err = toApiError(cause);
@@ -502,7 +548,10 @@ function HomeReviewsEditor({
                   }
                 }}
               >
-                <Save className="me-2 h-4 w-4" /> {saving ? "Enregistrement…" : "Enregistrer"}
+                <Save className="me-2 h-4 w-4" />{" "}
+                {saving
+                  ? t("admin.ventes.avis.accueil_form_enregistrement")
+                  : t("admin.socle.commun.enregistrer")}
               </Button>
             </div>
           </CardContent>

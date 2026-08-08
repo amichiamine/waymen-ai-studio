@@ -35,20 +35,24 @@ import { formatDZD } from "@/data/products";
 import { useCouponList, useCouponMutations, toApiError } from "@/data-provider";
 import type { Coupon } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
+// Les messages de validation Zod restent en clés i18n — ils sont affichés dans
+// l'interface. Le schéma traduit ses messages via les clés ventes.coupons.err_*.
+// Note : on passe les clés brutes ici — la traduction est faite à l'affichage.
 const schema = z.object({
   code: z
     .string()
     .trim()
     .toUpperCase()
-    .min(3, "Code trop court")
+    .min(3, "admin.ventes.coupons.err_code_court")
     .max(30)
-    .regex(/^[A-Z0-9_-]+$/, "Lettres majuscules, chiffres, - _"),
+    .regex(/^[A-Z0-9_-]+$/, "admin.ventes.coupons.err_code_format"),
   type: z.enum(["percent", "fixed"]),
   value: z.coerce.number().min(1).max(1_000_000),
   minPurchase: z.coerce.number().min(0).max(10_000_000),
   usageLimit: z.coerce.number().int().min(1).max(1_000_000),
-  expiresAt: z.string().min(1, "Date requise"),
+  expiresAt: z.string().min(1, "admin.ventes.coupons.err_date"),
   active: z.boolean(),
 });
 
@@ -70,6 +74,7 @@ export default function AdminCoupons() {
   const { data: coupons, loading, error } = useCouponList();
   const { create, update, remove } = useCouponMutations();
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   // editTarget est null en mode création, contient le coupon à modifier en mode édition.
   const [editTarget, setEditTarget] = useState<Coupon | null>(null);
@@ -106,13 +111,16 @@ export default function AdminCoupons() {
     // Niveau 2 — vérification dans le handler avant toute mutation.
     // Ordre : garde de permission → mutation → retour d'erreur.
     const permission = editTarget ? "update" : "create";
-    const label = editTarget ? "Modifier le coupon" : "Créer le coupon";
+    const label = editTarget
+      ? t("admin.ventes.coupons.garde_modifier")
+      : t("admin.ventes.coupons.garde_creer");
     if (!guard(permission, label)) return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Record<string, string> = {};
       p.error.issues.forEach((i) => {
-        errs[i.path[0] as string] = i.message;
+        // Les messages sont des clés i18n — on les traduit ici.
+        errs[i.path[0] as string] = t(i.message);
       });
       setErr(errs);
       return;
@@ -135,7 +143,9 @@ export default function AdminCoupons() {
       } else {
         await create(coupon);
       }
-      toast.success(editTarget ? "Coupon modifié" : "Coupon créé");
+      toast.success(
+        editTarget ? t("admin.ventes.coupons.toast_modifie") : t("admin.ventes.coupons.toast_cree"),
+      );
       setOpen(false);
       setEditTarget(null);
       setV(empty());
@@ -151,12 +161,12 @@ export default function AdminCoupons() {
   // Mutation asynchrone — désactive le bouton pendant l'appel.
   async function onDelete(code: string) {
     // Niveau 2 — vérification dans le handler avant toute mutation.
-    if (!guard("delete", "Supprimer le coupon")) return;
-    if (!confirm(`Supprimer le coupon ${code} ?`)) return;
+    if (!guard("delete", t("admin.ventes.coupons.garde_supprimer"))) return;
+    if (!confirm(t("admin.ventes.coupons.supprimer_confirm", { code }))) return;
     setSaving(true);
     try {
       await remove(code);
-      toast.success("Coupon supprimé");
+      toast.success(t("admin.ventes.coupons.toast_supprime"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -166,15 +176,119 @@ export default function AdminCoupons() {
   }
 
   function copy(code: string) {
-    navigator.clipboard.writeText(code).then(() => toast.success(`${code} copié`));
+    navigator.clipboard
+      .writeText(code)
+      .then(() => toast.success(t("admin.ventes.coupons.copie", { code })));
   }
 
   const isEditing = editTarget !== null;
 
+  // En-têtes — `text-start` pour contrer le `text-left` en dur dans `ui/table.tsx`.
+  const COLONNES: { key: string; align?: "end"; width?: string }[] = [
+    { key: "admin.ventes.coupons.col_code" },
+    { key: "admin.ventes.coupons.col_remise" },
+    { key: "admin.ventes.coupons.col_achat_min" },
+    { key: "admin.ventes.coupons.col_usage" },
+    { key: "admin.ventes.coupons.col_expire" },
+    { key: "admin.ventes.coupons.col_statut" },
+    { key: "admin.socle.commun.actions", align: "end", width: "w-[100px]" },
+  ];
+
+  // Formulaire partagé création / édition
+  function CouponForm({ forEdit }: { forEdit: boolean }) {
+    return (
+      <div className="space-y-3">
+        <div>
+          <Label>{t("admin.ventes.coupons.form_code")}</Label>
+          <Input
+            value={v.code}
+            onChange={(e) => setV({ ...v, code: e.target.value.toUpperCase() })}
+            placeholder={t("admin.ventes.coupons.form_code_placeholder")}
+            // Le code est l'identifiant — il ne peut pas être modifié en édition.
+            readOnly={forEdit}
+            className={forEdit ? "bg-muted" : ""}
+            disabled={saving}
+          />
+          {err.code && <p className="mt-1 text-xs text-destructive">{err.code}</p>}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>{t("admin.ventes.coupons.form_type")}</Label>
+            <Select
+              value={v.type}
+              onValueChange={(x) => setV({ ...v, type: x as "percent" | "fixed" })}
+              disabled={saving}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="percent">
+                  {t("admin.ventes.coupons.form_type_percent")}
+                </SelectItem>
+                <SelectItem value="fixed">{t("admin.ventes.coupons.form_type_fixed")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{t("admin.ventes.coupons.form_valeur")}</Label>
+            <Input
+              type="number"
+              value={v.value}
+              onChange={(e) => setV({ ...v, value: Number(e.target.value) })}
+              disabled={saving}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>{t("admin.ventes.coupons.form_achat_min")}</Label>
+            <Input
+              type="number"
+              value={v.minPurchase}
+              onChange={(e) => setV({ ...v, minPurchase: Number(e.target.value) })}
+              disabled={saving}
+            />
+          </div>
+          <div>
+            <Label>{t("admin.ventes.coupons.form_limite_usage")}</Label>
+            <Input
+              type="number"
+              value={v.usageLimit}
+              onChange={(e) => setV({ ...v, usageLimit: Number(e.target.value) })}
+              disabled={saving}
+            />
+          </div>
+        </div>
+        <div>
+          <Label>{t("admin.ventes.coupons.form_expiration")}</Label>
+          <Input
+            type="date"
+            value={v.expiresAt}
+            onChange={(e) => setV({ ...v, expiresAt: e.target.value })}
+            disabled={saving}
+          />
+          {err.expiresAt && <p className="mt-1 text-xs text-destructive">{err.expiresAt}</p>}
+        </div>
+        <div className="flex items-center justify-between rounded-md border p-2">
+          <Label htmlFor={forEdit ? "active-edit" : "active"} className="mb-0">
+            {t("admin.ventes.coupons.form_actif")}
+          </Label>
+          <Switch
+            id={forEdit ? "active-edit" : "active"}
+            checked={v.active}
+            onCheckedChange={(x) => setV({ ...v, active: x })}
+            disabled={saving}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AdminPageShell
-      title="Coupons"
-      description={`${coupons.length} codes promo actifs et archivés.`}
+      title={t("admin.ventes.coupons.titre")}
+      description={t("admin.ventes.coupons.description", { n: coupons.length })}
       actions={
         // Niveau 1 — affichage. Le Dialog est contrôlé manuellement pour
         // éviter que le DialogTrigger l'ouvre quand la permission est refusée.
@@ -183,101 +297,28 @@ export default function AdminCoupons() {
         can("create") ? (
           <>
             <Button onClick={openNew}>
-              <Plus className="me-2 h-4 w-4" /> Nouveau coupon
+              <Plus className="me-2 h-4 w-4" /> {t("admin.ventes.coupons.nouveau")}
             </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{isEditing ? "Modifier le coupon" : "Nouveau coupon"}</DialogTitle>
+                  <DialogTitle>
+                    {isEditing
+                      ? t("admin.ventes.coupons.form_titre_modifier")
+                      : t("admin.ventes.coupons.form_titre_nouveau")}
+                  </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label>Code</Label>
-                    <Input
-                      value={v.code}
-                      onChange={(e) => setV({ ...v, code: e.target.value.toUpperCase() })}
-                      placeholder="BIENVENUE10"
-                      // Le code est l'identifiant — il ne peut pas être modifié en édition.
-                      readOnly={isEditing}
-                      className={isEditing ? "bg-muted" : ""}
-                      disabled={saving}
-                    />
-                    {err.code && <p className="text-xs text-destructive mt-1">{err.code}</p>}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Type</Label>
-                      <Select
-                        value={v.type}
-                        onValueChange={(x) => setV({ ...v, type: x as "percent" | "fixed" })}
-                        disabled={saving}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="percent">Pourcentage</SelectItem>
-                          <SelectItem value="fixed">Montant fixe (DA)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Valeur</Label>
-                      <Input
-                        type="number"
-                        value={v.value}
-                        onChange={(e) => setV({ ...v, value: Number(e.target.value) })}
-                        disabled={saving}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Achat min. (DA)</Label>
-                      <Input
-                        type="number"
-                        value={v.minPurchase}
-                        onChange={(e) => setV({ ...v, minPurchase: Number(e.target.value) })}
-                        disabled={saving}
-                      />
-                    </div>
-                    <div>
-                      <Label>Limite d&apos;usage</Label>
-                      <Input
-                        type="number"
-                        value={v.usageLimit}
-                        onChange={(e) => setV({ ...v, usageLimit: Number(e.target.value) })}
-                        disabled={saving}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Date d&apos;expiration</Label>
-                    <Input
-                      type="date"
-                      value={v.expiresAt}
-                      onChange={(e) => setV({ ...v, expiresAt: e.target.value })}
-                      disabled={saving}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-md border p-2">
-                    <Label htmlFor="active" className="mb-0">
-                      Actif
-                    </Label>
-                    <Switch
-                      id="active"
-                      checked={v.active}
-                      onCheckedChange={(x) => setV({ ...v, active: x })}
-                      disabled={saving}
-                    />
-                  </div>
-                </div>
+                <CouponForm forEdit={isEditing} />
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-                    Annuler
+                    {t("admin.socle.confirmation.annuler")}
                   </Button>
                   <Button onClick={save} disabled={saving}>
-                    {saving ? "Enregistrement…" : isEditing ? "Enregistrer" : "Créer"}
+                    {saving
+                      ? t("admin.ventes.coupons.form_enregistrement")
+                      : isEditing
+                        ? t("admin.socle.commun.enregistrer")
+                        : t("admin.ventes.coupons.form_creer")}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -287,7 +328,7 @@ export default function AdminCoupons() {
           // Niveau 3 — infobulle portée par le <span>.
           <span title={denyReason("create")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Nouveau coupon
+              <Plus className="me-2 h-4 w-4" /> {t("admin.ventes.coupons.nouveau")}
             </Button>
           </span>
         )
@@ -308,13 +349,20 @@ export default function AdminCoupons() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Remise</TableHead>
-              <TableHead>Achat min.</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead>Expire</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              {COLONNES.map((c) => (
+                <TableHead
+                  key={c.key}
+                  className={[c.width, c.align === "end" ? "text-end" : "text-start"]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {c.key === "admin.socle.commun.actions" ? (
+                    <span className="sr-only">{t(c.key)}</span>
+                  ) : (
+                    t(c.key)
+                  )}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -322,7 +370,7 @@ export default function AdminCoupons() {
             {loading ? (
               <>
                 <tr className="sr-only" aria-busy="true">
-                  <td>Chargement des coupons…</td>
+                  <td>{t("admin.ventes.coupons.chargement")}</td>
                 </tr>
                 {Array.from({ length: 4 }, (_, i) => (
                   <TableRow key={i}>
@@ -360,26 +408,36 @@ export default function AdminCoupons() {
                       </TableCell>
                       <TableCell>
                         {!c.active ? (
-                          <Badge variant="secondary">Désactivé</Badge>
+                          <Badge variant="secondary">
+                            {t("admin.ventes.coupons.statut_desactive")}
+                          </Badge>
                         ) : expired ? (
-                          <Badge variant="destructive">Expiré</Badge>
+                          <Badge variant="destructive">
+                            {t("admin.ventes.coupons.statut_expire")}
+                          </Badge>
                         ) : (
-                          <Badge>Actif</Badge>
+                          <Badge>{t("admin.ventes.coupons.statut_actif")}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-end">
-                        <Button variant="ghost" size="icon" onClick={() => copy(c.code)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={t("admin.ventes.coupons.col_code")}
+                          aria-label={t("admin.ventes.coupons.col_code")}
+                          onClick={() => copy(c.code)}
+                        >
                           <Copy className="h-4 w-4" />
                         </Button>
                         {/* Niveau 1+3 : bouton Modifier */}
                         <span
-                          title={denyReason("update") ?? "Modifier"}
+                          title={denyReason("update") ?? t("admin.socle.commun.modifier")}
                           className="inline-flex align-middle"
                         >
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Modifier"
+                            aria-label={t("admin.socle.commun.modifier")}
                             disabled={!can("update") || saving}
                             onClick={() => openEdit(c)}
                           >
@@ -388,13 +446,13 @@ export default function AdminCoupons() {
                         </span>
                         {/* Niveau 1+3 : bouton Supprimer */}
                         <span
-                          title={denyReason("delete") ?? "Supprimer"}
+                          title={denyReason("delete") ?? t("admin.socle.commun.supprimer")}
                           className="inline-flex align-middle"
                         >
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Supprimer"
+                            aria-label={t("admin.socle.commun.supprimer")}
                             disabled={!can("delete") || saving}
                             onClick={() => onDelete(c.code)}
                           >
@@ -408,10 +466,10 @@ export default function AdminCoupons() {
                 {coupons.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={COLONNES.length}
                       className="h-24 text-center text-sm text-muted-foreground"
                     >
-                      Aucun coupon.
+                      {t("admin.ventes.coupons.vide")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -427,87 +485,17 @@ export default function AdminCoupons() {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Modifier le coupon</DialogTitle>
+              <DialogTitle>{t("admin.ventes.coupons.form_titre_modifier")}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <Label>Code</Label>
-                <Input value={v.code} readOnly className="bg-muted" disabled={saving} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Type</Label>
-                  <Select
-                    value={v.type}
-                    onValueChange={(x) => setV({ ...v, type: x as "percent" | "fixed" })}
-                    disabled={saving}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="percent">Pourcentage</SelectItem>
-                      <SelectItem value="fixed">Montant fixe (DA)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Valeur</Label>
-                  <Input
-                    type="number"
-                    value={v.value}
-                    onChange={(e) => setV({ ...v, value: Number(e.target.value) })}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Achat min. (DA)</Label>
-                  <Input
-                    type="number"
-                    value={v.minPurchase}
-                    onChange={(e) => setV({ ...v, minPurchase: Number(e.target.value) })}
-                    disabled={saving}
-                  />
-                </div>
-                <div>
-                  <Label>Limite d&apos;usage</Label>
-                  <Input
-                    type="number"
-                    value={v.usageLimit}
-                    onChange={(e) => setV({ ...v, usageLimit: Number(e.target.value) })}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Date d&apos;expiration</Label>
-                <Input
-                  type="date"
-                  value={v.expiresAt}
-                  onChange={(e) => setV({ ...v, expiresAt: e.target.value })}
-                  disabled={saving}
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-md border p-2">
-                <Label htmlFor="active-edit" className="mb-0">
-                  Actif
-                </Label>
-                <Switch
-                  id="active-edit"
-                  checked={v.active}
-                  onCheckedChange={(x) => setV({ ...v, active: x })}
-                  disabled={saving}
-                />
-              </div>
-            </div>
+            <CouponForm forEdit={true} />
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-                Annuler
+                {t("admin.socle.confirmation.annuler")}
               </Button>
               <Button onClick={save} disabled={saving}>
-                {saving ? "Enregistrement…" : "Enregistrer"}
+                {saving
+                  ? t("admin.ventes.coupons.form_enregistrement")
+                  : t("admin.socle.commun.enregistrer")}
               </Button>
             </DialogFooter>
           </DialogContent>

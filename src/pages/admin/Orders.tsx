@@ -19,14 +19,21 @@ import { formatDZD } from "@/data/products";
 import { useOrderList } from "@/data-provider";
 import type { OrderStatus } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
-const STATUS_LABEL: Record<OrderStatus, string> = {
-  pending: "En attente",
-  processing: "En traitement",
-  shipped: "Expédiée",
-  delivered: "Livrée",
-  cancelled: "Annulée",
+/**
+ * Les valeurs techniques (`pending`, `processing`…) viennent de l'API et ne
+ * changent JAMAIS. Seul leur libellé d'affichage est traduit, via des clés i18n.
+ * Motif calqué sur Products.tsx (STOCK_LABEL_KEY).
+ */
+const STATUS_KEY: Record<OrderStatus, string> = {
+  pending: "admin.ventes.commun.statut_pending",
+  processing: "admin.ventes.commun.statut_processing",
+  shipped: "admin.ventes.commun.statut_shipped",
+  delivered: "admin.ventes.commun.statut_delivered",
+  cancelled: "admin.ventes.commun.statut_cancelled",
 };
+
 const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
   processing: "outline",
@@ -55,6 +62,7 @@ export default function AdminOrders() {
   // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can } = usePermissions();
+  const { t } = useI18n();
   const [tab, setTab] = useState<"all" | OrderStatus>("all");
   const [q, setQ] = useState("");
 
@@ -79,8 +87,23 @@ export default function AdminOrders() {
     return c;
   }, [orders]);
 
+  // En-têtes — `text-start` explicite pour contrer le `text-left` en dur dans
+  // `ui/table.tsx` (voir §7 de la convention i18n).
+  const COLONNES: { key: string; align?: "end"; width?: string }[] = [
+    { key: "admin.ventes.commandes.col_numero" },
+    { key: "admin.ventes.commandes.col_client" },
+    { key: "admin.ventes.commandes.col_wilaya" },
+    { key: "admin.ventes.commandes.col_date" },
+    { key: "admin.ventes.commandes.col_total", align: "end" },
+    { key: "admin.ventes.commandes.col_statut" },
+    { key: "admin.socle.commun.actions", align: "end", width: "w-[60px]" },
+  ];
+
   return (
-    <AdminPageShell title="Commandes" description={`${orders.length} commandes enregistrées.`}>
+    <AdminPageShell
+      title={t("admin.ventes.commandes.titre")}
+      description={t("admin.ventes.commandes.description", { n: orders.length })}
+    >
       {/* Ordre §5.3 : erreur au-dessus du contenu, sans remplacer la page. */}
       {error && (
         <p
@@ -94,18 +117,31 @@ export default function AdminOrders() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "all" | OrderStatus)}>
         <TabsList className="flex-wrap">
-          <TabsTrigger value="all">Toutes ({counts.all})</TabsTrigger>
-          <TabsTrigger value="pending">En attente ({counts.pending})</TabsTrigger>
-          <TabsTrigger value="processing">En traitement ({counts.processing})</TabsTrigger>
-          <TabsTrigger value="shipped">Expédiées ({counts.shipped})</TabsTrigger>
-          <TabsTrigger value="delivered">Livrées ({counts.delivered})</TabsTrigger>
-          <TabsTrigger value="cancelled">Annulées ({counts.cancelled})</TabsTrigger>
+          <TabsTrigger value="all">
+            {t("admin.ventes.commandes.onglet_toutes", { n: counts.all })}
+          </TabsTrigger>
+          <TabsTrigger value="pending">
+            {t("admin.ventes.commandes.onglet_pending", { n: counts.pending })}
+          </TabsTrigger>
+          <TabsTrigger value="processing">
+            {t("admin.ventes.commandes.onglet_processing", { n: counts.processing })}
+          </TabsTrigger>
+          <TabsTrigger value="shipped">
+            {t("admin.ventes.commandes.onglet_shipped", { n: counts.shipped })}
+          </TabsTrigger>
+          <TabsTrigger value="delivered">
+            {t("admin.ventes.commandes.onglet_delivered", { n: counts.delivered })}
+          </TabsTrigger>
+          <TabsTrigger value="cancelled">
+            {t("admin.ventes.commandes.onglet_cancelled", { n: counts.cancelled })}
+          </TabsTrigger>
         </TabsList>
       </Tabs>
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Rechercher (n°, client, wilaya)…"
+          placeholder={t("admin.ventes.commandes.recherche_placeholder")}
+          aria-label={t("admin.socle.commun.rechercher")}
           className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -115,13 +151,16 @@ export default function AdminOrders() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>N°</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Wilaya</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-end">Total</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead className="w-[60px]"></TableHead>
+              {COLONNES.map((c) => (
+                <TableHead
+                  key={c.key}
+                  className={[c.width, c.align === "end" ? "text-end" : "text-start"]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {t(c.key)}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -129,7 +168,7 @@ export default function AdminOrders() {
             {loading ? (
               <>
                 <tr className="sr-only" aria-busy="true">
-                  <td>Chargement des commandes…</td>
+                  <td>{t("admin.ventes.commandes.chargement")}</td>
                 </tr>
                 {Array.from({ length: 6 }, (_, i) => (
                   <OrderRowSkeleton key={i} />
@@ -137,8 +176,11 @@ export default function AdminOrders() {
               </>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
-                  Aucune commande.
+                <TableCell
+                  colSpan={COLONNES.length}
+                  className="h-24 text-center text-sm text-muted-foreground"
+                >
+                  {t("admin.ventes.commandes.vide")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -152,18 +194,28 @@ export default function AdminOrders() {
                   </TableCell>
                   <TableCell className="text-end font-medium">{formatDZD(o.total)}</TableCell>
                   <TableCell>
-                    <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
+                    <Badge variant={STATUS_VARIANT[o.status]}>{t(STATUS_KEY[o.status])}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-end">
                     {/* Niveau 1 — la consultation du détail est un `read`, toujours permis. */}
                     {can("read") ? (
                       <Link to={`/admin/orders/${o.id}`}>
-                        <Button variant="ghost" size="icon" title="Voir la commande">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={t("admin.ventes.commandes.voir_commande")}
+                          aria-label={t("admin.ventes.commandes.voir_commande")}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
                     ) : (
-                      <Button variant="ghost" size="icon" disabled aria-label="Voir la commande">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled
+                        aria-label={t("admin.ventes.commandes.voir_commande")}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
                     )}

@@ -19,13 +19,20 @@ import { formatDZD } from "@/data/products";
 import { useOrderDetail, useOrderMutations, useCustomerList, toApiError } from "@/data-provider";
 import type { OrderStatus } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
-const STATUS_LABEL: Record<OrderStatus, string> = {
-  pending: "En attente",
-  processing: "En traitement",
-  shipped: "Expédiée",
-  delivered: "Livrée",
-  cancelled: "Annulée",
+/**
+ * Les valeurs techniques (`pending`, `processing`…) viennent de l'API et ne
+ * changent JAMAIS — seul leur libellé d'affichage est traduit.
+ * Critique : le Select envoie ces valeurs au serveur via PATCH /orders/:id/status.
+ * Ne jamais passer un libellé traduit comme valeur — ce serait casser l'API.
+ */
+const STATUS_KEY: Record<OrderStatus, string> = {
+  pending: "admin.ventes.commun.statut_pending",
+  processing: "admin.ventes.commun.statut_processing",
+  shipped: "admin.ventes.commun.statut_shipped",
+  delivered: "admin.ventes.commun.statut_delivered",
+  cancelled: "admin.ventes.commun.statut_cancelled",
 };
 
 export default function AdminOrderDetail() {
@@ -38,6 +45,7 @@ export default function AdminOrderDetail() {
   // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
 
   // État local du Select pour éviter la mise à jour optimiste non réconciliée.
   // Le Select affiche `order.status` (la source de vérité) tant que la mutation
@@ -49,18 +57,18 @@ export default function AdminOrderDetail() {
   if (loading) {
     return (
       <AdminPageShell
-        title={`Commande #${id ?? "…"}`}
+        title={`${t("admin.ventes.commandes.titre")} #${id ?? "…"}`}
         actions={
           <Link to="/admin/orders">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.ventes.detail.retour")}
             </Button>
           </Link>
         }
       >
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]" aria-busy="true">
-          <span className="sr-only">Chargement de la commande…</span>
+          <span className="sr-only">{t("admin.ventes.detail.chargement")}</span>
           <div className="space-y-4">
             <div className="h-48 animate-pulse rounded-lg border bg-card" />
             <div className="h-32 animate-pulse rounded-lg border bg-card" />
@@ -78,12 +86,12 @@ export default function AdminOrderDetail() {
   if (error) {
     return (
       <AdminPageShell
-        title={`Commande #${id ?? "…"}`}
+        title={`${t("admin.ventes.commandes.titre")} #${id ?? "…"}`}
         actions={
           <Link to="/admin/orders">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.ventes.detail.retour")}
             </Button>
           </Link>
         }
@@ -102,17 +110,17 @@ export default function AdminOrderDetail() {
   if (!order) {
     return (
       <AdminPageShell
-        title={`Commande #${id}`}
+        title={`${t("admin.ventes.commandes.titre")} #${id}`}
         actions={
           <Link to="/admin/orders">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.ventes.detail.retour")}
             </Button>
           </Link>
         }
       >
-        <AdminEmptyState label="Commande introuvable." />
+        <AdminEmptyState label={t("admin.ventes.detail.introuvable")} />
       </AdminPageShell>
     );
   }
@@ -127,13 +135,16 @@ export default function AdminOrderDetail() {
   // nouveau statut (si la mutation invalide le cache et rafraîchit `order`),
   // soit l'ancien statut en cas d'échec — jamais un état intermédiaire
   // non réconcilié.
+  // IMPORTANT : la valeur envoyée au serveur (v) est toujours la valeur
+  // technique de l'API (`pending`, `shipped`…), jamais un libellé traduit.
   async function handleStatusChange(v: string) {
     // Garde de permission avant toute mutation — ordre : garde → mutation → erreur.
-    if (!guard("update", "Changer le statut de la commande")) return;
+    if (!guard("update", t("admin.ventes.detail.garde_changer_statut"))) return;
     setSaving(true);
     try {
+      // v est la valeur technique (`pending`, `shipped`…) — elle n'est pas traduite.
       await updateStatus(order!.id, v as OrderStatus);
-      toast.success("Statut mis à jour");
+      toast.success(t("admin.ventes.detail.toast_statut_maj"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -149,13 +160,15 @@ export default function AdminOrderDetail() {
 
   return (
     <AdminPageShell
-      title={`Commande ${order.id}`}
-      description={`Passée le ${new Date(order.createdAt).toLocaleString("fr-FR")}`}
+      title={t("admin.ventes.detail.titre", { id: order.id })}
+      description={t("admin.ventes.detail.description", {
+        date: new Date(order.createdAt).toLocaleString("fr-FR"),
+      })}
       actions={
         <Link to="/admin/orders">
           <Button variant="outline">
             <ArrowLeft className="me-2 h-4 w-4" />
-            Retour
+            {t("admin.ventes.detail.retour")}
           </Button>
         </Link>
       }
@@ -164,7 +177,7 @@ export default function AdminOrderDetail() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Articles</CardTitle>
+              <CardTitle>{t("admin.ventes.detail.section_articles")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {order.items.map((it, i) => (
@@ -188,7 +201,7 @@ export default function AdminOrderDetail() {
                       {it.name}
                     </Link>
                     <p className="text-xs text-muted-foreground">
-                      Qté : {it.qty} × {formatDZD(it.price)}
+                      {t("admin.ventes.detail.qte", { qty: it.qty, prix: formatDZD(it.price) })}
                     </p>
                   </div>
                   <p className="font-medium">{formatDZD(it.price * it.qty)}</p>
@@ -196,21 +209,33 @@ export default function AdminOrderDetail() {
               ))}
               <div className="space-y-1 border-t pt-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Sous-total</span>
+                  <span className="text-muted-foreground">
+                    {t("admin.ventes.detail.sous_total")}
+                  </span>
                   <span>{formatDZD(order.subtotal)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between text-primary">
-                    <span>Remise {order.couponCode ? `(${order.couponCode})` : ""}</span>
+                    <span>
+                      {t("admin.ventes.detail.remise", {
+                        coupon: order.couponCode ? `(${order.couponCode})` : "",
+                      })}
+                    </span>
                     <span>− {formatDZD(order.discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Livraison</span>
-                  <span>{order.shipping === 0 ? "Gratuite" : formatDZD(order.shipping)}</span>
+                  <span className="text-muted-foreground">
+                    {t("admin.ventes.detail.livraison")}
+                  </span>
+                  <span>
+                    {order.shipping === 0
+                      ? t("admin.ventes.detail.livraison_gratuite")
+                      : formatDZD(order.shipping)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-base font-semibold">
-                  <span>Total</span>
+                  <span>{t("admin.ventes.detail.total")}</span>
                   <span>{formatDZD(order.total)}</span>
                 </div>
               </div>
@@ -219,7 +244,7 @@ export default function AdminOrderDetail() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Suivi du statut</CardTitle>
+              <CardTitle>{t("admin.ventes.detail.section_suivi")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ol className="relative space-y-3 border-s ps-5">
@@ -243,7 +268,9 @@ export default function AdminOrderDetail() {
                       >
                         <Icon className="h-4 w-4" />
                       </span>
-                      <p className="text-sm font-medium">{STATUS_LABEL[ev.status]}</p>
+                      {/* Libellé du statut : traduit via la table de clés.
+                          La valeur `ev.status` n'est pas modifiée. */}
+                      <p className="text-sm font-medium">{t(STATUS_KEY[ev.status])}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(ev.at).toLocaleString("fr-FR")}
                       </p>
@@ -261,7 +288,7 @@ export default function AdminOrderDetail() {
             <Card>
               <CardContent className="p-5 text-sm">
                 <p className="mb-1 text-xs font-semibold uppercase text-muted-foreground">
-                  Note client
+                  {t("admin.ventes.detail.note_client")}
                 </p>
                 {order.note}
               </CardContent>
@@ -271,14 +298,16 @@ export default function AdminOrderDetail() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Changer le statut</CardTitle>
+              <CardTitle>{t("admin.ventes.detail.section_changer_statut")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary">{STATUS_LABEL[order.status]}</Badge>
+              <Badge variant="secondary">{t(STATUS_KEY[order.status])}</Badge>
               {/* Niveau 1 — affichage. Niveau 3 — le <span> porte l'infobulle
                   car un Select `disabled` a pointer-events-none.
                   La valeur affichée est toujours `order.status` (source de vérité),
-                  jamais un état optimiste. */}
+                  jamais un état optimiste.
+                  CRITIQUE : `onValueChange` reçoit la valeur technique de l'API
+                  (`pending`, `shipped`…), jamais un libellé traduit. */}
               <span title={denyReason("update") ?? undefined} className="block">
                 <Select
                   value={order.status}
@@ -289,20 +318,36 @@ export default function AdminOrderDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">En attente</SelectItem>
-                    <SelectItem value="processing">En traitement</SelectItem>
-                    <SelectItem value="shipped">Expédiée</SelectItem>
-                    <SelectItem value="delivered">Livrée</SelectItem>
-                    <SelectItem value="cancelled">Annulée</SelectItem>
+                    {/* Les valeurs `value` sont des identifiants techniques API —
+                        elles ne sont JAMAIS traduites. Seul le texte affiché l'est. */}
+                    <SelectItem value="pending">
+                      {t("admin.ventes.commun.statut_pending")}
+                    </SelectItem>
+                    <SelectItem value="processing">
+                      {t("admin.ventes.commun.statut_processing")}
+                    </SelectItem>
+                    <SelectItem value="shipped">
+                      {t("admin.ventes.commun.statut_shipped")}
+                    </SelectItem>
+                    <SelectItem value="delivered">
+                      {t("admin.ventes.commun.statut_delivered")}
+                    </SelectItem>
+                    <SelectItem value="cancelled">
+                      {t("admin.ventes.commun.statut_cancelled")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </span>
-              {saving && <p className="text-xs text-muted-foreground">Mise à jour en cours…</p>}
+              {saving && (
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.ventes.detail.mise_a_jour_en_cours")}
+                </p>
+              )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Client</CardTitle>
+              <CardTitle>{t("admin.ventes.detail.section_client")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               <p className="font-medium">{order.customerName}</p>
@@ -318,33 +363,37 @@ export default function AdminOrderDetail() {
                 </>
               )}
               <Button variant="link" className="h-auto p-0" onClick={() => nav("/admin/customers")}>
-                Voir le client
+                {t("admin.ventes.detail.voir_client")}
               </Button>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Livraison & paiement</CardTitle>
+              <CardTitle>{t("admin.ventes.detail.section_livraison")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               <p>
-                <span className="text-muted-foreground">Adresse : </span>
+                <span className="text-muted-foreground">{t("admin.ventes.detail.adresse")} </span>
                 {order.address}
               </p>
               <p>
-                <span className="text-muted-foreground">Wilaya : </span>
+                <span className="text-muted-foreground">{t("admin.ventes.detail.wilaya")} </span>
                 {order.wilaya}
               </p>
               <p>
-                <span className="text-muted-foreground">Type : </span>
-                {order.deliveryKind === "home" ? "Domicile" : "Bureau"}
+                <span className="text-muted-foreground">
+                  {t("admin.ventes.detail.type_livraison")}{" "}
+                </span>
+                {order.deliveryKind === "home"
+                  ? t("admin.ventes.detail.livraison_domicile")
+                  : t("admin.ventes.detail.livraison_bureau")}
               </p>
               <p>
-                <span className="text-muted-foreground">Téléphone : </span>
+                <span className="text-muted-foreground">{t("admin.ventes.detail.telephone")} </span>
                 {order.phone}
               </p>
               <p>
-                <span className="text-muted-foreground">Paiement : </span>
+                <span className="text-muted-foreground">{t("admin.ventes.detail.paiement")} </span>
                 {order.paymentLabel ?? order.paymentMethod}
               </p>
             </CardContent>

@@ -37,14 +37,21 @@ import { WILAYAS } from "@/data/wilayas";
 import { useCustomerList, useOrderList, useCustomerMutations, toApiError } from "@/data-provider";
 import type { Customer, Order } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
-const STATUS_LABEL: Record<Order["status"], string> = {
-  pending: "En attente",
-  processing: "En traitement",
-  shipped: "Expédiée",
-  delivered: "Livrée",
-  cancelled: "Annulée",
+/**
+ * Les valeurs techniques de statut (`pending`, `processing`…) viennent de l'API
+ * et ne changent JAMAIS — seul leur libellé d'affichage est traduit.
+ * Motif calqué sur Products.tsx (STOCK_LABEL_KEY).
+ */
+const STATUS_KEY: Record<Order["status"], string> = {
+  pending: "admin.ventes.commun.statut_pending",
+  processing: "admin.ventes.commun.statut_processing",
+  shipped: "admin.ventes.commun.statut_shipped",
+  delivered: "admin.ventes.commun.statut_delivered",
+  cancelled: "admin.ventes.commun.statut_cancelled",
 };
+
 const STATUS_VARIANT: Record<Order["status"], "default" | "secondary" | "destructive" | "outline"> =
   {
     pending: "outline",
@@ -55,15 +62,16 @@ const STATUS_VARIANT: Record<Order["status"], "default" | "secondary" | "destruc
   };
 
 // ---------- Validation Zod ----------
+// Les messages sont des clés i18n — traduits à l'affichage dans le formulaire.
 const customerSchema = z.object({
-  name: z.string().trim().min(2, "Nom requis (2 caractères min.)").max(100),
-  email: z.string().trim().email("Email invalide").max(150),
+  name: z.string().trim().min(2, "admin.ventes.clients.err_nom").max(100),
+  email: z.string().trim().email("admin.ventes.clients.err_email").max(150),
   phone: z
     .string()
     .trim()
-    .regex(/^0[5-7]\d{8}$/, "Téléphone invalide (format : 0XXXXXXXXX)")
+    .regex(/^0[5-7]\d{8}$/, "admin.ventes.clients.err_telephone")
     .max(20),
-  wilaya: z.string().trim().min(1, "Wilaya requise").max(100),
+  wilaya: z.string().trim().min(1, "admin.ventes.clients.err_wilaya").max(100),
 });
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
@@ -89,6 +97,7 @@ function CustomerForm({
   onSave,
   saving,
 }: FormProps) {
+  const { t } = useI18n();
   const [v, setV] = useState<CustomerFormValues>({
     name: initial?.name ?? "",
     email: initial?.email ?? "",
@@ -118,7 +127,8 @@ function CustomerForm({
     if (!parsed.success) {
       const errs: Record<string, string> = {};
       parsed.error.issues.forEach((i) => {
-        errs[i.path[0] as string] = i.message;
+        // Les messages sont des clés i18n — traduits ici.
+        errs[i.path[0] as string] = t(i.message);
       });
       setErr(errs);
       return;
@@ -129,7 +139,7 @@ function CustomerForm({
       ? existingEmails.filter((e) => e !== initial.email.toLowerCase())
       : existingEmails;
     if (otherEmails.includes(parsed.data.email.toLowerCase())) {
-      setErr({ email: "Adresse email déjà utilisée par un autre client" });
+      setErr({ email: t("admin.ventes.clients.err_email_duplique") });
       return;
     }
 
@@ -155,18 +165,22 @@ function CustomerForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{initial ? "Modifier le client" : "Nouveau client"}</DialogTitle>
+          <DialogTitle>
+            {initial
+              ? t("admin.ventes.clients.form_titre_modifier")
+              : t("admin.ventes.clients.form_titre_nouveau")}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Nom */}
           <div className="space-y-1">
-            <Label htmlFor="cf-name">Nom complet</Label>
+            <Label htmlFor="cf-name">{t("admin.ventes.clients.form_nom")}</Label>
             <Input
               id="cf-name"
               value={v.name}
               onChange={(e) => setV({ ...v, name: e.target.value })}
-              placeholder="Prénom Nom"
+              placeholder={t("admin.ventes.clients.form_nom_placeholder")}
               disabled={!canSave || saving}
             />
             {err.name && <p className="text-xs text-destructive">{err.name}</p>}
@@ -174,13 +188,13 @@ function CustomerForm({
 
           {/* Email */}
           <div className="space-y-1">
-            <Label htmlFor="cf-email">Email</Label>
+            <Label htmlFor="cf-email">{t("admin.ventes.clients.form_email")}</Label>
             <Input
               id="cf-email"
               type="email"
               value={v.email}
               onChange={(e) => setV({ ...v, email: e.target.value })}
-              placeholder="client@example.dz"
+              placeholder={t("admin.ventes.clients.form_email_placeholder")}
               disabled={!canSave || saving}
             />
             {err.email && <p className="text-xs text-destructive">{err.email}</p>}
@@ -188,28 +202,28 @@ function CustomerForm({
 
           {/* Téléphone */}
           <div className="space-y-1">
-            <Label htmlFor="cf-phone">Téléphone</Label>
+            <Label htmlFor="cf-phone">{t("admin.ventes.clients.form_telephone")}</Label>
             <Input
               id="cf-phone"
               type="tel"
               value={v.phone}
               onChange={(e) => setV({ ...v, phone: e.target.value })}
-              placeholder="0XXXXXXXXX"
+              placeholder={t("admin.ventes.clients.form_telephone_placeholder")}
               disabled={!canSave || saving}
             />
             {err.phone && <p className="text-xs text-destructive">{err.phone}</p>}
           </div>
 
-          {/* Wilaya */}
+          {/* Wilaya — noms de wilaya : données référentielles, non traduites */}
           <div className="space-y-1">
-            <Label htmlFor="cf-wilaya">Wilaya</Label>
+            <Label htmlFor="cf-wilaya">{t("admin.ventes.clients.form_wilaya")}</Label>
             <Select
               value={v.wilaya}
               onValueChange={(x) => setV({ ...v, wilaya: x })}
               disabled={!canSave || saving}
             >
               <SelectTrigger id="cf-wilaya">
-                <SelectValue placeholder="Sélectionner une wilaya…" />
+                <SelectValue placeholder={t("admin.ventes.clients.form_wilaya_placeholder")} />
               </SelectTrigger>
               <SelectContent className="max-h-64">
                 {wilayaNames.map((w) => (
@@ -225,10 +239,12 @@ function CustomerForm({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Annuler
+            {t("admin.socle.confirmation.annuler")}
           </Button>
           <Button onClick={save} disabled={!canSave || saving}>
-            {saving ? "Enregistrement…" : "Enregistrer"}
+            {saving
+              ? t("admin.ventes.clients.form_enregistrement")
+              : t("admin.socle.commun.enregistrer")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -244,6 +260,7 @@ export default function AdminCustomers() {
   const { data: orders, loading: loadingOrders } = useOrderList();
   const { upsert, remove } = useCustomerMutations();
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
 
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<Customer | null>(null);
@@ -331,7 +348,10 @@ export default function AdminCustomers() {
 
   // Garde retournée comme callback pour CustomerForm (niveau 2)
   function guardSave(): boolean {
-    return guard(editing ? "update" : "create", editing ? "Modifier le client" : "Créer le client");
+    return guard(
+      editing ? "update" : "create",
+      editing ? t("admin.ventes.clients.garde_modifier") : t("admin.ventes.clients.garde_creer"),
+    );
   }
 
   // Mutation asynchrone — désactive le formulaire pendant l'appel.
@@ -340,7 +360,9 @@ export default function AdminCustomers() {
     try {
       await upsert(customer);
       toast.success(
-        editing ? `« ${customer.name} » mis à jour` : `Client « ${customer.name} » créé`,
+        editing
+          ? t("admin.ventes.clients.toast_modifie", { nom: customer.name })
+          : t("admin.ventes.clients.toast_cree", { nom: customer.name }),
       );
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -355,7 +377,7 @@ export default function AdminCustomers() {
   async function confirmDelete() {
     if (!toDelete) return;
     // Niveau 2 — vérification impérative. Ordre : garde de permission → mutation.
-    if (!guard("delete", "Supprimer le client")) return;
+    if (!guard("delete", t("admin.ventes.clients.garde_supprimer"))) return;
     // Garde métier : refus si commandes actives. S'ajoute à la garde de permission.
     if (deleteOrderCount > 0) {
       setToDelete(null);
@@ -364,7 +386,7 @@ export default function AdminCustomers() {
     setSaving(true);
     try {
       await remove(toDelete.id);
-      toast.success(`Client « ${toDelete.name} » supprimé`);
+      toast.success(t("admin.ventes.clients.toast_supprime", { nom: toDelete.name }));
       setToDelete(null);
       // Fermer la vue détail si le client supprimé y était affiché
       if (selected?.id === toDelete.id) setSelected(null);
@@ -376,23 +398,36 @@ export default function AdminCustomers() {
     }
   }
 
+  // En-têtes — `text-start` explicite pour contrer le `text-left` en dur dans
+  // `ui/table.tsx` (voir §7 de la convention i18n).
+  const COLONNES: { key: string; align?: "end"; width?: string }[] = [
+    { key: "admin.ventes.clients.col_nom" },
+    { key: "admin.ventes.clients.col_email" },
+    { key: "admin.ventes.clients.col_telephone" },
+    { key: "admin.ventes.clients.col_wilaya" },
+    { key: "admin.ventes.clients.col_commandes", align: "end" },
+    { key: "admin.ventes.clients.col_depense", align: "end" },
+    { key: "admin.ventes.clients.col_derniere_commande" },
+    { key: "admin.socle.commun.actions", align: "end", width: "w-[140px]" },
+  ];
+
   // Squelette de chargement — même structure que le tableau final.
   const isLoading = loadingCustomers || loadingOrders;
 
   return (
     <AdminPageShell
-      title="Clients"
-      description={`${customers.length} clients enregistrés — statistiques dérivées des commandes.`}
+      title={t("admin.ventes.clients.titre")}
+      description={t("admin.ventes.clients.description", { n: customers.length })}
       actions={
         // Niveau 1 — affichage. Niveau 3 — infobulle portée par le <span>.
         can("create") ? (
           <Button onClick={openNew}>
-            <Plus className="me-2 h-4 w-4" /> Nouveau client
+            <Plus className="me-2 h-4 w-4" /> {t("admin.ventes.clients.nouveau")}
           </Button>
         ) : (
           <span title={denyReason("create")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Nouveau client
+              <Plus className="me-2 h-4 w-4" /> {t("admin.ventes.clients.nouveau")}
             </Button>
           </span>
         )
@@ -413,7 +448,8 @@ export default function AdminCustomers() {
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Rechercher (nom, email, wilaya, tél)…"
+          placeholder={t("admin.ventes.clients.recherche_placeholder")}
+          aria-label={t("admin.socle.commun.rechercher")}
           className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -425,21 +461,23 @@ export default function AdminCustomers() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nom</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Téléphone</TableHead>
-              <TableHead>Wilaya</TableHead>
-              <TableHead className="text-end">Commandes</TableHead>
-              <TableHead className="text-end">Dépensé (LTV)</TableHead>
-              <TableHead>Dernière commande</TableHead>
-              <TableHead className="w-[140px] text-end">Actions</TableHead>
+              {COLONNES.map((c) => (
+                <TableHead
+                  key={c.key}
+                  className={[c.width, c.align === "end" ? "text-end" : "text-start"]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {t(c.key)}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <>
                 <tr className="sr-only" aria-busy="true">
-                  <td>Chargement des clients…</td>
+                  <td>{t("admin.ventes.clients.chargement")}</td>
                 </tr>
                 {Array.from({ length: 5 }, (_, i) => (
                   <TableRow key={i}>
@@ -476,7 +514,7 @@ export default function AdminCustomers() {
                         className="me-1"
                         onClick={() => setSelected(c)}
                       >
-                        Détails
+                        {t("admin.ventes.clients.details")}
                       </Button>
 
                       {/* Modifier — niveau 1+3 */}
@@ -484,14 +522,20 @@ export default function AdminCustomers() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Modifier"
+                          title={t("admin.socle.commun.modifier")}
+                          aria-label={t("admin.socle.commun.modifier")}
                           onClick={() => openEdit(c)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                       ) : (
                         <span title={denyReason("update")} className="inline-flex align-middle">
-                          <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled
+                            aria-label={t("admin.socle.commun.modifier")}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
                         </span>
@@ -499,13 +543,13 @@ export default function AdminCustomers() {
 
                       {/* Supprimer — niveau 1+3 */}
                       <span
-                        title={denyReason("delete") ?? "Supprimer"}
+                        title={denyReason("delete") ?? t("admin.socle.commun.supprimer")}
                         className="inline-flex align-middle"
                       >
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Supprimer"
+                          aria-label={t("admin.socle.commun.supprimer")}
                           disabled={!can("delete")}
                           onClick={() => setToDelete(c)}
                         >
@@ -520,12 +564,12 @@ export default function AdminCustomers() {
                 {rows.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={COLONNES.length}
                       className="h-24 text-center text-sm text-muted-foreground"
                     >
                       {q
-                        ? "Aucun client ne correspond à la recherche."
-                        : "Aucun client enregistré. Créez le premier client avec le bouton ci-dessus."}
+                        ? t("admin.ventes.clients.vide_recherche")
+                        : t("admin.ventes.clients.vide_aucun")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -554,18 +598,29 @@ export default function AdminCustomers() {
                   <MapPin className="h-4 w-4 text-muted-foreground" /> {selected.wilaya}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" /> Inscrit le{" "}
-                  {new Date(selected.createdAt).toLocaleDateString("fr-FR")}
+                  <Calendar className="h-4 w-4 text-muted-foreground" />{" "}
+                  {t("admin.ventes.clients.inscrit_le", {
+                    date: new Date(selected.createdAt).toLocaleDateString("fr-FR"),
+                  })}
                 </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-4">
                 {[
-                  { label: "LTV", value: formatDZD(detailStats.ltv) },
-                  { label: "Commandes", value: detailStats.count.toString() },
-                  { label: "Panier moyen", value: formatDZD(detailStats.aov) },
                   {
-                    label: "Dernière",
+                    label: t("admin.ventes.clients.kpi_ltv"),
+                    value: formatDZD(detailStats.ltv),
+                  },
+                  {
+                    label: t("admin.ventes.clients.kpi_commandes"),
+                    value: detailStats.count.toString(),
+                  },
+                  {
+                    label: t("admin.ventes.clients.kpi_panier_moyen"),
+                    value: formatDZD(detailStats.aov),
+                  },
+                  {
+                    label: t("admin.ventes.clients.kpi_derniere"),
                     value: detailStats.last
                       ? new Date(detailStats.last).toLocaleDateString("fr-FR")
                       : "—",
@@ -579,15 +634,23 @@ export default function AdminCustomers() {
               </div>
 
               <div>
-                <h3 className="mb-2 text-sm font-semibold">Historique des commandes</h3>
+                <h3 className="mb-2 text-sm font-semibold">
+                  {t("admin.ventes.clients.historique_commandes")}
+                </h3>
                 <div className="max-h-72 overflow-y-auto rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead className="text-end">Total</TableHead>
+                        <TableHead className="text-start">ID</TableHead>
+                        <TableHead className="text-start">
+                          {t("admin.ventes.commandes.col_date")}
+                        </TableHead>
+                        <TableHead className="text-start">
+                          {t("admin.ventes.commandes.col_statut")}
+                        </TableHead>
+                        <TableHead className="text-end">
+                          {t("admin.ventes.commandes.col_total")}
+                        </TableHead>
                         <TableHead />
                       </TableRow>
                     </TableHeader>
@@ -600,7 +663,7 @@ export default function AdminCustomers() {
                           </TableCell>
                           <TableCell>
                             <Badge variant={STATUS_VARIANT[o.status]}>
-                              {STATUS_LABEL[o.status]}
+                              {t(STATUS_KEY[o.status])}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-end font-medium">
@@ -611,7 +674,7 @@ export default function AdminCustomers() {
                               to={`/admin/orders/${o.id}`}
                               className="text-xs text-primary hover:underline"
                             >
-                              Ouvrir
+                              {t("admin.ventes.clients.ouvrir_commande")}
                             </Link>
                           </TableCell>
                         </TableRow>
@@ -622,7 +685,7 @@ export default function AdminCustomers() {
                             colSpan={5}
                             className="h-16 text-center text-sm text-muted-foreground"
                           >
-                            Aucune commande.
+                            {t("admin.ventes.clients.aucune_commande")}
                           </TableCell>
                         </TableRow>
                       )}
@@ -643,7 +706,7 @@ export default function AdminCustomers() {
                     }}
                   >
                     <Pencil className="me-2 h-4 w-4" />
-                    Modifier
+                    {t("admin.socle.commun.modifier")}
                   </Button>
                 </div>
               )}
@@ -664,37 +727,29 @@ export default function AdminCustomers() {
         saving={saving}
       />
 
-      {/* Dialog de confirmation de suppression avec garde métier */}
+      {/* Dialog de confirmation de suppression avec garde métier.
+          La description utilise une clé i18n complète avec pluriel — jamais de
+          phrase fragmentée autour d'un élément JSX (règle §5 de la convention). */}
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(o) => {
           if (!o) setToDelete(null);
         }}
-        title="Supprimer ce client ?"
+        title={t("admin.ventes.clients.supprimer_titre")}
         description={
-          toDelete ? (
-            deleteOrderCount > 0 ? (
-              <>
-                Impossible : le client <strong>{toDelete.name}</strong> est rattaché à{" "}
-                <strong>
-                  {deleteOrderCount} commande{deleteOrderCount > 1 ? "s" : ""} active
-                  {deleteOrderCount > 1 ? "s" : ""}
-                </strong>
-                . Clôturez ou annulez ces commandes depuis{" "}
-                <Link to="/admin/orders" className="text-primary underline">
-                  /admin/orders
-                </Link>{" "}
-                avant de supprimer ce client.
-              </>
-            ) : (
-              <>
-                Le client <strong>{toDelete.name}</strong> ({toDelete.email}) sera supprimé
-                définitivement. Cette action est irréversible.
-              </>
-            )
-          ) : null
+          toDelete
+            ? deleteOrderCount > 0
+              ? t("admin.ventes.clients.supprimer_bloque", {
+                  nom: toDelete.name,
+                  n: deleteOrderCount,
+                })
+              : t("admin.ventes.clients.supprimer_description", {
+                  nom: toDelete.name,
+                  email: toDelete.email,
+                })
+            : null
         }
-        confirmLabel="Supprimer"
+        confirmLabel={t("admin.socle.commun.supprimer")}
         destructive
         onConfirm={deleteOrderCount > 0 ? () => setToDelete(null) : confirmDelete}
       />
