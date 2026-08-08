@@ -29,6 +29,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -159,6 +160,8 @@ final class ControleurCoupons
                 'updated_at' => $maintenant,
             ]);
 
+            Journal::consigner($this->db, 'coupon_cree', 'coupon', ['code' => $code, 'type' => $type]);
+
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollback();
@@ -250,6 +253,8 @@ final class ControleurCoupons
                 $params,
             );
 
+            Journal::consigner($this->db, 'coupon_modifie', 'coupon', ['code' => $code]);
+
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollback();
@@ -278,6 +283,8 @@ final class ControleurCoupons
         if ($n === 0) {
             throw ApiException::introuvable("Aucun code promo « {$code} » n'existe.");
         }
+
+        Journal::consigner($this->db, 'coupon_supprime', 'coupon', ['code' => $code]);
 
         return Reponse::vide();
     }

@@ -21,6 +21,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -156,6 +157,8 @@ final class ControleurClients
                 'updated_at' => $maintenant,
             ]);
 
+            Journal::consigner($this->db, 'client_cree', 'customer', ['id' => $id, 'name' => $nom]);
+
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollback();
@@ -239,6 +242,8 @@ final class ControleurClients
                 $params,
             );
 
+            Journal::consigner($this->db, 'client_modifie', 'customer', ['id' => $id]);
+
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollback();
@@ -297,6 +302,8 @@ final class ControleurClients
                 [':maj' => gmdate('c'), ':client' => $id],
             );
             $this->db->run('DELETE FROM customers WHERE id = :id', [':id' => $id]);
+
+            Journal::consigner($this->db, 'client_supprime', 'customer', ['id' => $id]);
 
             $this->db->commit();
         } catch (\Throwable $e) {

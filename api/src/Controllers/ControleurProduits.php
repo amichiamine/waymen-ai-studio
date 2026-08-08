@@ -29,6 +29,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -154,6 +155,8 @@ final class ControleurProduits
             'updated_at' => $maintenant,
         ]), ['id'], $colsMaj));
 
+        Journal::consigner($this->db, 'produit_cree', 'product', ['id' => $donnees['id']]);
+
         return Reponse::cree($this->enDto(
             (array) $this->db->un('SELECT ' . self::SELECTION . ' FROM products WHERE id = :id', [':id' => $donnees['id']])
         ));
@@ -194,6 +197,8 @@ final class ControleurProduits
             ),
         );
 
+        Journal::consigner($this->db, 'produit_modifie', 'product', ['id' => $id, 'champs' => array_keys($donnees)]);
+
         return Reponse::ok($this->enDto(
             (array) $this->db->un('SELECT ' . self::SELECTION . ' FROM products WHERE id = :id', [':id' => $id])
         ));
@@ -215,6 +220,8 @@ final class ControleurProduits
         if ($n === 0) {
             throw ApiException::introuvable("Aucun produit ne porte l'identifiant « {$id} ».");
         }
+
+        Journal::consigner($this->db, 'produit_supprime', 'product', ['id' => $id]);
 
         return Reponse::vide();
     }
@@ -298,6 +305,12 @@ final class ControleurProduits
             'SELECT stock_qty FROM products WHERE id = :id',
             [':id' => $id],
         );
+
+        Journal::consigner($this->db, 'stock_ajuste', 'product', [
+            'id'         => $id,
+            'delta'      => $delta,
+            'nouveauStock' => $nouveauStock,
+        ]);
 
         return Reponse::ok(['stockQty' => $nouveauStock]);
     }
