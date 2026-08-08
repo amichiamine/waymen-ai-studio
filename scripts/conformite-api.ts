@@ -853,9 +853,6 @@ const RESSOURCES: readonly Ressource[] = [
       { nom: "detail", type: "chaine", requis: false },
       { nom: "createdAt", type: "iso8601" },
     ],
-    providerNonBranche:
-      "src/data-provider/audit-logs.ts — `fromHttp` lève une ApiError 501 " +
-      "alors que `GET /analytics/audit` existe.",
   },
   {
     cle: ".messages",
