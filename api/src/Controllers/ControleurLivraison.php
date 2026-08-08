@@ -25,6 +25,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Reponse;
 use KaTech\Requete;
 
@@ -99,6 +100,8 @@ final class ControleurLivraison
             [':code' => $code],
         );
 
+        Journal::consigner($this->db, 'tarif_livraison_upsert', 'shipping_rate', ['wilayaCode' => $code]);
+
         return Reponse::ok($this->enDto((array) $ligne));
     }
 
@@ -118,6 +121,8 @@ final class ControleurLivraison
         if ($n === 0) {
             throw ApiException::introuvable("Aucun tarif pour la wilaya « {$code} ».");
         }
+
+        Journal::consigner($this->db, 'tarif_livraison_supprime', 'shipping_rate', ['wilayaCode' => $code]);
 
         return Reponse::vide();
     }
