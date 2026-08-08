@@ -1,16 +1,16 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Trash2, Minus, Plus, ShoppingBag, Tag, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
-import { useProducts } from "@/lib/useProducts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useCouponMutations } from "@/data-provider";
+import { useCouponMutations, useProductDetail } from "@/data-provider";
 import type { CouponCheckResult } from "@/api/types";
+import type { Product } from "@/data/products";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
 
@@ -20,24 +20,176 @@ const COUPON_KEY = "ka-cart-coupon";
 /** Forme réduite d'un coupon validé — issu de `CouponCheckResult` (branche `valid: true`). */
 type AppliedCoupon = Extract<CouponCheckResult, { valid: true }>;
 
-export default function Cart() {
+/**
+ * Contribution d'une ligne au total du panier.
+ * Transmise au parent via `onContribution` dès que le produit est résolu.
+ */
+type LineContribution = {
+  product_id: string;
+  price: number; // 0 si introuvable (la ligne s'affiche mais ne contribue pas au total)
+  quantity: number;
+  stock: Product["stock"] | null;
+};
+
+type CartLineProps = {
+  product_id: string;
+  quantity: number;
+  onContribution: (c: LineContribution) => void;
+  onQtyChange: (productId: string, qty: number) => void;
+  onRemove: (productId: string) => void;
+};
+
+/**
+ * Ligne de panier autonome — résout son propre produit via `useProductDetail`.
+ *
+ * Raison d'être : après l'exclusion des `custom_build` du listing public, un
+ * article de configuration n'est plus renvoyé par `GET /products?perPage=100`
+ * mais reste accessible via `GET /products/:id`. Cette résolution individuelle
+ * garantit qu'aucune ligne ne disparaît silencieusement du panier.
+ *
+ * Le mode mock n'est pas impacté : `useProductDetail` lit le store local, qui
+ * contient toujours les configurations.
+ */
+function CartLine({ product_id, quantity, onContribution, onQtyChange, onRemove }: CartLineProps) {
+  const { data: product, loading, error } = useProductDetail(product_id);
   const { t } = useI18n();
   const L = useLocalize();
+
+  useEffect(() => {
+    if (loading) return;
+    onContribution({
+      product_id,
+      price: product ? product.price : 0,
+      quantity,
+      stock: product ? product.stock : null,
+    });
+  }, [product_id, product, loading, quantity, onContribution]);
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center gap-4 p-4">
+          <div className="h-20 w-20 animate-pulse rounded bg-muted" />
+          <div className="h-4 flex-1 animate-pulse rounded bg-muted" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!product) {
+    return (
+      <Card className="border-destructive/40 bg-destructive/5">
+        <CardContent className="flex items-center gap-3 p-4">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+          <p className="flex-1 text-sm text-destructive">
+            {error ? error.message : t("cart.badge.out")} — {product_id}
+          </p>
+          <Button size="icon" variant="ghost" onClick={() => onRemove(product_id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-4 p-4">
+        <ImageCatalogue
+          src={product.image}
+          alt={L(product.name) ?? ""}
+          className="h-20 w-20 rounded object-cover"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{L(product.name) ?? ""}</p>
+          <p className="text-xs text-muted-foreground">{L(product.specLine)}</p>
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-sm font-semibold text-primary">{fmt(product.price)}</p>
+            {product.stock === "out" && (
+              <Badge variant="destructive" className="text-[10px]">
+                {t("cart.badge.out")}
+              </Badge>
+            )}
+            {product.stock === "low" && (
+              <Badge variant="secondary" className="text-[10px]">
+                {t("cart.badge.low")}
+              </Badge>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => onQtyChange(product_id, quantity - 1)}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          <span className="w-8 text-center">{quantity}</span>
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => onQtyChange(product_id, quantity + 1)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+        <Button size="icon" variant="ghost" onClick={() => onRemove(product_id)}>
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function Cart() {
+  const { t } = useI18n();
   const { cart, updateQty, removeFromCart } = useStore();
-  const products = useProducts();
   const { validate: validateCoupon } = useCouponMutations();
 
   const [couponInput, setCouponInput] = useState("");
   const [applied, setApplied] = useState<AppliedCoupon | null>(null);
 
-  const lines = cart
-    .map((c) => {
-      const p = products.find((x) => x.id === c.product_id);
-      return p ? { ...c, product: p } : null;
-    })
-    .filter((x): x is NonNullable<typeof x> => !!x);
+  /**
+   * Contributions résumées par identifiant de produit.
+   * Mise à jour par chaque ligne dès que son produit est résolu.
+   */
+  const [contributions, setContributions] = useState<Map<string, LineContribution>>(
+    () => new Map(),
+  );
 
-  const subtotal = lines.reduce((a, l) => a + l.product.price * l.quantity, 0);
+  const handleContribution = useCallback((c: LineContribution) => {
+    setContributions((prev) => {
+      const next = new Map(prev);
+      next.set(c.product_id, c);
+      return next;
+    });
+  }, []);
+
+  // Nettoyer les contributions des articles retirés du panier.
+  const prevCartRef = useRef(cart);
+  useEffect(() => {
+    const currentIds = new Set(cart.map((c) => c.product_id));
+    const prevIds = new Set(prevCartRef.current.map((c) => c.product_id));
+    const removed = [...prevIds].filter((id) => !currentIds.has(id));
+    if (removed.length > 0) {
+      setContributions((prev) => {
+        const next = new Map(prev);
+        removed.forEach((id) => next.delete(id));
+        return next;
+      });
+    }
+    prevCartRef.current = cart;
+  }, [cart]);
+
+  const subtotal = cart.reduce((acc, entry) => {
+    const c = contributions.get(entry.product_id);
+    return acc + (c ? c.price * c.quantity : 0);
+  }, 0);
+
+  const hasOutOfStock = [...contributions.values()].some(
+    (c) => c.stock === "out" || c.stock === null,
+  );
 
   // `validateCoupon` est stable (mémoïsé dans useCouponMutations) — on peut
   // l'inclure dans les deps sans risquer de boucle.
@@ -108,7 +260,6 @@ export default function Cart() {
     window.localStorage.removeItem(COUPON_KEY);
   }
 
-  const hasOutOfStock = lines.some((l) => l.product.stock === "out");
   const discount = applied?.discount ?? 0;
   const total = Math.max(0, subtotal - discount);
 
@@ -121,7 +272,7 @@ export default function Cart() {
       </Helmet>
       <h1 className="mb-6 text-2xl font-bold">{t("cart.title")}</h1>
 
-      {lines.length === 0 ? (
+      {cart.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-md border border-dashed p-12 text-center">
           <ShoppingBag className="h-10 w-10 text-muted-foreground" />
           <p className="text-muted-foreground">{t("cart.empty")}</p>
@@ -132,53 +283,15 @@ export default function Cart() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
-            {lines.map((l) => (
-              <Card key={l.product_id}>
-                <CardContent className="flex items-center gap-4 p-4">
-                  <ImageCatalogue
-                    src={l.product.image}
-                    alt={L(l.product.name) ?? ""}
-                    className="h-20 w-20 rounded object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{L(l.product.name) ?? ""}</p>
-                    <p className="text-xs text-muted-foreground">{L(l.product.specLine)}</p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <p className="text-sm font-semibold text-primary">{fmt(l.product.price)}</p>
-                      {l.product.stock === "out" && (
-                        <Badge variant="destructive" className="text-[10px]">
-                          {t("cart.badge.out")}
-                        </Badge>
-                      )}
-                      {l.product.stock === "low" && (
-                        <Badge variant="secondary" className="text-[10px]">
-                          {t("cart.badge.low")}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => updateQty(l.product_id, l.quantity - 1)}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-8 text-center">{l.quantity}</span>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => updateQty(l.product_id, l.quantity + 1)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <Button size="icon" variant="ghost" onClick={() => removeFromCart(l.product_id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
+            {cart.map((entry) => (
+              <CartLine
+                key={entry.product_id}
+                product_id={entry.product_id}
+                quantity={entry.quantity}
+                onContribution={handleContribution}
+                onQtyChange={updateQty}
+                onRemove={removeFromCart}
+              />
             ))}
           </div>
 

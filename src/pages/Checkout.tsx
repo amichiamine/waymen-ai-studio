@@ -1,9 +1,8 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
-import { useProducts } from "@/lib/useProducts";
 import { WILAYAS } from "@/data/wilayas";
 import { useAuth } from "@/lib/auth";
 import {
@@ -12,6 +11,7 @@ import {
   useShippingRateList,
   useOrderMutations,
   useCouponMutations,
+  useProductDetail,
 } from "@/data-provider";
 import { useAddresses } from "@/lib/addresses";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertTriangle, Tag, MapPin } from "lucide-react";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
+import type { Product } from "@/data/products";
 
 const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 const COUPON_KEY = "ka-cart-coupon";
@@ -53,12 +54,77 @@ function calcShipping(
   return kind === "home" ? rate.home : rate.desk;
 }
 
+/**
+ * Contribution d'une ligne au récapitulatif de commande.
+ * Transmise au parent via `onContribution` dès que le produit est résolu.
+ */
+type LineContribution = {
+  product_id: string;
+  quantity: number;
+  price: number;
+  stock: Product["stock"] | null;
+};
+
+type CheckoutLineProps = {
+  product_id: string;
+  quantity: number;
+  onContribution: (c: LineContribution) => void;
+};
+
+/**
+ * Ligne de récapitulatif de commande — résout son propre produit via
+ * `useProductDetail`, de sorte qu'un article `custom_build` absent du listing
+ * public soit toujours visible dans le résumé de commande.
+ */
+function CheckoutLine({ product_id, quantity, onContribution }: CheckoutLineProps) {
+  const { data: product, loading } = useProductDetail(product_id);
+  const L = useLocalize();
+
+  useEffect(() => {
+    if (loading) return;
+    onContribution({
+      product_id,
+      quantity,
+      price: product ? product.price : 0,
+      stock: product ? product.stock : null,
+    });
+  }, [product_id, product, loading, quantity, onContribution]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 text-sm">
+        <div className="h-12 w-12 animate-pulse rounded bg-muted" />
+        <div className="h-4 flex-1 animate-pulse rounded bg-muted" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex items-center gap-3 text-sm text-destructive">
+        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="truncate">{product_id}</span>
+        <span>× {quantity}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <ImageCatalogue src={product.image} alt="" className="h-12 w-12 rounded object-cover" />
+      <div className="min-w-0 flex-1 text-start">
+        <p className="truncate">{L(product.name) ?? ""}</p>
+        <p className="text-xs text-muted-foreground">× {quantity}</p>
+      </div>
+      <span className="whitespace-nowrap">{fmt(product.price * quantity)}</span>
+    </div>
+  );
+}
+
 export default function Checkout() {
   const { user } = useAuth();
   const { cart, clearCart } = useStore();
-  const products = useProducts();
   const { t } = useI18n();
-  const L = useLocalize();
 
   // Lectures via le provider — loading/error inertes en mode mock.
   const { data: paymentMethods } = usePaymentMethodList();
@@ -92,6 +158,47 @@ export default function Checkout() {
   const [couponCode, setCouponCode] = useState<string | undefined>(undefined);
   const [discount, setDiscount] = useState(0);
 
+  /**
+   * Contributions résumées par identifiant de produit.
+   * Mise à jour par chaque `CheckoutLine` dès que son produit est résolu.
+   */
+  const [contributions, setContributions] = useState<Map<string, LineContribution>>(
+    () => new Map(),
+  );
+
+  const handleContribution = useCallback((c: LineContribution) => {
+    setContributions((prev) => {
+      const next = new Map(prev);
+      next.set(c.product_id, c);
+      return next;
+    });
+  }, []);
+
+  // Nettoyer les contributions des articles retirés du panier.
+  const prevCartRef = useRef(cart);
+  useEffect(() => {
+    const currentIds = new Set(cart.map((c) => c.product_id));
+    const prevIds = new Set(prevCartRef.current.map((c) => c.product_id));
+    const removed = [...prevIds].filter((id) => !currentIds.has(id));
+    if (removed.length > 0) {
+      setContributions((prev) => {
+        const next = new Map(prev);
+        removed.forEach((id) => next.delete(id));
+        return next;
+      });
+    }
+    prevCartRef.current = cart;
+  }, [cart]);
+
+  const subtotal = cart.reduce((acc, entry) => {
+    const c = contributions.get(entry.product_id);
+    return acc + (c ? c.price * c.quantity : 0);
+  }, 0);
+
+  const outOfStock = [...contributions.values()].filter(
+    (c) => c.stock === "out" || c.stock === null,
+  );
+
   useEffect(() => {
     if (!paymentId && activePayments.length) setPaymentId(activePayments[0].id);
   }, [activePayments, paymentId]);
@@ -106,15 +213,6 @@ export default function Checkout() {
       setAddress(a.address);
     }
   }, [addressId, addresses]);
-
-  const lines = cart
-    .map((c) => {
-      const p = products.find((x) => x.id === c.product_id);
-      return p ? { ...c, product: p } : null;
-    })
-    .filter((x): x is NonNullable<typeof x> => !!x);
-
-  const subtotal = lines.reduce((a, l) => a + l.product.price * l.quantity, 0);
 
   // Lecture du coupon stocké : on le résout de façon asynchrone au montage.
   useEffect(() => {
@@ -148,7 +246,6 @@ export default function Checkout() {
     : 0;
   const total = Math.max(0, subtotal - discount) + shipping;
 
-  const outOfStock = lines.filter((l) => l.product.stock === "out");
   const canSubmit = !!wilaya && !!paymentId && outOfStock.length === 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,7 +263,7 @@ export default function Checkout() {
     try {
       const pm = activePayments.find((p) => p.id === paymentId);
       const result = await createOrder({
-        items: lines.map((l) => ({ productId: l.product_id, qty: l.quantity })),
+        items: cart.map((entry) => ({ productId: entry.product_id, qty: entry.quantity })),
         customer: {
           name,
           phone,
@@ -196,7 +293,7 @@ export default function Checkout() {
     }
   };
 
-  if (lines.length === 0) {
+  if (cart.length === 0) {
     return (
       <div className="container mx-auto max-w-2xl px-4 py-16 text-center">
         <p className="text-muted-foreground">{t("checkout.empty")}</p>
@@ -426,19 +523,13 @@ export default function Checkout() {
             <CardTitle>{t("checkout.summary.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {lines.map((l) => (
-              <div key={l.product_id} className="flex items-center gap-3 text-sm">
-                <ImageCatalogue
-                  src={l.product.image}
-                  alt=""
-                  className="h-12 w-12 rounded object-cover"
-                />
-                <div className="min-w-0 flex-1 text-start">
-                  <p className="truncate">{L(l.product.name) ?? ""}</p>
-                  <p className="text-xs text-muted-foreground">× {l.quantity}</p>
-                </div>
-                <span className="whitespace-nowrap">{fmt(l.product.price * l.quantity)}</span>
-              </div>
+            {cart.map((entry) => (
+              <CheckoutLine
+                key={entry.product_id}
+                product_id={entry.product_id}
+                quantity={entry.quantity}
+                onContribution={handleContribution}
+              />
             ))}
             <div className="space-y-1 border-t pt-3 text-sm">
               <div className="flex justify-between">
@@ -466,7 +557,7 @@ export default function Checkout() {
             {outOfStock.length > 0 && (
               <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>{outOfStock.map((l) => l.product.name).join(", ")}</span>
+                <span>{outOfStock.map((l) => l.product_id).join(", ")}</span>
               </div>
             )}
 

@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace KaTech\Controllers;
 
 use KaTech\ApiException;
+use KaTech\Auth\Garde;
 use KaTech\Db;
 use KaTech\Journal;
 use KaTech\Pagination;
@@ -328,6 +329,15 @@ final class ControleurProduits
     {
         $where = [];
         $params = [];
+
+        // Les configurations (`custom_build = 1`) sont des produits internes
+        // créés par le configurateur. Elles ne doivent pas apparaître dans le
+        // catalogue public. Les utilisateurs ayant au moins le rôle « editor »
+        // (back-office) continuent de les voir pour les gérer.
+        // L'index `idx_products_catalogue (custom_build, category)` couvre ce filtre.
+        if (!Garde::estAuMoins('editor')) {
+            $where[] = 'custom_build = 0';
+        }
 
         if (($v = $r->query('category')) !== null) {
             $where[] = 'category = :category';
