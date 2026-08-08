@@ -20,7 +20,7 @@
 # HORS de public_html (DB_SQLITE_PATH). C'est la seule qui survive à la perte
 # totale des .htaccess. Elle est obligatoire — voir docs/DEPLOIEMENT.md.
 #
-# ATTENTION avant toute modification : les 93 routes de l'API sont des URL
+# ATTENTION avant toute modification : les 98 routes de l'API sont des URL
 # virtuelles réécrites vers index.php. Une règle de refus trop large les
 # casserait toutes. Aucune route ne commence par src/, schema/, tools/, var/
 # ou vendor/, et aucune ne se termine par .env, .sql ou .md — c'est ce qui

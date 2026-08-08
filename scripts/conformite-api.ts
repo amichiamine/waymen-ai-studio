@@ -3,7 +3,7 @@
  *
  * ## Le problème qu'il résout
  *
- * `src/data-provider/**` (24 ressources) et `api/**` (18 contrôleurs, 94
+ * `src/data-provider/**` (24 ressources) et `api/**` (18 contrôleurs, 98
  * routes) ont été écrits contre le même contrat, par des agents différents,
  * sans jamais se parler. Chaque moitié a été testée de son côté. Personne
  * n'avait vérifié qu'elles s'accordent.
@@ -519,8 +519,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".categories",
     hook: "useCategoryList()",
-    chemin: "/categories",
+    chemin: "/categories?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "slug", type: "chaine" },
       { nom: "label", type: "chaine" },
@@ -535,8 +536,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".brands",
     hook: "useBrandList()",
-    chemin: "/brands",
+    chemin: "/brands?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "name", type: "chaine" },
@@ -551,8 +553,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".orders",
     hook: "useOrderList()",
-    chemin: "/orders",
+    chemin: "/orders?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: CHAMPS_COMMANDE,
     sondes: [
       { methode: "PATCH", chemin: `/orders/${ID_ABSENT}/status`, libelle: "updateStatus" },
@@ -572,8 +575,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".customers",
     hook: "useCustomerList()",
-    chemin: "/customers",
+    chemin: "/customers?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "name", type: "chaine" },
@@ -592,8 +596,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".coupons",
     hook: "useCouponList()",
-    chemin: "/coupons",
+    chemin: "/coupons?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "code", type: "chaine" },
       { nom: "type", type: "chaine", valeurs: ["percent", "fixed"] },
@@ -612,9 +617,10 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".reviews",
     hook: "useReviewList()",
-    chemin: "/reviews",
+    chemin: "/reviews?perPage=100",
     // `reviewsApi.list()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: CHAMPS_AVIS,
     sondes: [
       { methode: "PATCH", chemin: `/reviews/${ID_ABSENT}/status`, libelle: "moderate avis" },
@@ -624,17 +630,19 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".reviews (d'un produit)",
     hook: "useProductReviewList()",
-    chemin: "/products/rog-strix-g16/reviews",
+    chemin: "/products/rog-strix-g16/reviews?perPage=100",
     // `reviewsApi.byProduct()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: CHAMPS_AVIS,
   },
   {
     cle: ".users",
     hook: "useUserList()",
-    chemin: "/admin/users",
+    chemin: "/admin/users?perPage=100",
     // `usersApi.list()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "name", type: "chaine" },
@@ -653,8 +661,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".blogPosts",
     hook: "useBlogPostList()",
-    chemin: "/blog",
+    chemin: "/blog?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "slug", type: "chaine" },
@@ -777,9 +786,10 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".stockMovements",
     hook: "useStockMovementList()",
-    chemin: "/inventory/movements",
+    chemin: "/inventory/movements?perPage=100",
     // `inventoryApi.movements()` déballe `.items` de l'enveloppe paginée (lot 1 corrigé).
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "productId", type: "chaine" },
@@ -796,8 +806,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".mediaAssets",
     hook: "useMediaAssetList()",
-    chemin: "/media",
+    chemin: "/media?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "name", type: "chaine" },
@@ -815,8 +826,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".notifications",
     hook: "useNotificationList()",
-    chemin: "/notifications",
+    chemin: "/notifications?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "title", type: "chaine" },
@@ -830,8 +842,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".auditLogs",
     hook: "useAuditLogList()",
-    chemin: "/analytics/audit",
+    chemin: "/analytics/audit?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "actor", type: "chaine" },
@@ -847,8 +860,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".messages",
     hook: "useContactMessageList()",
-    chemin: "/messages",
+    chemin: "/messages?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "name", type: "chaine" },
@@ -867,8 +881,9 @@ const RESSOURCES: readonly Ressource[] = [
   {
     cle: ".subscribers",
     hook: "useSubscriberList()",
-    chemin: "/subscribers",
+    chemin: "/subscribers?perPage=100",
     enveloppe: "paginee",
+    perPageEnvoye: 100,
     champs: [
       { nom: "id", type: "chaine" },
       { nom: "email", type: "chaine" },

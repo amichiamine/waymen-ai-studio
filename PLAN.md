@@ -707,15 +707,30 @@ de vrai sur les **trois pilotes**.
 
 Validé à froid par l'orchestrateur, pas sur rapport : `install.php` exécuté sur
 SQLite, MySQL et PostgreSQL, seed appliqué, serveur lancé, et `GET /products`
-interrogé en HTTP réel sur les trois. **Résultats rigoureusement identiques** —
-même enveloppe, même pagination, même tri, y compris sur une recherche en arabe
-dans les champs `Localized`. `/health` confirme le pilote actif, 404 et 405 sont
-bien enveloppés.
+interrogé en HTTP réel sur les trois. Même enveloppe, même pagination, y compris
+sur une recherche en arabe dans les champs `Localized`. `/health` confirme le
+pilote actif, 404 et 405 sont bien enveloppés.
 
 Le vérificateur de parité des schémas (`api/tools/verifier-parite-schema.php`)
 passe sur les **trois** fichiers de schéma, et il a été **testé en négatif** :
 en modifiant une nullabilité et en retirant un index, il signale les deux écarts
 et échoue. Il entrera dans la CI.
+
+> **Dette technique identifiée le 8 août 2026 — tri non identique entre moteurs.**
+> `GET /brands` (et toute liste triée par colonne texte) renvoie les résultats
+> dans un ordre différent selon le moteur :
+>
+> - SQLite (tri binaire) : `ASUS, Apple, Dell, HP, KA Build, Lenovo, Samsung, Xiaomi`
+> - PostgreSQL (tri binaire) : `ASUS, Apple, Dell, HP, KA Build, Lenovo, Samsung, Xiaomi`
+> - MySQL/MariaDB (`utf8mb4_unicode_ci`, insensible à la casse) : `Apple, ASUS, Dell, HP, KA Build, Lenovo, Samsung, Xiaomi`
+>
+> Cause : `utf8mb4_unicode_ci` traite `A` et `a` comme équivalents pour le tri ;
+> SQLite et PostgreSQL font un tri binaire (majuscule `A` < minuscule `a`).
+> `api/tools/verifier-parite-schema.php` ne le détecte pas : il compare la
+> **structure** (23 tables, 184 colonnes, 25 index), pas le **comportement de tri**.
+> Écart non bloquant pour la vague 4.8 (l'ordre d'affichage dans l'admin est
+> cosmétique), à traiter dans une vague ultérieure avec `COLLATE` explicite ou
+> normalisation des noms.
 
 #### Décision : aucune dépendance Composer
 
@@ -765,7 +780,7 @@ installés en développement l'a fait apparaître immédiatement.
   (rang `owner`).
 - Vérificateur de parité des trois schémas (`api/tools/verifier-parite-schema.php`).
 
-#### Vague 4.8 — EN COURS (6 août 2026)
+#### Vague 4.8 — EN COURS (mise à jour 8 août 2026)
 
 **Documentation mise à jour** (agent intermédiaire, périmètre : `README.md`,
 `docs/DEPLOIEMENT.md`, `api/.env.example`, `PLAN.md`) :
@@ -791,9 +806,28 @@ installés en développement l'a fait apparaître immédiatement.
   fait en fin de requête depuis la vague 4.5. `vider-outbox.php` est un outil de
   réessai manuel.
 
+**Correctifs livrés le 8 août 2026 :**
+
+- Pagination (`69f881c`) : 15 providers paginés transmettent désormais
+  `perPage: 100`. Risque de troncature silencieuse à 20 éliminé. Le harnais
+  `scripts/conformite-api.ts` a été mis à jour en conséquence : 0 risques
+  latents contre 15 avant.
+- Médias (`4b800d4`) : route `PATCH /media/:id` ajoutée. `.mediaAssets` passe
+  conforme (sonde PATCH → 404, non 405 comme avant).
+- Migration : cause réelle d'un échec de connexion rendue visible
+  (`deb0ba6`).
+- CI (`f352758`) : harnais de conformité entré dans le workflow GitHub Actions
+  (branches `chantier/*`).
+- Instruments de mesure (`docs/CONFORMITE-API.md`, `PLAN.md`,
+  `scripts/conformite-api.ts`, `api/.htaccess`) : mis à jour pour refléter la
+  réalité mesurée le 8 août — 26/27 conformes, 0 risques latents, 98 routes,
+  dette de tri identifiée (voir §8 vague 4.1).
+
 **Ce qui reste :**
 
 - [ ] 4.8 — bascule `VITE_API_MODE=http` et recette de bout en bout
+- [ ] `.auditLogs` — écrire dans `audit_logs` depuis les contrôleurs de mutation,
+      puis brancher `useAuditLogList()` (voir `docs/CONFORMITE-API.md` §2.1)
 
 **Ce qui reste à documenter une fois les autres agents rentrés :**
 les images du catalogue (`public/media/`) et les règles de cache
