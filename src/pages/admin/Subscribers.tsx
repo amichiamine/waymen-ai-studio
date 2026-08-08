@@ -16,8 +16,10 @@ import {
 import { Download, Trash2 } from "lucide-react";
 import { useSubscriberList, useSubscriberMutations, toApiError } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function AdminSubscribers() {
+  const { t } = useI18n();
   // Lecture via le fournisseur de données — remplace useAdminState().subscribers.
   // En mode mock, `loading` est faux dès le premier rendu et `error` reste nul.
   const { data: subscribers, loading, error } = useSubscriberList();
@@ -41,7 +43,7 @@ export default function AdminSubscribers() {
     a.download = `newsletter-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Export CSV téléchargé");
+    toast.success(t("admin.systeme.newsletter.toast_export"));
   }
 
   // Mutation asynchrone — désactive le bouton pendant l'appel.
@@ -49,11 +51,11 @@ export default function AdminSubscribers() {
     if (!pendingDelete) return;
     // Niveau 2 — vérification dans l'action, pas seulement dans le rendu.
     // Ordre : garde de permission → mutation → retour d'erreur.
-    if (!guard("delete", "Supprimer l'inscrit")) return;
+    if (!guard("delete", t("admin.systeme.newsletter.aria_supprimer"))) return;
     setSaving(true);
     try {
       await remove(pendingDelete.id);
-      toast.success("Désinscrit");
+      toast.success(t("admin.systeme.newsletter.toast_desinscrit"));
       setPendingDelete(null);
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -65,12 +67,12 @@ export default function AdminSubscribers() {
 
   return (
     <AdminPageShell
-      title="Inscrits newsletter"
-      description={`${subscribers.length} inscription(s) collectée(s) via le site.`}
+      title={t("admin.systeme.newsletter.titre")}
+      description={t("admin.systeme.newsletter.description", { n: subscribers.length })}
       actions={
         // Export CSV = lecture : pas de restriction de permission au-delà de l'état vide.
         <Button onClick={exportCsv} disabled={subscribers.length === 0}>
-          <Download className="me-2 h-4 w-4" /> Exporter en CSV
+          <Download className="me-2 h-4 w-4" /> {t("admin.systeme.newsletter.exporter_csv")}
         </Button>
       }
     >
@@ -90,10 +92,16 @@ export default function AdminSubscribers() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Inscrit le</TableHead>
-                <TableHead className="text-end">Actions</TableHead>
+                <TableHead className="text-start">
+                  {t("admin.systeme.newsletter.col_email")}
+                </TableHead>
+                <TableHead className="text-start">
+                  {t("admin.systeme.newsletter.col_source")}
+                </TableHead>
+                <TableHead className="text-start">
+                  {t("admin.systeme.newsletter.col_inscrit_le")}
+                </TableHead>
+                <TableHead className="text-end">{t("admin.socle.commun.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -101,7 +109,7 @@ export default function AdminSubscribers() {
               {loading ? (
                 <>
                   <tr className="sr-only" aria-busy="true">
-                    <td>Chargement des inscrits…</td>
+                    <td>{t("admin.systeme.newsletter.chargement")}</td>
                   </tr>
                   {Array.from({ length: 5 }, (_, i) => (
                     <TableRow key={i}>
@@ -130,13 +138,15 @@ export default function AdminSubscribers() {
                       <TableCell className="text-end">
                         {/* Niveau 1 + Niveau 3 — infobulle sur le <span> */}
                         <span
-                          title={denyReason("delete") ?? "Supprimer"}
+                          title={
+                            denyReason("delete") ?? t("admin.systeme.newsletter.aria_supprimer")
+                          }
                           className="inline-flex align-middle"
                         >
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Supprimer"
+                            aria-label={t("admin.systeme.newsletter.aria_supprimer")}
                             disabled={!can("delete") || saving}
                             onClick={() => setPendingDelete({ id: s.id, email: s.email })}
                           >
@@ -152,7 +162,7 @@ export default function AdminSubscribers() {
                         colSpan={4}
                         className="p-8 text-center text-sm text-muted-foreground"
                       >
-                        Aucun inscrit pour le moment.
+                        {t("admin.systeme.newsletter.vide")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -168,8 +178,12 @@ export default function AdminSubscribers() {
         onOpenChange={(o) => {
           if (!o) setPendingDelete(null);
         }}
-        title={pendingDelete ? `Retirer ${pendingDelete.email} ?` : "Retirer l'inscrit ?"}
-        description="L'adresse sera supprimée définitivement de la liste."
+        title={
+          pendingDelete
+            ? t("admin.systeme.newsletter.retirer_titre", { email: pendingDelete.email })
+            : t("admin.systeme.newsletter.retirer_titre", { email: "" })
+        }
+        description={t("admin.systeme.newsletter.retirer_description")}
         destructive
         onConfirm={confirmDelete}
       />

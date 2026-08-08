@@ -1,22 +1,374 @@
 /**
  * Groupe « systeme » — dictionnaire ar (arabe).
  *
- * PROPRIÉTAIRE : l'agent de réplication chargé du groupe « systeme ». Aucun autre
- * agent n'écrit dans ce fichier ; en échange, cet agent n'écrit dans aucun
- * autre — c'est ce qui permet à cinq agents de travailler en parallèle sans
- * conflit de fusion.
- *
- * Écrans couverts : Audit, Reset, Developpeur.
- *
- * Seul préfixe autorisé ici : `admin.systeme.<page>.<cle>`.
- * Convention obligatoire (nommage, pluriels, RTL, qualité de l'arabe) :
- * `src/lib/i18n/admin/index.ts`. Vocabulaire partagé déjà traduit, à réutiliser
- * plutôt qu'à recopier : `admin.socle.commun.*`, `admin.socle.confirmation.*`,
- * `admin.socle.roles.*`.
- *
- * Les trois langues doivent porter EXACTEMENT les mêmes clés :
- * `bun run verifier-i18n` échoue sinon.
+ * PROPRIÉTAIRE : l'agent de réplication chargé du groupe « systeme ».
+ * Arabe standard moderne, vocabulaire de gestion e-commerce.
+ * Une valeur recopiée du français est un défaut : `bun run verifier-i18n` l'avertit.
+ * Convention complète : `src/lib/i18n/admin/index.ts`.
  */
-const systemeAr: Record<string, string> = {};
+const systemeAr: Record<string, string> = {
+  // ── Reports ───────────────────────────────────────────────────────────────
+  "admin.systeme.rapports.titre": "التقارير",
+  "admin.systeme.rapports.description":
+    "تصدير بيانات المتجر بصيغة CSV (متوافقة مع Excel / Google Sheets).",
+  "admin.systeme.rapports.exporter_csv": "تصدير CSV",
+  "admin.systeme.rapports.note_encodage":
+    "تُنشأ الملفات في المتصفح من بياناتك المحلية. افتحها مباشرةً في Excel أو LibreOffice أو Google Sheets — الترميز UTF-8 مع BOM يحافظ على الأحرف الخاصة.",
+  "admin.systeme.rapports.export_chargement": "البيانات قيد التحميل",
+  "admin.systeme.rapports.export_indisponible": "البيانات غير متوفرة",
+  "admin.systeme.rapports.toast_telecharge": "تم تنزيل {nom}",
+  "admin.systeme.rapports.toast_chargement": "التصدير غير ممكن: البيانات لا تزال تُحمَّل",
+  "admin.systeme.rapports.toast_erreur": "التصدير غير ممكن: {message}",
+  "admin.systeme.rapports.ventes_titre": "المبيعات",
+  "admin.systeme.rapports.ventes_desc": "{count} طلب · {revenue}",
+  "admin.systeme.rapports.clients_titre": "العملاء",
+  "admin.systeme.rapports.clients_desc_un": "عميل مسجَّل واحد",
+  "admin.systeme.rapports.clients_desc_autre": "عدد العملاء المسجَّلين: {n}",
+  "admin.systeme.rapports.stock_titre": "المخزون",
+  "admin.systeme.rapports.stock_desc_un": "منتج واحد في الكتالوج",
+  "admin.systeme.rapports.stock_desc_autre": "عدد المنتجات في الكتالوج: {n}",
+  "admin.systeme.rapports.mouvements_titre": "حركات المخزون",
+  "admin.systeme.rapports.mouvements_desc_un": "حركة واحدة مُسجَّلة",
+  "admin.systeme.rapports.mouvements_desc_autre": "عدد الحركات المُسجَّلة: {n}",
+  "admin.systeme.rapports.coupons_titre": "قسائم الخصم",
+  "admin.systeme.rapports.coupons_desc_un": "رمز ترويجي واحد",
+  "admin.systeme.rapports.coupons_desc_autre": "عدد الرموز الترويجية: {n}",
+  "admin.systeme.rapports.avis_titre": "التقييمات",
+  "admin.systeme.rapports.avis_desc_un": "تقييم عميل واحد",
+  "admin.systeme.rapports.avis_desc_autre": "عدد تقييمات العملاء: {n}",
+
+  // ── Subscribers ───────────────────────────────────────────────────────────
+  "admin.systeme.newsletter.titre": "المشتركون في النشرة البريدية",
+  "admin.systeme.newsletter.description_un": "اشتراك واحد تم جمعه عبر الموقع.",
+  "admin.systeme.newsletter.description_autre": "عدد الاشتراكات المجمَّعة عبر الموقع: {n}.",
+  "admin.systeme.newsletter.exporter_csv": "تصدير إلى CSV",
+  "admin.systeme.newsletter.col_email": "البريد الإلكتروني",
+  "admin.systeme.newsletter.col_source": "المصدر",
+  "admin.systeme.newsletter.col_inscrit_le": "تاريخ الاشتراك",
+  "admin.systeme.newsletter.chargement": "جارٍ تحميل المشتركين…",
+  "admin.systeme.newsletter.toast_export": "تم تنزيل ملف CSV",
+  "admin.systeme.newsletter.toast_desinscrit": "تم إلغاء الاشتراك",
+  "admin.systeme.newsletter.vide": "لا يوجد مشتركون حتى الآن.",
+  "admin.systeme.newsletter.retirer_titre": "إزالة {email}؟",
+  "admin.systeme.newsletter.retirer_description": "سيُحذف هذا العنوان نهائيًا من القائمة.",
+  "admin.systeme.newsletter.aria_supprimer": "حذف",
+
+  // ── Audit ─────────────────────────────────────────────────────────────────
+  "admin.systeme.audit.titre": "سجل التدقيق",
+  "admin.systeme.audit.description_un": "حدث واحد مُسجَّل (500 كحد أقصى، متجدد).",
+  "admin.systeme.audit.description_autre": "عدد الأحداث المُسجَّلة: {n} (500 كحد أقصى، متجدد).",
+  "admin.systeme.audit.placeholder_recherche": "البحث (الإجراء، الكيان، المنفِّذ)…",
+  "admin.systeme.audit.filtre_tous": "الكل",
+  "admin.systeme.audit.col_date": "التاريخ",
+  "admin.systeme.audit.col_acteur": "المنفِّذ",
+  "admin.systeme.audit.col_action": "الإجراء",
+  "admin.systeme.audit.col_entite": "الكيان",
+  "admin.systeme.audit.col_detail": "التفاصيل",
+  "admin.systeme.audit.btn_csv": "CSV",
+  "admin.systeme.audit.btn_vider": "مسح",
+  "admin.systeme.audit.toast_exporte": "تم تصدير السجل",
+  "admin.systeme.audit.toast_vide": "تم مسح السجل",
+  "admin.systeme.audit.vide_titre":
+    "لا توجد أحداث مُسجَّلة بعد. ستظهر هنا التغييرات الجوهرية (الطلبات، المخزون، الوسائط) تلقائيًا.",
+  "admin.systeme.audit.vide_filtre": "لا توجد نتائج لهذه المرشّحات.",
+
+  // ── Analytics ─────────────────────────────────────────────────────────────
+  "admin.systeme.analytique.titre": "التحليلات",
+  "admin.systeme.analytique.description":
+    "اتجاهات المبيعات محسوبة من الطلبات المُسجَّلة (بيانات محلية).",
+  "admin.systeme.analytique.kpi_chiffre_affaires": "رقم الأعمال",
+  "admin.systeme.analytique.kpi_commandes": "الطلبات",
+  "admin.systeme.analytique.kpi_panier_moyen": "متوسط الطلب",
+  "admin.systeme.analytique.kpi_taux_livraison": "معدل التوصيل",
+  "admin.systeme.analytique.kpi_clients": "العملاء",
+  "admin.systeme.analytique.periode_7j": "آخر 7 أيام",
+  "admin.systeme.analytique.periode_30j": "آخر 30 يومًا",
+  "admin.systeme.analytique.periode_90j": "آخر 90 يومًا",
+  "admin.systeme.analytique.graphe_ca_par_jour": "رقم الأعمال اليومي",
+  "admin.systeme.analytique.graphe_commandes_par_jour": "الطلبات اليومية",
+  "admin.systeme.analytique.graphe_ca_par_categorie": "توزيع رقم الأعمال حسب الفئة",
+  "admin.systeme.analytique.graphe_traitement": "معالجة الطلبات",
+  "admin.systeme.analytique.graphe_traitement_note":
+    "المراحل المُسجَّلة فعليًا على الطلبات. لا تُعرض المراحل الأولية (الزوار، عربات التسوق) لعدم توفر أدوات قياس الجمهور على الموقع.",
+  "admin.systeme.analytique.graphe_top8": "أفضل 8 منتجات مبيعًا",
+  "admin.systeme.analytique.donnees_indisponibles": "البيانات غير متوفرة",
+  "admin.systeme.analytique.aucune_vente": "لا توجد مبيعات مُسجَّلة",
+  "admin.systeme.analytique.aucune_vente_texte": "لا توجد مبيعات.",
+  "admin.systeme.analytique.entonnoir_vide_titre": "لا توجد طلبات للمتابعة",
+  "admin.systeme.analytique.entonnoir_vide_desc":
+    "يُبنى هذا التتبع من تغييرات حالة الطلبات. سيتعبأ منذ أول طلب مُسجَّل، ثم مع كل انتقال إلى مرحلة التحضير والشحن والتسليم.",
+  "admin.systeme.analytique.entonnoir_voir_commandes": "فتح الطلبات",
+  "admin.systeme.analytique.entonnoir_annulees_un": "منها طلب واحد مُلغى، خارج مسار التوصيل.",
+  "admin.systeme.analytique.entonnoir_annulees_autre": "منها {n} طلبًا مُلغاةً، خارج مسار التوصيل.",
+  "admin.systeme.analytique.entonnoir_recues": "الطلبات الواردة",
+  "admin.systeme.analytique.entonnoir_preparation": "قيد التحضير",
+  "admin.systeme.analytique.entonnoir_expediees": "مُشحونة",
+  "admin.systeme.analytique.entonnoir_livrees": "مُسلَّمة",
+  "admin.systeme.analytique.erreur_commandes": "الطلبات: {message}",
+  "admin.systeme.analytique.erreur_produits_categories": "المنتجات / الفئات: {message}",
+  "admin.systeme.analytique.erreur_clients": "العملاء: {message}",
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  "admin.systeme.messages.titre": "رسائل التواصل",
+  "admin.systeme.messages.description_un": "رسالة واردة واحدة · {unread} غير مقروءة.",
+  "admin.systeme.messages.description_autre": "عدد الرسائل الواردة: {n} · {unread} غير مقروءة.",
+  "admin.systeme.messages.col_statut": "الحالة",
+  "admin.systeme.messages.col_expediteur": "المُرسِل",
+  "admin.systeme.messages.col_sujet": "الموضوع",
+  "admin.systeme.messages.col_recu_le": "تاريخ الاستلام",
+  "admin.systeme.messages.badge_lu": "مقروء",
+  "admin.systeme.messages.badge_nouveau": "جديد",
+  "admin.systeme.messages.btn_voir": "عرض",
+  "admin.systeme.messages.btn_marquer_lu": "تحديد كمقروء",
+  "admin.systeme.messages.btn_supprimer": "حذف",
+  "admin.systeme.messages.aria_supprimer": "حذف",
+  "admin.systeme.messages.btn_repondre_email": "الرد بالبريد الإلكتروني",
+  "admin.systeme.messages.btn_whatsapp": "واتساب",
+  "admin.systeme.messages.toast_marque_lu": "تم التحديد كمقروء",
+  "admin.systeme.messages.toast_supprime": "تم الحذف",
+  "admin.systeme.messages.toast_supprime_dialogue": "تم حذف الرسالة",
+  "admin.systeme.messages.confirm_supprimer": "حذف هذه الرسالة؟",
+  "admin.systeme.messages.chargement": "جارٍ تحميل الرسائل…",
+  "admin.systeme.messages.vide": "لا توجد رسائل.",
+  "admin.systeme.messages.detail_de": "من",
+  "admin.systeme.messages.detail_recu_le": "تاريخ الاستلام",
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  "admin.systeme.notifications.titre": "الإشعارات",
+  "admin.systeme.notifications.description_un":
+    "إشعار واحد · {unread} غير مقروء. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
+  "admin.systeme.notifications.description_autre":
+    "عدد الإشعارات: {total} · {unread} غير مقروءة. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
+  "admin.systeme.notifications.btn_tout_marquer_lu": "تحديد الكل كمقروء",
+  "admin.systeme.notifications.btn_nouvelle": "جديد",
+  "admin.systeme.notifications.filtre_toutes": "الكل",
+  "admin.systeme.notifications.filtre_non_lues_un": "غير مقروءة ({n})",
+  "admin.systeme.notifications.filtre_non_lues_autre": "غير مقروءة ({n})",
+  "admin.systeme.notifications.filtre_info": "معلومات",
+  "admin.systeme.notifications.filtre_succes": "ناجح",
+  "admin.systeme.notifications.filtre_alertes": "تنبيهات",
+  "admin.systeme.notifications.filtre_erreurs": "أخطاء",
+  "admin.systeme.notifications.badge_nouveau": "جديد",
+  "admin.systeme.notifications.btn_marquer_lu": "تحديد كمقروء",
+  "admin.systeme.notifications.btn_supprimer": "حذف",
+  "admin.systeme.notifications.aria_supprimer": "حذف",
+  "admin.systeme.notifications.vide": "لا توجد إشعارات.",
+  "admin.systeme.notifications.toast_tout_lu": "تم تحديد الكل كمقروء",
+  "admin.systeme.notifications.toast_supprimee": "تم الحذف",
+  "admin.systeme.notifications.toast_creee": "تم إنشاء الإشعار",
+  "admin.systeme.notifications.toast_titre_requis": "العنوان مطلوب",
+  "admin.systeme.notifications.dialog_titre": "إشعار جديد",
+  "admin.systeme.notifications.champ_titre": "العنوان",
+  "admin.systeme.notifications.champ_corps": "المحتوى",
+  "admin.systeme.notifications.champ_niveau": "المستوى",
+  "admin.systeme.notifications.champ_lien": "الرابط (اختياري)",
+  "admin.systeme.notifications.champ_lien_placeholder": "/admin/orders/…",
+  "admin.systeme.notifications.btn_annuler": "إلغاء",
+  "admin.systeme.notifications.btn_creer": "إنشاء",
+  "admin.systeme.notifications.level_info": "معلومات",
+  "admin.systeme.notifications.level_success": "ناجح",
+  "admin.systeme.notifications.level_warning": "تنبيه",
+  "admin.systeme.notifications.level_error": "خطأ",
+
+  // ── Reset ─────────────────────────────────────────────────────────────────
+  "admin.systeme.reset.titre": "إعادة تعيين البيانات",
+  "admin.systeme.reset.description":
+    "استعادة البيانات المحلية للمتجر أو مسحها أو تصديرها أو استيرادها.",
+  "admin.systeme.reset.alerte_titre": "تحذير",
+  "admin.systeme.reset.alerte_description":
+    "تؤثر هذه الإجراءات فقط على البيانات المحلية (localStorage) في هذا المتصفح.",
+  "admin.systeme.reset.section_sauvegarde": "النسخ الاحتياطي والاستعادة",
+  "admin.systeme.reset.btn_exporter_json": "تصدير إلى JSON",
+  "admin.systeme.reset.btn_importer_json": "استيراد ملف JSON…",
+  "admin.systeme.reset.section_global": "الإجراءات الشاملة",
+  "admin.systeme.reset.btn_reinitialiser_tout": "إعادة تعيين المتجر بالكامل",
+  "admin.systeme.reset.btn_vider_tout": "مسح كل شيء",
+  "admin.systeme.reset.section_par_type": "حسب نوع البيانات",
+  "admin.systeme.reset.btn_reinitialiser": "إعادة تعيين",
+  "admin.systeme.reset.btn_vider": "مسح",
+  "admin.systeme.reset.objet_unique": "كائن فردي",
+  "admin.systeme.reset.enregistrement_un": "سجل واحد",
+  "admin.systeme.reset.enregistrement_autre": "عدد السجلات: {n}",
+  "admin.systeme.reset.toast_reinitialise": "تمت إعادة تعيين {label}",
+  "admin.systeme.reset.toast_reinitialises": "تمت إعادة تعيين {label}",
+  "admin.systeme.reset.toast_vide": "تم مسح {label}",
+  "admin.systeme.reset.toast_tout_vide": "تم مسح جميع البيانات",
+  "admin.systeme.reset.toast_export_ok": "تم تنزيل الملف",
+  "admin.systeme.reset.toast_export_echec": "فشل التصدير",
+  "admin.systeme.reset.toast_import_ok": "نجح الاستيراد ({total} سجل من {fichier})",
+  "admin.systeme.reset.toast_import_echec": "فشل الاستيراد: {message}",
+  "admin.systeme.reset.toast_action_echec": "فشل الإجراء: {message}",
+  "admin.systeme.reset.toast_fichier_trop_grand": "الملف كبير جدًا (أكثر من 5 ميغابايت)",
+  "admin.systeme.reset.toast_lecture_echec": "تعذّر قراءة الملف",
+  "admin.systeme.reset.dialog_reinitialiser_titre": "إعادة تعيين {label}؟",
+  "admin.systeme.reset.dialog_vider_titre": "مسح {label}؟",
+  "admin.systeme.reset.dialog_vider_tout_titre": "مسح جميع البيانات؟",
+  "admin.systeme.reset.dialog_importer_titre": "استيراد «{fichier}»؟",
+  "admin.systeme.reset.dialog_import_desc":
+    "سيؤدي هذا إلى استبدال جميع البيانات المحلية بمحتوى الملف.",
+  "admin.systeme.reset.dialog_destructive_desc":
+    "هذا الإجراء لا يمكن التراجع عنه على البيانات المحلية في المتصفح.",
+  "admin.systeme.reset.dialog_confirmer_import": "استيراد",
+  "admin.systeme.reset.dialog_confirmer": "تأكيد",
+  "admin.systeme.reset.acces_restreint_titre": "وصول مقيَّد",
+  "admin.systeme.reset.acces_restreint_desc": "إعادة تعيين البيانات مخصصة للمالك فقط.",
+  "admin.systeme.reset.row_products": "المنتجات",
+  "admin.systeme.reset.row_products_desc": "الكتالوج المحلي للمنتجات.",
+  "admin.systeme.reset.row_categories": "الفئات",
+  "admin.systeme.reset.row_categories_desc": "أقسام الكتالوج.",
+  "admin.systeme.reset.row_brands": "الماركات",
+  "admin.systeme.reset.row_brands_desc": "الماركات المُدرجة.",
+  "admin.systeme.reset.row_orders": "الطلبات",
+  "admin.systeme.reset.row_orders_desc": "طلبات العملاء.",
+  "admin.systeme.reset.row_customers": "العملاء",
+  "admin.systeme.reset.row_customers_desc": "قاعدة بيانات العملاء.",
+  "admin.systeme.reset.row_coupons": "قسائم الخصم",
+  "admin.systeme.reset.row_coupons_desc": "رموز الخصم.",
+  "admin.systeme.reset.row_reviews": "تقييمات المنتجات",
+  "admin.systeme.reset.row_reviews_desc": "تقييمات العملاء في انتظار المراجعة.",
+  "admin.systeme.reset.row_users": "مستخدمو الإدارة",
+  "admin.systeme.reset.row_users_desc": "أعضاء الفريق.",
+  "admin.systeme.reset.row_blog_posts": "مقالات المدونة",
+  "admin.systeme.reset.row_blog_posts_desc": "منشورات المدونة.",
+  "admin.systeme.reset.row_home_reviews": "تقييمات الصفحة الرئيسية",
+  "admin.systeme.reset.row_home_reviews_desc": "شهادات في الصفحة الرئيسية.",
+  "admin.systeme.reset.row_ticker_messages": "الشريط المتحرك",
+  "admin.systeme.reset.row_ticker_messages_desc": "رسائل الشريط أعلى الصفحة.",
+  "admin.systeme.reset.row_marquee_brands": "الماركات المتحركة",
+  "admin.systeme.reset.row_marquee_brands_desc": "شعارات نصية في عرض الماركات.",
+  "admin.systeme.reset.row_about_values": "القيم (صفحة من نحن)",
+  "admin.systeme.reset.row_about_values_desc": "بطاقات الالتزامات في صفحة من نحن.",
+  "admin.systeme.reset.row_builder_steps": "خطوات المُهيِّئ",
+  "admin.systeme.reset.row_builder_steps_desc": "مكونات وخيارات أداة تجميع الحاسوب.",
+  "admin.systeme.reset.row_shipping_rates": "تعريفات التوصيل",
+  "admin.systeme.reset.row_shipping_rates_desc": "التعريفات حسب الولاية (منزل / مكتب).",
+  "admin.systeme.reset.row_payment_methods": "طرق الدفع",
+  "admin.systeme.reset.row_payment_methods_desc": "أساليب الدفع المتاحة عند الدفع.",
+  "admin.systeme.reset.row_stock_movements": "حركات المخزون",
+  "admin.systeme.reset.row_stock_movements_desc": "سجل تعديلات المخزون.",
+  "admin.systeme.reset.row_media_assets": "مكتبة الوسائط",
+  "admin.systeme.reset.row_media_assets_desc": "الصور المرفوعة المتاحة للمحتوى.",
+  "admin.systeme.reset.row_notifications": "الإشعارات",
+  "admin.systeme.reset.row_notifications_desc": "الإشعارات الداخلية للإدارة.",
+  "admin.systeme.reset.row_audit_logs": "سجل التدقيق",
+  "admin.systeme.reset.row_audit_logs_desc": "الإجراءات المنفَّذة في الإدارة.",
+  "admin.systeme.reset.row_messages": "رسائل التواصل",
+  "admin.systeme.reset.row_messages_desc": "الرسائل الواردة عبر صفحة /contact.",
+  "admin.systeme.reset.row_subscribers": "مشتركو النشرة البريدية",
+  "admin.systeme.reset.row_subscribers_desc": "عناوين البريد المجمَّعة عبر تذييل الموقع.",
+  "admin.systeme.reset.row_site_settings": "إعدادات الموقع",
+  "admin.systeme.reset.row_site_settings_desc": "الاسم، التواصل، واتساب، العنوان، المواعيد.",
+  "admin.systeme.reset.row_shipping_settings": "إعدادات التوصيل",
+  "admin.systeme.reset.row_shipping_settings_desc": "عتبة الشحن المجاني، تفعيل أساليب التوصيل.",
+
+  // ── Developpeur ───────────────────────────────────────────────────────────
+  "admin.systeme.developpeur.titre": "المطوّر",
+  "admin.systeme.developpeur.description":
+    "تشخيص قاعدة البيانات والنسخ الاحتياطي والترحيل. مخصص للمالك فقط.",
+  "admin.systeme.developpeur.acces_restreint_titre": "وصول مقيَّد",
+  "admin.systeme.developpeur.acces_restreint_desc": "هذه الصفحة مخصصة للمالك فقط.",
+
+  // Section 1 — حالة قاعدة البيانات
+  "admin.systeme.developpeur.etat_titre": "حالة قاعدة البيانات",
+  "admin.systeme.developpeur.etat_rafraichir_aria": "تحديث حالة قاعدة البيانات",
+  "admin.systeme.developpeur.etat_rafraichir": "تحديث",
+  "admin.systeme.developpeur.etat_pilote": "المحرِّك",
+  "admin.systeme.developpeur.etat_base": "قاعدة البيانات",
+  "admin.systeme.developpeur.etat_taille": "الحجم",
+  "admin.systeme.developpeur.etat_outbox": "الأحداث المعلَّقة",
+  "admin.systeme.developpeur.etat_outbox_zero": "لا يوجد",
+  "admin.systeme.developpeur.etat_derniere_sauvegarde": "آخر نسخة احتياطية:",
+  "admin.systeme.developpeur.etat_aucune_sauvegarde": "لا توجد نسخة احتياطية مُسجَّلة",
+  "admin.systeme.developpeur.etat_chargement_tables": "جارٍ تحميل الجداول…",
+  "admin.systeme.developpeur.etat_aucune_table": "لا توجد جداول متاحة.",
+  "admin.systeme.developpeur.etat_col_table": "الجدول",
+  "admin.systeme.developpeur.etat_col_lignes": "الصفوف",
+
+  // Section 2 — النسخ الاحتياطي
+  "admin.systeme.developpeur.sauvegarde_titre": "النسخ الاحتياطي",
+  "admin.systeme.developpeur.sauvegarde_description":
+    "يُنزِّل نسخة كاملة من قاعدة البيانات. يُسلِّم الملف الخادمُ مباشرةً عبر جلستك — لا يصل إلى أي طرف ثالث.",
+  "admin.systeme.developpeur.sauvegarde_btn": "تنزيل النسخة الاحتياطية",
+  "admin.systeme.developpeur.sauvegarde_en_cours": "جارٍ التنزيل…",
+  "admin.systeme.developpeur.sauvegarde_toast_ok": "تم تنزيل النسخة الاحتياطية",
+  "admin.systeme.developpeur.sauvegarde_toast_echec": "فشل النسخ الاحتياطي: {message}",
+
+  // Section 3 — الترحيل
+  "admin.systeme.developpeur.migration_titre": "الترحيل إلى محرِّك آخر",
+  "admin.systeme.developpeur.migration_alerte_titre": "المحاكاة إلزامية",
+  "admin.systeme.developpeur.migration_alerte_desc":
+    "انقر أولًا على «محاكاة» للتحقق من التوافق دون المساس ببياناتك. لا يتوفر زر «تنفيذ» إلا بعد نجاح المحاكاة.",
+  "admin.systeme.developpeur.migration_legend": "الاتصال بقاعدة البيانات الهدف",
+  "admin.systeme.developpeur.migration_label_cible": "المحرِّك المستهدف",
+  "admin.systeme.developpeur.migration_label_utilisateur": "مستخدم قاعدة البيانات الهدف",
+  "admin.systeme.developpeur.migration_label_dsn": "DSN للاتصال",
+  "admin.systeme.developpeur.migration_dsn_exemple":
+    "مثال MySQL: mysql://host:3306/target_db — PostgreSQL: postgresql://host:5432/target_db",
+  "admin.systeme.developpeur.migration_label_mdp": "كلمة المرور",
+  "admin.systeme.developpeur.migration_mdp_note":
+    "تُرسَل فقط إلى الخادم في جسم الطلب. لا تُخزَّن محليًا أبدًا.",
+  "admin.systeme.developpeur.migration_aria_afficher_mdp": "إظهار كلمة المرور",
+  "admin.systeme.developpeur.migration_aria_masquer_mdp": "إخفاء كلمة المرور",
+  "admin.systeme.developpeur.migration_btn_simuler": "محاكاة",
+  "admin.systeme.developpeur.migration_simulation_cours": "جارٍ المحاكاة…",
+  "admin.systeme.developpeur.migration_btn_executer": "تنفيذ",
+  "admin.systeme.developpeur.migration_execution_cours": "جارٍ الترحيل…",
+  "admin.systeme.developpeur.migration_tooltip_simuler_dabord": "أجرِ محاكاة ناجحة أولًا",
+  "admin.systeme.developpeur.migration_toast_form_incomplet":
+    "يرجى ملء حقول DSN واسم المستخدم وكلمة المرور.",
+  "admin.systeme.developpeur.migration_toast_simu_ok": "نجحت المحاكاة — راجع التقرير قبل التنفيذ.",
+  "admin.systeme.developpeur.migration_toast_simu_echec": "فشلت المحاكاة: {message}",
+  "admin.systeme.developpeur.migration_toast_exec_ok": "اكتمل الترحيل بنجاح.",
+  "admin.systeme.developpeur.migration_toast_exec_echec": "فشل الترحيل: {message}",
+
+  // نافذة التأكيد (نسخ احتياطي / ترحيل)
+  "admin.systeme.developpeur.dialog_sauvegarde_titre": "تنزيل النسخة الاحتياطية؟",
+  "admin.systeme.developpeur.dialog_sauvegarde_desc": "سيُنزَّل الملف مباشرةً في متصفحك.",
+  "admin.systeme.developpeur.dialog_migration_titre": "تنفيذ الترحيل؟",
+  "admin.systeme.developpeur.dialog_migration_desc_intro":
+    "تنقل هذه العملية جميع البيانات إلى قاعدة البيانات الهدف. لا يمكن التراجع عنها.",
+  "admin.systeme.developpeur.dialog_migration_desc_cible": "الهدف: {cible} — {dsn}",
+  "admin.systeme.developpeur.dialog_migration_desc_confirmer":
+    "اكتملت المحاكاة. أكِّد لكتابة البيانات فعليًا.",
+  "admin.systeme.developpeur.dialog_btn_telecharger": "تنزيل",
+  "admin.systeme.developpeur.dialog_btn_executer": "تنفيذ الترحيل",
+
+  // تقرير الترحيل
+  "admin.systeme.developpeur.rapport_simulation": "تقرير المحاكاة",
+  "admin.systeme.developpeur.rapport_migration": "تقرير الترحيل",
+  "admin.systeme.developpeur.rapport_badge_simulation": "محاكاة",
+  "admin.systeme.developpeur.rapport_badge_execution": "تنفيذ فعلي",
+  "admin.systeme.developpeur.rapport_col_table": "الجدول",
+  "admin.systeme.developpeur.rapport_col_lues": "مقروءة",
+  "admin.systeme.developpeur.rapport_col_ecrites": "مكتوبة",
+  "admin.systeme.developpeur.rapport_col_anomalies": "الشذوذات",
+  "admin.systeme.developpeur.rapport_lignes_lues": "الصفوف المقروءة",
+  "admin.systeme.developpeur.rapport_lignes_ecrites": "الصفوف المكتوبة",
+  "admin.systeme.developpeur.rapport_anomalies": "الشذوذات",
+  "admin.systeme.developpeur.rapport_details_note":
+    "انقر على صف يحتوي على شذوذات لرؤية الشرح التفصيلي.",
+  "admin.systeme.developpeur.rapport_details_indisponibles":
+    "التفاصيل غير متوفرة — حدِّث الخادم للحصول على الشرح الكامل.",
+  "admin.systeme.developpeur.rapport_aria_details": "تفاصيل الشذوذات — {nom}",
+
+  // لافتة القرار
+  "admin.systeme.developpeur.decision_bloquee_titre": "الترحيل غير موصى به",
+  "admin.systeme.developpeur.decision_bloquee_desc_un":
+    "تم اكتشاف خطأ حرج واحد. قد تُفقد البيانات أو تتلف. أصلح المشكلات قبل التنفيذ.",
+  "admin.systeme.developpeur.decision_bloquee_desc_autre":
+    "تم اكتشاف {n} أخطاء حرجة. قد تُفقد البيانات أو تتلف. أصلح المشكلات قبل التنفيذ.",
+  "admin.systeme.developpeur.decision_precaution_titre": "الترحيل ممكن مع الحذر",
+  "admin.systeme.developpeur.decision_precaution_desc_un":
+    "تنبيه واحد مُشار إليه. لا خسارة مؤكدة للبيانات، لكن راجع التفاصيل قبل المتابعة.",
+  "admin.systeme.developpeur.decision_precaution_desc_autre":
+    "عدد التنبيهات المُشار إليها: {n}. لا خسارة مؤكدة للبيانات، لكن راجع التفاصيل قبل المتابعة.",
+  "admin.systeme.developpeur.decision_ok_titre": "ترحيل بدون شذوذات",
+  "admin.systeme.developpeur.decision_ok_desc":
+    "تمت معالجة جميع الجداول دون أخطاء. يمكنك تنفيذ الترحيل.",
+
+  // شارات الخطورة
+  "admin.systeme.developpeur.gravite_erreur": "خطأ",
+  "admin.systeme.developpeur.gravite_avertissement": "تنبيه",
+};
 
 export default systemeAr;

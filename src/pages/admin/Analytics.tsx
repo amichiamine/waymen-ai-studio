@@ -14,6 +14,7 @@ import { useOrderList, useProductList, useCategoryList, useCustomerList } from "
 import type { OrderStatus } from "@/lib/admin-store";
 import { formatDZD } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 import {
   ResponsiveContainer,
   LineChart,
@@ -50,6 +51,7 @@ const COLORS = [
 ];
 
 export default function AdminAnalytics() {
+  const { t } = useI18n();
   const { data: orders, loading: lOrd, error: eOrd } = useOrderList();
   const { data: products, loading: lProd, error: eProd } = useProductList();
   const { data: categories, loading: lCat, error: eCat } = useCategoryList();
@@ -117,16 +119,15 @@ export default function AdminAnalytics() {
 
   // Entonnoir strictement mesuré : chaque étage correspond à une étape du cycle de
   // vie des commandes réellement enregistrée dans `statusHistory`.
-  // Les étages amont d'un entonnoir e-commerce (visiteurs, paniers) ne sont PAS
-  // mesurables ici : la SPA n'embarque aucun outil de mesure d'audience et il
-  // n'existe pas de backend pour en collecter. Ils étaient auparavant extrapolés
-  // du nombre de commandes par des coefficients arbitraires, ce qui les rendait
-  // indiscernables de chiffres réels — ils ont donc été retirés.
-  // Une mesure d'audience réelle relève de la phase 4 du PLAN.md (§8, persistance
-  // et API) ; ne pas réintroduire d'estimation d'ici là.
   const funnel = useMemo(() => {
     const flow: OrderStatus[] = ["pending", "processing", "shipped", "delivered"];
-    const labels = ["Commandes reçues", "En préparation", "Expédiées", "Livrées"];
+    // Les libellés viennent du dictionnaire i18n — pas de chaînes en dur.
+    const labels = [
+      t("admin.systeme.analytique.entonnoir_recues"),
+      t("admin.systeme.analytique.entonnoir_preparation"),
+      t("admin.systeme.analytique.entonnoir_expediees"),
+      t("admin.systeme.analytique.entonnoir_livrees"),
+    ];
     const reached = flow.map(() => 0);
     let cancelled = 0;
     for (const o of orders) {
@@ -135,7 +136,6 @@ export default function AdminAnalytics() {
         o.status,
         ...(o.statusHistory ?? []).map((e) => e.status),
       ]);
-      // Toute commande enregistrée a franchi l'étape « reçue ».
       let last = 0;
       flow.forEach((s, i) => {
         if (seen.has(s) && i > last) last = i;
@@ -146,7 +146,7 @@ export default function AdminAnalytics() {
       steps: labels.map((step, i) => ({ step, value: reached[i] })),
       cancelled,
     };
-  }, [orders]);
+  }, [orders, t]);
 
   const kpis = useMemo(() => {
     const active = orders.filter((o) => o.status !== "cancelled");
@@ -165,11 +165,11 @@ export default function AdminAnalytics() {
   if (loading) {
     return (
       <AdminPageShell
-        title="Analytique"
-        description="Tendances de ventes calculées sur les commandes enregistrées (données locales)."
+        title={t("admin.systeme.analytique.titre")}
+        description={t("admin.systeme.analytique.description")}
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-busy="true">
-          <span className="sr-only">Chargement…</span>
+          <span className="sr-only">{t("admin.socle.commun.chargement")}</span>
           {Array.from({ length: 5 }, (_, i) => (
             <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-card" />
           ))}
@@ -185,8 +185,8 @@ export default function AdminAnalytics() {
 
   return (
     <AdminPageShell
-      title="Analytique"
-      description="Tendances de ventes calculées sur les commandes enregistrées (données locales)."
+      title={t("admin.systeme.analytique.titre")}
+      description={t("admin.systeme.analytique.description")}
     >
       {/* Bandeaux d'erreur par source — dégradation gracieuse : les blocs
           alimentés par d'autres sources restent affichés. */}
@@ -196,7 +196,7 @@ export default function AdminAnalytics() {
           className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
         >
           <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          Commandes : {eOrd.message}
+          {t("admin.systeme.analytique.erreur_commandes", { message: eOrd.message })}
         </p>
       )}
       {(eProd || eCat) && (
@@ -205,7 +205,9 @@ export default function AdminAnalytics() {
           className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
         >
           <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          Produits / catégories : {(eProd ?? eCat)!.message}
+          {t("admin.systeme.analytique.erreur_produits_categories", {
+            message: (eProd ?? eCat)!.message,
+          })}
         </p>
       )}
       {eCust && (
@@ -214,18 +216,27 @@ export default function AdminAnalytics() {
           className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
         >
           <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          Clients : {eCust.message}
+          {t("admin.systeme.analytique.erreur_clients", { message: eCust.message })}
         </p>
       )}
 
       <div className="flex items-center justify-between gap-3">
         <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
-            { label: "Chiffre d'affaires", value: formatDZD(kpis.revenue) },
-            { label: "Commandes", value: kpis.count.toString() },
-            { label: "Panier moyen", value: formatDZD(kpis.aov) },
-            { label: "Taux de livraison", value: `${kpis.delivery}%` },
-            { label: "Clients", value: kpis.customers.toString() },
+            {
+              label: t("admin.systeme.analytique.kpi_chiffre_affaires"),
+              value: formatDZD(kpis.revenue),
+            },
+            { label: t("admin.systeme.analytique.kpi_commandes"), value: kpis.count.toString() },
+            { label: t("admin.systeme.analytique.kpi_panier_moyen"), value: formatDZD(kpis.aov) },
+            {
+              label: t("admin.systeme.analytique.kpi_taux_livraison"),
+              value: `${kpis.delivery}%`,
+            },
+            {
+              label: t("admin.systeme.analytique.kpi_clients"),
+              value: kpis.customers.toString(),
+            },
           ].map((k) => (
             <Card key={k.label}>
               <CardContent className="p-4">
@@ -243,9 +254,9 @@ export default function AdminAnalytics() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">7 derniers jours</SelectItem>
-            <SelectItem value="30">30 derniers jours</SelectItem>
-            <SelectItem value="90">90 derniers jours</SelectItem>
+            <SelectItem value="7">{t("admin.systeme.analytique.periode_7j")}</SelectItem>
+            <SelectItem value="30">{t("admin.systeme.analytique.periode_30j")}</SelectItem>
+            <SelectItem value="90">{t("admin.systeme.analytique.periode_90j")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -253,7 +264,9 @@ export default function AdminAnalytics() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">Chiffre d'affaires par jour</h2>
+            <h2 className="mb-4 text-sm font-semibold">
+              {t("admin.systeme.analytique.graphe_ca_par_jour")}
+            </h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={daily}>
@@ -282,7 +295,9 @@ export default function AdminAnalytics() {
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">Commandes par jour</h2>
+            <h2 className="mb-4 text-sm font-semibold">
+              {t("admin.systeme.analytique.graphe_commandes_par_jour")}
+            </h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={daily}>
@@ -304,11 +319,13 @@ export default function AdminAnalytics() {
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">Répartition CA par catégorie</h2>
+            <h2 className="mb-4 text-sm font-semibold">
+              {t("admin.systeme.analytique.graphe_ca_par_categorie")}
+            </h2>
             <div className="h-64">
               {eProd || eCat ? (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  Données indisponibles
+                  {t("admin.systeme.analytique.donnees_indisponibles")}
                 </div>
               ) : byCategory.length ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -336,7 +353,7 @@ export default function AdminAnalytics() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  Aucune vente enregistrée
+                  {t("admin.systeme.analytique.aucune_vente")}
                 </div>
               )}
             </div>
@@ -345,15 +362,15 @@ export default function AdminAnalytics() {
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-sm font-semibold">Traitement des commandes</h2>
+            <h2 className="text-sm font-semibold">
+              {t("admin.systeme.analytique.graphe_traitement")}
+            </h2>
             <p className="mb-4 mt-1 text-xs text-muted-foreground">
-              Étapes réellement enregistrées sur les commandes. Les étapes amont (visiteurs,
-              paniers) ne sont pas affichées : aucune mesure d&apos;audience n&apos;est en place sur
-              le site.
+              {t("admin.systeme.analytique.graphe_traitement_note")}
             </p>
             {eOrd ? (
               <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-                Données indisponibles
+                {t("admin.systeme.analytique.donnees_indisponibles")}
               </div>
             ) : funnel.steps[0].value ? (
               <>
@@ -380,25 +397,21 @@ export default function AdminAnalytics() {
                 </div>
                 {funnel.cancelled > 0 && (
                   <p className="mt-4 text-xs text-muted-foreground">
-                    Dont {funnel.cancelled.toLocaleString("fr-FR")} commande
-                    {funnel.cancelled > 1 ? "s" : ""} annulée{funnel.cancelled > 1 ? "s" : ""}, hors
-                    parcours de livraison.
+                    {t("admin.systeme.analytique.entonnoir_annulees", { n: funnel.cancelled })}
                   </p>
                 )}
               </>
             ) : (
               <div className="rounded-lg border border-dashed p-6 text-sm">
-                <p className="font-medium">Aucune commande à suivre</p>
+                <p className="font-medium">{t("admin.systeme.analytique.entonnoir_vide_titre")}</p>
                 <p className="mt-1 text-muted-foreground">
-                  Ce suivi se construit à partir des changements de statut des commandes. Il se
-                  remplira dès la première commande enregistrée, puis à chaque passage en
-                  préparation, expédition et livraison.
+                  {t("admin.systeme.analytique.entonnoir_vide_desc")}
                 </p>
                 <Link
                   to="/admin/orders"
                   className="mt-3 inline-block text-sm font-medium text-primary underline underline-offset-4"
                 >
-                  Ouvrir les commandes
+                  {t("admin.systeme.analytique.entonnoir_voir_commandes")}
                 </Link>
               </div>
             )}
@@ -408,9 +421,13 @@ export default function AdminAnalytics() {
 
       <Card>
         <CardContent className="p-6">
-          <h2 className="mb-4 text-sm font-semibold">Top 8 des produits vendus</h2>
+          <h2 className="mb-4 text-sm font-semibold">
+            {t("admin.systeme.analytique.graphe_top8")}
+          </h2>
           {eOrd ? (
-            <p className="text-sm text-muted-foreground">Données indisponibles.</p>
+            <p className="text-sm text-muted-foreground">
+              {t("admin.socle.commun.donnees_indisponibles")}
+            </p>
           ) : topProducts.length ? (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -430,7 +447,9 @@ export default function AdminAnalytics() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Aucune vente.</p>
+            <p className="text-sm text-muted-foreground">
+              {t("admin.systeme.analytique.aucune_vente_texte")}
+            </p>
           )}
         </CardContent>
       </Card>

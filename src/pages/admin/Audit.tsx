@@ -16,6 +16,7 @@ import { Search, ScrollText, Download, Trash2, AlertTriangle } from "lucide-reac
 import { useAuditLogList } from "@/data-provider";
 import { clearData } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 // `useAuditLogList()` est en lecture seule dans le provider — aucune mutation
@@ -43,6 +44,7 @@ function badgeVariant(cat: string): "default" | "secondary" | "destructive" | "o
 }
 
 export default function AdminAudit() {
+  const { t } = useI18n();
   const { data: auditLogs, loading, error } = useAuditLogList();
   const { can, guard, denyReason } = usePermissions();
   const [q, setQ] = useState("");
@@ -70,7 +72,7 @@ export default function AdminAudit() {
 
   const exportCsv = () => {
     // Export = lecture — `read` suffit. Niveau 2 dans l'action.
-    if (!guard("read", "Exporter le journal")) return;
+    if (!guard("read", t("admin.systeme.audit.btn_csv"))) return;
     const header = ["Date", "Acteur", "Action", "Entité", "Détail"];
     const lines = [
       header,
@@ -85,24 +87,22 @@ export default function AdminAudit() {
     a.download = `ka-audit-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
-    toast.success("Journal exporté");
+    toast.success(t("admin.systeme.audit.toast_exporte"));
   };
 
   const clear = () => {
     // Vider le journal est une action destructive : clé `delete` (admin minimum).
     // Niveau 2 — vérification impérative avant la mutation.
-    // Le vidage reste une action directe sur le store : useAuditLogList() est
-    // lecture seule, il n'y a pas de mutation dans le provider (DATA-PROVIDER.md §3).
-    if (!guard("delete", "Vider le journal d'audit")) return;
-    if (!confirm("Vider tout le journal d'audit ?")) return;
+    if (!guard("delete", t("admin.systeme.audit.btn_vider"))) return;
+    if (!confirm(t("admin.systeme.audit.titre") + " ?")) return;
     clearData("auditLogs");
-    toast.success("Journal vidé");
+    toast.success(t("admin.systeme.audit.toast_vide"));
   };
 
   return (
     <AdminPageShell
-      title="Journal d'audit"
-      description={`${auditLogs.length} événement${auditLogs.length > 1 ? "s" : ""} journalisé${auditLogs.length > 1 ? "s" : ""} (500 max, roulement).`}
+      title={t("admin.systeme.audit.titre")}
+      description={t("admin.systeme.audit.description", { n: auditLogs.length })}
       actions={
         <div className="flex gap-2">
           {/* Niveau 1 — affichage. Export (lecture) */}
@@ -112,24 +112,26 @@ export default function AdminAudit() {
               onClick={exportCsv}
               disabled={auditLogs.length === 0 || loading}
             >
-              <Download className="me-2 h-4 w-4" /> CSV
+              <Download className="me-2 h-4 w-4" /> {t("admin.systeme.audit.btn_csv")}
             </Button>
           ) : (
             <span title={denyReason("read")} className="inline-flex">
               <Button variant="outline" disabled>
-                <Download className="me-2 h-4 w-4" /> CSV
+                <Download className="me-2 h-4 w-4" /> {t("admin.systeme.audit.btn_csv")}
               </Button>
             </span>
           )}
           {/* Niveau 1 — affichage. Vider (delete) */}
           {can("delete") ? (
             <Button variant="outline" onClick={clear} disabled={auditLogs.length === 0}>
-              <Trash2 className="me-2 h-4 w-4 text-destructive" /> Vider
+              <Trash2 className="me-2 h-4 w-4 text-destructive" />{" "}
+              {t("admin.systeme.audit.btn_vider")}
             </Button>
           ) : (
             <span title={denyReason("delete")} className="inline-flex">
               <Button variant="outline" disabled>
-                <Trash2 className="me-2 h-4 w-4 text-destructive" /> Vider
+                <Trash2 className="me-2 h-4 w-4 text-destructive" />{" "}
+                {t("admin.systeme.audit.btn_vider")}
               </Button>
             </span>
           )}
@@ -153,7 +155,7 @@ export default function AdminAudit() {
           className="h-48 animate-pulse rounded-xl border border-border bg-card"
           aria-busy="true"
         >
-          <span className="sr-only">Chargement…</span>
+          <span className="sr-only">{t("admin.socle.commun.chargement")}</span>
         </div>
       ) : (
         <>
@@ -161,7 +163,8 @@ export default function AdminAudit() {
             <div className="relative min-w-[240px] flex-1 max-w-sm">
               <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Rechercher (action, entité, acteur)…"
+                placeholder={t("admin.systeme.audit.placeholder_recherche")}
+                aria-label={t("admin.socle.commun.rechercher")}
                 className="ps-9"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -175,7 +178,8 @@ export default function AdminAudit() {
                   variant={cat === c ? "default" : "outline"}
                   onClick={() => setCat(c)}
                 >
-                  {c === "all" ? "Tous" : c}
+                  {/* `all` est une valeur technique du filtre ; son libellé est traduit. */}
+                  {c === "all" ? t("admin.systeme.audit.filtre_tous") : c}
                 </Button>
               ))}
             </div>
@@ -185,10 +189,7 @@ export default function AdminAudit() {
             <Card>
               <CardContent className="flex flex-col items-center gap-3 p-12 text-center text-sm text-muted-foreground">
                 <ScrollText className="h-8 w-8" />
-                <p>
-                  Aucun événement journalisé pour le moment. Les mutations importantes (commandes,
-                  stock, médias) apparaîtront ici automatiquement.
-                </p>
+                <p>{t("admin.systeme.audit.vide_titre")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -196,11 +197,21 @@ export default function AdminAudit() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[180px]">Date</TableHead>
-                    <TableHead>Acteur</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Entité</TableHead>
-                    <TableHead>Détail</TableHead>
+                    <TableHead className="w-[180px] text-start">
+                      {t("admin.systeme.audit.col_date")}
+                    </TableHead>
+                    <TableHead className="text-start">
+                      {t("admin.systeme.audit.col_acteur")}
+                    </TableHead>
+                    <TableHead className="text-start">
+                      {t("admin.systeme.audit.col_action")}
+                    </TableHead>
+                    <TableHead className="text-start">
+                      {t("admin.systeme.audit.col_entite")}
+                    </TableHead>
+                    <TableHead className="text-start">
+                      {t("admin.systeme.audit.col_detail")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -211,6 +222,7 @@ export default function AdminAudit() {
                       </TableCell>
                       <TableCell className="text-sm">{l.actor}</TableCell>
                       <TableCell>
+                        {/* `l.action` est une valeur de base de données : elle ne se traduit pas. */}
                         <Badge
                           variant={badgeVariant(categoryOf(l.action))}
                           className="font-mono text-[10px]"
@@ -218,6 +230,7 @@ export default function AdminAudit() {
                           {l.action}
                         </Badge>
                       </TableCell>
+                      {/* `l.entity` est une valeur de base de données : elle ne se traduit pas. */}
                       <TableCell className="text-sm">{l.entity}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {l.detail ?? "—"}
@@ -230,7 +243,7 @@ export default function AdminAudit() {
                         colSpan={5}
                         className="h-16 text-center text-sm text-muted-foreground"
                       >
-                        Aucun résultat pour ces filtres.
+                        {t("admin.systeme.audit.vide_filtre")}
                       </TableCell>
                     </TableRow>
                   )}

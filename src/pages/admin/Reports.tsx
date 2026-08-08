@@ -24,6 +24,7 @@ import {
 import { formatDZD } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 import { localize } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 // Les exports CSV sont des opérations de LECTURE : ils ne mutent aucune donnée.
@@ -62,6 +63,7 @@ function download(name: string, csv: string) {
 }
 
 export default function AdminReports() {
+  const { t } = useI18n();
   const { data: orders, loading: lOrd, error: eOrd } = useOrderList();
   const { data: customers, loading: lCust, error: eCust } = useCustomerList();
   const { data: products, loading: lProd, error: eProd } = useProductList();
@@ -84,14 +86,14 @@ export default function AdminReports() {
 
   const exportOrders = () => {
     // Niveau 2 — vérification dans l'action avant toute opération.
-    if (!guard("read", "Exporter les ventes")) return;
+    if (!guard("read", t("admin.systeme.rapports.ventes_titre"))) return;
     // Refuser silencieusement si les données ne sont pas chargées (AGENTS.md §7).
     if (lOrd) {
-      toast.error("Export impossible : données en cours de chargement");
+      toast.error(t("admin.systeme.rapports.toast_chargement"));
       return;
     }
     if (eOrd) {
-      toast.error("Export impossible : " + eOrd.message);
+      toast.error(t("admin.systeme.rapports.toast_erreur", { message: eOrd.message }));
       return;
     }
     const rows: (string | number)[][] = [
@@ -136,13 +138,13 @@ export default function AdminReports() {
   };
 
   const exportCustomers = () => {
-    if (!guard("read", "Exporter les clients")) return;
+    if (!guard("read", t("admin.systeme.rapports.clients_titre"))) return;
     if (lCust) {
-      toast.error("Export impossible : données en cours de chargement");
+      toast.error(t("admin.systeme.rapports.toast_chargement"));
       return;
     }
     if (eCust) {
-      toast.error("Export impossible : " + eCust.message);
+      toast.error(t("admin.systeme.rapports.toast_erreur", { message: eCust.message }));
       return;
     }
     const rows: (string | number)[][] = [
@@ -163,13 +165,13 @@ export default function AdminReports() {
   };
 
   const exportInventory = () => {
-    if (!guard("read", "Exporter le stock")) return;
+    if (!guard("read", t("admin.systeme.rapports.stock_titre"))) return;
     if (lProd) {
-      toast.error("Export impossible : données en cours de chargement");
+      toast.error(t("admin.systeme.rapports.toast_chargement"));
       return;
     }
     if (eProd) {
-      toast.error("Export impossible : " + eProd.message);
+      toast.error(t("admin.systeme.rapports.toast_erreur", { message: eProd.message }));
       return;
     }
     const rows: (string | number)[][] = [
@@ -192,13 +194,13 @@ export default function AdminReports() {
   };
 
   const exportMovements = () => {
-    if (!guard("read", "Exporter les mouvements")) return;
+    if (!guard("read", t("admin.systeme.rapports.mouvements_titre"))) return;
     if (lMov) {
-      toast.error("Export impossible : données en cours de chargement");
+      toast.error(t("admin.systeme.rapports.toast_chargement"));
       return;
     }
     if (eMov) {
-      toast.error("Export impossible : " + eMov.message);
+      toast.error(t("admin.systeme.rapports.toast_erreur", { message: eMov.message }));
       return;
     }
     const rows: (string | number)[][] = [["ID", "Date", "Produit", "Delta", "Raison"]];
@@ -208,13 +210,13 @@ export default function AdminReports() {
   };
 
   const exportCoupons = () => {
-    if (!guard("read", "Exporter les coupons")) return;
+    if (!guard("read", t("admin.systeme.rapports.coupons_titre"))) return;
     if (lCoup) {
-      toast.error("Export impossible : données en cours de chargement");
+      toast.error(t("admin.systeme.rapports.toast_chargement"));
       return;
     }
     if (eCoup) {
-      toast.error("Export impossible : " + eCoup.message);
+      toast.error(t("admin.systeme.rapports.toast_erreur", { message: eCoup.message }));
       return;
     }
     const rows: (string | number)[][] = [
@@ -235,13 +237,13 @@ export default function AdminReports() {
   };
 
   const exportReviews = () => {
-    if (!guard("read", "Exporter les avis")) return;
+    if (!guard("read", t("admin.systeme.rapports.avis_titre"))) return;
     if (lRev) {
-      toast.error("Export impossible : données en cours de chargement");
+      toast.error(t("admin.systeme.rapports.toast_chargement"));
       return;
     }
     if (eRev) {
-      toast.error("Export impossible : " + eRev.message);
+      toast.error(t("admin.systeme.rapports.toast_erreur", { message: eRev.message }));
       return;
     }
     const rows: (string | number)[][] = [
@@ -265,48 +267,51 @@ export default function AdminReports() {
   // permettre la dégradation gracieuse (skill S3).
   const cards = [
     {
-      title: "Ventes",
-      desc: `${summaries.ordersCount} commandes · ${formatDZD(summaries.revenue)}`,
+      title: t("admin.systeme.rapports.ventes_titre"),
+      desc: t("admin.systeme.rapports.ventes_desc", {
+        count: summaries.ordersCount.toString(),
+        revenue: formatDZD(summaries.revenue),
+      }),
       Icon: ShoppingBag,
       action: exportOrders,
       loading: lOrd,
       error: eOrd,
     },
     {
-      title: "Clients",
-      desc: `${summaries.customersCount} clients enregistrés`,
+      title: t("admin.systeme.rapports.clients_titre"),
+      desc: t("admin.systeme.rapports.clients_desc", { n: summaries.customersCount }),
       Icon: UsersIcon,
       action: exportCustomers,
       loading: lCust,
       error: eCust,
     },
     {
-      title: "Stock",
-      desc: `${summaries.productsCount} produits au catalogue`,
+      title: t("admin.systeme.rapports.stock_titre"),
+      desc: t("admin.systeme.rapports.stock_desc", { n: summaries.productsCount }),
       Icon: Package,
       action: exportInventory,
       loading: lProd,
       error: eProd,
     },
     {
-      title: "Mouvements de stock",
-      desc: `${summaries.movementsCount} mouvements journalisés`,
+      title: t("admin.systeme.rapports.mouvements_titre"),
+      desc: t("admin.systeme.rapports.mouvements_desc", { n: summaries.movementsCount }),
       Icon: Boxes,
       action: exportMovements,
       loading: lMov,
       error: eMov,
     },
     {
-      title: "Coupons",
-      desc: `${coupons.length} codes promotionnels`,
+      title: t("admin.systeme.rapports.coupons_titre"),
+      desc: t("admin.systeme.rapports.coupons_desc", { n: coupons.length }),
       Icon: Ticket,
       action: exportCoupons,
       loading: lCoup,
       error: eCoup,
     },
     {
-      title: "Avis",
-      desc: `${reviews.length} avis clients`,
+      title: t("admin.systeme.rapports.avis_titre"),
+      desc: t("admin.systeme.rapports.avis_desc", { n: reviews.length }),
       Icon: Star,
       action: exportReviews,
       loading: lRev,
@@ -316,8 +321,8 @@ export default function AdminReports() {
 
   return (
     <AdminPageShell
-      title="Rapports"
-      description="Exports CSV des données de la boutique (compatibles Excel / Google Sheets)."
+      title={t("admin.systeme.rapports.titre")}
+      description={t("admin.systeme.rapports.description")}
     >
       <div className="grid gap-4 lg:grid-cols-3">
         {cards.map((c) => (
@@ -350,18 +355,18 @@ export default function AdminReports() {
                   disabled={c.loading || !!c.error}
                   title={
                     c.loading
-                      ? "Données en cours de chargement"
+                      ? t("admin.systeme.rapports.export_chargement")
                       : c.error
-                        ? "Données indisponibles"
+                        ? t("admin.systeme.rapports.export_indisponible")
                         : undefined
                   }
                 >
-                  <Download className="me-2 h-4 w-4" /> Exporter CSV
+                  <Download className="me-2 h-4 w-4" /> {t("admin.systeme.rapports.exporter_csv")}
                 </Button>
               ) : (
                 <span title={denyReason("read")} className="inline-flex self-start">
                   <Button variant="outline" size="sm" disabled>
-                    <Download className="me-2 h-4 w-4" /> Exporter CSV
+                    <Download className="me-2 h-4 w-4" /> {t("admin.systeme.rapports.exporter_csv")}
                   </Button>
                 </span>
               )}
@@ -373,11 +378,7 @@ export default function AdminReports() {
       <Card>
         <CardContent className="flex items-start gap-3 p-6 text-sm text-muted-foreground">
           <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-          <p>
-            Les fichiers sont générés côté navigateur à partir de vos données locales. Ouvrez-les
-            directement dans Excel, LibreOffice ou Google Sheets — l'encodage UTF-8 avec BOM
-            préserve les accents.
-          </p>
+          <p>{t("admin.systeme.rapports.note_encodage")}</p>
         </CardContent>
       </Card>
     </AdminPageShell>
