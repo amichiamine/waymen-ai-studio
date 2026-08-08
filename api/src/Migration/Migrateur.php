@@ -133,7 +133,7 @@ final class Migrateur
             ]);
         } catch (PDOException $e) {
             throw new RuntimeException(
-                "Connexion impossible à « " . self::masquer($dsn) . " » : " . $e->getMessage(),
+                self::diagnostiquerConnexion($pilote, $dsn, $e),
                 0,
                 $e
             );
@@ -158,6 +158,150 @@ final class Migrateur
     public static function masquer(string $dsn): string
     {
         return (string) preg_replace('/(password|pwd)=[^;]*/i', '$1=***', $dsn);
+    }
+
+    /**
+     * Traduit une PDOException de connexion en message humain, précis et sans secret.
+     *
+     * POURQUOI CETTE MÉTHODE EXISTE
+     * --------------------------------
+     * PDO lève la même exception générique pour des causes très différentes.
+     * Avant ce correctif, tout échec MySQL sur une base inexistante rendait
+     * « identifiants ou mot de passe invalides » (code 1044 confondu avec 1045).
+     * C'est factuellement faux : un commerçant envoyé chercher un problème
+     * d'identifiants qui n'existe pas perd du temps et peut prendre de mauvaises
+     * décisions sur la base la plus dangereuse du projet (PLAN.md §9 ter).
+     *
+     * Le mot de passe ne figure JAMAIS dans les messages (SKILLS.md S13).
+     * Le DSN est masqué par `masquer()` avant d'être inclus.
+     *
+     * Codes retenus :
+     *   MySQL  1044 : accès refusé à la base (inexistante ou sans permission)
+     *   MySQL  1045 / 28000 : identifiants utilisateur refusés
+     *   MySQL  1698 : plugin auth — accès refusé
+     *   MySQL  2002 / 2003 : hôte ou port injoignable
+     *   pgsql  08006 + "does not exist" : base inexistante
+     *   pgsql  08006 + "Connection refused" : hôte ou port injoignable
+     *   pgsql  28P01 / 28000 : identifiants refusés
+     *   SQLite 14   : fichier de base inaccessible ou dossier absent
+     */
+    private static function diagnostiquerConnexion(string $pilote, string $dsn, PDOException $e): string
+    {
+        $dsnMasque = self::masquer($dsn);
+        $msg = $e->getMessage();
+        // errorInfo[0] = SQLSTATE, errorInfo[1] = code pilote (int)
+        $sqlstate = (string) ($e->errorInfo[0] ?? $e->getCode());
+        $codeDriver = (int) ($e->errorInfo[1] ?? $e->getCode());
+
+        if ($pilote === 'mysql') {
+            // 2002 / 2003 : connexion TCP refusée ou timeout — hôte / port en cause
+            if ($codeDriver === 2002 || $codeDriver === 2003) {
+                return "La base cible est injoignable (hôte ou port refusent la connexion). "
+                    . "Vérifiez l'adresse du serveur, le numéro de port et que le service MySQL/MariaDB est démarré. "
+                    . "DSN : {$dsnMasque}.";
+            }
+
+            // 1044 : accès refusé À LA BASE — l'utilisateur existe mais ne peut pas
+            // accéder à ce nom de base (que celle-ci existe ou non).
+            // Cause la plus fréquente : la base n'a pas été créée dans le panneau
+            // de l'hébergeur, ou l'utilisateur n'y a pas été rattaché.
+            if ($codeDriver === 1044) {
+                return "La base cible est inexistante ou inaccessible à cet utilisateur. "
+                    . "Créez la base dans le panneau de l'hébergeur et accordez-y tous les droits "
+                    . "à l'utilisateur indiqué. "
+                    . "DSN : {$dsnMasque}.";
+            }
+
+            // 1049 : unknown database — cas où l'utilisateur a le droit global
+            // mais la base n'existe tout simplement pas
+            if ($codeDriver === 1049) {
+                return "La base cible n'existe pas sur ce serveur. "
+                    . "Créez-la dans le panneau de l'hébergeur avant de lancer la migration. "
+                    . "DSN : {$dsnMasque}.";
+            }
+
+            // 1045 / 1698 / SQLSTATE 28000 : identifiants utilisateur refusés
+            if ($codeDriver === 1045 || $codeDriver === 1698 || $sqlstate === '28000') {
+                return "Les identifiants de connexion sont refusés par le serveur MySQL/MariaDB. "
+                    . "Vérifiez le nom d'utilisateur et le mot de passe dans la configuration. "
+                    . "DSN (sans mot de passe) : {$dsnMasque}.";
+            }
+        }
+
+        if ($pilote === 'pgsql') {
+            // 08006 : échec de connexion au niveau réseau ou serveur — la cause
+            // est dans le message de libpq
+            if ($sqlstate === '08006') {
+                if (stripos($msg, 'does not exist') !== false) {
+                    return "La base PostgreSQL cible n'existe pas sur ce serveur. "
+                        . "Créez-la avec CREATE DATABASE avant de lancer la migration, "
+                        . "ou utilisez le panneau de l'hébergeur (Supabase, Neon…). "
+                        . "DSN : {$dsnMasque}.";
+                }
+
+                if (stripos($msg, 'Connection refused') !== false
+                    || stripos($msg, 'refused') !== false
+                    || stripos($msg, 'timeout') !== false) {
+                    return "Le serveur PostgreSQL cible est injoignable (connexion refusée). "
+                        . "Vérifiez l'adresse, le port (5432 par défaut) et que le service est démarré. "
+                        . "DSN : {$dsnMasque}.";
+                }
+
+                // 08006 sans précision connue : message du serveur sans secret
+                return "Connexion PostgreSQL impossible à {$dsnMasque}. "
+                    . "Le serveur a répondu : " . self::extraireMessageServeur($msg) . ". "
+                    . "Vérifiez l'adresse, le port, le nom de la base et les droits de l'utilisateur.";
+            }
+
+            // 28P01 / 28000 : authentification échouée (mot de passe incorrect)
+            if ($sqlstate === '28P01' || $sqlstate === '28000') {
+                return "Les identifiants de connexion sont refusés par le serveur PostgreSQL. "
+                    . "Vérifiez le nom d'utilisateur et le mot de passe. "
+                    . "DSN (sans mot de passe) : {$dsnMasque}.";
+            }
+        }
+
+        if ($pilote === 'sqlite') {
+            // Code 14 (SQLITE_CANTOPEN) : fichier ou dossier inaccessible
+            if ($codeDriver === 14) {
+                // Extrait le chemin du DSN sqlite:/chemin/…
+                $chemin = ltrim(substr($dsn, 7), '/') !== '' ? substr($dsn, 7) : '(chemin non identifié)';
+
+                return "Le fichier de base SQLite est introuvable ou inaccessible : « {$chemin} ». "
+                    . "Vérifiez que le fichier existe et que PHP peut le lire.";
+            }
+        }
+
+        // Cas non classifié : message technique sans secret (pas le mot de passe)
+        return "Connexion impossible à la base cible ({$dsnMasque}). "
+            . "Cause signalée par le pilote : " . self::expurgerMessage($msg) . ". "
+            . "Vérifiez l'adresse, le port, le nom de la base et les identifiants.";
+    }
+
+    /**
+     * Extrait la partie utile d'un message de connexion libpq ou MySQL,
+     * en retirant tout ce qui ressemble à un mot de passe ou un secret.
+     */
+    private static function expurgerMessage(string $msg): string
+    {
+        // Retire les chaînes de type 'password=…' au cas où elles auraient filtré
+        $msg = (string) preg_replace('/password\s*=\s*\S+/i', 'password=***', $msg);
+        // Limite la longueur pour éviter de noyer le diagnostic dans un stack
+        return mb_substr($msg, 0, 200);
+    }
+
+    /**
+     * Extrait le sous-message FATAL du serveur PostgreSQL depuis le message libpq.
+     * Ex : "connection to server … failed: FATAL:  database "foo" does not exist"
+     *       → "database "foo" does not exist"
+     */
+    private static function extraireMessageServeur(string $msg): string
+    {
+        if (preg_match('/FATAL:\s+(.+)$/i', $msg, $m)) {
+            return self::expurgerMessage(trim($m[1]));
+        }
+
+        return self::expurgerMessage($msg);
     }
 
     // =================================================================
