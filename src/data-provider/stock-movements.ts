@@ -16,14 +16,20 @@ export const STOCK_MOVEMENTS_RESOURCE = "stock-movements";
  */
 const NO_STOCK_MOVEMENTS: StockMovement[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des mouvements de stock — remplace `useAdminState().stockMovements`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 mouvements.
  */
 export function useStockMovementList(): ResourceState<StockMovement[]> {
   return useResource<StockMovement[]>({
     key: STOCK_MOVEMENTS_RESOURCE,
     fromStore: (state) => state.stockMovements,
-    fromHttp: async () => inventoryApi.movements(),
+    fromHttp: async () => inventoryApi.movements({ perPage: DEFAULT_PER_PAGE }),
     fallback: NO_STOCK_MOVEMENTS,
   });
 }

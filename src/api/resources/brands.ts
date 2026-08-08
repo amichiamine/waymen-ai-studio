@@ -2,11 +2,11 @@ import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
 import { getAdminSnapshot, getBrand, upsertBrand, deleteBrand } from "@/lib/admin-store";
-import type { AdminBrand, Paginated } from "../types";
+import type { AdminBrand, ListQuery, Paginated } from "../types";
 
 export const brandsApi = {
-  async list(): Promise<Paginated<AdminBrand>> {
-    if (isHttpMode()) return http.get<Paginated<AdminBrand>>(E.brands.list());
+  async list(query: ListQuery = {}): Promise<Paginated<AdminBrand>> {
+    if (isHttpMode()) return http.get<Paginated<AdminBrand>>(E.brands.list(), query);
     const items = getAdminSnapshot().brands;
     return { items, total: items.length, page: 1, perPage: items.length || 1 };
   },

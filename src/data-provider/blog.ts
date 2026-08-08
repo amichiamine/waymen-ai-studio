@@ -12,18 +12,24 @@ export const BLOG_RESOURCE = "blog";
 /** Repli de liste — référence stable au niveau module. */
 const NO_POSTS: BlogPost[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste de tous les articles (brouillons inclus).
  *
  * En mode mock, renvoie l'intégralité du store ; le filtrage « published
  * seulement » appartient aux composants visiteur (Blog.tsx), exactement comme
  * c'était le cas avec useAdminState().blogPosts.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 articles.
  */
 export function useBlogPostList(): ResourceState<BlogPost[]> {
   return useResource<BlogPost[]>({
     key: BLOG_RESOURCE,
     fromStore: (state) => state.blogPosts,
-    fromHttp: async () => (await blogApi.list()).items,
+    fromHttp: async () => (await blogApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_POSTS,
   });
 }

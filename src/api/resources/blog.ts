@@ -8,12 +8,12 @@ import {
   upsertBlogPost,
   deleteBlogPost,
 } from "@/lib/admin-store";
-import type { BlogPost } from "../types";
+import type { BlogPost, ListQuery } from "../types";
 import type { Paginated } from "../types";
 
 export const blogApi = {
-  async list(): Promise<Paginated<BlogPost>> {
-    if (isHttpMode()) return http.get<Paginated<BlogPost>>(E.blog.list());
+  async list(query: ListQuery = {}): Promise<Paginated<BlogPost>> {
+    if (isHttpMode()) return http.get<Paginated<BlogPost>>(E.blog.list(), query);
     const posts = getAdminSnapshot().blogPosts;
     return { items: posts, total: posts.length, page: 1, perPage: posts.length || 1 };
   },

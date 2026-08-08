@@ -11,11 +11,11 @@ import {
   type ContactMessage,
   type Subscriber,
 } from "@/lib/admin-store";
-import type { Paginated } from "../types";
+import type { ListQuery, Paginated } from "../types";
 
 export const contactMessagesApi = {
-  async list(): Promise<Paginated<ContactMessage>> {
-    if (isHttpMode()) return http.get<Paginated<ContactMessage>>(E.crm.messages());
+  async list(query: ListQuery = {}): Promise<Paginated<ContactMessage>> {
+    if (isHttpMode()) return http.get<Paginated<ContactMessage>>(E.crm.messages(), query);
     const items = getAdminSnapshot().messages;
     return { items, total: items.length, page: 1, perPage: items.length || 1 };
   },
@@ -50,8 +50,8 @@ export const contactMessagesApi = {
 };
 
 export const subscribersApi = {
-  async list(): Promise<Paginated<Subscriber>> {
-    if (isHttpMode()) return http.get<Paginated<Subscriber>>(E.crm.subscribers());
+  async list(query: ListQuery = {}): Promise<Paginated<Subscriber>> {
+    if (isHttpMode()) return http.get<Paginated<Subscriber>>(E.crm.subscribers(), query);
     const items = getAdminSnapshot().subscribers;
     return { items, total: items.length, page: 1, perPage: items.length || 1 };
   },

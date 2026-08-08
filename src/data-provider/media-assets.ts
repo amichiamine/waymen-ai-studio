@@ -12,14 +12,20 @@ export const MEDIA_RESOURCE = "media";
 /** Repli stable : jamais un littéral `[]` (invaliderait tous les mémos en aval). */
 const NO_MEDIA: MediaAsset[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des médias — remplace `useAdminState().mediaAssets`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 médias.
  */
 export function useMediaAssetList(): ResourceState<MediaAsset[]> {
   return useResource<MediaAsset[]>({
     key: MEDIA_RESOURCE,
     fromStore: (state) => state.mediaAssets,
-    fromHttp: async () => (await mediaApi.list()).items,
+    fromHttp: async () => (await mediaApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_MEDIA,
   });
 }

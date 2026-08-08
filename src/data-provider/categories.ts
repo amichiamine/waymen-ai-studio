@@ -15,14 +15,20 @@ export const CATEGORIES_RESOURCE = "categories";
  */
 const NO_CATEGORIES: AdminCategory[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste de catégories — remplace `useAdminState().categories`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 catégories.
  */
 export function useCategoryList(): ResourceState<AdminCategory[]> {
   return useResource<AdminCategory[]>({
     key: CATEGORIES_RESOURCE,
     fromStore: (state) => state.categories,
-    fromHttp: async () => (await categoriesApi.list()).items,
+    fromHttp: async () => (await categoriesApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_CATEGORIES,
   });
 }

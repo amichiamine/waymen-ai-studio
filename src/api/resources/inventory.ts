@@ -27,7 +27,7 @@ import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
 import { getAdminSnapshot, adjustStock as storeAdjustStock } from "@/lib/admin-store";
-import type { StockMovement, Paginated } from "../types";
+import type { ListQuery, StockMovement, Paginated } from "../types";
 
 export type StockAdjustInput = {
   /** Variation relative : positif = entrée, négatif = sortie. */
@@ -36,9 +36,9 @@ export type StockAdjustInput = {
 };
 
 export const inventoryApi = {
-  async movements(): Promise<StockMovement[]> {
+  async movements(query: ListQuery = {}): Promise<StockMovement[]> {
     if (isHttpMode())
-      return (await http.get<Paginated<StockMovement>>(E.inventory.movements())).items;
+      return (await http.get<Paginated<StockMovement>>(E.inventory.movements(), query)).items;
     return getAdminSnapshot().stockMovements;
   },
 

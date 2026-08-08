@@ -15,14 +15,20 @@ export const USERS_RESOURCE = "users";
  */
 const NO_USERS: AdminUser[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des utilisateurs admin — remplace `useAdminState().users`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 utilisateurs.
  */
 export function useUserList(): ResourceState<AdminUser[]> {
   return useResource<AdminUser[]>({
     key: USERS_RESOURCE,
     fromStore: (state) => state.users,
-    fromHttp: async () => usersApi.list(),
+    fromHttp: async () => usersApi.list({ perPage: DEFAULT_PER_PAGE }),
     fallback: NO_USERS,
   });
 }

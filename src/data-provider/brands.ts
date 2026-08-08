@@ -15,14 +15,20 @@ export const BRANDS_RESOURCE = "brands";
  */
 const NO_BRANDS: AdminBrand[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste de marques — remplace `useAdminState().brands`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 marques.
  */
 export function useBrandList(): ResourceState<AdminBrand[]> {
   return useResource<AdminBrand[]>({
     key: BRANDS_RESOURCE,
     fromStore: (state) => state.brands,
-    fromHttp: async () => (await brandsApi.list()).items,
+    fromHttp: async () => (await brandsApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_BRANDS,
   });
 }

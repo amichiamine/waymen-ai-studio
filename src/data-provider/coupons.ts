@@ -12,14 +12,20 @@ export const COUPONS_RESOURCE = "coupons";
 /** Repli de liste : référence stable au niveau module. */
 const NO_COUPONS: Coupon[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des coupons — remplace `useAdminState().coupons`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 coupons.
  */
 export function useCouponList(): ResourceState<Coupon[]> {
   return useResource<Coupon[]>({
     key: COUPONS_RESOURCE,
     fromStore: (state) => state.coupons,
-    fromHttp: async () => (await couponsApi.list()).items,
+    fromHttp: async () => (await couponsApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_COUPONS,
   });
 }

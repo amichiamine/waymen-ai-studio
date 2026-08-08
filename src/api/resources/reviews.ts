@@ -7,17 +7,17 @@ import {
   updateReviewStatus,
   deleteReview,
 } from "@/lib/admin-store";
-import type { Review, ReviewStatus, Paginated } from "../types";
+import type { ListQuery, Review, ReviewStatus, Paginated } from "../types";
 
 export const reviewsApi = {
-  async byProduct(productId: string): Promise<Review[]> {
+  async byProduct(productId: string, query: ListQuery = {}): Promise<Review[]> {
     if (isHttpMode())
-      return (await http.get<Paginated<Review>>(E.reviews.byProduct(productId))).items;
+      return (await http.get<Paginated<Review>>(E.reviews.byProduct(productId), query)).items;
     return getAdminSnapshot().reviews.filter((r) => r.productId === productId);
   },
 
-  async list(): Promise<Review[]> {
-    if (isHttpMode()) return (await http.get<Paginated<Review>>(E.reviews.list())).items;
+  async list(query: ListQuery = {}): Promise<Review[]> {
+    if (isHttpMode()) return (await http.get<Paginated<Review>>(E.reviews.list(), query)).items;
     return getAdminSnapshot().reviews;
   },
 

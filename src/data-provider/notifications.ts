@@ -13,17 +13,23 @@ export const NOTIFICATIONS_RESOURCE = "notifications";
 /** Repli stable. */
 const NO_NOTIFICATIONS: AdminNotification[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des notifications — remplace `useAdminState().notifications`.
  *
  * En mode mock : lecture directe du store, `loading: false` au premier rendu.
  * En mode http : lecture de `GET /notifications` (liste paginée, on extrait `.items`).
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 notifications.
  */
 export function useNotificationList(): ResourceState<AdminNotification[]> {
   return useResource<AdminNotification[]>({
     key: NOTIFICATIONS_RESOURCE,
     fromStore: (state) => state.notifications,
-    fromHttp: async () => (await notificationsApi.list()).items,
+    fromHttp: async () => (await notificationsApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_NOTIFICATIONS,
   });
 }

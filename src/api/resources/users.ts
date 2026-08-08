@@ -23,7 +23,7 @@ import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
 import { getAdminSnapshot, upsertUser, deleteUser, setUserPassword } from "@/lib/admin-store";
-import type { AdminUser, Paginated } from "../types";
+import type { AdminUser, ListQuery, Paginated } from "../types";
 
 /**
  * DTO de création / mise à jour : `password` est intentionnellement omis.
@@ -32,8 +32,8 @@ import type { AdminUser, Paginated } from "../types";
 export type AdminUserPayload = Omit<AdminUser, "password">;
 
 export const usersApi = {
-  async list(): Promise<AdminUser[]> {
-    if (isHttpMode()) return (await http.get<Paginated<AdminUser>>(E.users.list())).items;
+  async list(query: ListQuery = {}): Promise<AdminUser[]> {
+    if (isHttpMode()) return (await http.get<Paginated<AdminUser>>(E.users.list(), query)).items;
     return getAdminSnapshot().users;
   },
 

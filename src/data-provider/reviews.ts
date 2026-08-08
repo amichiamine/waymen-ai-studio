@@ -19,16 +19,22 @@ export const REVIEWS_RESOURCE = "reviews";
  */
 const NO_REVIEWS: Review[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste complète des avis — panneau admin.
  *
  * Remplace `useAdminState().reviews` (tous statuts confondus).
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 avis.
  */
 export function useReviewList(): ResourceState<Review[]> {
   return useResource<Review[]>({
     key: REVIEWS_RESOURCE,
     fromStore: (state) => state.reviews,
-    fromHttp: async () => reviewsApi.list(),
+    fromHttp: async () => reviewsApi.list({ perPage: DEFAULT_PER_PAGE }),
     fallback: NO_REVIEWS,
   });
 }
@@ -59,7 +65,7 @@ export function useProductReviewList(productId?: string): ResourceState<Review[]
         : NO_REVIEWS,
     fromHttp: async () => {
       if (!productId) return NO_REVIEWS;
-      const all = await reviewsApi.byProduct(productId);
+      const all = await reviewsApi.byProduct(productId, { perPage: DEFAULT_PER_PAGE });
       // Le backend doit renvoyer uniquement les avis approuvés pour l'endpoint
       // public. On filtre côté client par prudence pour le mode http, miroir du
       // comportement mock.

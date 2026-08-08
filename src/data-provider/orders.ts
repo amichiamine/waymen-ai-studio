@@ -28,11 +28,18 @@ function orderListKey(query: OrderQuery): string {
   return parts.length > 0 ? `${ORDERS_RESOURCE}?${parts.join("&")}` : ORDERS_RESOURCE;
 }
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste de toutes les commandes — remplace `useAdminState().orders`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 commandes.
  */
 export function useOrderList(query: OrderQuery = {}): ResourceState<Order[]> {
-  const key = orderListKey(query);
+  const normalized: OrderQuery = { ...query, perPage: query.perPage ?? DEFAULT_PER_PAGE };
+  const key = orderListKey(normalized);
 
   return useResource<Order[]>({
     key,
@@ -41,7 +48,7 @@ export function useOrderList(query: OrderQuery = {}): ResourceState<Order[]> {
       if (query.status) items = items.filter((o) => o.status === query.status);
       return items;
     },
-    fromHttp: async () => (await ordersApi.list(query)).items,
+    fromHttp: async () => (await ordersApi.list(normalized)).items,
     fallback: NO_ORDERS,
   });
 }

@@ -1,5 +1,7 @@
-import { ApiError } from "@/api/client";
+import { http } from "@/api/client";
+import { endpoints as E } from "@/api/endpoints";
 import type { AuditLog } from "@/lib/admin-store";
+import type { Paginated } from "@/api/types";
 
 import { useResource } from "./use-resource";
 import type { ResourceState } from "./types";
@@ -10,6 +12,9 @@ export const AUDIT_LOGS_RESOURCE = "audit-logs";
 /** Repli stable. */
 const NO_AUDIT_LOGS: AuditLog[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Journal d'audit — lecture seule.
  *
@@ -18,12 +23,8 @@ const NO_AUDIT_LOGS: AuditLog[] = [];
  *
  * ## Mode http
  *
- * L'endpoint `analytics.audit` est déclaré dans `src/api/endpoints.ts` mais
- * aucun backend ne l'implémente à ce stade. En mode http, `fromHttp` échoue
- * explicitement avec une `ApiError` 501 : la liste vide (`fallback`) est
- * retournée à l'appelant, avec `error` renseigné — jamais d'échec silencieux
- * (AGENTS.md §7). Phase 4 (PLAN.md) devra brancher la vraie réponse en
- * remplaçant le throw par `http.get(E.analytics.audit())`.
+ * Branché sur `GET /analytics/audit` (route existante côté serveur).
+ * `perPage: 100` transmis au serveur pour éviter la troncature silencieuse à 20.
  *
  * ## Mode mock
  *
@@ -33,18 +34,9 @@ export function useAuditLogList(): ResourceState<AuditLog[]> {
   return useResource<AuditLog[]>({
     key: AUDIT_LOGS_RESOURCE,
     fromStore: (state) => state.auditLogs,
-    fromHttp: async () => {
-      // analytics.audit est déclaré dans endpoints.ts mais n'est pas encore
-      // implémenté côté backend. On échoue explicitement pour éviter un silence
-      // trompeur (AGENTS.md §7). Phase 4 remplacera ce throw par l'appel HTTP.
-      throw new ApiError(
-        501,
-        "not_implemented",
-        "Le journal d'audit n'est pas encore disponible via l'API HTTP. " +
-          "Cette ressource sera implémentée en phase 4 (PLAN.md). " +
-          "Endpoint prévu : GET /analytics/audit.",
-      );
-    },
+    fromHttp: async () =>
+      (await http.get<Paginated<AuditLog>>(E.analytics.audit(), { perPage: DEFAULT_PER_PAGE }))
+        .items,
     fallback: NO_AUDIT_LOGS,
   });
 }

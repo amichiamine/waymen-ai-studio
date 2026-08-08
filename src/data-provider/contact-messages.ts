@@ -12,14 +12,20 @@ export const CONTACT_MESSAGES_RESOURCE = "contact-messages";
 /** Repli stable. */
 const NO_MESSAGES: ContactMessage[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des messages de contact — remplace `useAdminState().messages`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 messages.
  */
 export function useContactMessageList(): ResourceState<ContactMessage[]> {
   return useResource<ContactMessage[]>({
     key: CONTACT_MESSAGES_RESOURCE,
     fromStore: (state) => state.messages,
-    fromHttp: async () => (await contactMessagesApi.list()).items,
+    fromHttp: async () => (await contactMessagesApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_MESSAGES,
   });
 }

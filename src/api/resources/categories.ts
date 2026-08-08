@@ -2,11 +2,11 @@ import { isHttpMode } from "../config";
 import { http } from "../client";
 import { endpoints as E } from "../endpoints";
 import { getAdminSnapshot, getCategory, upsertCategory, deleteCategory } from "@/lib/admin-store";
-import type { AdminCategory, Paginated } from "../types";
+import type { AdminCategory, ListQuery, Paginated } from "../types";
 
 export const categoriesApi = {
-  async list(): Promise<Paginated<AdminCategory>> {
-    if (isHttpMode()) return http.get<Paginated<AdminCategory>>(E.categories.list());
+  async list(query: ListQuery = {}): Promise<Paginated<AdminCategory>> {
+    if (isHttpMode()) return http.get<Paginated<AdminCategory>>(E.categories.list(), query);
     const items = getAdminSnapshot().categories;
     return { items, total: items.length, page: 1, perPage: items.length || 1 };
   },

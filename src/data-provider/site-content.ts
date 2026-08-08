@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 
-import { ApiError } from "@/api/client";
+import { http } from "@/api/client";
+import { endpoints as E } from "@/api/endpoints";
 import { contentApi } from "@/api/resources/content";
 import type { SiteContent } from "@/api/types";
 import { isHttpMode } from "@/api/config";
@@ -53,8 +54,7 @@ export type SiteContentMutations = {
  * `update` envoie un patch partiel — seuls les champs présents sont modifiés,
  * ce qui préserve les `Localized<string>` non touchés.
  * `resetSection` réinitialise une section à sa valeur de départ (seedSiteContent).
- * En mode http, aucun endpoint de réinitialisation par section n'existe à ce stade ;
- * la mutation échoue explicitement (phase 4 — PLAN.md).
+ * En mode http, appelle `POST /content/:section/reset` (route existante côté serveur).
  */
 export function useSiteContentMutations(): SiteContentMutations {
   const update = useCallback(
@@ -66,12 +66,8 @@ export function useSiteContentMutations(): SiteContentMutations {
   const resetSection = useCallback(<K extends keyof SiteContent>(section: K) => {
     return runMutation(SITE_CONTENT_RESOURCE, "resetSection", async () => {
       if (isHttpMode()) {
-        throw new ApiError(
-          501,
-          "not_implemented",
-          "La réinitialisation par section du contenu éditorial n'est pas disponible via l'API HTTP. " +
-            "Cette mutation sera implémentée en phase 4 (PLAN.md).",
-        );
+        await http.post<void>(E.content.resetSection(String(section)));
+        return;
       }
       resetSiteContentSection(section);
     });

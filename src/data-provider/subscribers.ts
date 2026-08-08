@@ -12,14 +12,20 @@ export const SUBSCRIBERS_RESOURCE = "subscribers";
 /** Repli stable. */
 const NO_SUBSCRIBERS: Subscriber[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des abonnés newsletter — remplace `useAdminState().subscribers`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 abonnés.
  */
 export function useSubscriberList(): ResourceState<Subscriber[]> {
   return useResource<Subscriber[]>({
     key: SUBSCRIBERS_RESOURCE,
     fromStore: (state) => state.subscribers,
-    fromHttp: async () => (await subscribersApi.list()).items,
+    fromHttp: async () => (await subscribersApi.list({ perPage: DEFAULT_PER_PAGE })).items,
     fallback: NO_SUBSCRIBERS,
   });
 }

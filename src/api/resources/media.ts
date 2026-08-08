@@ -8,7 +8,7 @@ import {
   renameMediaAsset,
   type MediaAsset,
 } from "@/lib/admin-store";
-import type { Paginated } from "../types";
+import type { ListQuery, Paginated } from "../types";
 
 const LS_KEY = "katech.admin.state.v1";
 
@@ -69,8 +69,8 @@ async function uploadMock(file: File): Promise<MediaAsset> {
 }
 
 export const mediaApi = {
-  async list(): Promise<Paginated<MediaAsset>> {
-    if (isHttpMode()) return http.get<Paginated<MediaAsset>>(E.media.list());
+  async list(query: ListQuery = {}): Promise<Paginated<MediaAsset>> {
+    if (isHttpMode()) return http.get<Paginated<MediaAsset>>(E.media.list(), query);
     const items = getAdminSnapshot().mediaAssets;
     return { items, total: items.length, page: 1, perPage: items.length || 1 };
   },

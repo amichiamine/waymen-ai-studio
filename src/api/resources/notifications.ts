@@ -10,7 +10,7 @@ import {
   type AdminNotification,
   type NotificationLevel,
 } from "@/lib/admin-store";
-import type { Paginated } from "../types";
+import type { ListQuery, Paginated } from "../types";
 
 export type NotificationCreateInput = {
   title: string;
@@ -20,8 +20,8 @@ export type NotificationCreateInput = {
 };
 
 export const notificationsApi = {
-  async list(): Promise<Paginated<AdminNotification>> {
-    if (isHttpMode()) return http.get<Paginated<AdminNotification>>(E.notifications.list());
+  async list(query: ListQuery = {}): Promise<Paginated<AdminNotification>> {
+    if (isHttpMode()) return http.get<Paginated<AdminNotification>>(E.notifications.list(), query);
     const items = getAdminSnapshot().notifications;
     return { items, total: items.length, page: 1, perPage: items.length || 1 };
   },

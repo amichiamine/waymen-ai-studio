@@ -82,6 +82,7 @@ export const endpoints = {
     get: () => `/content`,
     update: () => `/content`,
     homeReviews: () => `/content/home-reviews`,
+    resetSection: (section: string) => `/content/${section}/reset`,
   },
 
   settings: {

@@ -12,11 +12,18 @@ export const CUSTOMERS_RESOURCE = "customers";
 /** Repli de liste : référence stable au niveau module. */
 const NO_CUSTOMERS: Customer[] = [];
 
+/** Valeur large retransmise au serveur pour éviter la troncature silencieuse à 20. */
+const DEFAULT_PER_PAGE = 100;
+
 /**
  * Liste des clients — remplace `useAdminState().customers`.
+ *
+ * `perPage: 100` transmis au serveur : sans ce paramètre, `Pagination::PAR_PAGE_DEFAUT = 20`
+ * côté serveur tronque silencieusement la liste dès 21 clients.
  */
 export function useCustomerList(query: ListQuery = {}): ResourceState<Customer[]> {
-  const parts = Object.entries(query)
+  const normalized: ListQuery = { ...query, perPage: query.perPage ?? DEFAULT_PER_PAGE };
+  const parts = Object.entries(normalized)
     .filter(([, value]) => value !== undefined && value !== null && value !== "")
     .map(([name, value]) => [name, String(value)] as const)
     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -38,7 +45,7 @@ export function useCustomerList(query: ListQuery = {}): ResourceState<Customer[]
       }
       return items;
     },
-    fromHttp: async () => (await customersApi.list(query)).items,
+    fromHttp: async () => (await customersApi.list(normalized)).items,
     fallback: NO_CUSTOMERS,
   });
 }
