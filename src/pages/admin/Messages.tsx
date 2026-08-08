@@ -29,8 +29,10 @@ import {
 } from "@/data-provider";
 import type { ContactMessage } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function AdminMessages() {
+  const { t } = useI18n();
   // Lecture via le fournisseur de données — remplace useAdminState().messages
   // et useAdminState().siteSettings. En mode mock, `loading` est faux dès le
   // premier rendu et `error` reste nul.
@@ -61,11 +63,11 @@ export default function AdminMessages() {
 
   async function handleMarkRead(m: ContactMessage) {
     // Niveau 2 — vérification dans le handler.
-    if (!guard("update", "Marquer comme lu")) return;
+    if (!guard("update", t("admin.systeme.messages.btn_marquer_lu"))) return;
     setSaving(true);
     try {
       await markRead(m.id, true);
-      toast.success("Marqué comme lu");
+      toast.success(t("admin.systeme.messages.toast_marque_lu"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -75,13 +77,13 @@ export default function AdminMessages() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Supprimer ce message ?")) return;
+    if (!confirm(t("admin.systeme.messages.confirm_supprimer"))) return;
     // Niveau 2 — vérification dans le handler.
-    if (!guard("delete", "Supprimer le message")) return;
+    if (!guard("delete", t("admin.systeme.messages.btn_supprimer"))) return;
     setSaving(true);
     try {
       await remove(id);
-      toast.success("Supprimé");
+      toast.success(t("admin.systeme.messages.toast_supprime"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -92,12 +94,12 @@ export default function AdminMessages() {
 
   async function handleDeleteFromDialog(id: string) {
     // Niveau 2 — vérification dans le handler.
-    if (!guard("delete", "Supprimer le message")) return;
+    if (!guard("delete", t("admin.systeme.messages.btn_supprimer"))) return;
     setSaving(true);
     try {
       await remove(id);
       setOpen(null);
-      toast.success("Message supprimé");
+      toast.success(t("admin.systeme.messages.toast_supprime_dialogue"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -110,8 +112,11 @@ export default function AdminMessages() {
 
   return (
     <AdminPageShell
-      title="Messages de contact"
-      description={`${messages.length} message(s) reçus · ${unread} non lu(s).`}
+      title={t("admin.systeme.messages.titre")}
+      description={t("admin.systeme.messages.description", {
+        n: messages.length,
+        unread: unread.toString(),
+      })}
     >
       {/* Erreur au-dessus du contenu, sans remplacer la page (§5.3). */}
       {error && (
@@ -129,11 +134,19 @@ export default function AdminMessages() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Statut</TableHead>
-                <TableHead>Expéditeur</TableHead>
-                <TableHead>Sujet</TableHead>
-                <TableHead>Reçu le</TableHead>
-                <TableHead className="text-end">Actions</TableHead>
+                <TableHead className="text-start">
+                  {t("admin.systeme.messages.col_statut")}
+                </TableHead>
+                <TableHead className="text-start">
+                  {t("admin.systeme.messages.col_expediteur")}
+                </TableHead>
+                <TableHead className="text-start">
+                  {t("admin.systeme.messages.col_sujet")}
+                </TableHead>
+                <TableHead className="text-start">
+                  {t("admin.systeme.messages.col_recu_le")}
+                </TableHead>
+                <TableHead className="text-end">{t("admin.socle.commun.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -141,7 +154,7 @@ export default function AdminMessages() {
               {loading ? (
                 <>
                   <tr className="sr-only" aria-busy="true">
-                    <td>Chargement des messages…</td>
+                    <td>{t("admin.systeme.messages.chargement")}</td>
                   </tr>
                   {Array.from({ length: 5 }, (_, i) => (
                     <TableRow key={i}>
@@ -161,7 +174,11 @@ export default function AdminMessages() {
                   {messages.map((m) => (
                     <TableRow key={m.id} className={m.read ? undefined : "font-medium"}>
                       <TableCell>
-                        {m.read ? <Badge variant="secondary">Lu</Badge> : <Badge>Nouveau</Badge>}
+                        {m.read ? (
+                          <Badge variant="secondary">{t("admin.systeme.messages.badge_lu")}</Badge>
+                        ) : (
+                          <Badge>{t("admin.systeme.messages.badge_nouveau")}</Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <button
@@ -181,7 +198,7 @@ export default function AdminMessages() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openMessage(m)}
-                          title="Voir"
+                          title={t("admin.systeme.messages.btn_voir")}
                         >
                           <Mail className="h-4 w-4" />
                         </Button>
@@ -192,27 +209,32 @@ export default function AdminMessages() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleMarkRead(m)}
-                              title="Marquer lu"
+                              title={t("admin.systeme.messages.btn_marquer_lu")}
                               disabled={saving}
                             >
                               <Check className="h-4 w-4" />
                             </Button>
                           ) : (
                             <span title={denyReason("update")} className="inline-flex">
-                              <Button variant="ghost" size="icon" disabled aria-label="Marquer lu">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled
+                                aria-label={t("admin.systeme.messages.btn_marquer_lu")}
+                              >
                                 <Check className="h-4 w-4" />
                               </Button>
                             </span>
                           ))}
                         {/* Niveau 1 — supprimer = `delete`. */}
                         <span
-                          title={denyReason("delete") ?? "Supprimer"}
+                          title={denyReason("delete") ?? t("admin.systeme.messages.btn_supprimer")}
                           className="inline-flex align-middle"
                         >
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Supprimer"
+                            aria-label={t("admin.systeme.messages.aria_supprimer")}
                             disabled={!can("delete") || saving}
                             onClick={() => handleDelete(m.id)}
                           >
@@ -228,7 +250,7 @@ export default function AdminMessages() {
                         colSpan={5}
                         className="p-8 text-center text-sm text-muted-foreground"
                       >
-                        Aucun message.
+                        {t("admin.systeme.messages.vide")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -247,10 +269,12 @@ export default function AdminMessages() {
           {open && (
             <div className="space-y-3 text-sm">
               <div className="text-xs text-muted-foreground">
-                De <strong className="text-foreground">{open.name}</strong> · {open.email}
+                {t("admin.systeme.messages.detail_de")}{" "}
+                <strong className="text-foreground">{open.name}</strong> · {open.email}
                 {open.phone && <> · {open.phone}</>}
                 <br />
-                Reçu le {new Date(open.createdAt).toLocaleString("fr-FR")}
+                {t("admin.systeme.messages.detail_recu_le")}{" "}
+                {new Date(open.createdAt).toLocaleString("fr-FR")}
               </div>
               <p className="whitespace-pre-line rounded-md bg-muted/40 p-3">{open.message}</p>
             </div>
@@ -262,7 +286,8 @@ export default function AdminMessages() {
                     mutation : ils ne sont pas bridés par les permissions. */}
                 <a href={`mailto:${open.email}?subject=Re: ${encodeURIComponent(open.subject)}`}>
                   <Button variant="outline">
-                    <Reply className="me-2 h-4 w-4" /> Répondre par e-mail
+                    <Reply className="me-2 h-4 w-4" />{" "}
+                    {t("admin.systeme.messages.btn_repondre_email")}
                   </Button>
                 </a>
                 {siteSettings.whatsapp && open.phone && (
@@ -272,7 +297,8 @@ export default function AdminMessages() {
                     rel="noreferrer"
                   >
                     <Button variant="outline">
-                      <MessageCircle className="me-2 h-4 w-4" /> WhatsApp
+                      <MessageCircle className="me-2 h-4 w-4" />{" "}
+                      {t("admin.systeme.messages.btn_whatsapp")}
                     </Button>
                   </a>
                 )}
@@ -283,7 +309,7 @@ export default function AdminMessages() {
                     disabled={!can("delete") || saving}
                     onClick={() => handleDeleteFromDialog(open.id)}
                   >
-                    <Trash2 className="me-2 h-4 w-4" /> Supprimer
+                    <Trash2 className="me-2 h-4 w-4" /> {t("admin.systeme.messages.btn_supprimer")}
                   </Button>
                 </span>
               </>
