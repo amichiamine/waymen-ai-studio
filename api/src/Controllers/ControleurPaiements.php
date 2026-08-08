@@ -18,6 +18,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Reponse;
 use KaTech\Requete;
 
@@ -96,6 +97,8 @@ final class ControleurPaiements
             [':id' => $id],
         );
 
+        Journal::consigner($this->db, 'mode_paiement_upsert', 'payment_method', ['id' => $id]);
+
         return Reponse::ok($this->enDto((array) $ligne));
     }
 
@@ -115,6 +118,8 @@ final class ControleurPaiements
         if ($n === 0) {
             throw ApiException::introuvable("Aucun mode de paiement ne porte l'identifiant « {$id} ».");
         }
+
+        Journal::consigner($this->db, 'mode_paiement_supprime', 'payment_method', ['id' => $id]);
 
         return Reponse::vide();
     }

@@ -21,6 +21,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -147,6 +148,8 @@ final class ControleurCrm
             ]);
         });
 
+        Journal::consigner($this->db, 'message_recu', 'crm_message', ['id' => $id, 'subject' => $subject]);
+
         $ligne = $this->db->un('SELECT * FROM messages WHERE id = :id', [':id' => $id]);
 
         return Reponse::cree($this->enDtoMessage((array) $ligne));
@@ -251,6 +254,8 @@ final class ControleurCrm
             [':isRead' => $isRead ? 1 : 0, ':id' => $id],
         );
 
+        Journal::consigner($this->db, 'message_mis_a_jour', 'crm_message', ['id' => $id, 'isRead' => (bool) $isRead]);
+
         $ligne = $this->db->un('SELECT * FROM messages WHERE id = :id', [':id' => $id]);
 
         return Reponse::ok($this->enDtoMessage((array) $ligne));
@@ -262,14 +267,17 @@ final class ControleurCrm
      */
     public function supprimerMessage(Requete $r): Reponse
     {
-        $n = $this->db->run(
+        $id = $r->param('id');
+        $n  = $this->db->run(
             'DELETE FROM messages WHERE id = :id',
-            [':id' => $r->param('id')]
+            [':id' => $id]
         )->rowCount();
 
         if ($n === 0) {
             throw ApiException::introuvable('Message introuvable.');
         }
+
+        Journal::consigner($this->db, 'message_supprime', 'crm_message', ['id' => $id]);
 
         return Reponse::vide();
     }
@@ -348,6 +356,8 @@ final class ControleurCrm
             ]);
         });
 
+        Journal::consigner($this->db, 'abonne_inscrit', 'subscriber', ['id' => $id]);
+
         $ligne = $this->db->un('SELECT * FROM subscribers WHERE id = :id', [':id' => $id]);
 
         return Reponse::cree($this->enDtoAbonne((array) $ligne));
@@ -359,14 +369,17 @@ final class ControleurCrm
      */
     public function desinscrire(Requete $r): Reponse
     {
-        $n = $this->db->run(
+        $id = $r->param('id');
+        $n  = $this->db->run(
             'DELETE FROM subscribers WHERE id = :id',
-            [':id' => $r->param('id')]
+            [':id' => $id]
         )->rowCount();
 
         if ($n === 0) {
             throw ApiException::introuvable('Abonné introuvable.');
         }
+
+        Journal::consigner($this->db, 'abonne_desinscrit', 'subscriber', ['id' => $id]);
 
         return Reponse::vide();
     }

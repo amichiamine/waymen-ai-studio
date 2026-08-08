@@ -15,6 +15,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -147,6 +148,8 @@ final class ControleurNotifications
             ]);
         });
 
+        Journal::consigner($this->db, 'notification_creee', 'notification', ['id' => $id, 'level' => $level]);
+
         $ligne = $this->db->un('SELECT * FROM notifications WHERE id = :id', [':id' => $id]);
 
         return Reponse::cree($this->enDto((array) $ligne));
@@ -226,6 +229,8 @@ final class ControleurNotifications
             $params,
         );
 
+        Journal::consigner($this->db, 'notification_mise_a_jour', 'notification', ['id' => $id]);
+
         $ligne = $this->db->un('SELECT * FROM notifications WHERE id = :id', [':id' => $id]);
 
         return Reponse::ok($this->enDto((array) $ligne));
@@ -237,14 +242,17 @@ final class ControleurNotifications
      */
     public function supprimer(Requete $r): Reponse
     {
-        $n = $this->db->run(
+        $id = $r->param('id');
+        $n  = $this->db->run(
             'DELETE FROM notifications WHERE id = :id',
-            [':id' => $r->param('id')]
+            [':id' => $id]
         )->rowCount();
 
         if ($n === 0) {
             throw ApiException::introuvable('Notification introuvable.');
         }
+
+        Journal::consigner($this->db, 'notification_supprimee', 'notification', ['id' => $id]);
 
         return Reponse::vide();
     }
