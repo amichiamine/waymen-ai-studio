@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "chantier/**"]
   pull_request:
-    branches: [main]
+    branches: [main, "chantier/**"]
 
 jobs:
   build:
@@ -27,3 +27,167 @@ jobs:
 
       - name: Build
         run: bun run build
+
+  # ── Harnais 1 : parité des trois schémas SQL ────────────────────────────────
+  # PHP seul, aucune base requise. S'il échoue, la suite est inutile.
+  parite-schema:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_sqlite, sqlite3, mbstring
+
+      - name: Vérifier la parité des schémas sqlite / mysql / pgsql
+        run: php api/tools/verifier-parite-schema.php
+
+  # ── Harnais 2 : conformité provider ↔ API PHP ───────────────────────────────
+  # Requiert : base SQLite, seed, serveur PHP en écoute.
+  # Séquence exacte documentée en tête de docs/CONFORMITE-API.md.
+  conformite-api:
+    runs-on: ubuntu-latest
+    needs: parite-schema
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_sqlite, sqlite3, mbstring
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Génère un mot de passe de test aléatoire pour ce job — jamais en dur.
+      # Conforme à SKILLS.md S13 : aucun secret réel, aucune valeur figée.
+      - name: Générer un mot de passe de test
+        run: |
+          CI_OWNER_PASSWORD="Ci-$(openssl rand -hex 8)-Test"
+          echo "CI_OWNER_PASSWORD=${CI_OWNER_PASSWORD}" >> "$GITHUB_ENV"
+          echo "CI_OWNER_EMAIL=ci-owner@katech.dz" >> "$GITHUB_ENV"
+          echo "CI_SQLITE_PATH=/tmp/ci-conformite.sqlite" >> "$GITHUB_ENV"
+
+      # Étape 1 — installation sur base neuve
+      - name: Installer l'API sur une base SQLite neuve
+        run: |
+          DB_DRIVER=sqlite DB_SQLITE_PATH="$CI_SQLITE_PATH" \
+            APP_ENV=production API_BASE_PATH=/ \
+            INSTALL_OWNER_EMAIL="$CI_OWNER_EMAIL" \
+            INSTALL_OWNER_PASSWORD="$CI_OWNER_PASSWORD" \
+            php api/install.php
+
+      # Étape 2 — seed des données front
+      - name: Semer les données front
+        run: |
+          DB_DRIVER=sqlite DB_SQLITE_PATH="$CI_SQLITE_PATH" \
+            php api/tools/importer-donnees-front.php
+
+      # Étape 3 — lancer le serveur PHP en arrière-plan
+      - name: Démarrer le serveur PHP
+        run: |
+          mkdir -p /tmp/katech-uploads
+          DB_DRIVER=sqlite DB_SQLITE_PATH="$CI_SQLITE_PATH" \
+            APP_ENV=production API_BASE_PATH=/ \
+            UPLOAD_DIR=/tmp/katech-uploads \
+            php -S 127.0.0.1:8160 -t api &
+          # attendre que le serveur réponde
+          for i in $(seq 1 15); do
+            curl -sf http://127.0.0.1:8160/health > /dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8160/health | grep -q '"status":"ok"'
+
+      # Étape 4 — harnais de conformité
+      - name: Exécuter le harnais de conformité
+        run: |
+          API_URL=http://127.0.0.1:8160/v1 \
+            API_EMAIL="$CI_OWNER_EMAIL" \
+            API_PASSWORD="$CI_OWNER_PASSWORD" \
+            UPLOAD_DIR=/tmp/katech-uploads \
+            bunx tsx scripts/conformite-api.ts
+
+  # ── Harnais 3 : parcours navigateur (non bloquant) ──────────────────────────
+  # Requiert Playwright + navigateur, l'API ET le frontend.
+  # continue-on-error : tant que la bascule http n'est pas prononcée,
+  # un échec ne bloque pas la CI — mais le rapport reste visible dans les logs.
+  parcours:
+    runs-on: ubuntu-latest
+    needs: conformite-api
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_sqlite, sqlite3, mbstring
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Installer Playwright et le navigateur Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Générer un mot de passe de test
+        run: |
+          CI_OWNER_PASSWORD="Ci-$(openssl rand -hex 8)-Test"
+          echo "CI_OWNER_PASSWORD=${CI_OWNER_PASSWORD}" >> "$GITHUB_ENV"
+          echo "CI_OWNER_EMAIL=ci-parcours@katech.dz" >> "$GITHUB_ENV"
+          echo "CI_SQLITE_PATH=/tmp/ci-parcours.sqlite" >> "$GITHUB_ENV"
+          echo "CI_API_PORT=8170" >> "$GITHUB_ENV"
+          echo "CI_APP_PORT=8080" >> "$GITHUB_ENV"
+
+      - name: Installer l'API (base fraîche)
+        run: |
+          DB_DRIVER=sqlite DB_SQLITE_PATH="$CI_SQLITE_PATH" \
+            APP_ENV=production API_BASE_PATH=/ \
+            INSTALL_OWNER_EMAIL="$CI_OWNER_EMAIL" \
+            INSTALL_OWNER_PASSWORD="$CI_OWNER_PASSWORD" \
+            php api/install.php
+
+      - name: Semer les données
+        run: |
+          DB_DRIVER=sqlite DB_SQLITE_PATH="$CI_SQLITE_PATH" \
+            php api/tools/importer-donnees-front.php
+
+      - name: Démarrer l'API PHP
+        run: |
+          mkdir -p /tmp/katech-uploads-parcours
+          DB_DRIVER=sqlite DB_SQLITE_PATH="$CI_SQLITE_PATH" \
+            APP_ENV=production API_BASE_PATH=/ \
+            UPLOAD_DIR=/tmp/katech-uploads-parcours \
+            php -S "127.0.0.1:${CI_API_PORT}" -t api &
+          for i in $(seq 1 15); do
+            curl -sf "http://127.0.0.1:${CI_API_PORT}/health" > /dev/null && break
+            sleep 1
+          done
+
+      - name: Démarrer le frontend (bun run dev)
+        run: |
+          API_PORT="$CI_API_PORT" PORT="$CI_APP_PORT" \
+            bun run dev &
+          for i in $(seq 1 30); do
+            curl -sf "http://127.0.0.1:${CI_APP_PORT}/" > /dev/null && break
+            sleep 1
+          done
+
+      - name: Exécuter le parcours navigateur
+        run: |
+          APP_URL="http://127.0.0.1:${CI_APP_PORT}" \
+            APP_EMAIL="$CI_OWNER_EMAIL" \
+            APP_PASSWORD="$CI_OWNER_PASSWORD" \
+            bun run parcours
