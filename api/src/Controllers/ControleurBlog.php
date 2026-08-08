@@ -31,6 +31,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -148,6 +149,8 @@ final class ControleurBlog
             ['slug', 'title', 'excerpt', 'content', 'cover', 'author', 'tags', 'status', 'published_at', 'updated_at'],
         ));
 
+        Journal::consigner($this->db, 'article_cree', 'blog_post', ['id' => $id]);
+
         return Reponse::cree($this->enDto(
             (array) $this->db->un('SELECT * FROM blog_posts WHERE id = :id', [':id' => $id])
         ));
@@ -242,6 +245,8 @@ final class ControleurBlog
             $params,
         ));
 
+        Journal::consigner($this->db, 'article_modifie', 'blog_post', ['id' => $existant['id']]);
+
         return Reponse::ok($this->enDto(
             (array) $this->db->un('SELECT * FROM blog_posts WHERE id = :id', [':id' => $existant['id']])
         ));
@@ -263,6 +268,8 @@ final class ControleurBlog
         if ($n === 0) {
             throw ApiException::introuvable('Article introuvable.');
         }
+
+        Journal::consigner($this->db, 'article_supprime', 'blog_post', ['id' => $idOuSlug]);
 
         return Reponse::vide();
     }

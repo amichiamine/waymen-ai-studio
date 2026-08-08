@@ -21,6 +21,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -193,6 +194,8 @@ final class ControleurAvis
             'updated_at'    => $maintenant,
         ]));
 
+        Journal::consigner($this->db, 'avis_cree', 'review', ['id' => $id, 'productId' => $productId, 'rating' => $rating]);
+
         $avis = $this->db->un(
             'SELECT id, product_id, product_name, customer_name, rating, title, body, status, created_at, updated_at'
             . ' FROM reviews WHERE id = :id',
@@ -236,6 +239,8 @@ final class ControleurAvis
             throw ApiException::introuvable("Aucun avis ne porte l'identifiant « {$id} ».");
         }
 
+        Journal::consigner($this->db, 'avis_modere', 'review', ['id' => $id, 'statut' => $statut]);
+
         $avis = $this->db->un(
             'SELECT id, product_id, product_name, customer_name, rating, title, body, status, created_at, updated_at'
             . ' FROM reviews WHERE id = :id',
@@ -266,6 +271,8 @@ final class ControleurAvis
         if ($n === 0) {
             throw ApiException::introuvable("Aucun avis ne porte l'identifiant « {$id} ».");
         }
+
+        Journal::consigner($this->db, 'avis_supprime', 'review', ['id' => $id]);
 
         return Reponse::vide();
     }

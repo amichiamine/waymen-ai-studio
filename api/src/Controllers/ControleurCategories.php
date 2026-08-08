@@ -23,6 +23,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -111,6 +112,8 @@ final class ControleurCategories
             'updated_at'  => $maintenant,
         ], ['slug'], ['label', 'description', 'cover', 'position', 'updated_at']));
 
+        Journal::consigner($this->db, 'categorie_creee', 'category', ['slug' => $slug, 'label' => $label]);
+
         return Reponse::cree($this->enDto(
             (array) $this->db->un('SELECT * FROM categories WHERE slug = :slug', [':slug' => $slug])
         ));
@@ -155,6 +158,8 @@ final class ControleurCategories
             ],
         );
 
+        Journal::consigner($this->db, 'categorie_modifiee', 'category', ['slug' => $slug]);
+
         return Reponse::ok($this->enDto(
             (array) $this->db->un('SELECT * FROM categories WHERE slug = :slug', [':slug' => $slug])
         ));
@@ -194,6 +199,8 @@ final class ControleurCategories
         if ($n === 0) {
             throw ApiException::introuvable("Aucune catégorie ne porte le slug « {$slug} ».");
         }
+
+        Journal::consigner($this->db, 'categorie_supprimee', 'category', ['slug' => $slug]);
 
         return Reponse::vide();
     }

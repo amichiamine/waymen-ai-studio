@@ -35,6 +35,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Reponse;
 use KaTech\Requete;
 
@@ -116,6 +117,8 @@ final class ControleurContenu
             );
         }
 
+        Journal::consigner($this->db, 'contenu_mis_a_jour', 'site_content', ['sections' => array_keys($corps)]);
+
         return $this->lireContenu($r);
     }
 
@@ -143,6 +146,8 @@ final class ControleurContenu
         if ($n === 0) {
             throw ApiException::introuvable("Section « {$section} » introuvable.");
         }
+
+        Journal::consigner($this->db, 'section_reinitalisee', 'site_content', ['section' => $section]);
 
         return Reponse::vide();
     }
@@ -206,6 +211,8 @@ final class ControleurContenu
             ['payload', 'updated_at'],
         );
 
+        Journal::consigner($this->db, 'home_reviews_mises_a_jour', 'site_content', ['section' => 'home-reviews']);
+
         $ligne = $this->db->un(
             "SELECT payload FROM site_content WHERE section = 'home-reviews'",
         );
@@ -233,7 +240,10 @@ final class ControleurContenu
      */
     public function mettreAJourReglagesSite(Requete $r): Reponse
     {
-        return Reponse::ok($this->mettreAJourReglage('site', $r->corps));
+        $result = $this->mettreAJourReglage('site', $r->corps);
+        Journal::consigner($this->db, 'reglages_mis_a_jour', 'settings', ['scope' => 'site']);
+
+        return Reponse::ok($result);
     }
 
     /**
@@ -252,7 +262,10 @@ final class ControleurContenu
      */
     public function mettreAJourReglagesLivraison(Requete $r): Reponse
     {
-        return Reponse::ok($this->mettreAJourReglage('shipping', $r->corps));
+        $result = $this->mettreAJourReglage('shipping', $r->corps);
+        Journal::consigner($this->db, 'reglages_mis_a_jour', 'settings', ['scope' => 'shipping']);
+
+        return Reponse::ok($result);
     }
 
     // ---------------------------------------------------------------
