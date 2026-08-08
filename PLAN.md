@@ -857,8 +857,27 @@ installés en développement l'a fait apparaître immédiatement.
 - [ ] `sort` / `order` absents du mode `mock` : les deux modes ne se comportent
       pas pareil.
 - [ ] Commande invitée : ni `customerId`, ni fiche client. **Arbitrage produit.**
-- [ ] Administration en français codé en dur : 29 appels `t()` sur 7 fichiers de
-      36, contre 304 côté visiteur. **Décision ouverte, §11.**
+- [x] ~~Administration en français codé en dur~~ — **SOLDÉ le 8 août 2026.**
+      Le back-office est intégralement traduit en français, anglais et arabe.
+      Un pilote (espace de noms `admin` chargé à la demande, convention écrite
+      dans `src/lib/i18n/admin/index.ts`, vérificateur `bun run verifier-i18n`
+      branché en CI et testé en négatif) puis cinq agents en périmètres
+      disjoints — un groupe de dictionnaires chacun, aucun agrégateur partagé,
+      donc aucune collision.
+      **1 138 clés × 3 langues**, réparties en six groupes : `socle` (110),
+      `catalogue` (248), `ventes` (187), `contenu` (144), `reglages` (171),
+      `systeme` (278).
+      Preuve : balayage navigateur de **35 écrans × 3 langues, soit 105 visites**
+      → **0 clé brute affichée**, 0 classe `text-left`/`text-right` résiduelle
+      en arabe, `dir=rtl` effectif, aucun débordement de tableau. Le même écran
+      titre « Produits », « Products », « المنتجات ».
+      **Le premier chargement n'a pas bougé : 228,1 ko gzip.** Les clés
+      d'administration ne sont dans aucun fichier d'entrée (vérifié : 0
+      occurrence dans le chunk `index-*.js`) ; elles vivent dans 28 chunks
+      paresseux, chargés à l'entrée dans `/admin`.
+      Réserve consignée : les valeurs `Localized` éditées dans `/admin/content`
+      sont des DONNÉES, jamais traduites ; les trois `text-right` conditionnés à
+      l'arabe de cet écran sont volontaires et ont été préservés.
 - [ ] Aucun test unitaire : pas de lanceur, pas de configuration. `parcours.mjs`
       tient lieu de filet, il est désormais en CI.
 - [ ] 5 `text-left` / `text-right` résiduels, dont 3 volontaires pour l'arabe.
