@@ -403,6 +403,13 @@ const fr: Record<string, string> = {
     "Construisez votre PC sur-mesure : choisissez les composants, vérifiez la compatibilité et obtenez un prix en direct.",
   "bp.addCart": "Ajouter au panier",
   "bp.added": "Configuration ajoutée au panier",
+  "bp.adding": "Enregistrement…",
+  // Échec de l'enregistrement d'une configuration. Le message du serveur, quand
+  // il en fournit un (session expirée, configuration refusée, plafond atteint),
+  // s'affiche en description ; `bp.addFailed.retry` est le repli quand le réseau
+  // ne dit rien du tout — API coupée, délai dépassé.
+  "bp.addFailed": "Impossible d'ajouter la configuration au panier",
+  "bp.addFailed.retry": "Vérifiez votre connexion, puis réessayez.",
   "bp.compat.title": "Compatibilité",
   "bp.compat.socket": "Socket incompatible entre le processeur et la carte mère",
   "bp.compat.memory": "Type de mémoire incompatible avec la carte mère",

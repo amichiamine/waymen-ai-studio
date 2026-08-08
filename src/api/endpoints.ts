@@ -23,6 +23,16 @@ export const endpoints = {
     stock: (id: string) => `/products/${id}/stock`,
   },
 
+  /**
+   * Configurateur PC. Une seule écriture, ouverte au client CONNECTÉ : le corps
+   * ne porte que les pièces choisies (`{ picks }`) et le serveur recalcule le
+   * prix. Volontairement distinct de `products.create`, gardé par la permission
+   * `create` (rôle `editor`), qui répondait 403 au visiteur du configurateur.
+   */
+  builds: {
+    create: () => `/builds`,
+  },
+
   categories: {
     list: () => `/categories`,
     detail: (slug: string) => `/categories/${slug}`,

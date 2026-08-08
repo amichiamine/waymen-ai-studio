@@ -17,16 +17,23 @@ import {
   AlertTriangle,
   AlertCircle,
 } from "lucide-react";
-import { formatDZD, categoryMeta, isCustomBuild, type Product } from "@/data/products";
+import { formatDZD } from "@/data/products";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import {
+  PRODUCTS_RESOURCE,
+  runMutation,
   useBuilderStepList,
-  useProductList,
   useSiteSettings,
-  useProductMutations,
 } from "@/data-provider";
+// Import direct de la ressource, à défaut de hook de fournisseur : `POST /builds`
+// n'a pas d'entité propre (elle écrit dans `products`) et le périmètre de cette
+// vague n'ouvre pas `src/data-provider`. L'invalidation du cache — le seul
+// service qu'un hook rendrait ici — est obtenue en passant par `runMutation`,
+// avec la clé de la ressource réellement écrite.
+import { buildsApi } from "@/api/resources/builds";
+import { ApiError } from "@/api/client";
 import type { BuilderStep, BuilderPart } from "@/lib/admin-store";
 
 const ICONS: Record<BuilderStep["icon"], typeof Cpu> = {
@@ -38,21 +45,6 @@ const ICONS: Record<BuilderStep["icon"], typeof Cpu> = {
   gpu: Monitor,
   psu: Zap,
   cool: Snowflake,
-};
-
-/**
- * Correspondance étape → clé de specs du catalogue. Permet de matérialiser une
- * configuration sous la forme d'un `Product` normal (voir `buildProduct`).
- * `cool` n'a pas d'équivalent dans `SpecKey` : il reste dans le `specLine`.
- */
-const STEP_SPEC_KEY: Partial<Record<BuilderStep["icon"], keyof Product["specs"]>> = {
-  case: "form",
-  mb: "motherboard",
-  cpu: "cpu",
-  ram: "ram",
-  ssd: "storage",
-  gpu: "gpu",
-  psu: "psu",
 };
 
 /* -------------------------------------------------------------------------- */
@@ -260,10 +252,10 @@ export default function Builder() {
   // Lectures via le provider — trois états traités, inertes en mode mock.
   const { data: STEPS } = useBuilderStepList();
   const { data: siteSettingsData } = useSiteSettings();
-  const { data: products } = useProductList();
-  const { create: createProduct } = useProductMutations();
 
   const [picks, setPicks] = useState<Record<string, BuilderPart>>({});
+  /** Vrai pendant l'aller-retour d'enregistrement : le bouton doit le montrer. */
+  const [saving, setSaving] = useState(false);
 
   const total = Object.values(picks).reduce((s, p) => s + p.price, 0);
   const completion =
@@ -292,68 +284,63 @@ export default function Builder() {
     : "#";
 
   /**
-   * Représentation d'une configuration dans le panier.
+   * Enregistre la configuration puis l'ajoute au panier.
    *
-   * Le panier de `store.tsx` est une liste de `{ product_id, quantity }`, et
-   * `Cart`/`Checkout` résolvent chaque `product_id` dans le catalogue puis
-   * **écartent silencieusement** les lignes non résolues. Pousser un
-   * identifiant synthétique ferait donc disparaître la configuration sans
-   * message (AGENTS.md §7). Plutôt que d'étendre `store.tsx` (hors périmètre),
-   * on matérialise l'assemblage comme un vrai `Product` de la catégorie
-   * `builds` — qui existe déjà dans le modèle — via `useProductMutations`,
-   * puis on ajoute son identifiant au panier comme n'importe quel article.
+   * POURQUOI PASSER PAR UN PRODUIT. Le panier de `store.tsx` est une liste de
+   * `{ product_id, quantity }`, et `Cart`/`Checkout` résolvent chaque
+   * `product_id` dans le catalogue puis **écartent silencieusement** les lignes
+   * non résolues. Un identifiant synthétique ferait donc disparaître la
+   * configuration sans message. On la matérialise en `Product` de la catégorie
+   * `builds`, marqué `customBuild` — résoluble par identifiant partout, exclu
+   * des surfaces de listing.
    *
-   * L'identifiant est dérivé des pièces choisies, donc stable : réajouter la
-   * même configuration incrémente la quantité au lieu de créer un doublon, et
-   * la commande reste résoluble côté panier, paiement et back-office.
+   * LE PRIX N'EST PAS ENVOYÉ. Seuls les identifiants des pièces partent
+   * (`POST /builds`). Le serveur relit son référentiel d'étapes et recalcule la
+   * somme : `total` n'est ici qu'un affichage. C'est ce qui a permis d'ouvrir la
+   * route aux clients, là où `POST /products` — gardée par la permission
+   * `create` — répondait 403 « Votre rôle : Client » et laissait ce bouton
+   * totalement inerte.
    *
-   * LIMITE CONNUE §7.3 : `upsertProduct` (devenu `createProduct`) ne fonctionne
-   * qu'en mode mock — en mode http, le backend n'a pas de endpoint pour cette
-   * matérialisation. Ce point est irrésoluble en phase 2 et sera traité en
-   * phase 4.
+   * L'ÉCHEC EST VISIBLE (AGENTS.md §7). Un bouton qui ne fait rien sans un mot
+   * à l'utilisateur est le pire des comportements : toute erreur est captée et
+   * rendue en `toast.error`. Le message du serveur n'est repris QUE lorsqu'il
+   * est destiné à l'utilisateur — un refus métier 4xx : session expirée (401),
+   * configuration refusée (422), plafond atteint (429). Une panne (5xx, réseau
+   * coupé, délai dépassé) rend « Internal Server Error » ou un texte de proxy,
+   * qui n'aide personne : on affiche alors le conseil de réessai. Le bouton est
+   * réactivé dans les deux cas, sinon l'échec deviendrait définitif.
    */
-  function buildProduct(): Product {
-    const ordered = STEPS.map((s) => ({ step: s, part: picks[s.id] }));
-    const id = `build-${ordered.map(({ part }) => part.id).join("-")}`;
-    const specs: Product["specs"] = {};
-    for (const { step, part } of ordered) {
-      const key = STEP_SPEC_KEY[step.icon];
-      if (key) specs[key] = part.name;
-    }
-    const headline = [byIconName(ordered, "cpu"), byIconName(ordered, "gpu")].filter(Boolean);
-    // Visuel emprunté à un assemblage du *catalogue* : une configuration
-    // client n'est pas une source d'illustration valable.
-    const cover = products.find((p) => p.category === "builds" && !isCustomBuild(p))?.image ?? "";
-    return {
-      id,
-      name: `${t(categoryMeta.builds.labelKey)} — ${headline.join(" · ")}`,
-      brand: siteSettingsData.storeName,
-      category: "builds",
-      use: [],
-      specLine: ordered.map(({ part }) => part.name).join(" · "),
-      specs,
-      price: total,
-      stock: "in",
-      image: cover,
-      // Marque la ligne comme privée : résoluble par identifiant (panier,
-      // paiement, fiche produit) mais exclue de tous les listings publics.
-      customBuild: true,
-    };
-  }
-
   async function handleAddToCart() {
-    if (!complete || blocked) return;
+    if (!complete || blocked || saving) return;
     if (!user) {
       navigate("/auth");
       return;
     }
-    const product = buildProduct();
-    // Limite connue §7.3 : createProduct ne fonctionne qu'en mock.
-    // En mode http cette ligne échoue silencieusement ; la phase 4 devra
-    // résoudre la matérialisation côté backend.
-    await createProduct(product);
-    await addToCart(product.id);
-    toast.success(t("bp.added"), { description: L(product.specLine) ?? "" });
+
+    // `{ [idEtape]: idPiece }` — rien d'autre ne quitte le navigateur.
+    const partIds = Object.fromEntries(
+      STEPS.map((step) => [step.id, picks[step.id].id] as const),
+    ) as Record<string, string>;
+
+    setSaving(true);
+    try {
+      // `runMutation` invalide le cache des produits : sans cela, `Cart` et
+      // `Checkout` liraient une liste antérieure à la configuration et
+      // écarteraient la ligne qu'on vient d'ajouter.
+      const created = await runMutation(PRODUCTS_RESOURCE, "build", () =>
+        buildsApi.create(partIds),
+      );
+      await addToCart(created.id);
+      toast.success(t("bp.added"), { description: L(created.specLine) ?? "" });
+    } catch (cause) {
+      const metier =
+        cause instanceof ApiError && cause.status >= 400 && cause.status < 500
+          ? cause.message
+          : null;
+      toast.error(t("bp.addFailed"), { description: metier ?? t("bp.addFailed.retry") });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -501,11 +488,11 @@ export default function Builder() {
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={!complete || blocked}
+                disabled={!complete || blocked || saving}
                 className="mt-5 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors bg-primary text-primary-foreground hover:opacity-90 disabled:bg-card disabled:border disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:hover:opacity-100"
               >
                 <ShoppingCart className="size-4" />
-                {complete ? t("bp.addCart") : t("bp.complete")}
+                {saving ? t("bp.adding") : complete ? t("bp.addCart") : t("bp.complete")}
               </button>
 
               <a
@@ -535,12 +522,4 @@ export default function Builder() {
       )}
     </div>
   );
-}
-
-/** Nom de la pièce choisie pour une étape donnée, chaîne vide si absente. */
-function byIconName(
-  ordered: { step: BuilderStep; part: BuilderPart }[],
-  icon: BuilderStep["icon"],
-): string {
-  return ordered.find((o) => o.step.icon === icon)?.part.name ?? "";
 }

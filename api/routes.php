@@ -17,6 +17,7 @@ use KaTech\Auth\MotDePasse;
 use KaTech\Controllers\ControleurAuth;
 use KaTech\Controllers\ControleurAvis;
 use KaTech\Controllers\ControleurBlog;
+use KaTech\Controllers\ControleurBuilds;
 use KaTech\Controllers\ControleurCategories;
 use KaTech\Controllers\ControleurClients;
 use KaTech\Controllers\ControleurCommandes;
@@ -65,6 +66,15 @@ $routeur->post('/products', Garde::protege('create', [$produits, 'creer']));
 $routeur->patch('/products/:id', Garde::protege('update', [$produits, 'modifier']));
 $routeur->delete('/products/:id', Garde::protege('delete', [$produits, 'supprimer']));
 $routeur->patch('/products/:id/stock', Garde::protege('update', [$produits, 'mettreAJourStock']));
+
+// Configurateur PC. Route d'ÉCRITURE ouverte aux CLIENTS : `protegeConnecte`,
+// comme /me/orders — un client authentifié y a sa place, un anonyme non. Elle
+// n'est surtout PAS gardée par `create` : c'est précisément la permission
+// `editor` de POST /products qui renvoyait 403 au visiteur du configurateur.
+// Le prix est recalculé côté serveur ; aucun prix venant du client n'est lu.
+// Le plafond de débit est posé dans le contrôleur (voir ControleurBuilds).
+$builds = new ControleurBuilds($db);
+$routeur->post('/builds', Garde::protegeConnecte([$builds, 'creer']));
 
 $categories = new ControleurCategories($db);
 $routeur->get('/categories', [$categories, 'lister']);
