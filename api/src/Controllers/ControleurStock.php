@@ -25,6 +25,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -173,6 +174,12 @@ final class ControleurStock
                 'delta'        => $delta,
                 'reason'       => $raison,
                 'created_at'   => $maintenant,
+            ]);
+
+            Journal::consigner($this->db, 'ajustement_stock', 'inventory', [
+                'productId' => $productId,
+                'delta'     => $delta,
+                'reason'    => $raison,
             ]);
 
             $this->db->commit();

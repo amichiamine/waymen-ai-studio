@@ -21,6 +21,7 @@ namespace KaTech\Controllers;
 
 use KaTech\ApiException;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -106,6 +107,8 @@ final class ControleurMarques
             'updated_at'  => $maintenant,
         ], ['id'], ['name', 'description', 'country', 'updated_at']));
 
+        Journal::consigner($this->db, 'marque_creee', 'brand', ['id' => $id, 'name' => $nom]);
+
         return Reponse::cree($this->enDto(
             (array) $this->db->un('SELECT * FROM brands WHERE id = :id', [':id' => $id])
         ));
@@ -148,6 +151,8 @@ final class ControleurMarques
             ],
         );
 
+        Journal::consigner($this->db, 'marque_modifiee', 'brand', ['id' => $id]);
+
         return Reponse::ok($this->enDto(
             (array) $this->db->un('SELECT * FROM brands WHERE id = :id', [':id' => $id])
         ));
@@ -187,6 +192,8 @@ final class ControleurMarques
         if ($n === 0) {
             throw ApiException::introuvable("Aucune marque ne porte l'identifiant « {$id} ».");
         }
+
+        Journal::consigner($this->db, 'marque_supprimee', 'brand', ['id' => $id]);
 
         return Reponse::vide();
     }

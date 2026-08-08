@@ -21,6 +21,7 @@ namespace KaTech\Controllers;
 use KaTech\ApiException;
 use KaTech\Db;
 use KaTech\Env;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -210,6 +211,8 @@ final class ControleurMedias
             ]);
         });
 
+        Journal::consigner($this->db, 'media_televerse', 'media', ['id' => $id, 'name' => $nomOriginal, 'mime' => $mimeReel]);
+
         $ligne = $this->db->un('SELECT * FROM media_assets WHERE id = :id', [':id' => $id]);
 
         return Reponse::cree($this->enDto((array) $ligne));
@@ -258,6 +261,8 @@ final class ControleurMedias
             ],
         );
 
+        Journal::consigner($this->db, 'media_renomme', 'media', ['id' => $id, 'name' => $nom]);
+
         return Reponse::ok($this->enDto(
             (array) $this->db->un('SELECT * FROM media_assets WHERE id = :id', [':id' => $id])
         ));
@@ -281,6 +286,8 @@ final class ControleurMedias
         $this->supprimerFichier($src);
 
         $this->db->run('DELETE FROM media_assets WHERE id = :id', [':id' => $id]);
+
+        Journal::consigner($this->db, 'media_supprime', 'media', ['id' => $id, 'src' => $src]);
 
         return Reponse::vide();
     }

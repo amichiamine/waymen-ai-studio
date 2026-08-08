@@ -34,6 +34,7 @@ namespace KaTech\Controllers;
 use KaTech\ApiException;
 use KaTech\Auth\MotDePasse;
 use KaTech\Db;
+use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
@@ -224,6 +225,8 @@ final class ControleurUtilisateurs
             'updated_at'    => $maintenant,
         ]));
 
+        Journal::consigner($this->db, 'utilisateur_cree', 'user', ['id' => $id, 'email' => $email, 'role' => $role]);
+
         // SELECT explicite — password_hash délibérément absent.
         $ligne = $this->db->un(
             'SELECT ' . self::COLONNES_SECURISEES . ' FROM users WHERE id = :id',
@@ -349,6 +352,8 @@ final class ControleurUtilisateurs
             $params,
         );
 
+        Journal::consigner($this->db, 'utilisateur_modifie', 'user', ['id' => $id]);
+
         // SELECT explicite — password_hash délibérément absent.
         $ligne = $this->db->un(
             'SELECT ' . self::COLONNES_SECURISEES . ' FROM users WHERE id = :id',
@@ -422,6 +427,8 @@ final class ControleurUtilisateurs
             . ' (algorithme : ' . MotDePasse::nomAlgorithme() . ').'
         );
 
+        Journal::consigner($this->db, 'mot_de_passe_change', 'user', ['id' => $id]);
+
         return Reponse::vide();
     }
 
@@ -446,6 +453,8 @@ final class ControleurUtilisateurs
         if ($n === 0) {
             throw ApiException::introuvable("Aucun membre de l'équipe ne porte l'identifiant « {$id} ».");
         }
+
+        Journal::consigner($this->db, 'utilisateur_supprime', 'user', ['id' => $id]);
 
         return Reponse::vide();
     }
