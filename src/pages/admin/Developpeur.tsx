@@ -33,6 +33,7 @@ import {
   OctagonX,
 } from "lucide-react";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 import {
   useEtatBase,
   useSauvegarde,
@@ -67,6 +68,7 @@ type DialogAttente = { type: "sauvegarde" } | { type: "migration_exec"; form: Fo
  * Les erreurs affichent un message issu du serveur, pas un message générique.
  */
 export default function AdminDeveloppeur() {
+  const { t } = useI18n();
   const { can, guard, denyReason } = usePermissions();
 
   // L'accès entier est réservé au rôle `owner` — même niveau que resetData.
@@ -114,14 +116,15 @@ export default function AdminDeveloppeur() {
   }
 
   async function lancerSauvegarde() {
-    if (!guard("resetData", "Déclencher une sauvegarde")) return;
+    if (!guard("resetData", t("admin.systeme.developpeur.sauvegarde_btn"))) return;
     setSauvegardeCours(true);
     try {
       await telecharger();
-      toast.success("Sauvegarde téléchargée");
+      toast.success(t("admin.systeme.developpeur.sauvegarde_toast_ok"));
     } catch (cause) {
       const err = toApiError(cause);
-      toast.error(`Sauvegarde échouée : ${err.message}`);
+      // Le message d'erreur vient du serveur : c'est une donnée, on l'affiche tel quel.
+      toast.error(t("admin.systeme.developpeur.sauvegarde_toast_echec", { message: err.message }));
     } finally {
       setSauvegardeCours(false);
       setDialogue(null);
@@ -129,9 +132,9 @@ export default function AdminDeveloppeur() {
   }
 
   async function lancerSimulation() {
-    if (!guard("resetData", "Simuler la migration")) return;
+    if (!guard("resetData", t("admin.systeme.developpeur.migration_btn_simuler"))) return;
     if (!formulaireValide()) {
-      toast.error("Renseignez le DSN, l'utilisateur et le mot de passe.");
+      toast.error(t("admin.systeme.developpeur.migration_toast_form_incomplet"));
       return;
     }
     setSimulationCours(true);
@@ -140,14 +143,21 @@ export default function AdminDeveloppeur() {
       const resultat = await migrer({ ...form, simulation: true });
       setRapportSimulation(resultat);
       if (resultat.ok) {
-        toast.success("Simulation réussie — consultez le rapport avant d'exécuter.");
+        toast.success(t("admin.systeme.developpeur.migration_toast_simu_ok"));
       } else {
-        toast.error(`Simulation échouée : ${resultat.message}`);
+        // `resultat.message` vient du serveur : c'est une donnée, on l'affiche tel quel.
+        toast.error(
+          t("admin.systeme.developpeur.migration_toast_simu_echec", {
+            message: resultat.message,
+          }),
+        );
       }
     } catch (cause) {
       const err = toApiError(cause);
       // Message explicite : distinguer le refus de connexion d'une panne réseau.
-      toast.error(`Simulation échouée : ${err.message}`);
+      toast.error(
+        t("admin.systeme.developpeur.migration_toast_simu_echec", { message: err.message }),
+      );
     } finally {
       setSimulationCours(false);
     }
@@ -155,20 +165,27 @@ export default function AdminDeveloppeur() {
 
   async function executer() {
     // Ce handler est appelé après confirmation dans le ConfirmDialog.
-    if (!guard("resetData", "Exécuter la migration")) return;
+    if (!guard("resetData", t("admin.systeme.developpeur.migration_btn_executer"))) return;
     if (dialogue?.type !== "migration_exec") return;
     setMigrationCours(true);
     try {
       const resultat = await migrer({ ...dialogue.form, simulation: false });
       if (resultat.ok) {
-        toast.success("Migration exécutée avec succès.");
+        toast.success(t("admin.systeme.developpeur.migration_toast_exec_ok"));
         setRapportSimulation(resultat);
       } else {
-        toast.error(`Migration échouée : ${resultat.message}`);
+        // `resultat.message` vient du serveur : c'est une donnée, on l'affiche tel quel.
+        toast.error(
+          t("admin.systeme.developpeur.migration_toast_exec_echec", {
+            message: resultat.message,
+          }),
+        );
       }
     } catch (cause) {
       const err = toApiError(cause);
-      toast.error(`Migration échouée : ${err.message}`);
+      toast.error(
+        t("admin.systeme.developpeur.migration_toast_exec_echec", { message: err.message }),
+      );
     } finally {
       setMigrationCours(false);
       setDialogue(null);
@@ -180,22 +197,26 @@ export default function AdminDeveloppeur() {
   const dialogueTitre = !dialogue
     ? ""
     : dialogue.type === "sauvegarde"
-      ? "Télécharger la sauvegarde ?"
-      : "Exécuter la migration ?";
+      ? t("admin.systeme.developpeur.dialog_sauvegarde_titre")
+      : t("admin.systeme.developpeur.dialog_migration_titre");
 
   const dialogueDesc = !dialogue ? null : dialogue.type === "sauvegarde" ? (
-    "Le fichier sera téléchargé directement dans votre navigateur."
+    t("admin.systeme.developpeur.dialog_sauvegarde_desc")
   ) : (
     <div className="space-y-2 text-sm">
       <p>
-        Cette opération transfère <strong>toutes les données</strong> vers la base cible. Elle est
-        irréversible.
+        {/* Phrase complète — ordre des mots respecté dans les trois langues. */}
+        {t("admin.systeme.developpeur.dialog_migration_desc_intro")}
       </p>
       <p>
-        Cible : <strong>{dialogue.form.cible.toUpperCase()}</strong> — {dialogue.form.dsn}
+        {/* `dialogue.form.cible.toUpperCase()` et `dialogue.form.dsn` sont des données. */}
+        {t("admin.systeme.developpeur.dialog_migration_desc_cible", {
+          cible: dialogue.form.cible.toUpperCase(),
+          dsn: dialogue.form.dsn,
+        })}
       </p>
-      <p className="text-destructive font-medium">
-        La simulation a été effectuée. Confirmez pour écrire les données.
+      <p className="font-medium text-destructive">
+        {t("admin.systeme.developpeur.dialog_migration_desc_confirmer")}
       </p>
     </div>
   );
@@ -204,16 +225,16 @@ export default function AdminDeveloppeur() {
 
   return (
     <AdminPageShell
-      title="Développeur"
-      description="Diagnostic de base, sauvegarde et migration. Réservé au Propriétaire."
+      title={t("admin.systeme.developpeur.titre")}
+      description={t("admin.systeme.developpeur.description")}
     >
       {/* Bannière accès restreint */}
       {!estOwner && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Accès restreint</AlertTitle>
+          <AlertTitle>{t("admin.systeme.developpeur.acces_restreint_titre")}</AlertTitle>
           <AlertDescription>
-            {denyReason("resetData") ?? "Cette page est réservée au Propriétaire."}
+            {denyReason("resetData") ?? t("admin.systeme.developpeur.acces_restreint_desc")}
           </AlertDescription>
         </Alert>
       )}
@@ -223,17 +244,19 @@ export default function AdminDeveloppeur() {
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <CardTitle className="flex items-center gap-2">
-              <Database className="h-4 w-4" /> État de la base
+              <Database className="h-4 w-4" /> {t("admin.systeme.developpeur.etat_titre")}
             </CardTitle>
             <Button
               variant="outline"
               size="sm"
               onClick={recharger}
               disabled={chargementEtat}
-              aria-label="Rafraîchir l'état de la base"
+              aria-label={t("admin.systeme.developpeur.etat_rafraichir_aria")}
             >
               <RefreshCw className={`me-2 h-4 w-4 ${chargementEtat ? "animate-spin" : ""}`} />
-              {chargementEtat ? "Chargement…" : "Rafraîchir"}
+              {chargementEtat
+                ? t("admin.socle.commun.chargement")
+                : t("admin.systeme.developpeur.etat_rafraichir")}
             </Button>
           </div>
         </CardHeader>
@@ -244,6 +267,7 @@ export default function AdminDeveloppeur() {
               className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
             >
               <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {/* Erreur serveur : donnée, affichée telle quelle. */}
               {erreurEtat.message}
             </p>
           )}
@@ -251,22 +275,33 @@ export default function AdminDeveloppeur() {
           {/* Indicateurs clés */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-md border bg-muted/30 p-3">
-              <p className="text-xs text-muted-foreground">Pilote</p>
+              <p className="text-xs text-muted-foreground">
+                {t("admin.systeme.developpeur.etat_pilote")}
+              </p>
+              {/* `etat.driver` est un identifiant technique (sqlite, mysql, pgsql) : il ne se traduit pas. */}
               <p className="mt-1 font-semibold">{etat.driver}</p>
             </div>
             <div className="rounded-md border bg-muted/30 p-3">
-              <p className="text-xs text-muted-foreground">Base</p>
-              <p className="mt-1 font-semibold truncate">{etat.database}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("admin.systeme.developpeur.etat_base")}
+              </p>
+              <p className="mt-1 truncate font-semibold">{etat.database}</p>
             </div>
             <div className="rounded-md border bg-muted/30 p-3">
-              <p className="text-xs text-muted-foreground">Taille</p>
+              <p className="text-xs text-muted-foreground">
+                {t("admin.systeme.developpeur.etat_taille")}
+              </p>
               <p className="mt-1 font-semibold">{etat.size}</p>
             </div>
             <div className="rounded-md border bg-muted/30 p-3">
-              <p className="text-xs text-muted-foreground">Événements en attente</p>
+              <p className="text-xs text-muted-foreground">
+                {t("admin.systeme.developpeur.etat_outbox")}
+              </p>
               <p className="mt-1 font-semibold">
                 {etat.outboxPending === 0 ? (
-                  <span className="text-green-600">Aucun</span>
+                  <span className="text-green-600">
+                    {t("admin.systeme.developpeur.etat_outbox_zero")}
+                  </span>
                 ) : (
                   <span className="text-amber-600">{etat.outboxPending}</span>
                 )}
@@ -276,41 +311,52 @@ export default function AdminDeveloppeur() {
 
           {/* Dernière sauvegarde */}
           <p className="text-xs text-muted-foreground">
-            Dernière sauvegarde :{" "}
+            {t("admin.systeme.developpeur.etat_derniere_sauvegarde")}{" "}
             {etat.lastBackup ? (
               <span className="font-medium text-foreground">
                 {new Date(etat.lastBackup).toLocaleString("fr-DZ")}
               </span>
             ) : (
-              <span className="text-amber-600 font-medium">Aucune sauvegarde connue</span>
+              <span className="font-medium text-amber-600">
+                {t("admin.systeme.developpeur.etat_aucune_sauvegarde")}
+              </span>
             )}
           </p>
 
           {/* Tableau des tables */}
           {chargementEtat ? (
             <div aria-busy="true" className="space-y-2">
-              <span className="sr-only">Chargement des tables…</span>
+              <span className="sr-only">
+                {t("admin.systeme.developpeur.etat_chargement_tables")}
+              </span>
               {Array.from({ length: 5 }, (_, i) => (
                 <div key={i} className="h-8 animate-pulse rounded bg-muted" />
               ))}
             </div>
           ) : etat.tables.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune table disponible.</p>
+            <p className="text-sm text-muted-foreground">
+              {t("admin.systeme.developpeur.etat_aucune_table")}
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-start text-xs text-muted-foreground">
-                    <th className="py-2 pe-4 font-medium text-start">Table</th>
-                    <th className="py-2 font-medium text-end">Lignes</th>
+                    <th className="py-2 pe-4 text-start font-medium">
+                      {t("admin.systeme.developpeur.etat_col_table")}
+                    </th>
+                    <th className="py-2 text-end font-medium">
+                      {t("admin.systeme.developpeur.etat_col_lignes")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {etat.tables.map((t) => (
-                    <tr key={t.name}>
-                      <td className="py-2 pe-4 font-mono text-xs">{t.name}</td>
+                  {etat.tables.map((tbl) => (
+                    <tr key={tbl.name}>
+                      {/* `tbl.name` est un nom de table technique : donnée, pas traduite. */}
+                      <td className="py-2 pe-4 font-mono text-xs">{tbl.name}</td>
                       <td className="py-2 text-end tabular-nums">
-                        {t.rows.toLocaleString("fr-FR")}
+                        {tbl.rows.toLocaleString("fr-FR")}
                       </td>
                     </tr>
                   ))}
@@ -325,23 +371,25 @@ export default function AdminDeveloppeur() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-4 w-4" /> Sauvegarde
+            <Download className="h-4 w-4" /> {t("admin.systeme.developpeur.sauvegarde_titre")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Télécharge un dump de la base. Le fichier est livré directement par le serveur et
-            transite via votre session — aucun tiers ne le reçoit.
+            {t("admin.systeme.developpeur.sauvegarde_description")}
           </p>
           {can("resetData") ? (
             <Button onClick={() => setDialogue({ type: "sauvegarde" })} disabled={sauvegardeCours}>
               <Download className="me-2 h-4 w-4" />
-              {sauvegardeCours ? "Téléchargement en cours…" : "Télécharger la sauvegarde"}
+              {sauvegardeCours
+                ? t("admin.systeme.developpeur.sauvegarde_en_cours")
+                : t("admin.systeme.developpeur.sauvegarde_btn")}
             </Button>
           ) : (
             <span title={denyReason("resetData")} className="inline-flex">
               <Button disabled>
-                <Download className="me-2 h-4 w-4" /> Télécharger la sauvegarde
+                <Download className="me-2 h-4 w-4" />{" "}
+                {t("admin.systeme.developpeur.sauvegarde_btn")}
               </Button>
             </span>
           )}
@@ -352,27 +400,27 @@ export default function AdminDeveloppeur() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ArrowRightLeft className="h-4 w-4" /> Migration vers un autre moteur
+            <ArrowRightLeft className="h-4 w-4" /> {t("admin.systeme.developpeur.migration_titre")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Simulation obligatoire</AlertTitle>
+            <AlertTitle>{t("admin.systeme.developpeur.migration_alerte_titre")}</AlertTitle>
             <AlertDescription>
-              Cliquez d&apos;abord sur <strong>Simuler</strong> pour vérifier la compatibilité sans
-              toucher à vos données. Le bouton <strong>Exécuter</strong> n&apos;est disponible
-              qu&apos;après une simulation réussie.
+              {t("admin.systeme.developpeur.migration_alerte_desc")}
             </AlertDescription>
           </Alert>
 
           {/* Formulaire de connexion à la base cible */}
           <fieldset disabled={!estOwner} className="space-y-4">
-            <legend className="sr-only">Connexion à la base cible</legend>
+            <legend className="sr-only">{t("admin.systeme.developpeur.migration_legend")}</legend>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="migration-cible">Moteur cible</Label>
+                <Label htmlFor="migration-cible">
+                  {t("admin.systeme.developpeur.migration_label_cible")}
+                </Label>
                 <Select
                   value={form.cible}
                   onValueChange={(v) => setChamp("cible", v as FormMigration["cible"])}
@@ -381,6 +429,7 @@ export default function AdminDeveloppeur() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    {/* `mysql` et `postgresql` sont des noms de pilotes : valeurs techniques, pas traduites. */}
                     <SelectItem value="mysql">MySQL</SelectItem>
                     <SelectItem value="postgresql">PostgreSQL / Supabase</SelectItem>
                   </SelectContent>
@@ -388,7 +437,9 @@ export default function AdminDeveloppeur() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="migration-utilisateur">Utilisateur de la base cible</Label>
+                <Label htmlFor="migration-utilisateur">
+                  {t("admin.systeme.developpeur.migration_label_utilisateur")}
+                </Label>
                 <Input
                   id="migration-utilisateur"
                   value={form.utilisateur}
@@ -400,7 +451,9 @@ export default function AdminDeveloppeur() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="migration-dsn">DSN de connexion</Label>
+              <Label htmlFor="migration-dsn">
+                {t("admin.systeme.developpeur.migration_label_dsn")}
+              </Label>
               <Input
                 id="migration-dsn"
                 value={form.dsn}
@@ -410,13 +463,14 @@ export default function AdminDeveloppeur() {
                 spellCheck={false}
               />
               <p className="text-xs text-muted-foreground">
-                Exemple MySQL : <code>mysql://hôte:3306/base_cible</code> — PostgreSQL :{" "}
-                <code>postgresql://hôte:5432/base_cible</code>
+                {t("admin.systeme.developpeur.migration_dsn_exemple")}
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="migration-mdp">Mot de passe</Label>
+              <Label htmlFor="migration-mdp">
+                {t("admin.systeme.developpeur.migration_label_mdp")}
+              </Label>
               <div className="relative">
                 <Input
                   id="migration-mdp"
@@ -430,7 +484,9 @@ export default function AdminDeveloppeur() {
                 <button
                   type="button"
                   aria-label={
-                    motDePasseVisible ? "Masquer le mot de passe" : "Afficher le mot de passe"
+                    motDePasseVisible
+                      ? t("admin.systeme.developpeur.migration_aria_masquer_mdp")
+                      : t("admin.systeme.developpeur.migration_aria_afficher_mdp")
                   }
                   className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground hover:text-foreground"
                   onClick={() => setMotDePasseVisible((v) => !v)}
@@ -440,8 +496,7 @@ export default function AdminDeveloppeur() {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Transmis uniquement au serveur dans le corps de la requête. Jamais stocké
-                localement.
+                {t("admin.systeme.developpeur.migration_mdp_note")}
               </p>
             </div>
           </fieldset>
@@ -455,12 +510,15 @@ export default function AdminDeveloppeur() {
                 disabled={simulationCours || migrationCours || !formulaireValide()}
               >
                 <FileSearch className="me-2 h-4 w-4" />
-                {simulationCours ? "Simulation en cours…" : "Simuler"}
+                {simulationCours
+                  ? t("admin.systeme.developpeur.migration_simulation_cours")
+                  : t("admin.systeme.developpeur.migration_btn_simuler")}
               </Button>
             ) : (
               <span title={denyReason("resetData")} className="inline-flex">
                 <Button variant="outline" disabled>
-                  <FileSearch className="me-2 h-4 w-4" /> Simuler
+                  <FileSearch className="me-2 h-4 w-4" />{" "}
+                  {t("admin.systeme.developpeur.migration_btn_simuler")}
                 </Button>
               </span>
             )}
@@ -470,7 +528,7 @@ export default function AdminDeveloppeur() {
               <span
                 title={
                   !rapportSimulation || !rapportSimulation.ok
-                    ? "Effectuez d'abord une simulation réussie"
+                    ? t("admin.systeme.developpeur.migration_tooltip_simuler_dabord")
                     : undefined
                 }
                 className="inline-flex"
@@ -483,13 +541,16 @@ export default function AdminDeveloppeur() {
                   }
                 >
                   <Play className="me-2 h-4 w-4" />
-                  {migrationCours ? "Migration en cours…" : "Exécuter"}
+                  {migrationCours
+                    ? t("admin.systeme.developpeur.migration_execution_cours")
+                    : t("admin.systeme.developpeur.migration_btn_executer")}
                 </Button>
               </span>
             ) : (
               <span title={denyReason("resetData")} className="inline-flex">
                 <Button variant="destructive" disabled>
-                  <Play className="me-2 h-4 w-4" /> Exécuter
+                  <Play className="me-2 h-4 w-4" />{" "}
+                  {t("admin.systeme.developpeur.migration_btn_executer")}
                 </Button>
               </span>
             )}
@@ -508,7 +569,11 @@ export default function AdminDeveloppeur() {
         }}
         title={dialogueTitre}
         description={dialogueDesc}
-        confirmLabel={dialogue?.type === "sauvegarde" ? "Télécharger" : "Exécuter la migration"}
+        confirmLabel={
+          dialogue?.type === "sauvegarde"
+            ? t("admin.systeme.developpeur.dialog_btn_telecharger")
+            : t("admin.systeme.developpeur.dialog_btn_executer")
+        }
         destructive={dialogue?.type === "migration_exec"}
         onConfirm={() => {
           if (dialogue?.type === "sauvegarde") {
@@ -548,22 +613,23 @@ function simplifierMessage(message: string): string {
 
 /**
  * Icône et couleur associées à la gravité d'une anomalie.
- * `erreur`       → rouge    (peut empêcher la migration)
+ * `erreur`        → rouge   (peut empêcher la migration)
  * `avertissement` → amber   (à surveiller, non bloquant)
  */
 function BadgeGravite({ gravite }: { gravite: DetailAnomalie["gravite"] }) {
+  const { t } = useI18n();
   if (gravite === "erreur") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive">
         <OctagonX className="h-3 w-3 shrink-0" />
-        Erreur
+        {t("admin.systeme.developpeur.gravite_erreur")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
       <AlertTriangle className="h-3 w-3 shrink-0" />
-      Avertissement
+      {t("admin.systeme.developpeur.gravite_avertissement")}
     </span>
   );
 }
@@ -571,25 +637,21 @@ function BadgeGravite({ gravite }: { gravite: DetailAnomalie["gravite"] }) {
 /**
  * Ligne de table expandable : affiche le résumé des compteurs et, si des
  * anomalies sont présentes, permet de déplier les détails par un clic.
- *
- * Pourquoi gérer l'ouverture localement plutôt qu'avec un Accordéon shadcn :
- * le tableau a des `<tr>` imbriquées pour les détails — la primitive Accordion
- * attend des `<div>` ; mélanger les deux casserait la sémantique du tableau.
- * Un simple `useState` local est ici la solution la plus propre.
  */
-function LigneTable({ t }: { t: MigrationResultTable }) {
+function LigneTable({ t: tbl }: { t: MigrationResultTable }) {
+  const { t } = useI18n();
   const [ouvert, setOuvert] = useState(false);
   // Repli défensif : le champ `details` peut être absent d'une réponse ancienne.
-  const details = t.details ?? [];
-  const aDesDetails = t.anomalies > 0 && details.length > 0;
-  const anomaliesSansDetails = t.anomalies > 0 && details.length === 0;
+  const details = tbl.details ?? [];
+  const aDesDetails = tbl.anomalies > 0 && details.length > 0;
+  const anomaliesSansDetails = tbl.anomalies > 0 && details.length === 0;
 
   return (
     <>
       {/* Ligne principale */}
       <tr
         className={
-          t.anomalies > 0 ? "bg-destructive/5 hover:bg-destructive/10" : "hover:bg-muted/30"
+          tbl.anomalies > 0 ? "bg-destructive/5 hover:bg-destructive/10" : "hover:bg-muted/30"
         }
       >
         <td className="py-1.5 pe-2">
@@ -599,24 +661,25 @@ function LigneTable({ t }: { t: MigrationResultTable }) {
               onClick={() => setOuvert((v) => !v)}
               className="flex w-full items-center gap-1 text-start font-mono text-xs"
               aria-expanded={ouvert}
-              aria-label={`Détails anomalies — ${t.nom}`}
+              aria-label={t("admin.systeme.developpeur.rapport_aria_details", { nom: tbl.nom })}
             >
               {ouvert ? (
                 <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
               ) : (
                 <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
               )}
-              {t.nom}
+              {/* `tbl.nom` est un nom de table technique : donnée, pas traduite. */}
+              {tbl.nom}
             </button>
           ) : (
-            <span className="font-mono">{t.nom}</span>
+            <span className="font-mono">{tbl.nom}</span>
           )}
         </td>
-        <td className="py-1.5 pe-3 text-end tabular-nums">{t.lues.toLocaleString("fr-FR")}</td>
-        <td className="py-1.5 pe-3 text-end tabular-nums">{t.ecrites.toLocaleString("fr-FR")}</td>
+        <td className="py-1.5 pe-3 text-end tabular-nums">{tbl.lues.toLocaleString("fr-FR")}</td>
+        <td className="py-1.5 pe-3 text-end tabular-nums">{tbl.ecrites.toLocaleString("fr-FR")}</td>
         <td className="py-1.5 text-end tabular-nums">
-          {t.anomalies > 0 ? (
-            <span className="font-semibold text-destructive">{t.anomalies}</span>
+          {tbl.anomalies > 0 ? (
+            <span className="font-semibold text-destructive">{tbl.anomalies}</span>
           ) : (
             <span className="text-green-600">0</span>
           )}
@@ -626,11 +689,13 @@ function LigneTable({ t }: { t: MigrationResultTable }) {
       {/* Rangée de détails dépliée — uniquement si disponibles */}
       {ouvert && aDesDetails && (
         <tr className="bg-destructive/5">
-          <td colSpan={4} className="pb-2 pt-0 ps-6 pe-3">
+          <td colSpan={4} className="pb-2 pe-3 ps-6 pt-0">
             <ul className="space-y-1.5">
               {details.map((d, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-foreground/80">
                   <BadgeGravite gravite={d.gravite} />
+                  {/* `d.message` est un message serveur : donnée, affichée telle quelle
+                      après simplification des empreintes techniques. */}
                   <span>{simplifierMessage(d.message)}</span>
                 </li>
               ))}
@@ -641,16 +706,13 @@ function LigneTable({ t }: { t: MigrationResultTable }) {
 
       {/*
        * Repli visible : anomalies signalées mais détails absents (backend ancien).
-       * Sans ce message, le commerçant verrait « anomalies : 1 » sans savoir pourquoi
-       * — c'est exactement le défaut qu'on cherche à corriger.
        */}
       {anomaliesSansDetails && (
         <tr className="bg-amber-500/5">
-          <td colSpan={4} className="pb-2 pt-0 ps-4 pe-3">
+          <td colSpan={4} className="pb-2 pe-3 ps-4 pt-0">
             <p className="flex items-center gap-1.5 text-xs text-amber-700">
               <Info className="h-3 w-3 shrink-0" />
-              Détails non disponibles — mettez à jour le serveur pour obtenir l&apos;explication
-              complète.
+              {t("admin.systeme.developpeur.rapport_details_indisponibles")}
             </p>
           </td>
         </tr>
@@ -663,7 +725,6 @@ function LigneTable({ t }: { t: MigrationResultTable }) {
  * Bandeau de décision en tête du rapport.
  *
  * Sa question centrale : « est-ce que je peux y aller, oui ou non ? »
- * Le commerçant doit lire ce bandeau et avoir une réponse sans lire le détail.
  */
 function BandeauDecision({
   rapport,
@@ -674,15 +735,14 @@ function BandeauDecision({
   totalErreurs: number;
   totalAvertissements: number;
 }) {
+  const { t } = useI18n();
   if (!rapport.ok && totalErreurs > 0) {
     return (
       <Alert variant="destructive" className="py-3">
         <OctagonX className="h-4 w-4" />
-        <AlertTitle>Migration déconseillée</AlertTitle>
+        <AlertTitle>{t("admin.systeme.developpeur.decision_bloquee_titre")}</AlertTitle>
         <AlertDescription>
-          {totalErreurs} erreur{totalErreurs > 1 ? "s" : ""} bloquante
-          {totalErreurs > 1 ? "s" : ""} détectée{totalErreurs > 1 ? "s" : ""}. Des données
-          pourraient être perdues ou corrompues. Corrigez les problèmes avant d&apos;exécuter.
+          {t("admin.systeme.developpeur.decision_bloquee_desc", { n: totalErreurs })}
         </AlertDescription>
       </Alert>
     );
@@ -691,11 +751,11 @@ function BandeauDecision({
     return (
       <Alert className="border-amber-500/40 bg-amber-500/10 py-3">
         <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertTitle className="text-amber-800">Migration possible avec précautions</AlertTitle>
+        <AlertTitle className="text-amber-800">
+          {t("admin.systeme.developpeur.decision_precaution_titre")}
+        </AlertTitle>
         <AlertDescription className="text-amber-700">
-          {totalAvertissements} avertissement{totalAvertissements > 1 ? "s" : ""} signalé
-          {totalAvertissements > 1 ? "s" : ""}. Aucune perte de données confirmée, mais vérifiez les
-          détails avant de conclure.
+          {t("admin.systeme.developpeur.decision_precaution_desc", { n: totalAvertissements })}
         </AlertDescription>
       </Alert>
     );
@@ -703,45 +763,53 @@ function BandeauDecision({
   return (
     <Alert className="border-green-500/40 bg-green-500/10 py-3">
       <CheckCircle2 className="h-4 w-4 text-green-600" />
-      <AlertTitle className="text-green-800">Migration sans anomalie</AlertTitle>
+      <AlertTitle className="text-green-800">
+        {t("admin.systeme.developpeur.decision_ok_titre")}
+      </AlertTitle>
       <AlertDescription className="text-green-700">
-        Toutes les tables ont été traitées sans erreur. Vous pouvez exécuter la migration.
+        {t("admin.systeme.developpeur.decision_ok_desc")}
       </AlertDescription>
     </Alert>
   );
 }
 
 function RapportMigration({ rapport }: { rapport: MigrationResult }) {
-  const totalLues = rapport.tables.reduce((s, t) => s + t.lues, 0);
-  const totalEcrites = rapport.tables.reduce((s, t) => s + t.ecrites, 0);
-  const totalAnomalies = rapport.tables.reduce((s, t) => s + t.anomalies, 0);
+  const { t } = useI18n();
+  const totalLues = rapport.tables.reduce((s, tbl) => s + tbl.lues, 0);
+  const totalEcrites = rapport.tables.reduce((s, tbl) => s + tbl.ecrites, 0);
+  const totalAnomalies = rapport.tables.reduce((s, tbl) => s + tbl.anomalies, 0);
 
   // Compteurs par gravité pour alimenter le bandeau de décision.
   // Repli défensif : `details` peut être absent (réponse de backend ancien).
   const totalErreurs = rapport.tables.reduce(
-    (s, t) => s + (t.details ?? []).filter((d) => d.gravite === "erreur").length,
+    (s, tbl) => s + (tbl.details ?? []).filter((d) => d.gravite === "erreur").length,
     0,
   );
   const totalAvertissements = rapport.tables.reduce(
-    (s, t) => s + (t.details ?? []).filter((d) => d.gravite === "avertissement").length,
+    (s, tbl) => s + (tbl.details ?? []).filter((d) => d.gravite === "avertissement").length,
     0,
   );
 
   return (
-    <div className="rounded-md border bg-muted/20 p-4 space-y-4">
+    <div className="space-y-4 rounded-md border bg-muted/20 p-4">
       {/* En-tête : type de rapport et statut global */}
       <div className="flex items-center gap-2">
         {rapport.ok ? (
-          <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
         ) : (
-          <XCircle className="h-4 w-4 text-destructive shrink-0" />
+          <XCircle className="h-4 w-4 shrink-0 text-destructive" />
         )}
         <p className={`text-sm font-medium ${rapport.ok ? "text-green-700" : "text-destructive"}`}>
-          {rapport.simulation ? "Rapport de simulation" : "Rapport de migration"} —{" "}
+          {rapport.simulation
+            ? t("admin.systeme.developpeur.rapport_simulation")
+            : t("admin.systeme.developpeur.rapport_migration")}{" "}
+          — {/* `rapport.message` est un message serveur : donnée, affichée telle quelle. */}
           {rapport.message}
         </p>
         <Badge variant={rapport.simulation ? "secondary" : "default"} className="ms-auto shrink-0">
-          {rapport.simulation ? "Simulation" : "Exécution réelle"}
+          {rapport.simulation
+            ? t("admin.systeme.developpeur.rapport_badge_simulation")
+            : t("admin.systeme.developpeur.rapport_badge_execution")}
         </Badge>
       </div>
 
@@ -755,15 +823,21 @@ function RapportMigration({ rapport }: { rapport: MigrationResult }) {
       {/* Résumé chiffré */}
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div className="rounded border bg-background p-2 text-center">
-          <p className="text-xs text-muted-foreground">Lignes lues</p>
+          <p className="text-xs text-muted-foreground">
+            {t("admin.systeme.developpeur.rapport_lignes_lues")}
+          </p>
           <p className="font-semibold tabular-nums">{totalLues.toLocaleString("fr-FR")}</p>
         </div>
         <div className="rounded border bg-background p-2 text-center">
-          <p className="text-xs text-muted-foreground">Lignes écrites</p>
+          <p className="text-xs text-muted-foreground">
+            {t("admin.systeme.developpeur.rapport_lignes_ecrites")}
+          </p>
           <p className="font-semibold tabular-nums">{totalEcrites.toLocaleString("fr-FR")}</p>
         </div>
         <div className="rounded border bg-background p-2 text-center">
-          <p className="text-xs text-muted-foreground">Anomalies</p>
+          <p className="text-xs text-muted-foreground">
+            {t("admin.systeme.developpeur.rapport_anomalies")}
+          </p>
           <p
             className={`font-semibold tabular-nums ${
               totalAnomalies > 0 ? "text-destructive" : "text-green-600"
@@ -779,19 +853,23 @@ function RapportMigration({ rapport }: { rapport: MigrationResult }) {
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b text-muted-foreground">
-              {/*
-               * Colonne Table : largeur libre pour que les noms longs ne cassent
-               * pas la mise en page. Les colonnes numériques sont à droite.
-               */}
-              <th className="py-1.5 pe-3 font-medium text-start">Table</th>
-              <th className="py-1.5 pe-3 font-medium text-end">Lues</th>
-              <th className="py-1.5 pe-3 font-medium text-end">Écrites</th>
-              <th className="py-1.5 font-medium text-end">Anomalies</th>
+              <th className="py-1.5 pe-3 text-start font-medium">
+                {t("admin.systeme.developpeur.rapport_col_table")}
+              </th>
+              <th className="py-1.5 pe-3 text-end font-medium">
+                {t("admin.systeme.developpeur.rapport_col_lues")}
+              </th>
+              <th className="py-1.5 pe-3 text-end font-medium">
+                {t("admin.systeme.developpeur.rapport_col_ecrites")}
+              </th>
+              <th className="py-1.5 text-end font-medium">
+                {t("admin.systeme.developpeur.rapport_col_anomalies")}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y">
-            {rapport.tables.map((t) => (
-              <LigneTable key={t.nom} t={t} />
+            {rapport.tables.map((tbl) => (
+              <LigneTable key={tbl.nom} t={tbl} />
             ))}
           </tbody>
         </table>
@@ -800,7 +878,7 @@ function RapportMigration({ rapport }: { rapport: MigrationResult }) {
       {/* Note de lecture quand des lignes sont expandables */}
       {totalAnomalies > 0 && (
         <p className="text-xs text-muted-foreground">
-          Cliquez sur une ligne en anomalie pour voir l&apos;explication détaillée.
+          {t("admin.systeme.developpeur.rapport_details_note")}
         </p>
       )}
     </div>
