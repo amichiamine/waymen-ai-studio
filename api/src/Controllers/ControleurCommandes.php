@@ -35,6 +35,7 @@ use KaTech\Courriel;
 use KaTech\Db;
 use KaTech\Env;
 use KaTech\Factures;
+use KaTech\Journal;
 use KaTech\Modeles\ConfirmationCommande;
 use KaTech\Modeles\NouvelleCommande;
 use KaTech\Outbox;
@@ -427,6 +428,15 @@ final class ControleurCommandes
             ];
             $this->outbox->deposer('order.created', $payloadCommande);
 
+            // Consignation d'audit : commande créée.
+            Journal::consigner($this->db, 'commande_creee', 'order', [
+                'id'     => $commandeId,
+                'total'  => $total,
+                'status' => 'pending',
+                'coupon' => $codeApplique,
+                'items'  => count($lignesCommande),
+            ]);
+
             // Événement de rupture de stock : utile au commerçant pour réapprovisionner.
             // Émis pour chaque produit que le décompte a fait descendre à zéro (ou
             // dont le statut est désormais « out »).
@@ -664,6 +674,13 @@ final class ControleurCommandes
                 ],
             );
 
+            // Consignation d'audit : changement de statut.
+            Journal::consigner($this->db, 'statut_modifie', 'order', [
+                'id'     => $id,
+                'statut' => $statut,
+                'note'   => $note,
+            ]);
+
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollback();
@@ -699,6 +716,9 @@ final class ControleurCommandes
 
             $this->db->run('DELETE FROM order_items WHERE order_id = :commande', [':commande' => $id]);
             $this->db->run('DELETE FROM orders WHERE id = :id', [':id' => $id]);
+
+            // Consignation d'audit : commande supprimée.
+            Journal::consigner($this->db, 'commande_supprimee', 'order', ['id' => $id]);
 
             $this->db->commit();
         } catch (\Throwable $e) {
