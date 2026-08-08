@@ -163,6 +163,7 @@ $medias = new ControleurMedias($db);
 $routeur->get('/media', Garde::protege('read', [$medias, 'lister']));
 $routeur->post('/media', Garde::protege('create', [$medias, 'televerser']));
 $routeur->get('/media/:id', Garde::protege('read', [$medias, 'detail']));
+$routeur->patch('/media/:id', Garde::protege('update', [$medias, 'renommer']));
 $routeur->delete('/media/:id', Garde::protege('delete', [$medias, 'supprimer']));
 
 $notifs = new ControleurNotifications($db);

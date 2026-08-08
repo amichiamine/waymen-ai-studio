@@ -216,6 +216,54 @@ final class ControleurMedias
     }
 
     /**
+     * PATCH /media/:id
+     * → 200 { data: MediaAsset }
+     *
+     * Accepte `name` (obligatoire) et `tag` (optionnel).
+     * Pattern identique à ControleurMarques::modifier() (S2 — vague 4).
+     * Piège de dialecte §4 piège n°1 : chaque placeholder porte un nom distinct
+     * (:name_val, :tag_val, :id_val) — ATTR_EMULATE_PREPARES=false refuse
+     * les paramètres nommés réutilisés en MySQL.
+     */
+    public function renommer(Requete $r): Reponse
+    {
+        $id    = $r->param('id');
+
+        // Vérifier l'existence avant la mise à jour — 404 explicite si absent.
+        $existant = $this->db->un('SELECT * FROM media_assets WHERE id = :id', [':id' => $id]);
+        if ($existant === null) {
+            throw ApiException::introuvable("Aucun média ne porte l'identifiant « {$id} ».");
+        }
+
+        // Fusion PATCH : name obligatoire, tag optionnel (null conserve l'existant).
+        $nom = trim((string) $r->corps('name', $existant['name']));
+        if ($nom === '') {
+            throw ApiException::validation('Média invalide.', ['name' => ['Champ obligatoire.']]);
+        }
+
+        // Piège de dialecte §4 piège n°1 : placeholders distincts pour :name_val,
+        // :tag_val, :id_val — MySQL rejette tout placeholder réutilisé avec
+        // ATTR_EMULATE_PREPARES=false.
+        $tagFourni = $r->corps('tag');
+        $tag = $tagFourni !== null ? trim((string) $tagFourni) : $existant['tag'];
+        $tag = ($tag !== null && $tag !== '') ? $tag : null;
+
+        // media_assets n'a pas de colonne updated_at (schéma § 11).
+        $this->db->run(
+            'UPDATE media_assets SET name = :name_val, tag = :tag_val WHERE id = :id_val',
+            [
+                ':name_val' => $nom,
+                ':tag_val'  => $tag,
+                ':id_val'   => $id,
+            ],
+        );
+
+        return Reponse::ok($this->enDto(
+            (array) $this->db->un('SELECT * FROM media_assets WHERE id = :id', [':id' => $id])
+        ));
+    }
+
+    /**
      * DELETE /media/:id
      * → 204, sans corps. Efface également le fichier du disque.
      */
