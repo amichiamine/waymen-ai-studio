@@ -21,11 +21,15 @@ import type { SiteContent } from "@/lib/site-content";
 import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
 import type { Localized } from "@/lib/i18n";
+import { useI18n, type TVars } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { usePermissions, type PermissionsApi } from "@/lib/admin-auth";
 
 type LangCode = "fr" | "en" | "ar";
 const LANGS: LangCode[] = ["fr", "en", "ar"];
+
+// Type alias for the t function passed down to sub-components.
+type TFn = (k: string, vars?: TVars) => string;
 
 function toMap(v: Localized<string> | undefined): Record<LangCode, string> {
   if (v == null) return { fr: "", en: "", ar: "" };
@@ -119,34 +123,37 @@ function LTextarea({
   );
 }
 
-const SECTIONS: { key: keyof SiteContent; label: string }[] = [
-  { key: "header", label: "En-tête" },
-  { key: "footer", label: "Pied de page" },
-  { key: "hero", label: "Hero" },
-  { key: "flashSale", label: "Ventes flash" },
-  { key: "categories", label: "Catégories" },
-  { key: "useChips", label: "Par usage" },
-  { key: "bestSellers", label: "Meilleures ventes" },
-  { key: "featuredTabs", label: "Sélection à onglets" },
-  { key: "brandsMarquee", label: "Marques" },
-  { key: "whyUs", label: "Pourquoi nous" },
-  { key: "builderTeaser", label: "Builder teaser" },
-  { key: "reviews", label: "Avis (titres)" },
-  { key: "contactCta", label: "Contact CTA" },
-  { key: "floatingWhatsApp", label: "WhatsApp flottant" },
-  { key: "mobileBottomBar", label: "Barre mobile" },
-];
-
 export default function AdminContent() {
   const { data: siteContent, loading, error } = useSiteContent();
   const { update, resetSection } = useSiteContentMutations();
   const perms = usePermissions();
+  const { t } = useI18n();
   const [tab, setTab] = useState<keyof SiteContent>("header");
+
+  // Les clés techniques (identifiants de section) ne sont pas traduits ;
+  // seuls les libellés d'onglets le sont. On mappe chaque clé à sa clé i18n.
+  const SECTIONS: { key: keyof SiteContent; labelKey: string }[] = [
+    { key: "header", labelKey: "admin.contenu.contenu.section_header" },
+    { key: "footer", labelKey: "admin.contenu.contenu.section_footer" },
+    { key: "hero", labelKey: "admin.contenu.contenu.section_hero" },
+    { key: "flashSale", labelKey: "admin.contenu.contenu.section_flash_sale" },
+    { key: "categories", labelKey: "admin.contenu.contenu.section_categories" },
+    { key: "useChips", labelKey: "admin.contenu.contenu.section_use_chips" },
+    { key: "bestSellers", labelKey: "admin.contenu.contenu.section_best_sellers" },
+    { key: "featuredTabs", labelKey: "admin.contenu.contenu.section_featured_tabs" },
+    { key: "brandsMarquee", labelKey: "admin.contenu.contenu.section_brands_marquee" },
+    { key: "whyUs", labelKey: "admin.contenu.contenu.section_why_us" },
+    { key: "builderTeaser", labelKey: "admin.contenu.contenu.section_builder_teaser" },
+    { key: "reviews", labelKey: "admin.contenu.contenu.section_reviews" },
+    { key: "contactCta", labelKey: "admin.contenu.contenu.section_contact_cta" },
+    { key: "floatingWhatsApp", labelKey: "admin.contenu.contenu.section_floating_wa" },
+    { key: "mobileBottomBar", labelKey: "admin.contenu.contenu.section_mobile_bar" },
+  ];
 
   return (
     <AdminPageShell
-      title="Contenu du site"
-      description="Chaque bloc de la page d'accueil est éditable ici."
+      title={t("admin.contenu.contenu.titre")}
+      description={t("admin.contenu.contenu.description")}
     >
       {error && (
         <p
@@ -160,7 +167,7 @@ export default function AdminContent() {
 
       {loading ? (
         <div className="space-y-4" aria-busy="true">
-          <span className="sr-only">Chargement…</span>
+          <span className="sr-only">{t("admin.socle.commun.chargement")}</span>
           <div className="h-10 animate-pulse rounded-md bg-muted" />
           <div className="h-64 animate-pulse rounded-xl border border-border bg-card" />
         </div>
@@ -169,7 +176,7 @@ export default function AdminContent() {
           <TabsList className="h-auto flex-wrap">
             {SECTIONS.map((s) => (
               <TabsTrigger key={s.key} value={s.key}>
-                {s.label}
+                {t(s.labelKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -177,9 +184,10 @@ export default function AdminContent() {
             <TabsContent key={s.key} value={s.key} className="mt-4">
               <SectionEditor
                 sectionKey={s.key}
-                label={s.label}
+                label={t(s.labelKey)}
                 value={siteContent[s.key]}
                 perms={perms}
+                t={t}
                 onSaveSection={update}
                 onResetSection={resetSection}
               />
@@ -196,6 +204,7 @@ function SectionEditor<K extends keyof SiteContent>({
   label,
   value,
   perms,
+  t,
   onSaveSection,
   onResetSection,
 }: {
@@ -203,6 +212,7 @@ function SectionEditor<K extends keyof SiteContent>({
   label: string;
   value: SiteContent[K];
   perms: PermissionsApi;
+  t: TFn;
   onSaveSection: (patch: Partial<SiteContent>) => Promise<void>;
   onResetSection: (section: K) => Promise<void>;
 }) {
@@ -220,11 +230,11 @@ function SectionEditor<K extends keyof SiteContent>({
 
   async function save() {
     // Niveau 2 — vérification dans l'action.
-    if (!guard("update", "Enregistrer la section")) return;
+    if (!guard("update", t("admin.contenu.contenu.garde_enregistrer"))) return;
     setSaving(true);
     try {
       await onSaveSection({ [sectionKey]: draft });
-      toast.success("Contenu enregistré");
+      toast.success(t("admin.contenu.contenu.toast_enregistre"));
     } catch (cause) {
       const err = toApiError(cause);
       toast.error(err.message);
@@ -235,11 +245,11 @@ function SectionEditor<K extends keyof SiteContent>({
 
   async function reset() {
     // Niveau 2 — la réinitialisation d'une section est une modification (update).
-    if (!guard("update", "Réinitialiser la section")) return;
+    if (!guard("update", t("admin.contenu.contenu.garde_reinitialiser"))) return;
     setSaving(true);
     try {
       await onResetSection(sectionKey);
-      toast.success("Section réinitialisée");
+      toast.success(t("admin.contenu.contenu.toast_reinitialise"));
     } catch (cause) {
       const err = toApiError(cause);
       toast.error(err.message);
@@ -258,18 +268,18 @@ function SectionEditor<K extends keyof SiteContent>({
           {/* Niveau 1 + Niveau 3 — réinitialiser = update */}
           <span title={denyReason("update")} className="inline-flex">
             <Button size="sm" variant="ghost" disabled={readOnly || saving} onClick={reset}>
-              <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+              <RotateCcw className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_reinitialiser")}
             </Button>
           </span>
           {/* Niveau 1 + Niveau 3 — enregistrer = update */}
           <span title={denyReason("update")} className="inline-flex">
             <Button size="sm" disabled={readOnly || saving} onClick={save}>
-              <Save className="me-2 h-4 w-4" /> Enregistrer
+              <Save className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_enregistrer")}
             </Button>
           </span>
         </div>
       </CardHeader>
-      <CardContent>{renderForm(sectionKey, draft, (v) => setDraft(v), readOnly)}</CardContent>
+      <CardContent>{renderForm(sectionKey, draft, (v) => setDraft(v), readOnly, t)}</CardContent>
     </Card>
   );
 }
@@ -279,6 +289,7 @@ function renderForm<K extends keyof SiteContent>(
   draft: SiteContent[K],
   onChange: (v: SiteContent[K]) => void,
   readOnly: boolean,
+  t: TFn,
 ): React.ReactNode {
   switch (key) {
     case "header":
@@ -287,6 +298,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["header"]}
           onChange={onChange as (v: SiteContent["header"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "footer":
@@ -295,6 +307,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["footer"]}
           onChange={onChange as (v: SiteContent["footer"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "hero":
@@ -303,6 +316,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["hero"]}
           onChange={onChange as (v: SiteContent["hero"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "flashSale":
@@ -311,6 +325,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["flashSale"]}
           onChange={onChange as (v: SiteContent["flashSale"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "categories":
@@ -319,6 +334,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["categories"]}
           onChange={onChange as (v: SiteContent["categories"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "useChips":
@@ -326,7 +342,7 @@ function renderForm<K extends keyof SiteContent>(
         <SimpleTitleForm
           value={draft as { title: Localized<string> }}
           onChange={onChange as (v: { title: Localized<string> }) => void}
-          titleLabel="Titre de la section"
+          titleLabel={t("admin.contenu.contenu.champ_titre")}
           readOnly={readOnly}
         />
       );
@@ -338,6 +354,7 @@ function renderForm<K extends keyof SiteContent>(
             onChange as (v: { title: Localized<string>; subtitle: Localized<string> }) => void
           }
           readOnly={readOnly}
+          t={t}
         />
       );
     case "featuredTabs":
@@ -346,6 +363,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["featuredTabs"]}
           onChange={onChange as (v: SiteContent["featuredTabs"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "brandsMarquee":
@@ -353,7 +371,7 @@ function renderForm<K extends keyof SiteContent>(
         <SimpleTitleForm
           value={draft as { title: Localized<string> }}
           onChange={onChange as (v: { title: Localized<string> }) => void}
-          titleLabel="Kicker au-dessus du défilement"
+          titleLabel={t("admin.contenu.contenu.champ_kicker")}
           readOnly={readOnly}
         />
       );
@@ -363,6 +381,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["whyUs"]}
           onChange={onChange as (v: SiteContent["whyUs"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "builderTeaser":
@@ -371,6 +390,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["builderTeaser"]}
           onChange={onChange as (v: SiteContent["builderTeaser"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "reviews":
@@ -381,6 +401,7 @@ function renderForm<K extends keyof SiteContent>(
             onChange as (v: { title: Localized<string>; subtitle: Localized<string> }) => void
           }
           readOnly={readOnly}
+          t={t}
         />
       );
     case "contactCta":
@@ -389,6 +410,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["contactCta"]}
           onChange={onChange as (v: SiteContent["contactCta"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "floatingWhatsApp":
@@ -397,6 +419,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["floatingWhatsApp"]}
           onChange={onChange as (v: SiteContent["floatingWhatsApp"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     case "mobileBottomBar":
@@ -405,6 +428,7 @@ function renderForm<K extends keyof SiteContent>(
           value={draft as SiteContent["mobileBottomBar"]}
           onChange={onChange as (v: SiteContent["mobileBottomBar"]) => void}
           readOnly={readOnly}
+          t={t}
         />
       );
     default:
@@ -478,21 +502,23 @@ function TitleSubForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: { title: Localized<string>; subtitle: Localized<string> };
   onChange: (v: { title: Localized<string>; subtitle: Localized<string> }) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
       <LInput
-        label="Titre"
+        label={t("admin.contenu.contenu.champ_titre")}
         value={value.title}
         onChange={(next) => onChange({ ...value, title: next })}
         disabled={readOnly}
       />
       <LInput
-        label="Sous-titre"
+        label={t("admin.contenu.contenu.champ_sous_titre")}
         value={value.subtitle}
         onChange={(next) => onChange({ ...value, subtitle: next })}
         disabled={readOnly}
@@ -505,23 +531,25 @@ function HeroForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["hero"];
   onChange: (v: SiteContent["hero"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
       <LInput
-        label="Badge"
+        label={t("admin.contenu.contenu.champ_badge")}
         value={v.badge}
         onChange={(next) => onChange({ ...v, badge: next })}
         disabled={readOnly}
       />
       <div className="flex items-center justify-between rounded-md border p-3 md:col-span-2">
         <div>
-          <p className="text-sm font-medium">Afficher l'image du hero</p>
+          <p className="text-sm font-medium">{t("admin.contenu.contenu.hero_afficher_image")}</p>
         </div>
         <Switch
           checked={v.showImage}
@@ -530,20 +558,20 @@ function HeroForm({
         />
       </div>
       <LInput
-        label="Titre ligne 1"
+        label={t("admin.contenu.contenu.champ_titre_ligne1")}
         value={v.title1}
         onChange={(next) => onChange({ ...v, title1: next })}
         disabled={readOnly}
       />
       <LInput
-        label="Titre ligne 2 (accent)"
+        label={t("admin.contenu.contenu.champ_titre_ligne2")}
         value={v.title2}
         onChange={(next) => onChange({ ...v, title2: next })}
         disabled={readOnly}
       />
       <div className="md:col-span-2">
         <LTextarea
-          label="Sous-titre"
+          label={t("admin.contenu.contenu.champ_sous_titre")}
           rows={2}
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
@@ -551,12 +579,12 @@ function HeroForm({
         />
       </div>
       <LInput
-        label="CTA principal — libellé"
+        label={t("admin.contenu.contenu.hero_cta_principal_label")}
         value={v.primaryCta.label}
         onChange={(next) => onChange({ ...v, primaryCta: { ...v.primaryCta, label: next } })}
         disabled={readOnly}
       />
-      <Field label="CTA principal — lien">
+      <Field label={t("admin.contenu.contenu.hero_cta_principal_lien")}>
         <Input
           value={v.primaryCta.href}
           disabled={readOnly}
@@ -566,12 +594,12 @@ function HeroForm({
         />
       </Field>
       <LInput
-        label="CTA secondaire — libellé"
+        label={t("admin.contenu.contenu.hero_cta_secondaire_label")}
         value={v.secondaryCta.label}
         onChange={(next) => onChange({ ...v, secondaryCta: { ...v.secondaryCta, label: next } })}
         disabled={readOnly}
       />
-      <Field label="CTA secondaire — lien">
+      <Field label={t("admin.contenu.contenu.hero_cta_secondaire_lien")}>
         <Input
           value={v.secondaryCta.href}
           disabled={readOnly}
@@ -582,7 +610,7 @@ function HeroForm({
       </Field>
       <div className="space-y-2 md:col-span-2">
         <div className="flex items-center justify-between">
-          <Label>Indicateurs (KPI)</Label>
+          <Label>{t("admin.contenu.contenu.hero_kpis")}</Label>
           <Button
             type="button"
             size="sm"
@@ -595,7 +623,7 @@ function HeroForm({
               })
             }
           >
-            <Plus className="me-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
           </Button>
         </div>
         {v.kpis.map((k, i) => (
@@ -603,7 +631,7 @@ function HeroForm({
             key={k.id}
             className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_1fr_auto]"
           >
-            <Field label="Icône">
+            <Field label={t("admin.contenu.contenu.champ_icone")}>
               <IconPicker
                 value={k.icon}
                 disabled={readOnly}
@@ -615,7 +643,7 @@ function HeroForm({
               />
             </Field>
             <LInput
-              label="Valeur"
+              label={t("admin.contenu.contenu.champ_valeur")}
               value={k.value}
               disabled={readOnly}
               onChange={(next) => {
@@ -625,7 +653,7 @@ function HeroForm({
               }}
             />
             <LInput
-              label="Libellé"
+              label={t("admin.contenu.contenu.champ_libelle")}
               value={k.label}
               disabled={readOnly}
               onChange={(next) => {
@@ -640,7 +668,7 @@ function HeroForm({
               variant="ghost"
               disabled={readOnly}
               onClick={() => onChange({ ...v, kpis: v.kpis.filter((_, j) => j !== i) })}
-              aria-label="Supprimer"
+              aria-label={t("admin.contenu.contenu.aria_supprimer")}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
@@ -655,40 +683,42 @@ function FlashSaleForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["flashSale"];
   onChange: (v: SiteContent["flashSale"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
       <LInput
-        label="Badge"
+        label={t("admin.contenu.contenu.champ_badge")}
         value={v.badge}
         onChange={(next) => onChange({ ...v, badge: next })}
         disabled={readOnly}
       />
       <LInput
-        label="Titre"
+        label={t("admin.contenu.contenu.champ_titre")}
         value={v.title}
         onChange={(next) => onChange({ ...v, title: next })}
         disabled={readOnly}
       />
       <LInput
-        label="Libellé « voir tout »"
+        label={t("admin.contenu.contenu.flash_voir_tout_label")}
         value={v.viewAllLabel}
         onChange={(next) => onChange({ ...v, viewAllLabel: next })}
         disabled={readOnly}
       />
-      <Field label="Lien « voir tout »">
+      <Field label={t("admin.contenu.contenu.flash_voir_tout_lien")}>
         <Input
           value={v.viewAllHref}
           disabled={readOnly}
           onChange={(e) => onChange({ ...v, viewAllHref: e.target.value })}
         />
       </Field>
-      <Field label="Durée du compte à rebours (heures)">
+      <Field label={t("admin.contenu.contenu.flash_countdown")}>
         <Input
           type="number"
           min={1}
@@ -707,36 +737,38 @@ function CategoriesForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["categories"];
   onChange: (v: SiteContent["categories"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <>
       <div className="grid gap-3 md:grid-cols-2">
         <LInput
-          label="Titre"
+          label={t("admin.contenu.contenu.champ_titre")}
           value={v.title}
           onChange={(next) => onChange({ ...v, title: next })}
           disabled={readOnly}
         />
         <LInput
-          label="Sous-titre"
+          label={t("admin.contenu.contenu.champ_sous_titre")}
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
           disabled={readOnly}
         />
         <LInput
-          label="Libellé « parcourir »"
+          label={t("admin.contenu.contenu.categories_parcourir")}
           value={v.browseLabel}
           onChange={(next) => onChange({ ...v, browseLabel: next })}
           disabled={readOnly}
         />
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        Les libellés et images des 4 cartes se gèrent depuis <strong>Catégories</strong>.
+        {t("admin.contenu.contenu.categories_note")}
       </p>
     </>
   );
@@ -746,10 +778,12 @@ function FeaturedTabsForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["featuredTabs"];
   onChange: (v: SiteContent["featuredTabs"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   const cats: Category[] = ["laptops", "desktops", "builds", "phones"];
@@ -757,20 +791,20 @@ function FeaturedTabsForm({
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
         <LInput
-          label="Titre"
+          label={t("admin.contenu.contenu.champ_titre")}
           value={v.title}
           onChange={(next) => onChange({ ...v, title: next })}
           disabled={readOnly}
         />
         <LInput
-          label="Sous-titre"
+          label={t("admin.contenu.contenu.champ_sous_titre")}
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
           disabled={readOnly}
         />
       </div>
       <div className="flex items-center justify-between">
-        <Label>Onglets</Label>
+        <Label>{t("admin.contenu.contenu.featured_onglets")}</Label>
         <Button
           type="button"
           size="sm"
@@ -786,7 +820,7 @@ function FeaturedTabsForm({
             })
           }
         >
-          <Plus className="me-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
         </Button>
       </div>
       {v.tabs.map((tb, i) => (
@@ -794,7 +828,7 @@ function FeaturedTabsForm({
           key={tb.id}
           className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[1fr_1fr_auto]"
         >
-          <Field label="Catégorie">
+          <Field label={t("admin.contenu.contenu.champ_categorie")}>
             <Select
               value={tb.categorySlug}
               disabled={readOnly}
@@ -817,7 +851,7 @@ function FeaturedTabsForm({
             </Select>
           </Field>
           <LInput
-            label="Libellé"
+            label={t("admin.contenu.contenu.champ_libelle")}
             value={tb.label}
             disabled={readOnly}
             onChange={(next) => {
@@ -832,7 +866,7 @@ function FeaturedTabsForm({
             variant="ghost"
             disabled={readOnly}
             onClick={() => onChange({ ...v, tabs: v.tabs.filter((_, j) => j !== i) })}
-            aria-label="Supprimer"
+            aria-label={t("admin.contenu.contenu.aria_supprimer")}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
@@ -846,42 +880,44 @@ function WhyUsForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["whyUs"];
   onChange: (v: SiteContent["whyUs"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
         <LInput
-          label="Kicker"
+          label={t("admin.contenu.contenu.champ_kicker")}
           value={v.kicker}
           onChange={(next) => onChange({ ...v, kicker: next })}
           disabled={readOnly}
         />
         <LInput
-          label="Sous-titre"
+          label={t("admin.contenu.contenu.champ_sous_titre")}
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
           disabled={readOnly}
         />
         <LInput
-          label="Titre ligne 1"
+          label={t("admin.contenu.contenu.champ_titre_ligne1")}
           value={v.title1}
           onChange={(next) => onChange({ ...v, title1: next })}
           disabled={readOnly}
         />
         <LInput
-          label="Titre ligne 2"
+          label={t("admin.contenu.contenu.champ_titre_ligne2")}
           value={v.title2}
           onChange={(next) => onChange({ ...v, title2: next })}
           disabled={readOnly}
         />
       </div>
       <div className="flex items-center justify-between">
-        <Label>Arguments</Label>
+        <Label>{t("admin.contenu.contenu.why_us_arguments")}</Label>
         <Button
           type="button"
           size="sm"
@@ -897,7 +933,7 @@ function WhyUsForm({
             })
           }
         >
-          <Plus className="me-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
         </Button>
       </div>
       {v.items.map((it, i) => (
@@ -905,7 +941,7 @@ function WhyUsForm({
           key={it.id}
           className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_2fr_auto]"
         >
-          <Field label="Icône">
+          <Field label={t("admin.contenu.contenu.champ_icone")}>
             <IconPicker
               value={it.icon}
               disabled={readOnly}
@@ -917,7 +953,7 @@ function WhyUsForm({
             />
           </Field>
           <LInput
-            label="Titre"
+            label={t("admin.contenu.contenu.champ_titre")}
             value={it.title}
             disabled={readOnly}
             onChange={(next) => {
@@ -927,7 +963,7 @@ function WhyUsForm({
             }}
           />
           <LInput
-            label="Description"
+            label={t("admin.contenu.contenu.champ_description")}
             value={it.description}
             disabled={readOnly}
             onChange={(next) => {
@@ -942,7 +978,7 @@ function WhyUsForm({
             variant="ghost"
             disabled={readOnly}
             onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })}
-            aria-label="Supprimer"
+            aria-label={t("admin.contenu.contenu.aria_supprimer")}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
@@ -956,30 +992,32 @@ function BuilderTeaserForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["builderTeaser"];
   onChange: (v: SiteContent["builderTeaser"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
         <LInput
-          label="Badge"
+          label={t("admin.contenu.contenu.champ_badge")}
           value={v.badge}
           onChange={(next) => onChange({ ...v, badge: next })}
           disabled={readOnly}
         />
         <LInput
-          label="Titre"
+          label={t("admin.contenu.contenu.champ_titre")}
           value={v.title}
           onChange={(next) => onChange({ ...v, title: next })}
           disabled={readOnly}
         />
         <div className="md:col-span-2">
           <LTextarea
-            label="Sous-titre"
+            label={t("admin.contenu.contenu.champ_sous_titre")}
             rows={2}
             value={v.subtitle}
             onChange={(next) => onChange({ ...v, subtitle: next })}
@@ -987,12 +1025,12 @@ function BuilderTeaserForm({
           />
         </div>
         <LInput
-          label="CTA — libellé"
+          label={t("admin.contenu.contenu.builder_cta_label")}
           value={v.cta.label}
           onChange={(next) => onChange({ ...v, cta: { ...v.cta, label: next } })}
           disabled={readOnly}
         />
-        <Field label="CTA — lien">
+        <Field label={t("admin.contenu.contenu.builder_cta_lien")}>
           <Input
             value={v.cta.href}
             disabled={readOnly}
@@ -1001,7 +1039,7 @@ function BuilderTeaserForm({
         </Field>
       </div>
       <div className="flex items-center justify-between">
-        <Label>Cartes de composants</Label>
+        <Label>{t("admin.contenu.contenu.builder_cartes")}</Label>
         <Button
           type="button"
           size="sm"
@@ -1014,7 +1052,7 @@ function BuilderTeaserForm({
             })
           }
         >
-          <Plus className="me-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
         </Button>
       </div>
       {v.items.map((it, i) => (
@@ -1022,7 +1060,7 @@ function BuilderTeaserForm({
           key={it.id}
           className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_1fr_auto]"
         >
-          <Field label="Icône">
+          <Field label={t("admin.contenu.contenu.champ_icone")}>
             <IconPicker
               value={it.icon}
               disabled={readOnly}
@@ -1034,7 +1072,7 @@ function BuilderTeaserForm({
             />
           </Field>
           <LInput
-            label="Titre"
+            label={t("admin.contenu.contenu.champ_titre")}
             value={it.title}
             disabled={readOnly}
             onChange={(next) => {
@@ -1044,7 +1082,7 @@ function BuilderTeaserForm({
             }}
           />
           <LInput
-            label="Sous-titre"
+            label={t("admin.contenu.contenu.champ_sous_titre")}
             value={it.subtitle}
             disabled={readOnly}
             onChange={(next) => {
@@ -1059,7 +1097,7 @@ function BuilderTeaserForm({
             variant="ghost"
             disabled={readOnly}
             onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })}
-            aria-label="Supprimer"
+            aria-label={t("admin.contenu.contenu.aria_supprimer")}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
@@ -1073,29 +1111,31 @@ function ContactCtaForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["contactCta"];
   onChange: (v: SiteContent["contactCta"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="grid gap-3 md:grid-cols-2">
       <LInput
-        label="Titre"
+        label={t("admin.contenu.contenu.champ_titre")}
         value={v.title}
         onChange={(next) => onChange({ ...v, title: next })}
         disabled={readOnly}
       />
       <LInput
-        label="Libellé WhatsApp"
+        label={t("admin.contenu.contenu.contact_wa_label")}
         value={v.whatsappLabel}
         onChange={(next) => onChange({ ...v, whatsappLabel: next })}
         disabled={readOnly}
       />
       <div className="md:col-span-2">
         <LTextarea
-          label="Sous-titre"
+          label={t("admin.contenu.contenu.champ_sous_titre")}
           rows={2}
           value={v.subtitle}
           onChange={(next) => onChange({ ...v, subtitle: next })}
@@ -1103,7 +1143,7 @@ function ContactCtaForm({
         />
       </div>
       <p className="text-xs text-muted-foreground md:col-span-2">
-        Le numéro WhatsApp est configuré dans <strong>Paramètres</strong>.
+        {t("admin.contenu.contenu.contact_wa_note")}
       </p>
     </div>
   );
@@ -1113,20 +1153,20 @@ function FloatingWaForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["floatingWhatsApp"];
   onChange: (v: SiteContent["floatingWhatsApp"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between rounded-md border p-3">
         <div>
-          <p className="text-sm font-medium">Afficher le bouton WhatsApp flottant</p>
-          <p className="text-xs text-muted-foreground">
-            Visible seulement si un numéro est configuré dans Paramètres.
-          </p>
+          <p className="text-sm font-medium">{t("admin.contenu.contenu.wa_afficher")}</p>
+          <p className="text-xs text-muted-foreground">{t("admin.contenu.contenu.wa_note")}</p>
         </div>
         <Switch
           checked={v.enabled}
@@ -1135,7 +1175,7 @@ function FloatingWaForm({
         />
       </div>
       <LInput
-        label="Label d'accessibilité"
+        label={t("admin.contenu.contenu.wa_aria_label")}
         value={v.ariaLabel}
         onChange={(next) => onChange({ ...v, ariaLabel: next })}
         disabled={readOnly}
@@ -1148,16 +1188,18 @@ function MobileBarForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["mobileBottomBar"];
   onChange: (v: SiteContent["mobileBottomBar"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label>Items (3 à 5 recommandés)</Label>
+        <Label>{t("admin.contenu.contenu.mobile_items")}</Label>
         <Button
           type="button"
           size="sm"
@@ -1173,7 +1215,7 @@ function MobileBarForm({
             })
           }
         >
-          <Plus className="me-2 h-4 w-4" /> Ajouter
+          <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
         </Button>
       </div>
       {v.items.map((it, i) => (
@@ -1181,7 +1223,7 @@ function MobileBarForm({
           key={it.id}
           className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[140px_1fr_1fr_auto_auto_auto]"
         >
-          <Field label="Icône">
+          <Field label={t("admin.contenu.contenu.champ_icone")}>
             <IconPicker
               value={it.icon}
               disabled={readOnly}
@@ -1193,7 +1235,7 @@ function MobileBarForm({
             />
           </Field>
           <LInput
-            label="Libellé"
+            label={t("admin.contenu.contenu.champ_libelle")}
             value={it.label}
             disabled={readOnly}
             onChange={(next) => {
@@ -1202,7 +1244,7 @@ function MobileBarForm({
               onChange({ ...v, items });
             }}
           />
-          <Field label="Lien">
+          <Field label={t("admin.contenu.contenu.champ_lien")}>
             <Input
               value={it.href}
               disabled={readOnly}
@@ -1214,7 +1256,7 @@ function MobileBarForm({
             />
           </Field>
           <div className="flex flex-col items-center gap-1">
-            <Label className="text-xs">Primaire</Label>
+            <Label className="text-xs">{t("admin.contenu.contenu.mobile_primaire")}</Label>
             <Switch
               checked={!!it.primary}
               disabled={readOnly}
@@ -1226,7 +1268,7 @@ function MobileBarForm({
             />
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Label className="text-xs">Auth</Label>
+            <Label className="text-xs">{t("admin.contenu.contenu.mobile_auth")}</Label>
             <Switch
               checked={!!it.requiresAuth}
               disabled={readOnly}
@@ -1243,7 +1285,7 @@ function MobileBarForm({
             variant="ghost"
             disabled={readOnly}
             onClick={() => onChange({ ...v, items: v.items.filter((_, j) => j !== i) })}
-            aria-label="Supprimer"
+            aria-label={t("admin.contenu.contenu.aria_supprimer")}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
@@ -1258,24 +1300,28 @@ function HeaderForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["header"];
   onChange: (v: SiteContent["header"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-2">
         <LInput
-          label="Placeholder du champ de recherche"
+          label={t("admin.contenu.contenu.header_recherche_placeholder")}
           value={v.searchPlaceholder}
           onChange={(next) => onChange({ ...v, searchPlaceholder: next })}
           disabled={readOnly}
         />
         <div className="flex items-center justify-between rounded-md border p-3">
           <div>
-            <p className="text-sm font-medium">Afficher la barre de recherche</p>
+            <p className="text-sm font-medium">
+              {t("admin.contenu.contenu.header_afficher_recherche")}
+            </p>
           </div>
           <Switch
             checked={v.showSearch}
@@ -1284,12 +1330,12 @@ function HeaderForm({
           />
         </div>
         <LInput
-          label="Bouton principal — libellé"
+          label={t("admin.contenu.contenu.header_btn_principal_label")}
           value={v.builderCta.label}
           onChange={(next) => onChange({ ...v, builderCta: { ...v.builderCta, label: next } })}
           disabled={readOnly}
         />
-        <Field label="Bouton principal — lien">
+        <Field label={t("admin.contenu.contenu.header_btn_principal_lien")}>
           <Input
             value={v.builderCta.href}
             disabled={readOnly}
@@ -1301,10 +1347,10 @@ function HeaderForm({
       </div>
 
       <div className="space-y-3 rounded-md border p-3">
-        <p className="text-sm font-semibold">Menu « Catégories »</p>
+        <p className="text-sm font-semibold">{t("admin.contenu.contenu.header_menu_categories")}</p>
         <div className="grid gap-3 md:grid-cols-2">
           <LInput
-            label="Libellé du menu"
+            label={t("admin.contenu.contenu.header_menu_label")}
             value={v.categoryMenu.label}
             onChange={(next) =>
               onChange({ ...v, categoryMenu: { ...v.categoryMenu, label: next } })
@@ -1312,7 +1358,7 @@ function HeaderForm({
             disabled={readOnly}
           />
           <LInput
-            label="Titre à l'intérieur du menu"
+            label={t("admin.contenu.contenu.header_menu_titre")}
             value={v.categoryMenu.title}
             onChange={(next) =>
               onChange({ ...v, categoryMenu: { ...v.categoryMenu, title: next } })
@@ -1320,25 +1366,28 @@ function HeaderForm({
             disabled={readOnly}
           />
           <LInput
-            label="Libellé « voir toutes »"
+            label={t("admin.contenu.contenu.header_menu_voir_toutes_label")}
             value={v.categoryMenu.browseLabel}
             onChange={(next) =>
               onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseLabel: next } })
             }
             disabled={readOnly}
           />
-          <Field label="Lien « voir toutes »">
+          <Field label={t("admin.contenu.contenu.header_menu_voir_toutes_lien")}>
             <Input
               value={v.categoryMenu.browseHref}
               disabled={readOnly}
               onChange={(e) =>
-                onChange({ ...v, categoryMenu: { ...v.categoryMenu, browseHref: e.target.value } })
+                onChange({
+                  ...v,
+                  categoryMenu: { ...v.categoryMenu, browseHref: e.target.value },
+                })
               }
             />
           </Field>
         </div>
         <div className="flex items-center justify-between">
-          <Label>Entrées du menu Catégories</Label>
+          <Label>{t("admin.contenu.contenu.header_entrees_menu")}</Label>
           <Button
             type="button"
             size="sm"
@@ -1357,7 +1406,7 @@ function HeaderForm({
               })
             }
           >
-            <Plus className="me-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
           </Button>
         </div>
         {v.categoryMenu.items.map((it, i) => (
@@ -1365,7 +1414,7 @@ function HeaderForm({
             key={it.id}
             className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[140px_1fr_1fr_auto_auto]"
           >
-            <Field label="Icône">
+            <Field label={t("admin.contenu.contenu.champ_icone")}>
               <IconPicker
                 value={(it.icon ?? "tag") as IconName}
                 disabled={readOnly}
@@ -1377,7 +1426,7 @@ function HeaderForm({
               />
             </Field>
             <LInput
-              label="Libellé"
+              label={t("admin.contenu.contenu.champ_libelle")}
               value={it.label}
               disabled={readOnly}
               onChange={(next) => {
@@ -1386,7 +1435,7 @@ function HeaderForm({
                 onChange({ ...v, categoryMenu: { ...v.categoryMenu, items } });
               }}
             />
-            <Field label="Lien">
+            <Field label={t("admin.contenu.contenu.champ_lien")}>
               <Input
                 value={it.href}
                 disabled={readOnly}
@@ -1398,7 +1447,7 @@ function HeaderForm({
               />
             </Field>
             <div className="flex flex-col items-center gap-1">
-              <Label className="text-xs">Accent</Label>
+              <Label className="text-xs">{t("admin.contenu.contenu.header_accent")}</Label>
               <Switch
                 checked={!!it.accent}
                 disabled={readOnly}
@@ -1423,7 +1472,7 @@ function HeaderForm({
                   },
                 })
               }
-              aria-label="Supprimer"
+              aria-label={t("admin.contenu.contenu.aria_supprimer")}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
@@ -1433,7 +1482,9 @@ function HeaderForm({
 
       <div className="space-y-3 rounded-md border p-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold">Liens de navigation principaux</p>
+          <p className="text-sm font-semibold">
+            {t("admin.contenu.contenu.header_nav_principaux")}
+          </p>
           <Button
             type="button"
             size="sm"
@@ -1449,7 +1500,7 @@ function HeaderForm({
               })
             }
           >
-            <Plus className="me-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
           </Button>
         </div>
         {v.primaryNav.map((n, i) => (
@@ -1458,7 +1509,7 @@ function HeaderForm({
             className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[1fr_1fr_auto]"
           >
             <LInput
-              label="Libellé"
+              label={t("admin.contenu.contenu.champ_libelle")}
               value={n.label}
               disabled={readOnly}
               onChange={(next) => {
@@ -1467,7 +1518,7 @@ function HeaderForm({
                 onChange({ ...v, primaryNav: arr });
               }}
             />
-            <Field label="Lien">
+            <Field label={t("admin.contenu.contenu.champ_lien")}>
               <Input
                 value={n.href}
                 disabled={readOnly}
@@ -1484,7 +1535,7 @@ function HeaderForm({
               variant="ghost"
               disabled={readOnly}
               onClick={() => onChange({ ...v, primaryNav: v.primaryNav.filter((_, j) => j !== i) })}
-              aria-label="Supprimer"
+              aria-label={t("admin.contenu.contenu.aria_supprimer")}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
@@ -1500,17 +1551,19 @@ function FooterForm({
   value,
   onChange,
   readOnly,
+  t,
 }: {
   value: SiteContent["footer"];
   onChange: (v: SiteContent["footer"]) => void;
   readOnly: boolean;
+  t: TFn;
 }) {
   const v = value;
   return (
     <div className="space-y-4">
       <div className="grid gap-3">
         <LTextarea
-          label="Baseline (sous le logo)"
+          label={t("admin.contenu.contenu.footer_baseline")}
           rows={2}
           value={v.tagline}
           onChange={(next) => onChange({ ...v, tagline: next })}
@@ -1518,13 +1571,13 @@ function FooterForm({
         />
         <div className="grid gap-3 md:grid-cols-2">
           <LInput
-            label="Copyright"
+            label={t("admin.contenu.contenu.footer_copyright")}
             value={v.copyright}
             onChange={(next) => onChange({ ...v, copyright: next })}
             disabled={readOnly}
           />
           <LInput
-            label="Mention « fait à… »"
+            label={t("admin.contenu.contenu.footer_made_in")}
             value={v.madeIn}
             onChange={(next) => onChange({ ...v, madeIn: next })}
             disabled={readOnly}
@@ -1534,7 +1587,7 @@ function FooterForm({
 
       <div className="space-y-3 rounded-md border p-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold">Réseaux sociaux</p>
+          <p className="text-sm font-semibold">{t("admin.contenu.contenu.footer_reseaux")}</p>
           <Button
             type="button"
             size="sm"
@@ -1550,7 +1603,7 @@ function FooterForm({
               })
             }
           >
-            <Plus className="me-2 h-4 w-4" /> Ajouter
+            <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter")}
           </Button>
         </div>
         {v.socials.map((s, i) => (
@@ -1558,7 +1611,7 @@ function FooterForm({
             key={s.id}
             className="grid items-end gap-2 rounded-md border p-3 md:grid-cols-[160px_1fr_1fr_auto]"
           >
-            <Field label="Icône">
+            <Field label={t("admin.contenu.contenu.champ_icone")}>
               <IconPicker
                 value={s.icon}
                 disabled={readOnly}
@@ -1570,7 +1623,7 @@ function FooterForm({
               />
             </Field>
             <LInput
-              label="Libellé (a11y)"
+              label={t("admin.contenu.contenu.footer_libelle_a11y")}
               value={s.label}
               disabled={readOnly}
               onChange={(next) => {
@@ -1579,7 +1632,7 @@ function FooterForm({
                 onChange({ ...v, socials: arr });
               }}
             />
-            <Field label="Lien">
+            <Field label={t("admin.contenu.contenu.champ_lien")}>
               <Input
                 value={s.href}
                 disabled={readOnly}
@@ -1596,7 +1649,7 @@ function FooterForm({
               variant="ghost"
               disabled={readOnly}
               onClick={() => onChange({ ...v, socials: v.socials.filter((_, j) => j !== i) })}
-              aria-label="Supprimer"
+              aria-label={t("admin.contenu.contenu.aria_supprimer")}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
@@ -1606,7 +1659,7 @@ function FooterForm({
 
       <div className="space-y-3 rounded-md border p-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold">Colonnes de liens</p>
+          <p className="text-sm font-semibold">{t("admin.contenu.contenu.footer_colonnes")}</p>
           <Button
             type="button"
             size="sm"
@@ -1622,7 +1675,7 @@ function FooterForm({
               })
             }
           >
-            <Plus className="me-2 h-4 w-4" /> Ajouter une colonne
+            <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.footer_ajouter_colonne")}
           </Button>
         </div>
         {v.columns.map((col, ci) => (
@@ -1630,7 +1683,7 @@ function FooterForm({
             <div className="flex items-end gap-2">
               <div className="flex-1">
                 <LInput
-                  label="Titre de la colonne"
+                  label={t("admin.contenu.contenu.footer_titre_colonne")}
                   value={col.title}
                   disabled={readOnly}
                   onChange={(next) => {
@@ -1654,7 +1707,7 @@ function FooterForm({
                   onChange({ ...v, columns: arr });
                 }}
               >
-                <Plus className="me-2 h-4 w-4" /> Lien
+                <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.btn_ajouter_lien")}
               </Button>
               <Button
                 type="button"
@@ -1662,7 +1715,7 @@ function FooterForm({
                 variant="ghost"
                 disabled={readOnly}
                 onClick={() => onChange({ ...v, columns: v.columns.filter((_, j) => j !== ci) })}
-                aria-label="Supprimer la colonne"
+                aria-label={t("admin.contenu.contenu.aria_supprimer_colonne")}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
@@ -1673,7 +1726,7 @@ function FooterForm({
                 className="grid items-end gap-2 rounded-md border p-2 md:grid-cols-[1fr_1fr_auto]"
               >
                 <LInput
-                  label="Libellé"
+                  label={t("admin.contenu.contenu.champ_libelle")}
                   value={l.label}
                   disabled={readOnly}
                   onChange={(next) => {
@@ -1684,7 +1737,7 @@ function FooterForm({
                     onChange({ ...v, columns: arr });
                   }}
                 />
-                <Field label="Lien">
+                <Field label={t("admin.contenu.contenu.champ_lien")}>
                   <Input
                     value={l.href}
                     disabled={readOnly}
@@ -1707,7 +1760,7 @@ function FooterForm({
                     arr[ci] = { ...col, links: col.links.filter((_, j) => j !== li) };
                     onChange({ ...v, columns: arr });
                   }}
-                  aria-label="Supprimer"
+                  aria-label={t("admin.contenu.contenu.aria_supprimer")}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
