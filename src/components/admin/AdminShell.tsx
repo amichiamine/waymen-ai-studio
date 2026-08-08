@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 import { Outlet } from "react-router-dom";
+import { useI18n, useNamespace } from "@/lib/i18n";
 import {
   AdminSidebar,
   AdminMobileNav,
@@ -21,8 +22,32 @@ import {
  * Il ne contient AUCUNE garde d'authentification : celle-ci reste dans
  * `App.tsx`, en amont du `React.lazy`, pour qu'un visiteur sans rôle admin ne
  * télécharge jamais ce chunk.
+ *
+ * C'est aussi le SEUL endroit qui réclame l'espace de noms de traduction
+ * `admin` : les ~800 chaînes du back-office sont hors du bundle du visiteur
+ * (voir l'intention détaillée dans `src/lib/i18n.tsx` et la convention dans
+ * `src/lib/i18n/admin/index.ts`). Les pages, elles, n'appellent que `t()`.
  */
 export default function AdminShell({ pageFallback }: { pageFallback: ReactNode }) {
+  const { t } = useI18n();
+  const { ready } = useNamespace("admin");
+
+  // Tant que le dictionnaire admin n'est pas là, on n'affiche RIEN du
+  // back-office : même raisonnement que `dictionaryReady` dans le provider, un
+  // écran d'attente d'une fraction de seconde vaut mieux qu'un flash de clés
+  // brutes (« admin.socle.navigation.lien_produits ») dans la barre latérale.
+  // Le texte d'attente vient du dictionnaire principal, déjà chargé.
+  if (!ready) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground"
+        aria-busy="true"
+      >
+        {t("app.loading")}
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <AdminSidebar />

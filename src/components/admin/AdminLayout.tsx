@@ -56,67 +56,170 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { canPerform, setActiveRole, type AdminUserRole } from "@/lib/admin-store";
 import { useNotificationList, useNotificationMutations } from "@/data-provider";
-import { ADMIN_ROLES, ADMIN_ROLE_LABEL, useEffectiveRole } from "@/lib/admin-auth";
+import { ADMIN_ROLES, useEffectiveRole } from "@/lib/admin-auth";
 import { useAuth } from "@/lib/auth";
+import { useI18n, type Lang } from "@/lib/i18n";
 
-type Item = { to: string; label: string; Icon: typeof LayoutDashboard; minRole?: AdminUserRole };
+/**
+ * Un lien de la barre latérale.
+ *
+ * `labelKey` est une CLÉ de traduction, pas un libellé : la navigation est
+ * rendue dans la langue de l'interface, y compris dans le fil d'Ariane qui
+ * réutilise cette même table. Idem pour `titleKey` des sections.
+ * Les chemins (`/admin/products`) sont techniques : ils ne se traduisent pas.
+ */
+type Item = { to: string; labelKey: string; Icon: typeof LayoutDashboard; minRole?: AdminUserRole };
 
-export const ADMIN_SECTIONS: { title: string; items: Item[] }[] = [
+export const ADMIN_SECTIONS: { titleKey: string; items: Item[] }[] = [
   {
-    title: "Vue d'ensemble",
+    titleKey: "admin.socle.navigation.section_apercu",
     items: [
-      { to: "/admin", label: "Tableau de bord", Icon: LayoutDashboard },
-      { to: "/admin/analytics", label: "Analytique", Icon: BarChart3 },
-      { to: "/admin/reports", label: "Rapports", Icon: PieChart, minRole: "editor" },
+      { to: "/admin", labelKey: "admin.socle.navigation.lien_tableau", Icon: LayoutDashboard },
+      {
+        to: "/admin/analytics",
+        labelKey: "admin.socle.navigation.lien_analytique",
+        Icon: BarChart3,
+      },
+      {
+        to: "/admin/reports",
+        labelKey: "admin.socle.navigation.lien_rapports",
+        Icon: PieChart,
+        minRole: "editor",
+      },
     ],
   },
   {
-    title: "Catalogue",
+    titleKey: "admin.socle.navigation.section_catalogue",
     items: [
-      { to: "/admin/products", label: "Produits", Icon: Package },
-      { to: "/admin/categories", label: "Catégories", Icon: Boxes },
-      { to: "/admin/brands", label: "Marques", Icon: Tags },
-      { to: "/admin/inventory", label: "Stock", Icon: Warehouse, minRole: "editor" },
-      { to: "/admin/media", label: "Médias", Icon: ImageIcon, minRole: "editor" },
+      { to: "/admin/products", labelKey: "admin.socle.navigation.lien_produits", Icon: Package },
+      { to: "/admin/categories", labelKey: "admin.socle.navigation.lien_categories", Icon: Boxes },
+      { to: "/admin/brands", labelKey: "admin.socle.navigation.lien_marques", Icon: Tags },
+      {
+        to: "/admin/inventory",
+        labelKey: "admin.socle.navigation.lien_stock",
+        Icon: Warehouse,
+        minRole: "editor",
+      },
+      {
+        to: "/admin/media",
+        labelKey: "admin.socle.navigation.lien_medias",
+        Icon: ImageIcon,
+        minRole: "editor",
+      },
     ],
   },
   {
-    title: "Ventes",
+    titleKey: "admin.socle.navigation.section_ventes",
     items: [
-      { to: "/admin/orders", label: "Commandes", Icon: ShoppingBag },
-      { to: "/admin/customers", label: "Clients", Icon: Users },
-      { to: "/admin/coupons", label: "Coupons", Icon: Ticket, minRole: "editor" },
-      { to: "/admin/shipping", label: "Livraison", Icon: Truck, minRole: "admin" },
-      { to: "/admin/payments", label: "Paiements", Icon: CreditCard, minRole: "admin" },
+      { to: "/admin/orders", labelKey: "admin.socle.navigation.lien_commandes", Icon: ShoppingBag },
+      { to: "/admin/customers", labelKey: "admin.socle.navigation.lien_clients", Icon: Users },
+      {
+        to: "/admin/coupons",
+        labelKey: "admin.socle.navigation.lien_coupons",
+        Icon: Ticket,
+        minRole: "editor",
+      },
+      {
+        to: "/admin/shipping",
+        labelKey: "admin.socle.navigation.lien_livraison",
+        Icon: Truck,
+        minRole: "admin",
+      },
+      {
+        to: "/admin/payments",
+        labelKey: "admin.socle.navigation.lien_paiements",
+        Icon: CreditCard,
+        minRole: "admin",
+      },
     ],
   },
   {
-    title: "Relation client",
+    titleKey: "admin.socle.navigation.section_relation",
     items: [
-      { to: "/admin/messages", label: "Messages de contact", Icon: Mail, minRole: "editor" },
-      { to: "/admin/subscribers", label: "Newsletter", Icon: Send, minRole: "editor" },
+      {
+        to: "/admin/messages",
+        labelKey: "admin.socle.navigation.lien_messages",
+        Icon: Mail,
+        minRole: "editor",
+      },
+      {
+        to: "/admin/subscribers",
+        labelKey: "admin.socle.navigation.lien_newsletter",
+        Icon: Send,
+        minRole: "editor",
+      },
     ],
   },
   {
-    title: "Contenu",
+    titleKey: "admin.socle.navigation.section_contenu",
     items: [
-      { to: "/admin/content", label: "Contenu du site", Icon: Palette, minRole: "editor" },
-      { to: "/admin/blog", label: "Blog", Icon: FileText, minRole: "editor" },
-      { to: "/admin/reviews", label: "Avis", Icon: Star, minRole: "editor" },
+      {
+        to: "/admin/content",
+        labelKey: "admin.socle.navigation.lien_contenu",
+        Icon: Palette,
+        minRole: "editor",
+      },
+      {
+        to: "/admin/blog",
+        labelKey: "admin.socle.navigation.lien_blog",
+        Icon: FileText,
+        minRole: "editor",
+      },
+      {
+        to: "/admin/reviews",
+        labelKey: "admin.socle.navigation.lien_avis",
+        Icon: Star,
+        minRole: "editor",
+      },
     ],
   },
   {
-    title: "Système",
+    titleKey: "admin.socle.navigation.section_systeme",
     items: [
-      { to: "/admin/users", label: "Utilisateurs & rôles", Icon: ShieldCheck, minRole: "admin" },
-      { to: "/admin/notifications", label: "Notifications", Icon: Bell },
-      { to: "/admin/audit", label: "Journal d'audit", Icon: ScrollText, minRole: "admin" },
-      { to: "/admin/settings", label: "Paramètres", Icon: SettingsIcon, minRole: "admin" },
-      { to: "/admin/reset", label: "Réinitialiser", Icon: RotateCcw, minRole: "owner" },
-      { to: "/admin/developpeur", label: "Développeur", Icon: Terminal, minRole: "owner" },
+      {
+        to: "/admin/users",
+        labelKey: "admin.socle.navigation.lien_utilisateurs",
+        Icon: ShieldCheck,
+        minRole: "admin",
+      },
+      {
+        to: "/admin/notifications",
+        labelKey: "admin.socle.navigation.lien_notifications",
+        Icon: Bell,
+      },
+      {
+        to: "/admin/audit",
+        labelKey: "admin.socle.navigation.lien_audit",
+        Icon: ScrollText,
+        minRole: "admin",
+      },
+      {
+        to: "/admin/settings",
+        labelKey: "admin.socle.navigation.lien_parametres",
+        Icon: SettingsIcon,
+        minRole: "admin",
+      },
+      {
+        to: "/admin/reset",
+        labelKey: "admin.socle.navigation.lien_reinitialiser",
+        Icon: RotateCcw,
+        minRole: "owner",
+      },
+      {
+        to: "/admin/developpeur",
+        labelKey: "admin.socle.navigation.lien_developpeur",
+        Icon: Terminal,
+        minRole: "owner",
+      },
     ],
   },
 ];
+
+/**
+ * Locale d'affichage des dates dans le chrome admin. L'Algérie écrit ses
+ * chiffres en caractères latins, y compris en arabe : `ar-DZ` le respecte.
+ */
+const DATE_LOCALE: Record<Lang, string> = { fr: "fr-DZ", en: "en-DZ", ar: "ar-DZ" };
 
 const ROLE_RANK: Record<AdminUserRole, number> = { owner: 4, admin: 3, editor: 2, viewer: 1 };
 function canSee(item: Item, role: AdminUserRole): boolean {
@@ -126,15 +229,16 @@ function canSee(item: Item, role: AdminUserRole): boolean {
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useLocation().pathname;
   const role = useActiveRole();
+  const { t } = useI18n();
   return (
     <nav className="space-y-6 p-4 text-sm">
       {ADMIN_SECTIONS.map((s) => {
         const items = s.items.filter((it) => canSee(it, role));
         if (items.length === 0) return null;
         return (
-          <div key={s.title}>
+          <div key={s.titleKey}>
             <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {s.title}
+              {t(s.titleKey)}
             </p>
             <ul className="space-y-1">
               {items.map((it) => {
@@ -152,7 +256,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                       }`}
                     >
                       <it.Icon className="h-4 w-4" />
-                      {it.label}
+                      {t(it.labelKey)}
                     </Link>
                   </li>
                 );
@@ -166,11 +270,14 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function AdminSidebar() {
+  const { t } = useI18n();
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-card/50 lg:flex">
       <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 px-4">
         <Logo />
-        <span className="text-sm font-semibold text-muted-foreground">Admin</span>
+        <span className="text-sm font-semibold text-muted-foreground">
+          {t("admin.socle.navigation.badge")}
+        </span>
       </div>
       <div className="flex-1 overflow-y-auto">
         <SidebarNav />
@@ -181,17 +288,25 @@ export function AdminSidebar() {
 
 export function AdminMobileNav() {
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Ouvrir le menu admin">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden"
+          aria-label={t("admin.socle.navigation.ouvrir_menu")}
+        >
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="flex w-72 flex-col p-0">
         <SheetHeader className="h-14 shrink-0 flex-row items-center gap-2 border-b border-border/60 px-4 space-y-0">
           <Logo />
-          <SheetTitle className="text-sm font-semibold text-muted-foreground">Admin</SheetTitle>
+          <SheetTitle className="text-sm font-semibold text-muted-foreground">
+            {t("admin.socle.navigation.badge")}
+          </SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto">
           <SidebarNav onNavigate={() => setOpen(false)} />
@@ -203,12 +318,17 @@ export function AdminMobileNav() {
 
 export function AdminBreadcrumbs() {
   const { pathname } = useLocation();
+  const { t } = useI18n();
   const segments = pathname.split("/").filter(Boolean); // e.g. ["admin", "products", "abc"]
 
+  // Les libellés du fil d'Ariane proviennent de la même table que la barre
+  // latérale : une seule source, donc aucune divergence de traduction possible.
+  // Un segment inconnu (identifiant d'un produit, d'une commande…) est affiché
+  // tel quel : c'est une donnée, elle ne se traduit pas.
   const findLabel = (to: string): string | null => {
     for (const s of ADMIN_SECTIONS) {
       const hit = s.items.find((it) => it.to === to);
-      if (hit) return hit.label;
+      if (hit) return t(hit.labelKey);
     }
     return null;
   };
@@ -218,7 +338,7 @@ export function AdminBreadcrumbs() {
   segments.forEach((seg, i) => {
     path += "/" + seg;
     if (i === 0) {
-      crumbs.push({ label: "Admin", to: "/admin" });
+      crumbs.push({ label: t("admin.socle.navigation.racine"), to: "/admin" });
     } else {
       const label = findLabel(path) ?? decodeURIComponent(seg);
       crumbs.push({ label, to: i === segments.length - 1 ? undefined : path });
@@ -228,10 +348,14 @@ export function AdminBreadcrumbs() {
   return (
     <nav
       className="flex items-center gap-1 text-sm text-muted-foreground"
-      aria-label="Fil d'Ariane"
+      aria-label={t("admin.socle.navigation.fil_ariane")}
     >
-      <Link to="/admin" className="flex items-center gap-1 hover:text-foreground">
-        <Home className="h-3.5 w-3.5" />
+      <Link
+        to="/admin"
+        className="flex items-center gap-1 hover:text-foreground"
+        aria-label={t("admin.socle.navigation.accueil_admin")}
+      >
+        <Home className="h-3.5 w-3.5" aria-hidden="true" />
       </Link>
       {crumbs.slice(1).map((c, i) => (
         <span key={i} className="flex items-center gap-1">
@@ -274,10 +398,17 @@ export function AdminPageShell({
   );
 }
 
-export function AdminEmptyState({ label = "Aucune donnée pour le moment" }: { label?: string }) {
+/**
+ * État vide générique. `label` reste optionnel : à défaut, il prend le libellé
+ * traduit `admin.socle.commun.aucune_donnee`. Résolu dans le corps du composant
+ * (et non en valeur par défaut de paramètre) pour pouvoir lire le contexte de
+ * langue. Un appelant qui passe un `label` doit le passer déjà traduit.
+ */
+export function AdminEmptyState({ label }: { label?: string }) {
+  const { t } = useI18n();
   return (
     <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-      {label}
+      {label ?? t("admin.socle.commun.aucune_donnee")}
     </div>
   );
 }
@@ -295,8 +426,21 @@ export function useActiveRole(): AdminUserRole {
   return useEffectiveRole().role;
 }
 
+/**
+ * Libellé traduit d'un rôle. `ADMIN_ROLE_LABEL` (dans `src/lib/admin-auth.tsx`)
+ * reste la source des libellés côté logique de permissions ; l'interface, elle,
+ * affiche `admin.socle.roles.<role>`. Les identifiants de rôle (`owner`,
+ * `admin`, `editor`, `viewer`) sont techniques et ne se traduisent jamais.
+ */
+function useRoleLabel(): (role: AdminUserRole) => string {
+  const { t } = useI18n();
+  return (role) => t(`admin.socle.roles.${role}`);
+}
+
 export function AdminRoleSwitcher() {
   const { role, realRole, simulating } = useEffectiveRole();
+  const { t } = useI18n();
+  const roleLabel = useRoleLabel();
   if (!import.meta.env.DEV) return null;
 
   // Seuls les rôles inférieurs ou égaux au rôle réel sont proposés.
@@ -305,24 +449,24 @@ export function AdminRoleSwitcher() {
   return (
     <div className="hidden items-center gap-2 md:flex">
       <span className="text-xs text-muted-foreground">
-        Simuler un rôle
+        {t("admin.socle.entete.simuler_role")}
         {simulating && (
           <span className="ms-1 font-medium text-amber-600">
-            (réel : {ADMIN_ROLE_LABEL[realRole]})
+            {t("admin.socle.entete.role_reel", { role: roleLabel(realRole) })}
           </span>
         )}
       </span>
       <Select value={role} onValueChange={(v) => setActiveRole(v as AdminUserRole)}>
         <SelectTrigger
           className={`h-8 w-[150px] text-xs ${simulating ? "border-amber-500 text-amber-700" : ""}`}
-          title="Outil de développement : permet uniquement de rétrograder son propre rôle pour tester l'interface."
+          title={t("admin.socle.entete.simuler_infobulle")}
         >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {options.map((r) => (
             <SelectItem key={r} value={r} className="text-xs">
-              {ADMIN_ROLE_LABEL[r]}
+              {roleLabel(r)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -337,23 +481,32 @@ export function AdminNotificationBell() {
   // premier aller-retour — la cloche reste visible sans badge.
   const { data: notifications } = useNotificationList();
   const { markRead, markAllRead } = useNotificationMutations();
+  const { t, lang } = useI18n();
   const unread = notifications.filter((n) => !n.read).length;
   const latest = notifications.slice(0, 6);
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={t("admin.socle.entete.notifications")}
+        >
           <Bell className="h-5 w-5" />
           {unread > 0 && (
-            <Badge className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center px-1 text-[10px]">
+            <Badge className="absolute -end-1 -top-1 flex h-4 min-w-4 items-center justify-center px-1 text-[10px]">
               {unread > 9 ? "9+" : unread}
+              {/* Le badge est un chiffre tronqué : le compte exact est donné
+                  aux lecteurs d'écran, avec la forme plurielle correcte. */}
+              <span className="sr-only"> {t("admin.socle.entete.non_lues", { n: unread })}</span>
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b p-3">
-          <p className="text-sm font-semibold">Notifications</p>
+          <p className="text-sm font-semibold">{t("admin.socle.entete.notifications")}</p>
           <Button
             variant="ghost"
             size="sm"
@@ -361,12 +514,14 @@ export function AdminNotificationBell() {
             onClick={() => void markAllRead()}
             disabled={unread === 0}
           >
-            <Check className="mr-1 h-3 w-3" /> Tout lu
+            <Check className="me-1 h-3 w-3" /> {t("admin.socle.entete.tout_lu")}
           </Button>
         </div>
         <div className="max-h-80 overflow-y-auto">
           {latest.length === 0 ? (
-            <p className="p-6 text-center text-xs text-muted-foreground">Aucune notification.</p>
+            <p className="p-6 text-center text-xs text-muted-foreground">
+              {t("admin.socle.entete.aucune_notification")}
+            </p>
           ) : (
             <ul className="divide-y">
               {latest.map((n) => (
@@ -374,7 +529,9 @@ export function AdminNotificationBell() {
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-medium">{n.title}</p>
                     <span className="shrink-0 text-[10px] text-muted-foreground">
-                      {new Date(n.createdAt).toLocaleDateString("fr-FR")}
+                      {/* Date formatée selon la langue de l'interface, pas
+                          selon une locale codée en dur. */}
+                      {new Date(n.createdAt).toLocaleDateString(DATE_LOCALE[lang])}
                     </span>
                   </div>
                   {n.body && (
@@ -383,7 +540,7 @@ export function AdminNotificationBell() {
                   <div className="mt-1 flex items-center gap-2">
                     {n.link && (
                       <Link to={n.link} className="text-xs text-primary hover:underline">
-                        Voir
+                        {t("admin.socle.commun.voir")}
                       </Link>
                     )}
                     {!n.read && (
@@ -391,7 +548,7 @@ export function AdminNotificationBell() {
                         className="text-xs text-muted-foreground hover:text-foreground"
                         onClick={() => void markRead(n.id, true)}
                       >
-                        Marquer lu
+                        {t("admin.socle.entete.marquer_lu")}
                       </button>
                     )}
                   </div>
@@ -402,7 +559,7 @@ export function AdminNotificationBell() {
         </div>
         <div className="border-t p-2 text-center">
           <Link to="/admin/notifications" className="text-xs text-primary hover:underline">
-            Toutes les notifications →
+            {t("admin.socle.entete.toutes_notifications")}
           </Link>
         </div>
       </PopoverContent>
@@ -425,15 +582,22 @@ export function AdminUserMenu() {
   const { user, signOut } = useAuth();
   const { role, realRole, simulating } = useEffectiveRole();
   const navigate = useNavigate();
+  const { t } = useI18n();
+  const roleLabel = useRoleLabel();
 
-  const name: string = user?.name ?? user?.email ?? "Compte";
+  const name: string = user?.name ?? user?.email ?? t("admin.socle.entete.compte");
   const email: string = user?.email ?? "";
   const fallback = initiales(name) || <User className="h-4 w-4" />;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Menu utilisateur">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          aria-label={t("admin.socle.entete.menu_utilisateur")}
+        >
           <Avatar className="h-8 w-8">
             <AvatarFallback className="text-xs">{fallback}</AvatarFallback>
           </Avatar>
@@ -445,21 +609,25 @@ export function AdminUserMenu() {
           <p className="truncate text-xs text-muted-foreground">{email}</p>
           {simulating ? (
             <p className="mt-1 text-xs">
-              <span className="text-muted-foreground">Rôle simulé : </span>
-              <span className="font-medium text-amber-600">{ADMIN_ROLE_LABEL[role]}</span>
-              <span className="text-muted-foreground"> — réel : </span>
-              <span className="font-medium">{ADMIN_ROLE_LABEL[realRole]}</span>
+              <span className="text-muted-foreground">{t("admin.socle.entete.role_simule")} </span>
+              <span className="font-medium text-amber-600">{roleLabel(role)}</span>
+              <span className="text-muted-foreground">
+                {" "}
+                {t("admin.socle.entete.role_separateur_reel")}{" "}
+              </span>
+              <span className="font-medium">{roleLabel(realRole)}</span>
             </p>
           ) : (
             <p className="mt-1 text-xs text-muted-foreground">
-              Rôle : <span className="font-medium text-foreground">{ADMIN_ROLE_LABEL[role]}</span>
+              {t("admin.socle.entete.role")}{" "}
+              <span className="font-medium text-foreground">{roleLabel(role)}</span>
             </p>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => navigate("/")}>
           <Store className="h-4 w-4 me-2" />
-          Retour à la boutique
+          {t("admin.socle.entete.retour_boutique")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -469,7 +637,7 @@ export function AdminUserMenu() {
           }}
         >
           <LogOut className="h-4 w-4 me-2" />
-          Se déconnecter
+          {t("admin.socle.entete.deconnexion")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

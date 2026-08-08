@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -22,16 +23,29 @@ type Props = {
   onConfirm: () => void;
 };
 
+/**
+ * Boîte de confirmation partagée par tous les écrans admin.
+ *
+ * `confirmLabel` / `cancelLabel` restent optionnels : à défaut, ils prennent
+ * les libellés traduits `admin.socle.confirmation.*`. Les valeurs par défaut
+ * sont donc résolues DANS le composant et non dans la signature, car un défaut
+ * de paramètre est évalué avant tout accès au contexte de langue.
+ * Les appelants qui passent un libellé explicite doivent le faire déjà traduit.
+ */
 export function ConfirmDialog({
   open,
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirmer",
-  cancelLabel = "Annuler",
+  confirmLabel,
+  cancelLabel,
   destructive = false,
   onConfirm,
 }: Props) {
+  const { t } = useI18n();
+  const libelleConfirmer = confirmLabel ?? t("admin.socle.confirmation.confirmer");
+  const libelleAnnuler = cancelLabel ?? t("admin.socle.confirmation.annuler");
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -44,7 +58,7 @@ export function ConfirmDialog({
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogCancel>{libelleAnnuler}</AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               variant={destructive ? "destructive" : "default"}
@@ -53,7 +67,7 @@ export function ConfirmDialog({
                 onOpenChange(false);
               }}
             >
-              {confirmLabel}
+              {libelleConfirmer}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -25,6 +25,7 @@ import {
   useReviewList,
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -54,6 +55,8 @@ export default function AdminDashboard() {
   const { data: customers, loading: lCust, error: eCust } = useCustomerList();
   const { data: coupons, loading: lCoup, error: eCoup } = useCouponList();
   const { data: reviews, loading: lRev, error: eRev } = useReviewList();
+
+  const { t } = useI18n();
 
   // Niveau 1 — lecture uniquement : aucune garde d'action n'est requise sur ce
   // tableau de bord. Le hook est présent pour cohérence et évolution future.
@@ -98,65 +101,96 @@ export default function AdminDashboard() {
     [categories, products],
   );
 
-  const KPIS = [
-    { label: "Produits", value: stats.total.toString(), Icon: Package, to: "/admin/products" },
-    {
-      label: "Catégories",
-      value: categories.length.toString(),
-      Icon: Layers,
-      to: "/admin/categories",
-    },
-    { label: "Marques", value: brands.length.toString(), Icon: Tag, to: "/admin/brands" },
-    {
-      label: "Valeur catalogue",
-      value: formatDZD(stats.catalogValue),
-      Icon: DollarSign,
-      to: "/admin/products",
-    },
-    {
-      label: "Chiffre d'affaires",
-      value: formatDZD(stats.revenue),
-      Icon: DollarSign,
-      to: "/admin/orders",
-    },
-    {
-      label: "Commandes en attente",
-      value: stats.pendingOrders.toString(),
-      Icon: ShoppingBag,
-      to: "/admin/orders",
-    },
-    { label: "Clients", value: customers.length.toString(), Icon: Users, to: "/admin/customers" },
-    {
-      label: "Avis à modérer",
-      value: stats.pendingReviews.toString(),
-      Icon: MessageSquare,
-      to: "/admin/reviews",
-    },
-    {
-      label: "Coupons actifs",
-      value: stats.activeCoupons.toString(),
-      Icon: Ticket,
-      to: "/admin/coupons",
-    },
-    {
-      label: "Stock faible",
-      value: stats.low.toString(),
-      Icon: AlertTriangle,
-      to: "/admin/inventory",
-    },
-    {
-      label: "En stock",
-      value: stats.inStock.toString(),
-      Icon: ShoppingBag,
-      to: "/admin/inventory",
-    },
-    {
-      label: "Best-sellers",
-      value: stats.bestsellers.toString(),
-      Icon: Star,
-      to: "/admin/products",
-    },
-  ];
+  // `labelKey` plutôt que `label` : le libellé est résolu au rendu, dans la
+  // langue courante. `id` sert de clé React — un libellé traduit changerait
+  // d'une langue à l'autre et remonterait toute la liste à chaque bascule.
+  const KPIS: { id: string; labelKey: string; value: string; Icon: typeof Package; to: string }[] =
+    [
+      {
+        id: "produits",
+        labelKey: "admin.socle.tableau.kpi_produits",
+        value: stats.total.toString(),
+        Icon: Package,
+        to: "/admin/products",
+      },
+      {
+        id: "categories",
+        labelKey: "admin.socle.tableau.kpi_categories",
+        value: categories.length.toString(),
+        Icon: Layers,
+        to: "/admin/categories",
+      },
+      {
+        id: "marques",
+        labelKey: "admin.socle.tableau.kpi_marques",
+        value: brands.length.toString(),
+        Icon: Tag,
+        to: "/admin/brands",
+      },
+      {
+        id: "valeur_catalogue",
+        labelKey: "admin.socle.tableau.kpi_valeur_catalogue",
+        value: formatDZD(stats.catalogValue),
+        Icon: DollarSign,
+        to: "/admin/products",
+      },
+      {
+        id: "chiffre_affaires",
+        labelKey: "admin.socle.tableau.kpi_chiffre_affaires",
+        value: formatDZD(stats.revenue),
+        Icon: DollarSign,
+        to: "/admin/orders",
+      },
+      {
+        id: "commandes_attente",
+        labelKey: "admin.socle.tableau.kpi_commandes_attente",
+        value: stats.pendingOrders.toString(),
+        Icon: ShoppingBag,
+        to: "/admin/orders",
+      },
+      {
+        id: "clients",
+        labelKey: "admin.socle.tableau.kpi_clients",
+        value: customers.length.toString(),
+        Icon: Users,
+        to: "/admin/customers",
+      },
+      {
+        id: "avis_moderer",
+        labelKey: "admin.socle.tableau.kpi_avis_moderer",
+        value: stats.pendingReviews.toString(),
+        Icon: MessageSquare,
+        to: "/admin/reviews",
+      },
+      {
+        id: "coupons_actifs",
+        labelKey: "admin.socle.tableau.kpi_coupons_actifs",
+        value: stats.activeCoupons.toString(),
+        Icon: Ticket,
+        to: "/admin/coupons",
+      },
+      {
+        id: "stock_faible",
+        labelKey: "admin.socle.tableau.kpi_stock_faible",
+        value: stats.low.toString(),
+        Icon: AlertTriangle,
+        to: "/admin/inventory",
+      },
+      {
+        id: "en_stock",
+        labelKey: "admin.socle.tableau.kpi_en_stock",
+        value: stats.inStock.toString(),
+        Icon: ShoppingBag,
+        to: "/admin/inventory",
+      },
+      {
+        id: "bestsellers",
+        labelKey: "admin.socle.tableau.kpi_bestsellers",
+        value: stats.bestsellers.toString(),
+        Icon: Star,
+        to: "/admin/products",
+      },
+    ];
 
   const recentOrders = useMemo(
     () =>
@@ -193,11 +227,11 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <AdminPageShell
-        title="Tableau de bord"
-        description="Vue d'ensemble de la boutique KA Tech (données locales)."
+        title={t("admin.socle.tableau.titre")}
+        description={t("admin.socle.tableau.description")}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
-          <span className="sr-only">Chargement…</span>
+          <span className="sr-only">{t("admin.socle.commun.chargement")}</span>
           {Array.from({ length: 12 }, (_, i) => (
             <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-card" />
           ))}
@@ -212,8 +246,8 @@ export default function AdminDashboard() {
 
   return (
     <AdminPageShell
-      title="Tableau de bord"
-      description="Vue d'ensemble de la boutique KA Tech (données locales)."
+      title={t("admin.socle.tableau.titre")}
+      description={t("admin.socle.tableau.description")}
     >
       {errors.length > 0 && (
         <div className="space-y-2">
@@ -232,14 +266,14 @@ export default function AdminDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {KPIS.map((k) => (
-          <Link key={k.label} to={k.to}>
+          <Link key={k.id} to={k.to}>
             <Card className="transition hover:border-primary/50 hover:shadow-sm">
               <CardContent className="flex items-center gap-4 p-5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <k.Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{k.label}</p>
+                  <p className="text-xs text-muted-foreground">{t(k.labelKey)}</p>
                   <p className="truncate text-lg font-semibold">{k.value}</p>
                 </div>
               </CardContent>
@@ -250,7 +284,7 @@ export default function AdminDashboard() {
 
       <Card>
         <CardContent className="p-6">
-          <h2 className="mb-4 text-sm font-semibold">Chiffre d'affaires — 30 derniers jours</h2>
+          <h2 className="mb-4 text-sm font-semibold">{t("admin.socle.tableau.ca_30_jours")}</h2>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trend}>
@@ -286,9 +320,13 @@ export default function AdminDashboard() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">Produits par catégorie</h2>
+            <h2 className="mb-4 text-sm font-semibold">
+              {t("admin.socle.tableau.produits_par_categorie")}
+            </h2>
             {eCat || eProd ? (
-              <p className="text-sm text-muted-foreground">Données indisponibles.</p>
+              <p className="text-sm text-muted-foreground">
+                {t("admin.socle.commun.donnees_indisponibles")}
+              </p>
             ) : (
               <div className="space-y-3">
                 {byCategory.map((c) => {
@@ -319,9 +357,13 @@ export default function AdminDashboard() {
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">Dernières commandes</h2>
+            <h2 className="mb-4 text-sm font-semibold">
+              {t("admin.socle.tableau.dernieres_commandes")}
+            </h2>
             {eOrd ? (
-              <p className="text-sm text-muted-foreground">Données indisponibles.</p>
+              <p className="text-sm text-muted-foreground">
+                {t("admin.socle.commun.donnees_indisponibles")}
+              </p>
             ) : (
               <ul className="divide-y divide-border">
                 {recentOrders.map((o) => (
@@ -336,7 +378,9 @@ export default function AdminDashboard() {
                   </li>
                 ))}
                 {recentOrders.length === 0 && (
-                  <li className="py-2 text-sm text-muted-foreground">Aucune commande.</li>
+                  <li className="py-2 text-sm text-muted-foreground">
+                    {t("admin.socle.tableau.aucune_commande")}
+                  </li>
                 )}
               </ul>
             )}

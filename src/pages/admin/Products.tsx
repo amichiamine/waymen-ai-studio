@@ -41,11 +41,33 @@ const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   low: "secondary",
   out: "destructive",
 };
-const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
 
-// Page pilote du motif de permissions — voir `docs/PERMISSIONS.md` §3.
+/**
+ * `in` / `low` / `out` sont des valeurs de DONNÉES : elles ne se traduisent
+ * jamais. Seul leur libellé d'affichage le fait, via cette table de clés.
+ * Motif à recopier pour tout statut (commande, avis, paiement…).
+ */
+const STOCK_LABEL_KEY: Record<string, string> = {
+  in: "admin.socle.produits.stock_in",
+  low: "admin.socle.produits.stock_low",
+  out: "admin.socle.produits.stock_out",
+};
+
+// Page pilote du motif de permissions — voir `docs/PERMISSIONS.md` §3 — ET du
+// motif de traduction du back-office — voir `src/lib/i18n/admin/index.ts`.
 // Les 34 autres écrans admin sont calqués sur celle-ci : toute correction
 // apportée ici doit être reportée dans la recette de réplication.
+//
+// Ce qu'il faut en retenir côté i18n :
+//   1. AUCUNE chaîne visible en dur : titres, colonnes, placeholder, title,
+//      aria-label, états vides, statuts, toasts, confirmation.
+//   2. `t()` est la seule API — la page ignore qu'un dictionnaire `admin` est
+//      chargé à la demande par `AdminShell`.
+//   3. Une clé = une phrase complète ; les valeurs passent par `{nom}` / `{n}`.
+//   4. Pluriels : `t("…description", { n })` choisit `_un` / `_autre` et formate
+//      le nombre selon la langue.
+//   5. Alignement en propriétés logiques (`text-end`, `ms-*`, `ps-*`) pour que
+//      l'arabe se retourne sans retouche.
 export default function AdminProducts() {
   const { data: products, loading, error } = useProductList();
   const { data: categories } = useCategoryList();
@@ -53,7 +75,7 @@ export default function AdminProducts() {
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can, guard, denyReason } = usePermissions();
   const { remove } = useProductMutations();
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const L = useLocalize();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"all" | Category>("all");
@@ -78,16 +100,67 @@ export default function AdminProducts() {
   // total sans être des articles vendus, autant l'annoncer explicitement.
   const customCount = useMemo(() => products.filter(isCustomBuild).length, [products]);
 
+  // Deux phrases complètes, chacune avec son propre pluriel, plutôt qu'une
+  // phrase assemblée par concaténation de fragments : c'est la règle §5 de la
+  // convention, et la seule façon de rester juste en arabe.
+  const catalogueCount = products.length - customCount;
+  const description =
+    customCount > 0
+      ? `${t("admin.socle.produits.description", { n: catalogueCount })} ${t(
+          "admin.socle.produits.configs",
+          { n: customCount },
+        )}`
+      : t("admin.socle.produits.description", { n: products.length });
+
+  // En-têtes du tableau : une seule source pour le squelette et le contenu, afin
+  // qu'ils ne divergent jamais. `align` porte des propriétés LOGIQUES.
+  const COLONNES: { key: string; align?: "end"; width?: string; masque?: boolean }[] = [
+    { key: "admin.socle.produits.col_image", width: "w-[64px]", masque: true },
+    { key: "admin.socle.produits.col_produit" },
+    { key: "admin.socle.produits.col_marque" },
+    { key: "admin.socle.produits.col_categorie" },
+    { key: "admin.socle.produits.col_prix", align: "end" },
+    { key: "admin.socle.produits.col_stock" },
+    { key: "admin.socle.commun.actions", align: "end", width: "w-[140px]" },
+  ];
+
+  // `text-start` est passé EXPLICITEMENT : `ui/table.tsx` code un `text-left`
+  // en dur dans `TableHead`, que `cn`/tailwind-merge remplace seulement si la
+  // classe logique est fournie. Sans ça, les en-têtes restent collés à gauche en
+  // arabe alors que le tableau se lit de droite à gauche. À recopier tel quel
+  // sur les 33 autres écrans (le composant partagé n'est pas du périmètre i18n).
+  const enTetes = (
+    <TableHeader>
+      <TableRow>
+        {COLONNES.map((c) => (
+          <TableHead
+            key={c.key}
+            className={[c.width, c.align === "end" ? "text-end" : "text-start"]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {/* La colonne des vignettes n'affiche pas son libellé, mais le donne
+                aux lecteurs d'écran : une colonne anonyme n'est pas navigable. */}
+            {c.masque ? <span className="sr-only">{t(c.key)}</span> : t(c.key)}
+          </TableHead>
+        ))}
+      </TableRow>
+    </TableHeader>
+  );
+
   // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le
   // rendu : le masquage d'un bouton n'est pas une protection (route
   // directe, état obsolète, rôle changé pendant que la boîte est ouverte).
   const confirmDelete = async () => {
     if (!toDelete) return;
-    if (!guard("delete", "Supprimer le produit")) return;
+    // Le libellé d'action passé à `guard()` est traduit : il apparaît dans le
+    // message de refus. (Le reste de ce message vient de `admin-auth.tsx`, hors
+    // périmètre de cette phase.)
+    if (!guard("delete", t("admin.socle.produits.garde_supprimer"))) return;
     setDeleting(true);
     try {
       await remove(toDelete.id);
-      toast.success(`« ${toDelete.name} » supprimé`);
+      toast.success(t("admin.socle.produits.toast_supprime", { nom: toDelete.name }));
       setToDelete(null);
     } catch (cause) {
       const err = toApiError(cause);
@@ -100,20 +173,13 @@ export default function AdminProducts() {
   // Squelette de tableau — même structure que le contenu final.
   if (loading) {
     return (
-      <AdminPageShell title="Produits" description="Chargement…">
+      <AdminPageShell
+        title={t("admin.socle.produits.titre")}
+        description={t("admin.socle.commun.chargement")}
+      >
         <div className="overflow-hidden rounded-lg border" aria-busy="true">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[64px]"></TableHead>
-                <TableHead>Produit</TableHead>
-                <TableHead>Marque</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead className="text-end">Prix</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead className="w-[140px] text-end">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
+            {enTetes}
             <TableBody>
               {Array.from({ length: 8 }, (_, i) => (
                 <TableRow key={i}>
@@ -149,12 +215,8 @@ export default function AdminProducts() {
 
   return (
     <AdminPageShell
-      title="Produits"
-      description={
-        customCount > 0
-          ? `${products.length - customCount} produits dans le catalogue local, ${customCount} configuration${customCount > 1 ? "s" : ""} client (hors boutique).`
-          : `${products.length} produits dans le catalogue local.`
-      }
+      title={t("admin.socle.produits.titre")}
+      description={description}
       actions={
         // Niveau 1 — affichage. Niveau 3 — un bouton désactivé dit pourquoi :
         // l'infobulle est portée par le <span>, car un bouton `disabled` a
@@ -162,13 +224,13 @@ export default function AdminProducts() {
         can("create") ? (
           <Link to="/admin/products/new">
             <Button>
-              <Plus className="me-2 h-4 w-4" /> Nouveau produit
+              <Plus className="me-2 h-4 w-4" /> {t("admin.socle.produits.nouveau")}
             </Button>
           </Link>
         ) : (
           <span title={denyReason("create")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Nouveau produit
+              <Plus className="me-2 h-4 w-4" /> {t("admin.socle.produits.nouveau")}
             </Button>
           </span>
         )
@@ -186,20 +248,24 @@ export default function AdminProducts() {
 
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
+          {/* `start-3` et `ps-9` : l'icône passe à droite du champ en arabe
+              sans une ligne de code supplémentaire. */}
           <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Rechercher (nom, marque, id)…"
+            placeholder={t("admin.socle.produits.recherche_placeholder")}
+            aria-label={t("admin.socle.commun.rechercher")}
             className="ps-9"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
         <Select value={cat} onValueChange={(v) => setCat(v as "all" | Category)}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[200px]" aria-label={t("admin.socle.produits.col_categorie")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Toutes catégories</SelectItem>
+            {/* `all` est une valeur technique du filtre ; son libellé, lui, est traduit. */}
+            <SelectItem value="all">{t("admin.socle.produits.toutes_categories")}</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c.slug} value={c.slug}>
                 {c.label}
@@ -211,17 +277,7 @@ export default function AdminProducts() {
 
       <div className="overflow-hidden rounded-lg border">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[64px]"></TableHead>
-              <TableHead>Produit</TableHead>
-              <TableHead>Marque</TableHead>
-              <TableHead>Catégorie</TableHead>
-              <TableHead className="text-end">Prix</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead className="w-[140px] text-end">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+          {enTetes}
           <TableBody>
             {rows.map((p) => (
               <TableRow key={p.id}>
@@ -248,46 +304,67 @@ export default function AdminProducts() {
                       catalogue : le badge évite la confusion. */}
                   {isCustomBuild(p) && (
                     <Badge variant="outline" className="ms-2 align-middle">
-                      Config. client
+                      {t("admin.socle.produits.badge_config")}
                     </Badge>
                   )}
                   <div className="text-xs text-muted-foreground line-clamp-1">
                     {L(p.specLine) ?? ""}
                   </div>
                 </TableCell>
+                {/* Nom de marque : donnée, jamais traduite (§4 de la convention). */}
                 <TableCell className="text-sm">{p.brand}</TableCell>
-                <TableCell className="text-sm capitalize">{p.category}</TableCell>
+                {/* Le libellé de catégorie est une DONNÉE éditable dans l'admin
+                    (table `categories`), pas une chaîne d'interface : il n'entre
+                    pas dans un dictionnaire. Repli sur le slug technique. */}
+                <TableCell className="text-sm">
+                  {categories.find((c) => c.slug === p.category)?.label ?? p.category}
+                </TableCell>
                 <TableCell className="text-end font-medium">{formatDZD(p.price)}</TableCell>
                 <TableCell>
-                  <Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge>
+                  <Badge variant={STOCK_VARIANT[p.stock]}>{t(STOCK_LABEL_KEY[p.stock])}</Badge>
                 </TableCell>
                 <TableCell className="text-end">
                   <Link to={`/product/${p.id}`} target="_blank" rel="noreferrer">
-                    <Button variant="ghost" size="icon" title="Voir la fiche publique">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title={t("admin.socle.produits.voir_public")}
+                      aria-label={t("admin.socle.produits.voir_public")}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                   </Link>
                   {can("update") ? (
                     <Link to={`/admin/products/${p.id}`}>
-                      <Button variant="ghost" size="icon" title="Modifier">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title={t("admin.socle.commun.modifier")}
+                        aria-label={t("admin.socle.commun.modifier")}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </Link>
                   ) : (
                     <span title={denyReason("update")} className="inline-flex">
-                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled
+                        aria-label={t("admin.socle.commun.modifier")}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </span>
                   )}
                   <span
-                    title={denyReason("delete") ?? "Supprimer"}
+                    title={denyReason("delete") ?? t("admin.socle.commun.supprimer")}
                     className="inline-flex align-middle"
                   >
                     <Button
                       variant="ghost"
                       size="icon"
-                      aria-label="Supprimer"
+                      aria-label={t("admin.socle.commun.supprimer")}
                       disabled={!can("delete")}
                       onClick={() => setToDelete({ id: p.id, name: localize(p.name, lang) ?? "" })}
                     >
@@ -299,8 +376,11 @@ export default function AdminProducts() {
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
-                  Aucun produit ne correspond aux filtres.
+                <TableCell
+                  colSpan={COLONNES.length}
+                  className="h-24 text-center text-sm text-muted-foreground"
+                >
+                  {t("admin.socle.produits.vide_aucun_resultat")}
                 </TableCell>
               </TableRow>
             )}
@@ -313,16 +393,17 @@ export default function AdminProducts() {
         onOpenChange={(o) => {
           if (!o) setToDelete(null);
         }}
-        title="Supprimer ce produit ?"
+        title={t("admin.socle.produits.supprimer_titre")}
+        // Une seule clé pour toute la phrase, le nom du produit interpolé :
+        // découper autour d'un <strong> casserait l'ordre des mots en arabe.
         description={
-          toDelete ? (
-            <>
-              Le produit « <strong>{toDelete.name}</strong> » sera supprimé du catalogue local.
-              Cette action est irréversible.
-            </>
-          ) : null
+          toDelete ? t("admin.socle.produits.supprimer_description", { nom: toDelete.name }) : null
         }
-        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
+        confirmLabel={
+          deleting
+            ? t("admin.socle.produits.suppression_en_cours")
+            : t("admin.socle.commun.supprimer")
+        }
         destructive
         onConfirm={confirmDelete}
       />
