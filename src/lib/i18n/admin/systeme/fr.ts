@@ -151,9 +151,9 @@ const systemeFr: Record<string, string> = {
   // ── Notifications ─────────────────────────────────────────────────────────
   "admin.systeme.notifications.titre": "Notifications",
   "admin.systeme.notifications.description_un":
-    "{total} notification · {unread} non lue. Générées automatiquement lors des événements clés (commandes, stock).",
+    "{n} notification · {unread} non lue. Générées automatiquement lors des événements clés (commandes, stock).",
   "admin.systeme.notifications.description_autre":
-    "{total} notifications · {unread} non lues. Générées automatiquement lors des événements clés (commandes, stock).",
+    "{n} notifications · {unread} non lues. Générées automatiquement lors des événements clés (commandes, stock).",
   "admin.systeme.notifications.btn_tout_marquer_lu": "Tout marquer lu",
   "admin.systeme.notifications.btn_nouvelle": "Nouvelle",
   "admin.systeme.notifications.filtre_toutes": "Toutes",

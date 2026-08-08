@@ -139,9 +139,9 @@ const systemeEn: Record<string, string> = {
   // ── Notifications ─────────────────────────────────────────────────────────
   "admin.systeme.notifications.titre": "Notifications",
   "admin.systeme.notifications.description_un":
-    "{total} notification · {unread} unread. Generated automatically for key events (orders, stock).",
+    "{n} notification · {unread} unread. Generated automatically for key events (orders, stock).",
   "admin.systeme.notifications.description_autre":
-    "{total} notifications · {unread} unread. Generated automatically for key events (orders, stock).",
+    "{n} notifications · {unread} unread. Generated automatically for key events (orders, stock).",
   "admin.systeme.notifications.btn_tout_marquer_lu": "Mark all as read",
   "admin.systeme.notifications.btn_nouvelle": "New",
   "admin.systeme.notifications.filtre_toutes": "All",

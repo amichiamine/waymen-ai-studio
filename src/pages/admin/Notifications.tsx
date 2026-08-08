@@ -156,7 +156,7 @@ export default function AdminNotifications() {
     <AdminPageShell
       title={t("admin.systeme.notifications.titre")}
       description={t("admin.systeme.notifications.description", {
-        total: notifications.length.toString(),
+        n: notifications.length,
         unread: unread.toString(),
       })}
       actions={

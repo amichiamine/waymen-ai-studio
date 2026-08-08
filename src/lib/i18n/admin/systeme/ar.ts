@@ -138,7 +138,7 @@ const systemeAr: Record<string, string> = {
   "admin.systeme.notifications.description_un":
     "إشعار واحد · {unread} غير مقروء. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
   "admin.systeme.notifications.description_autre":
-    "عدد الإشعارات: {total} · {unread} غير مقروءة. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
+    "عدد الإشعارات: {n} · {unread} غير مقروءة. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
   "admin.systeme.notifications.btn_tout_marquer_lu": "تحديد الكل كمقروء",
   "admin.systeme.notifications.btn_nouvelle": "جديد",
   "admin.systeme.notifications.filtre_toutes": "الكل",
