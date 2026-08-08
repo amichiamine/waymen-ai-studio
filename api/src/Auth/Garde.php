@@ -201,6 +201,43 @@ final class Garde
         return self::exiger($exigence);
     }
 
+    /**
+     * Variante d'`exigerSoiMemeOu()` pour les ressources dont l'appartenance ne
+     * se lit PAS sur un simple `users.id`.
+     *
+     * Cas visé : une commande. `orders.customer_id` désigne une fiche
+     * `customers`, pas un compte `users` — le rattachement passe par une règle
+     * métier qui vit dans le contrôleur (`fichesClientDuCompte()`). La Garde n'a
+     * pas à la connaître : elle reçoit un prédicat, l'interroge, et arbitre.
+     *
+     * Ordre des opérations, volontaire et non négociable :
+     *   1. session obligatoire → 401 pour un anonyme ;
+     *   2. prédicat d'appartenance → accès accordé s'il rend `true` ;
+     *   3. sinon `exiger()` → 403 avec EXACTEMENT le message d'avant.
+     *
+     * Le point 3 est ce qui évite un oracle d'existence : un appelant ni
+     * propriétaire ni gradé reçoit 403 sans qu'on lui ait dit si la ressource
+     * existe. Le prédicat doit donc rendre `false` — jamais lever — pour une
+     * ressource absente.
+     *
+     * Le prédicat ne reçoit que l'utilisateur de SESSION : aucune identité ne
+     * peut entrer par un paramètre de requête.
+     *
+     * @param string $exigence Clé de la matrice ou rôle plancher (le repli back-office).
+     * @param callable(array{id:string,email:string,name:string,phone:?string,role:string}):bool $appartient
+     * @return array{id:string,email:string,name:string,phone:?string,role:string}
+     */
+    public static function exigerAppartenanceOu(string $exigence, callable $appartient): array
+    {
+        $utilisateur = self::exigerConnexion();
+
+        if ($appartient($utilisateur) === true) {
+            return $utilisateur;
+        }
+
+        return self::exiger($exigence);
+    }
+
     // ------------------------------------------------------------------
     // Interrogation sans levée d'exception
     // ------------------------------------------------------------------

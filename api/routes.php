@@ -97,7 +97,15 @@ $commandes = new ControleurCommandes($db);
 $routeur->get('/me/orders', Garde::protegeConnecte([$commandes, 'mesCommandes']));
 $routeur->get('/orders', Garde::protege('read', [$commandes, 'lister']));
 $routeur->post('/orders', [$commandes, 'creer']);
-$routeur->get('/orders/:id', Garde::protege('read', [$commandes, 'detail']));
+// GET /orders/:id : `protegeConnecte` et NON `protege('read')`. La garde de rang
+// est descendue DANS le contrôleur, qui seul peut savoir si la commande
+// appartient au compte de la session (`Garde::exigerAppartenanceOu('read', …)`).
+// Le rang `viewer` reste exigé de tout appelant non propriétaire — un anonyme
+// reçoit toujours 401, un client tiers toujours 403.
+// `protege('read')` ici renvoyait 403 au client sur SA propre commande et cassait
+// /checkout/success. Les deux routes voisines restent back-office : changer un
+// statut ou supprimer une commande n'est pas un geste de client.
+$routeur->get('/orders/:id', Garde::protegeConnecte([$commandes, 'detail']));
 $routeur->patch('/orders/:id/status', Garde::protege('update', [$commandes, 'changerStatut']));
 $routeur->delete('/orders/:id', Garde::protege('delete', [$commandes, 'supprimer']));
 

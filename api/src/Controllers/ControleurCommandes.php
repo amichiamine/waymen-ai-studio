@@ -112,17 +112,92 @@ final class ControleurCommandes
         );
     }
 
-    /** GET /orders/:id → { data: Order } ou 404 enveloppé. */
+    /**
+     * GET /orders/:id → { data: Order } ou 404 enveloppé.
+     *
+     * DEUX PORTES, UNE SEULE SERRURE (vague 4.10). La route était gardée par
+     * `Garde::protege('read', …)`, qui exige le rang `viewer` du back-office : un
+     * client voyait donc sa propre commande dans `/me/orders` mais recevait 403
+     * « Action réservée au rôle Lecteur » sur `/orders/<son-id>`. Conséquence
+     * concrète : `/checkout/success` cassée pour TOUS les clients, et suivi de
+     * commande inaccessible. C'est le tunnel d'achat, pas un détail.
+     *
+     * L'accès est désormais accordé si — et SEULEMENT si — l'une des deux
+     * conditions est vraie :
+     *   (a) l'appelant atteint le rang `viewer` (comportement back-office,
+     *       inchangé : aucune régression au sommet, AGENTS.md §6 additivité) ;
+     *   (b) la commande appartient à une fiche client rattachée au COMPTE de la
+     *       session (`fichesClientDuCompte()`, le mécanisme déjà éprouvé de
+     *       `mesCommandes()` — réutilisé, jamais dupliqué).
+     * Tout autre appelant reçoit le MÊME code qu'avant : 401 anonyme, 403 client
+     * tiers, avec le message de refus d'origine.
+     *
+     * L'IDENTITÉ VIENT DE LA SESSION, JAMAIS DE LA REQUÊTE. Aucun repli sur
+     * `?customerId=` : ce provisoire a existé, il a été supprimé volontairement
+     * (voir `mesCommandes()`), et le faire revenir ici rendrait toutes les
+     * commandes lisibles en changeant un chiffre dans l'URL.
+     *
+     * ORDRE DES OPÉRATIONS : la lecture de la ligne précède l'autorisation
+     * — il faut connaître `customer_id` pour trancher — mais RIEN n'est divulgué
+     * avant l'arbitrage. Le 404 reste après, et un appelant refusé reçoit 403
+     * que la commande existe ou non : pas d'oracle d'existence. On ne renvoie
+     * jamais 404 « pour cacher » : 403 reste cohérent avec le reste de l'API.
+     */
     public function detail(Requete $r): Reponse
     {
         $id = $r->param('id');
         $ligne = $this->db->un('SELECT * FROM orders WHERE id = :id', [':id' => $id]);
+
+        // Autorisation AVANT toute divulgation. Revérification volontaire : la
+        // route est derrière `Garde::protegeConnecte`, mais le contrôleur ne
+        // dépend pas de la pose d'un intergiciel pour ne pas fuir de données
+        // (même principe que `mesCommandes()`).
+        Garde::exigerAppartenanceOu(
+            'read',
+            fn (array $utilisateur): bool => $this->commandeAppartientAuCompte($ligne, $utilisateur),
+        );
 
         if ($ligne === null) {
             throw ApiException::introuvable("Aucune commande ne porte l'identifiant « {$id} ».");
         }
 
         return Reponse::ok($this->enDto($ligne, $this->lignesDe([$id])));
+    }
+
+    /**
+     * Vrai si la commande est rattachée à une fiche client du compte connecté.
+     *
+     * Zéro duplication (SKILLS.md, AGENTS.md §6) : la correspondance
+     * compte ↔ fiche(s) est celle de `fichesClientDuCompte()`, la seule et même
+     * règle que `/me/orders`. Les deux routes ne peuvent donc pas diverger — et
+     * c'est exactement ce qui rend le résultat vérifiable : ce que (b) autorise
+     * ici est précisément ce que `/me/orders` liste.
+     *
+     * Ne lève jamais : une commande absente ou une commande invité
+     * (`customer_id` NULL ou vide) rend `false`, et l'appelant retombe sur
+     * l'exigence de rang — donc 403, pas une fuite ni un 404 révélateur.
+     *
+     * @param array<string,mixed>|null $ligne Ligne `orders`, ou null si absente.
+     * @param array{id:string,email:string,name:string,phone:?string,role:string} $utilisateur
+     */
+    private function commandeAppartientAuCompte(?array $ligne, array $utilisateur): bool
+    {
+        if ($ligne === null) {
+            return false;
+        }
+
+        $clientId = (string) ($ligne['customer_id'] ?? '');
+        if ($clientId === '') {
+            // Commande invité : elle n'appartient à aucun compte. Personne ne
+            // se l'approprie en se connectant.
+            return false;
+        }
+
+        return in_array(
+            $clientId,
+            $this->fichesClientDuCompte((string) $utilisateur['email']),
+            true,
+        );
     }
 
     /**
