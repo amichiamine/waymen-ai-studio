@@ -20,6 +20,7 @@ import { Plus, Trash2, Pencil } from "lucide-react";
 import { usePaymentMethodList, usePaymentMethodMutations, toApiError } from "@/data-provider";
 import type { PaymentMethod } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 // Les modes de paiement sont des réglages de boutique (tarification du checkout,
 // activation/désactivation, instructions client). Toutes les mutations utilisent
@@ -45,6 +46,7 @@ export default function AdminPayments() {
   // Autorité = rôle réel de l'utilisateur connecté, jamais le sélecteur de
   // l'en-tête (qui ne peut que rétrograder, et seulement en développement).
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PaymentMethod | null>(null);
   const [form, setForm] = useState<PaymentMethod>({
@@ -73,23 +75,29 @@ export default function AdminPayments() {
     if (
       !guard(
         "manageSettings",
-        editing ? "Modifier le moyen de paiement" : "Ajouter un moyen de paiement",
+        editing
+          ? t("admin.reglages.paiements.garde_modifier")
+          : t("admin.reglages.paiements.garde_ajouter"),
       )
     )
       return;
     if (!form.label.trim()) {
-      toast.error("Libellé requis");
+      toast.error(t("admin.reglages.paiements.toast_libelle_requis"));
       return;
     }
     const id = editing ? form.id : form.id || slugify(form.label);
     if (!editing && paymentMethods.some((m) => m.id === id)) {
-      toast.error("Un moyen de paiement avec cet ID existe déjà");
+      toast.error(t("admin.reglages.paiements.toast_id_existe"));
       return;
     }
     setSaving(true);
     try {
       await upsert({ ...form, id });
-      toast.success(editing ? "Moyen de paiement mis à jour" : "Moyen de paiement ajouté");
+      toast.success(
+        editing
+          ? t("admin.reglages.paiements.toast_mis_a_jour")
+          : t("admin.reglages.paiements.toast_ajoute"),
+      );
       setOpen(false);
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -101,13 +109,13 @@ export default function AdminPayments() {
 
   // Mutation asynchrone — désactive le bouton pendant l'appel.
   async function onDelete(id: string) {
-    if (!confirm("Supprimer ce moyen de paiement ?")) return;
+    if (!confirm(t("admin.reglages.paiements.confirm_supprimer"))) return;
     // Niveau 2 — vérification dans le handler avant toute mutation.
-    if (!guard("manageSettings", "Supprimer le moyen de paiement")) return;
+    if (!guard("manageSettings", t("admin.reglages.paiements.garde_supprimer"))) return;
     setSaving(true);
     try {
       await remove(id);
-      toast.success("Supprimé");
+      toast.success(t("admin.reglages.paiements.toast_supprime"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -119,7 +127,7 @@ export default function AdminPayments() {
   // Mutation asynchrone — désactive le Switch pendant l'appel.
   async function toggleActive(m: PaymentMethod) {
     // Niveau 2 — vérification dans le handler.
-    if (!guard("manageSettings", "Activer / désactiver le moyen de paiement")) return;
+    if (!guard("manageSettings", t("admin.reglages.paiements.garde_toggle"))) return;
     setSaving(true);
     try {
       await upsert({ ...m, active: !m.active });
@@ -133,18 +141,18 @@ export default function AdminPayments() {
 
   return (
     <AdminPageShell
-      title="Paiements"
-      description="Modes de paiement proposés au checkout."
+      title={t("admin.reglages.paiements.titre")}
+      description={t("admin.reglages.paiements.description")}
       actions={
         // Niveau 1 — affichage. Niveau 3 — le <span> porte l'infobulle.
         can("manageSettings") ? (
           <Button onClick={openNew}>
-            <Plus className="me-2 h-4 w-4" /> Nouveau moyen
+            <Plus className="me-2 h-4 w-4" /> {t("admin.reglages.paiements.nouveau_moyen")}
           </Button>
         ) : (
           <span title={denyReason("manageSettings")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Nouveau moyen
+              <Plus className="me-2 h-4 w-4" /> {t("admin.reglages.paiements.nouveau_moyen")}
             </Button>
           </span>
         )
@@ -166,7 +174,7 @@ export default function AdminPayments() {
         {loading ? (
           <>
             <span className="sr-only" aria-busy="true">
-              Chargement des modes de paiement…
+              {t("admin.reglages.paiements.chargement")}
             </span>
             {Array.from({ length: 3 }, (_, i) => (
               <div key={i} className="h-20 animate-pulse rounded-lg border bg-card" />
@@ -181,7 +189,9 @@ export default function AdminPayments() {
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{m.label}</p>
                       <Badge variant={m.active ? "default" : "secondary"}>
-                        {m.active ? "Actif" : "Inactif"}
+                        {m.active
+                          ? t("admin.reglages.paiements.badge_actif")
+                          : t("admin.reglages.paiements.badge_inactif")}
                       </Badge>
                       <span className="rounded bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
                         {m.id}
@@ -192,7 +202,7 @@ export default function AdminPayments() {
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                       <Label htmlFor={`sw-${m.id}`} className="text-xs text-muted-foreground">
-                        Actif
+                        {t("admin.reglages.paiements.label_actif")}
                       </Label>
                       {/* Niveau 3 — le <span> porte l'infobulle car Switch disabled
                           a pointer-events-none. */}
@@ -214,27 +224,33 @@ export default function AdminPayments() {
                         variant="ghost"
                         size="icon"
                         onClick={() => openEdit(m)}
-                        title="Modifier"
+                        title={t("admin.socle.commun.modifier")}
+                        aria-label={t("admin.socle.commun.modifier")}
                         disabled={saving}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     ) : (
                       <span title={denyReason("manageSettings")} className="inline-flex">
-                        <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled
+                          aria-label={t("admin.socle.commun.modifier")}
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </span>
                     )}
                     {/* Niveau 1 — bouton supprimer. */}
                     <span
-                      title={denyReason("manageSettings") ?? "Supprimer"}
+                      title={denyReason("manageSettings") ?? t("admin.socle.commun.supprimer")}
                       className="inline-flex align-middle"
                     >
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Supprimer"
+                        aria-label={t("admin.socle.commun.supprimer")}
                         disabled={!can("manageSettings") || saving}
                         onClick={() => onDelete(m.id)}
                       >
@@ -247,7 +263,7 @@ export default function AdminPayments() {
             ))}
             {paymentMethods.length === 0 && (
               <div className="rounded-md border border-dashed p-12 text-center text-sm text-muted-foreground">
-                Aucun moyen de paiement.
+                {t("admin.reglages.paiements.vide_aucun")}
               </div>
             )}
           </>
@@ -258,21 +274,23 @@ export default function AdminPayments() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editing ? "Modifier le moyen de paiement" : "Nouveau moyen de paiement"}
+              {editing
+                ? t("admin.reglages.paiements.dialog_modifier_titre")
+                : t("admin.reglages.paiements.dialog_nouveau_titre")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Libellé</Label>
+              <Label>{t("admin.reglages.paiements.champ_libelle")}</Label>
               <Input
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
-                placeholder="Paiement à la livraison"
+                placeholder={t("admin.reglages.paiements.champ_libelle_placeholder")}
                 disabled={saving}
               />
             </div>
             <div>
-              <Label>Identifiant (ID)</Label>
+              <Label>{t("admin.reglages.paiements.champ_id")}</Label>
               <Input
                 value={form.id || slugify(form.label)}
                 disabled={!!editing || saving}
@@ -281,7 +299,7 @@ export default function AdminPayments() {
               />
             </div>
             <div>
-              <Label>Instructions (affichées au client)</Label>
+              <Label>{t("admin.reglages.paiements.champ_instructions")}</Label>
               <Textarea
                 rows={3}
                 value={form.instructions}
@@ -290,7 +308,7 @@ export default function AdminPayments() {
               />
             </div>
             <div className="flex items-center justify-between rounded-md border p-2">
-              <Label className="mb-0">Actif</Label>
+              <Label className="mb-0">{t("admin.reglages.paiements.label_actif")}</Label>
               <Switch
                 checked={form.active}
                 onCheckedChange={(val) => setForm({ ...form, active: val })}
@@ -300,10 +318,14 @@ export default function AdminPayments() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-              Annuler
+              {t("admin.socle.confirmation.annuler")}
             </Button>
             <Button onClick={save} disabled={saving}>
-              {saving ? "Enregistrement…" : editing ? "Enregistrer" : "Créer"}
+              {saving
+                ? t("admin.reglages.paiements.btn_enregistrement")
+                : editing
+                  ? t("admin.socle.commun.enregistrer")
+                  : t("admin.reglages.paiements.btn_creer")}
             </Button>
           </DialogFooter>
         </DialogContent>

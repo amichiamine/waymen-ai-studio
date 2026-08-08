@@ -35,19 +35,13 @@ import type { AdminUserRole } from "@/lib/admin-store";
 import type { AdminUser } from "@/api/types";
 import type { AdminUserPayload } from "@/api/resources/users";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 // La page est CONSULTABLE par les administrateurs (read), mais toutes les
 // mutations (créer, modifier, supprimer, changer de rôle, changer un mot de
 // passe) sont réservées au propriétaire via `manageUsers`. Sans cela, un
 // `admin` pourrait se promouvoir `owner` en deux clics — élévation de
 // privilèges. Voir docs/PERMISSIONS.md §2 justification 3.
-
-const ROLE_LABEL: Record<AdminUserRole, string> = {
-  owner: "Propriétaire",
-  admin: "Administrateur",
-  editor: "Éditeur",
-  viewer: "Lecteur",
-};
 
 // Le schéma de validation distingue la création (password obligatoire) de la
 // modification (password facultatif). Le DTO AdminUserPayload exclut password
@@ -66,6 +60,7 @@ export default function AdminUsers() {
   const { data: users, loading, error } = useUserList();
   const { create, update, remove, setPassword } = useUserMutations();
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [v, setV] = useState<FormValues>({
@@ -96,7 +91,7 @@ export default function AdminUsers() {
 
   async function save() {
     // Niveau 2 — vérification impérative dans le handler, avant toute mutation.
-    if (!guard("manageUsers", "Enregistrer l'utilisateur")) return;
+    if (!guard("manageUsers", t("admin.reglages.utilisateurs.garde_enregistrer"))) return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Record<string, string> = {};
@@ -107,15 +102,15 @@ export default function AdminUsers() {
       return;
     }
     if (!v.id && users.some((u) => u.email.toLowerCase() === p.data.email.toLowerCase())) {
-      setErr({ email: "Email déjà utilisé" });
+      setErr({ email: t("admin.reglages.utilisateurs.validation_email_utilise") });
       return;
     }
     if (!v.id && (!p.data.password || p.data.password.length < 6)) {
-      setErr({ password: "Mot de passe (6 caractères min.) requis pour un nouveau compte" });
+      setErr({ password: t("admin.reglages.utilisateurs.validation_mdp_requis") });
       return;
     }
     if (v.id && p.data.password && p.data.password.length < 6) {
-      setErr({ password: "6 caractères minimum" });
+      setErr({ password: t("admin.reglages.utilisateurs.validation_mdp_court") });
       return;
     }
 
@@ -144,14 +139,14 @@ export default function AdminUsers() {
         if (p.data.password && p.data.password.length >= 6) {
           await setPassword(p.data.email, p.data.password);
         }
-        toast.success("Utilisateur mis à jour");
+        toast.success(t("admin.reglages.utilisateurs.toast_mis_a_jour"));
       } else {
         await create(payload);
         // setPassword après création — password ne transite pas dans le DTO.
         if (p.data.password) {
           await setPassword(p.data.email, p.data.password);
         }
-        toast.success("Utilisateur invité");
+        toast.success(t("admin.reglages.utilisateurs.toast_invite"));
       }
       setOpen(false);
     } catch (cause) {
@@ -165,16 +160,16 @@ export default function AdminUsers() {
   async function onDelete(u: AdminUser) {
     // Garde métier conservée — on n'élève pas la permission requise.
     if (u.role === "owner") {
-      toast.error("Impossible de supprimer le propriétaire.");
+      toast.error(t("admin.reglages.utilisateurs.toast_impossible_supprimer_owner"));
       return;
     }
     // Niveau 2 — vérification de la permission avant la mutation de suppression.
-    if (!guard("manageUsers", "Supprimer l'utilisateur")) return;
-    if (!confirm(`Supprimer ${u.name} ?`)) return;
+    if (!guard("manageUsers", t("admin.reglages.utilisateurs.garde_supprimer"))) return;
+    if (!confirm(t("admin.reglages.utilisateurs.confirm_supprimer", { nom: u.name }))) return;
     setSaving(true);
     try {
       await remove(u.id);
-      toast.success("Utilisateur supprimé");
+      toast.success(t("admin.reglages.utilisateurs.toast_supprime"));
     } catch (cause) {
       const apiErr = toApiError(cause);
       toast.error(apiErr.message);
@@ -183,21 +178,32 @@ export default function AdminUsers() {
     }
   }
 
+  // En-têtes de colonnes : text-start explicite pour écraser le text-left en dur
+  // de ui/table.tsx (motif identique à Products.tsx — voir convention §7).
+  const COLONNES: { key: string; align?: "end" }[] = [
+    { key: "admin.reglages.utilisateurs.col_nom" },
+    { key: "admin.reglages.utilisateurs.col_email" },
+    { key: "admin.reglages.utilisateurs.col_role" },
+    { key: "admin.reglages.utilisateurs.col_derniere_connexion" },
+    { key: "admin.reglages.utilisateurs.col_statut" },
+    { key: "admin.socle.commun.actions", align: "end" },
+  ];
+
   return (
     <AdminPageShell
-      title="Utilisateurs & rôles"
-      description={`${users.length} membres de l'équipe.`}
+      title={t("admin.reglages.utilisateurs.titre")}
+      description={t("admin.reglages.utilisateurs.description", { n: users.length })}
       actions={
         // Niveau 1 — le bouton « Inviter » est masqué (bouton désactivé avec
         // infobulle) pour les non-propriétaires.
         can("manageUsers") ? (
           <Button onClick={openNew}>
-            <Plus className="me-2 h-4 w-4" /> Inviter
+            <Plus className="me-2 h-4 w-4" /> {t("admin.reglages.utilisateurs.inviter")}
           </Button>
         ) : (
           <span title={denyReason("manageUsers")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Inviter
+              <Plus className="me-2 h-4 w-4" /> {t("admin.reglages.utilisateurs.inviter")}
             </Button>
           </span>
         )
@@ -215,7 +221,7 @@ export default function AdminUsers() {
 
       {loading ? (
         <div className="overflow-hidden rounded-lg border" aria-busy="true">
-          <span className="sr-only">Chargement…</span>
+          <span className="sr-only">{t("admin.reglages.utilisateurs.chargement")}</span>
           <div className="divide-y">
             {Array.from({ length: 5 }, (_, i) => (
               <div key={i} className="h-14 animate-pulse bg-muted/40" />
@@ -227,19 +233,29 @@ export default function AdminUsers() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Rôle</TableHead>
-                <TableHead>Dernière connexion</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="w-[100px] text-end">Actions</TableHead>
+                {COLONNES.map((c) => (
+                  <TableHead
+                    key={c.key}
+                    className={[
+                      c.key === "admin.socle.commun.actions" ? "w-[100px]" : "",
+                      c.align === "end" ? "text-end" : "text-start",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {t(c.key)}
+                  </TableHead>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
-                    Aucun utilisateur.
+                  <TableCell
+                    colSpan={COLONNES.length}
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    {t("admin.reglages.utilisateurs.vide_aucun")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -248,8 +264,9 @@ export default function AdminUsers() {
                     <TableCell className="font-medium">{u.name}</TableCell>
                     <TableCell className="text-sm">{u.email}</TableCell>
                     <TableCell>
+                      {/* Réutilisation de admin.socle.roles.* — ne pas redéclarer */}
                       <Badge variant={u.role === "owner" ? "default" : "secondary"}>
-                        {ROLE_LABEL[u.role]}
+                        {t(`admin.socle.roles.${u.role}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
@@ -257,9 +274,11 @@ export default function AdminUsers() {
                     </TableCell>
                     <TableCell>
                       {u.active ? (
-                        <Badge>Actif</Badge>
+                        <Badge>{t("admin.reglages.utilisateurs.badge_actif")}</Badge>
                       ) : (
-                        <Badge variant="secondary">Désactivé</Badge>
+                        <Badge variant="secondary">
+                          {t("admin.reglages.utilisateurs.badge_desactive")}
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-end">
@@ -271,6 +290,7 @@ export default function AdminUsers() {
                           size="icon"
                           disabled={saving}
                           onClick={() => openEdit(u)}
+                          aria-label={t("admin.socle.commun.modifier")}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -279,7 +299,12 @@ export default function AdminUsers() {
                           title={denyReason("manageUsers")}
                           className="inline-flex align-middle"
                         >
-                          <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled
+                            aria-label={t("admin.socle.commun.modifier")}
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
                         </span>
@@ -291,6 +316,7 @@ export default function AdminUsers() {
                           size="icon"
                           disabled={saving}
                           onClick={() => onDelete(u)}
+                          aria-label={t("admin.socle.commun.supprimer")}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -299,7 +325,12 @@ export default function AdminUsers() {
                           title={denyReason("manageUsers")}
                           className="inline-flex align-middle"
                         >
-                          <Button variant="ghost" size="icon" disabled aria-label="Supprimer">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled
+                            aria-label={t("admin.socle.commun.supprimer")}
+                          >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </span>
@@ -316,16 +347,20 @@ export default function AdminUsers() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{v.id ? "Modifier l'utilisateur" : "Inviter un membre"}</DialogTitle>
+            <DialogTitle>
+              {v.id
+                ? t("admin.reglages.utilisateurs.dialog_modifier_titre")
+                : t("admin.reglages.utilisateurs.dialog_inviter_titre")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Nom</Label>
+              <Label>{t("admin.reglages.utilisateurs.champ_nom")}</Label>
               <Input value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} />
               {err.name && <p className="mt-1 text-xs text-destructive">{err.name}</p>}
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>{t("admin.reglages.utilisateurs.champ_email")}</Label>
               <Input
                 type="email"
                 value={v.email}
@@ -334,7 +369,7 @@ export default function AdminUsers() {
               {err.email && <p className="mt-1 text-xs text-destructive">{err.email}</p>}
             </div>
             <div>
-              <Label>Rôle</Label>
+              <Label>{t("admin.reglages.utilisateurs.champ_role")}</Label>
               <Select
                 value={v.role}
                 onValueChange={(x) => setV({ ...v, role: x as AdminUserRole })}
@@ -343,16 +378,17 @@ export default function AdminUsers() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="owner">Propriétaire</SelectItem>
-                  <SelectItem value="admin">Administrateur</SelectItem>
-                  <SelectItem value="editor">Éditeur</SelectItem>
-                  <SelectItem value="viewer">Lecteur</SelectItem>
+                  {/* Réutilisation de admin.socle.roles.* — ne pas redéclarer */}
+                  <SelectItem value="owner">{t("admin.socle.roles.owner")}</SelectItem>
+                  <SelectItem value="admin">{t("admin.socle.roles.admin")}</SelectItem>
+                  <SelectItem value="editor">{t("admin.socle.roles.editor")}</SelectItem>
+                  <SelectItem value="viewer">{t("admin.socle.roles.viewer")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center justify-between rounded-md border p-2">
               <Label htmlFor="u-active" className="mb-0">
-                Actif
+                {t("admin.reglages.utilisateurs.champ_actif")}
               </Label>
               <Switch
                 id="u-active"
@@ -362,23 +398,29 @@ export default function AdminUsers() {
             </div>
             <div>
               <Label>
-                {v.id ? "Nouveau mot de passe (laisser vide pour conserver)" : "Mot de passe"}
+                {v.id
+                  ? t("admin.reglages.utilisateurs.champ_mdp_modifier")
+                  : t("admin.reglages.utilisateurs.champ_mdp")}
               </Label>
               <Input
                 type="password"
                 value={v.password ?? ""}
                 onChange={(e) => setV({ ...v, password: e.target.value })}
-                placeholder={v.id ? "••••••" : "6 caractères minimum"}
+                placeholder={
+                  v.id
+                    ? t("admin.reglages.utilisateurs.champ_mdp_placeholder_modifier")
+                    : t("admin.reglages.utilisateurs.champ_mdp_placeholder")
+                }
               />
               {err.password && <p className="mt-1 text-xs text-destructive">{err.password}</p>}
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-              Annuler
+              {t("admin.socle.confirmation.annuler")}
             </Button>
             <Button onClick={save} disabled={saving}>
-              Enregistrer
+              {t("admin.socle.commun.enregistrer")}
             </Button>
           </DialogFooter>
         </DialogContent>
