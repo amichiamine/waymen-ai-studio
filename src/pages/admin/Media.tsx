@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ const fmtSize = (b: number) =>
 
 export default function AdminMedia() {
   const L = useLocalize();
+  const { t } = useI18n();
   const { data: mediaAssets, loading, error } = useMediaAssetList();
   const { data: products } = useProductList();
   const { upload, rename: renameMutation, remove } = useMediaAssetMutations();
@@ -113,29 +114,28 @@ export default function AdminMedia() {
   // au provider, sans la court-circuiter ni la dupliquer.
   const onFiles = async (files: FileList | null) => {
     if (!files) return;
-    if (!guard("create", "Téléverser un média")) return;
+    if (!guard("create", t("admin.catalogue.media.televerser_garde"))) return;
     for (const f of Array.from(files)) {
       if (!f.type.startsWith("image/")) {
-        toast.error(`${f.name} : format non supporté`);
+        toast.error(t("admin.catalogue.media.toast_erreur_format", { nom: f.name }));
         continue;
       }
       if (f.size > MAX) {
-        toast.error(`${f.name} : trop volumineux (>5 Mo)`);
+        toast.error(t("admin.catalogue.media.toast_erreur_taille", { nom: f.name }));
         continue;
       }
 
       // Garde quota global : vérification avant téléversement.
       if (totalSize + f.size > BUDGET) {
-        toast.error(
-          `Quota de la médiathèque atteint (${fmtSize(BUDGET)} max). ` +
-            `Supprimez des images existantes, ou attendez la phase 4 (stockage serveur).`,
-        );
+        toast.error(t("admin.catalogue.media.toast_quota_atteint", { max: fmtSize(BUDGET) }));
         continue;
       }
       if (totalSize + f.size > BUDGET * WARN_THRESHOLD) {
         toast.warning(
-          `Attention : ce téléversement portera la médiathèque à ${fmtSize(totalSize + f.size)} / ${fmtSize(BUDGET)}. ` +
-            `Le stockage serveur (phase 4) lèvera cette limite.`,
+          t("admin.catalogue.media.toast_quota_avertissement", {
+            utilise: fmtSize(totalSize + f.size),
+            total: fmtSize(BUDGET),
+          }),
         );
       }
 
@@ -143,12 +143,11 @@ export default function AdminMedia() {
       // Il vérifie aussi que l'écriture localStorage a réussi en mode mock.
       try {
         await upload(f);
-        toast.success(`${f.name} : téléversé et sauvegardé.`);
+        toast.success(t("admin.catalogue.media.toast_televerse", { nom: f.name }));
       } catch (cause) {
         const err = toApiError(cause);
         toast.error(
-          `${f.name} : l'image n'a pas pu être sauvegardée (${err.message}). ` +
-            `Supprimez des médias pour libérer de l'espace, ou attendez la phase 4.`,
+          t("admin.catalogue.media.toast_erreur_sauvegarde", { nom: f.name, erreur: err.message }),
         );
       }
     }
@@ -156,8 +155,8 @@ export default function AdminMedia() {
 
   const copySrc = (src: string) => {
     navigator.clipboard.writeText(src).then(
-      () => toast.success("URL copiée"),
-      () => toast.error("Impossible de copier"),
+      () => toast.success(t("admin.catalogue.media.toast_url_copiee")),
+      () => toast.error(t("admin.catalogue.media.toast_erreur_copie")),
     );
   };
 
@@ -170,15 +169,15 @@ export default function AdminMedia() {
   // Niveau 2 — vérification dans le handler de renommage (update).
   const saveRename = async () => {
     if (!renameFor) return;
-    if (!guard("update", "Renommer le média")) return;
+    if (!guard("update", t("admin.catalogue.media.renommer_garde"))) return;
     if (!rName.trim()) {
-      toast.error("Nom requis");
+      toast.error(t("admin.catalogue.media.erreur_nom_requis"));
       return;
     }
     setRenameSaving(true);
     try {
       await renameMutation(renameFor.id, rName.trim(), rTag.trim() || undefined);
-      toast.success("Métadonnées mises à jour");
+      toast.success(t("admin.catalogue.media.toast_renomme"));
       setRenameFor(null);
     } catch (cause) {
       const err = toApiError(cause);
@@ -191,13 +190,13 @@ export default function AdminMedia() {
   if (loading) {
     return (
       <AdminPageShell
-        title="Médiathèque"
-        description="Chargement…"
+        title={t("admin.catalogue.media.titre")}
+        description={t("admin.socle.commun.chargement")}
         actions={
           <>
             <input ref={inputRef} type="file" accept="image/*" multiple hidden />
             <Button disabled>
-              <Upload className="me-2 h-4 w-4" /> Téléverser
+              <Upload className="me-2 h-4 w-4" /> {t("admin.catalogue.media.btn_televerser")}
             </Button>
           </>
         }
@@ -216,8 +215,12 @@ export default function AdminMedia() {
 
   return (
     <AdminPageShell
-      title="Médiathèque"
-      description={`${mediaAssets.length} images téléversées · ${products.length} images du catalogue · ${fmtSize(totalSize)} utilisés (limite pratique 5 Mo par fichier).`}
+      title={t("admin.catalogue.media.titre")}
+      description={t("admin.catalogue.media.description", {
+        televerse: String(mediaAssets.length),
+        catalogue: String(products.length),
+        taille: fmtSize(totalSize),
+      })}
       actions={
         // Niveau 1 — désactiver le bouton Téléverser si create est interdit.
         // Niveau 3 — infobulle portée par le <span>.
@@ -232,12 +235,12 @@ export default function AdminMedia() {
           />
           {can("create") ? (
             <Button onClick={() => inputRef.current?.click()} disabled={budgetCritical}>
-              <Upload className="me-2 h-4 w-4" /> Téléverser
+              <Upload className="me-2 h-4 w-4" /> {t("admin.catalogue.media.btn_televerser")}
             </Button>
           ) : (
             <span title={denyReason("create")} className="inline-flex">
               <Button disabled>
-                <Upload className="me-2 h-4 w-4" /> Téléverser
+                <Upload className="me-2 h-4 w-4" /> {t("admin.catalogue.media.btn_televerser")}
               </Button>
             </span>
           )}
@@ -258,7 +261,10 @@ export default function AdminMedia() {
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
-            Espace médiathèque : {fmtSize(totalSize)} / {fmtSize(BUDGET)}
+            {t("admin.catalogue.media.quota_label", {
+              utilise: fmtSize(totalSize),
+              total: fmtSize(BUDGET),
+            })}
           </span>
           <span>{budgetPct} %</span>
         </div>
@@ -273,14 +279,11 @@ export default function AdminMedia() {
           }
         />
         {budgetCritical && (
-          <p className="text-xs text-destructive">
-            Quota atteint — téléversements bloqués. Supprimez des images ou attendez le stockage
-            serveur (phase 4).
-          </p>
+          <p className="text-xs text-destructive">{t("admin.catalogue.media.quota_critique")}</p>
         )}
         {!budgetCritical && budgetWarning && (
           <p className="text-xs text-yellow-600 dark:text-yellow-400">
-            Quota bientôt atteint. Envisagez de supprimer des images inutilisées.
+            {t("admin.catalogue.media.quota_avertissement")}
           </p>
         )}
       </div>
@@ -288,7 +291,7 @@ export default function AdminMedia() {
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Rechercher (nom, tag)…"
+          placeholder={t("admin.catalogue.media.recherche_placeholder")}
           className="ps-9"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -299,7 +302,7 @@ export default function AdminMedia() {
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-12 text-center text-sm text-muted-foreground">
             <ImageIcon className="h-8 w-8" />
-            <p>Aucune image. Cliquez sur « Téléverser » pour ajouter des visuels.</p>
+            <p>{t("admin.catalogue.media.vide_aucune_image")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -328,7 +331,7 @@ export default function AdminMedia() {
                 <div className="flex items-center justify-between gap-1">
                   <span className="truncate text-[10px] text-muted-foreground">
                     {(m as MediaAsset & { fromCatalog?: boolean }).fromCatalog
-                      ? "Catalogue"
+                      ? t("admin.catalogue.media.source_catalogue")
                       : `${fmtSize(m.size)} · ${new Date(m.createdAt).toLocaleDateString("fr-FR")}`}
                   </span>
                   <div className="flex gap-0.5">
@@ -337,7 +340,8 @@ export default function AdminMedia() {
                       size="icon"
                       className="h-6 w-6"
                       onClick={() => copySrc(m.src)}
-                      title="Copier l'URL"
+                      title={t("admin.catalogue.media.copier_url")}
+                      aria-label={t("admin.catalogue.media.copier_url")}
                     >
                       <Copy className="h-3 w-3" />
                     </Button>
@@ -350,7 +354,8 @@ export default function AdminMedia() {
                             size="icon"
                             className="h-6 w-6"
                             onClick={() => openRename(m as MediaAsset)}
-                            title="Renommer"
+                            title={t("admin.catalogue.media.renommer")}
+                            aria-label={t("admin.catalogue.media.renommer")}
                           >
                             <Pencil className="h-3 w-3" />
                           </Button>
@@ -361,14 +366,17 @@ export default function AdminMedia() {
                               size="icon"
                               className="h-6 w-6"
                               disabled
-                              aria-label="Renommer"
+                              aria-label={t("admin.catalogue.media.renommer")}
                             >
                               <Pencil className="h-3 w-3" />
                             </Button>
                           </span>
                         )}
                         {/* Niveau 1 + 3 — supprimer (delete). */}
-                        <span title={denyReason("delete") ?? "Supprimer"} className="inline-flex">
+                        <span
+                          title={denyReason("delete") ?? t("admin.catalogue.media.supprimer")}
+                          className="inline-flex"
+                        >
                           <Button
                             variant="ghost"
                             size="icon"
@@ -376,16 +384,17 @@ export default function AdminMedia() {
                             disabled={!can("delete")}
                             onClick={async () => {
                               // Niveau 2 — vérification dans le handler.
-                              if (!guard("delete", "Supprimer le média")) return;
+                              if (!guard("delete", t("admin.catalogue.media.supprimer_garde")))
+                                return;
                               try {
                                 await remove(m.id);
-                                toast.success("Supprimé");
+                                toast.success(t("admin.catalogue.media.toast_supprime"));
                               } catch (cause) {
                                 const err = toApiError(cause);
                                 toast.error(err.message);
                               }
                             }}
-                            aria-label="Supprimer"
+                            aria-label={t("admin.catalogue.media.supprimer")}
                           >
                             <Trash2 className="h-3 w-3 text-destructive" />
                           </Button>
@@ -415,16 +424,26 @@ export default function AdminMedia() {
                 />
               </div>
               <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
-                <div>Format : {preview.mime || "—"}</div>
-                <div>Taille : {preview.size ? fmtSize(preview.size) : "—"}</div>
                 <div>
-                  Ajouté :{" "}
-                  {preview.createdAt ? new Date(preview.createdAt).toLocaleString("fr-FR") : "—"}
+                  {t("admin.catalogue.media.preview_format", { valeur: preview.mime || "—" })}
+                </div>
+                <div>
+                  {t("admin.catalogue.media.preview_taille", {
+                    valeur: preview.size ? fmtSize(preview.size) : "—",
+                  })}
+                </div>
+                <div>
+                  {t("admin.catalogue.media.preview_ajoute", {
+                    valeur: preview.createdAt
+                      ? new Date(preview.createdAt).toLocaleString("fr-FR")
+                      : "—",
+                  })}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={() => copySrc(preview.src)}>
-                  <Copy className="me-2 h-4 w-4" /> Copier l'URL / data
+                  <Copy className="me-2 h-4 w-4" />
+                  {t("admin.catalogue.media.btn_copier_url_data")}
                 </Button>
               </div>
             </div>
@@ -435,28 +454,34 @@ export default function AdminMedia() {
       <Dialog open={!!renameFor} onOpenChange={(o) => !o && setRenameFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Renommer</DialogTitle>
+            <DialogTitle>{t("admin.catalogue.media.dialog_renommer_titre")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium">Nom</label>
+              <label className="text-xs font-medium">
+                {t("admin.catalogue.media.dialog_label_nom")}
+              </label>
               <Input value={rName} onChange={(e) => setRName(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs font-medium">Tag (optionnel)</label>
+              <label className="text-xs font-medium">
+                {t("admin.catalogue.media.dialog_label_tag")}
+              </label>
               <Input
                 value={rTag}
                 onChange={(e) => setRTag(e.target.value)}
-                placeholder="ex: bannière, produit…"
+                placeholder={t("admin.catalogue.media.dialog_placeholder_tag")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenameFor(null)}>
-              Annuler
+              {t("admin.catalogue.media.dialog_annuler")}
             </Button>
             <Button onClick={saveRename} disabled={renameSaving}>
-              {renameSaving ? "Enregistrement…" : "Enregistrer"}
+              {renameSaving
+                ? t("admin.catalogue.media.dialog_enregistrement")
+                : t("admin.catalogue.media.dialog_enregistrer")}
             </Button>
           </DialogFooter>
         </DialogContent>

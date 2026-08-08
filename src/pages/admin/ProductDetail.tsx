@@ -14,14 +14,19 @@ import {
   useReviewList,
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, useI18n } from "@/lib/i18n";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
   low: "secondary",
   out: "destructive",
 };
-const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
+
+const STOCK_LABEL_KEY: Record<string, string> = {
+  in: "admin.catalogue.commun.stock_in",
+  low: "admin.catalogue.commun.stock_low",
+  out: "admin.catalogue.commun.stock_out",
+};
 
 export default function AdminProductDetail() {
   const { id } = useParams();
@@ -38,18 +43,19 @@ export default function AdminProductDetail() {
    * de rendre un objet `Localized` brut.
    */
   const L = useLocalize();
+  const { t } = useI18n();
   const name = L(product?.name) ?? "";
   const specLine = L(product?.specLine) ?? "";
 
   if (loading) {
     return (
       <AdminPageShell
-        title="Produit"
+        title={t("admin.catalogue.produit_detail.titre_chargement")}
         actions={
           <Link to="/admin/products">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.produit_detail.retour")}
             </Button>
           </Link>
         }
@@ -68,12 +74,12 @@ export default function AdminProductDetail() {
   if (error) {
     return (
       <AdminPageShell
-        title="Produit"
+        title={t("admin.catalogue.produit_detail.titre_chargement")}
         actions={
           <Link to="/admin/products">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.produit_detail.retour")}
             </Button>
           </Link>
         }
@@ -92,17 +98,19 @@ export default function AdminProductDetail() {
   if (!product) {
     return (
       <AdminPageShell
-        title="Produit introuvable"
+        title={t("admin.catalogue.produit_detail.titre_introuvable")}
         actions={
           <Link to="/admin/products">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.produit_detail.retour")}
             </Button>
           </Link>
         }
       >
-        <AdminEmptyState label={`Aucun produit avec l'identifiant « ${id} »`} />
+        <AdminEmptyState
+          label={t("admin.catalogue.produit_detail.vide_introuvable", { id: id ?? "" })}
+        />
       </AdminPageShell>
     );
   }
@@ -137,13 +145,13 @@ export default function AdminProductDetail() {
           <Link to="/admin/products">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.produit_detail.retour")}
             </Button>
           </Link>
           <Link to={`/product/${product.id}`} target="_blank" rel="noreferrer">
             <Button variant="outline">
               <Eye className="me-2 h-4 w-4" />
-              Fiche publique
+              {t("admin.catalogue.produit_detail.fiche_publique")}
             </Button>
           </Link>
           {/* Niveau 1 — désactiver le bouton Modifier si update est interdit.    */}
@@ -152,14 +160,14 @@ export default function AdminProductDetail() {
             <Link to={`/admin/products/${product.id}`}>
               <Button>
                 <Pencil className="me-2 h-4 w-4" />
-                Modifier
+                {t("admin.catalogue.produit_detail.modifier")}
               </Button>
             </Link>
           ) : (
             <span title={denyReason("update")} className="inline-flex">
               <Button disabled>
                 <Pencil className="me-2 h-4 w-4" />
-                Modifier
+                {t("admin.catalogue.produit_detail.modifier")}
               </Button>
             </span>
           )}
@@ -181,9 +189,19 @@ export default function AdminProductDetail() {
               )}
             </div>
             <div className="flex flex-wrap gap-1">
-              <Badge variant={STOCK_VARIANT[product.stock]}>{STOCK_LABEL[product.stock]}</Badge>
-              {product.bestSeller && <Badge variant="outline">Best-seller</Badge>}
-              {product.sale && <Badge variant="outline">Promotion</Badge>}
+              <Badge variant={STOCK_VARIANT[product.stock]}>
+                {t(STOCK_LABEL_KEY[product.stock])}
+              </Badge>
+              {product.bestSeller && (
+                <Badge variant="outline">
+                  {t("admin.catalogue.produit_detail.badge_bestseller")}
+                </Badge>
+              )}
+              {product.sale && (
+                <Badge variant="outline">
+                  {t("admin.catalogue.produit_detail.badge_promotion")}
+                </Badge>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -191,7 +209,7 @@ export default function AdminProductDetail() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Résumé</CardTitle>
+              <CardTitle>{t("admin.catalogue.produit_detail.section_resume")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <p>{specLine}</p>
@@ -211,20 +229,26 @@ export default function AdminProductDetail() {
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">Unités vendues</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.catalogue.produit_detail.kpi_unites_vendues")}
+                </p>
                 <p className="mt-1 text-xl font-bold">{soldUnits}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">Chiffre d'affaires</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.catalogue.produit_detail.kpi_chiffre_affaires")}
+                </p>
                 <p className="mt-1 text-xl font-bold">{formatDZD(revenue)}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">
-                  Note moyenne ({productReviews.length})
+                  {t("admin.catalogue.produit_detail.kpi_note_moyenne", {
+                    n: productReviews.length,
+                  })}
                 </p>
                 <p className="mt-1 text-xl font-bold">
                   {avgRating ? avgRating.toFixed(1) + " / 5" : "—"}
@@ -238,7 +262,7 @@ export default function AdminProductDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Boxes className="h-4 w-4" />
-                  Catégorie
+                  {t("admin.catalogue.produit_detail.section_categorie")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -258,7 +282,7 @@ export default function AdminProductDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Tag className="h-4 w-4" />
-                  Marque
+                  {t("admin.catalogue.produit_detail.section_marque")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -280,12 +304,16 @@ export default function AdminProductDetail() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Package className="h-4 w-4" />
-                Commandes récentes ({productOrders.length})
+                {t("admin.catalogue.produit_detail.commandes_recentes", {
+                  n: productOrders.length,
+                })}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {productOrders.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucune commande mock associée.</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("admin.catalogue.produit_detail.vide_commandes")}
+                </p>
               ) : (
                 <ul className="divide-y text-sm">
                   {productOrders.slice(0, 6).map((o) => (

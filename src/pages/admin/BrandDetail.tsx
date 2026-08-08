@@ -8,14 +8,19 @@ import { AlertTriangle, ArrowLeft, Pencil, Plus, Tag } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useBrandDetail, useProductList, useCategoryList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, useI18n } from "@/lib/i18n";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
   low: "secondary",
   out: "destructive",
 };
-const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
+
+const STOCK_LABEL_KEY: Record<string, string> = {
+  in: "admin.catalogue.commun.stock_in",
+  low: "admin.catalogue.commun.stock_low",
+  out: "admin.catalogue.commun.stock_out",
+};
 
 export default function AdminBrandDetail() {
   const { id } = useParams();
@@ -24,16 +29,17 @@ export default function AdminBrandDetail() {
   const { data: categories } = useCategoryList();
   const { can, denyReason } = usePermissions();
   const L = useLocalize();
+  const { t } = useI18n();
 
   if (loading) {
     return (
       <AdminPageShell
-        title="Marque"
+        title={t("admin.catalogue.marque_detail.titre_chargement")}
         actions={
           <Link to="/admin/brands">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.marque_detail.retour")}
             </Button>
           </Link>
         }
@@ -51,12 +57,12 @@ export default function AdminBrandDetail() {
   if (error) {
     return (
       <AdminPageShell
-        title="Marque"
+        title={t("admin.catalogue.marque_detail.titre_chargement")}
         actions={
           <Link to="/admin/brands">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.marque_detail.retour")}
             </Button>
           </Link>
         }
@@ -75,17 +81,19 @@ export default function AdminBrandDetail() {
   if (!brand) {
     return (
       <AdminPageShell
-        title="Marque introuvable"
+        title={t("admin.catalogue.marque_detail.titre_introuvable")}
         actions={
           <Link to="/admin/brands">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.marque_detail.retour")}
             </Button>
           </Link>
         }
       >
-        <AdminEmptyState label={`Aucune marque « ${id} »`} />
+        <AdminEmptyState
+          label={t("admin.catalogue.marque_detail.vide_introuvable", { id: id ?? "" })}
+        />
       </AdminPageShell>
     );
   }
@@ -104,7 +112,7 @@ export default function AdminBrandDetail() {
           <Link to="/admin/brands">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.marque_detail.retour")}
             </Button>
           </Link>
           {/* Niveau 1+3 : bouton Modifier (action update sur la marque). */}
@@ -112,14 +120,14 @@ export default function AdminBrandDetail() {
             <Link to={`/admin/brands/${brand.id}`}>
               <Button>
                 <Pencil className="me-2 h-4 w-4" />
-                Modifier
+                {t("admin.catalogue.marque_detail.modifier")}
               </Button>
             </Link>
           ) : (
             <span title={denyReason("update")} className="inline-flex">
               <Button disabled>
                 <Pencil className="me-2 h-4 w-4" />
-                Modifier
+                {t("admin.catalogue.marque_detail.modifier")}
               </Button>
             </span>
           )}
@@ -136,17 +144,21 @@ export default function AdminBrandDetail() {
               <div>
                 <p className="text-lg font-semibold">{brand.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {brand.country ?? "Origine inconnue"}
+                  {brand.country ?? t("admin.catalogue.marque_detail.origine_inconnue")}
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-md border p-2">
-                <p className="text-xs text-muted-foreground">Produits</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.catalogue.marque_detail.kpi_produits")}
+                </p>
                 <p className="text-lg font-bold">{items.length}</p>
               </div>
               <div className="rounded-md border p-2">
-                <p className="text-xs text-muted-foreground">Prix moyen</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.catalogue.marque_detail.kpi_prix_moyen")}
+                </p>
                 <p className="text-lg font-bold">{avg ? formatDZD(avg) : "—"}</p>
               </div>
             </div>
@@ -159,7 +171,9 @@ export default function AdminBrandDetail() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Catégories couvertes ({catsUsed.length})</CardTitle>
+              <CardTitle className="text-base">
+                {t("admin.catalogue.marque_detail.categories_couvertes", { n: catsUsed.length })}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               {catsUsed.length === 0 ? (
@@ -182,20 +196,22 @@ export default function AdminBrandDetail() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Produits ({items.length})</CardTitle>
+              <CardTitle className="text-base">
+                {t("admin.catalogue.marque_detail.produits", { n: items.length })}
+              </CardTitle>
               {/* Niveau 1+3 : raccourci Nouveau produit (action create sur produit). */}
               {can("create") ? (
                 <Link to="/admin/products/new">
                   <Button size="sm" variant="outline">
                     <Plus className="me-2 h-4 w-4" />
-                    Nouveau produit
+                    {t("admin.catalogue.marque_detail.btn_nouveau_produit")}
                   </Button>
                 </Link>
               ) : (
                 <span title={denyReason("create")} className="inline-flex">
                   <Button size="sm" variant="outline" disabled>
                     <Plus className="me-2 h-4 w-4" />
-                    Nouveau produit
+                    {t("admin.catalogue.marque_detail.btn_nouveau_produit")}
                   </Button>
                 </span>
               )}
@@ -203,7 +219,7 @@ export default function AdminBrandDetail() {
             <CardContent>
               {items.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Aucun produit référencé pour cette marque.
+                  {t("admin.catalogue.marque_detail.vide_produits")}
                 </p>
               ) : (
                 <ul className="divide-y">
@@ -224,7 +240,7 @@ export default function AdminBrandDetail() {
                         </Link>
                         <p className="text-xs text-muted-foreground">{L(p.specLine) ?? ""}</p>
                       </div>
-                      <Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge>
+                      <Badge variant={STOCK_VARIANT[p.stock]}>{t(STOCK_LABEL_KEY[p.stock])}</Badge>
                       <span className="w-24 text-end font-medium">{formatDZD(p.price)}</span>
                     </li>
                   ))}

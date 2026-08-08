@@ -19,12 +19,14 @@ import {
 import { useCategoryList, useCategoryMutations, useProductList, toApiError } from "@/data-provider";
 import type { AdminCategory } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function AdminCategories() {
   const { data: categories, loading, error } = useCategoryList();
   const { data: products } = useProductList();
   const { remove } = useCategoryMutations();
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
   const [pending, setPending] = useState<AdminCategory | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -42,13 +44,13 @@ export default function AdminCategories() {
   const confirmDelete = async () => {
     if (!pending) return;
     // Niveau 2 — vérification dans le handler, pas seulement dans le rendu.
-    if (!guard("delete", "Supprimer la catégorie")) return;
+    if (!guard("delete", t("admin.catalogue.categories.supprimer_garde"))) return;
     // Garde métier préservée : refus si des produits sont encore rattachés.
     if (pendingCount > 0) return;
     setDeleting(true);
     try {
       await remove(pending.slug);
-      toast.success(`Catégorie « ${pending.label} » supprimée`);
+      toast.success(t("admin.catalogue.categories.toast_supprimee", { nom: pending.label }));
       setPending(null);
     } catch (cause) {
       const err = toApiError(cause);
@@ -60,7 +62,10 @@ export default function AdminCategories() {
 
   if (loading) {
     return (
-      <AdminPageShell title="Catégories" description="Chargement…">
+      <AdminPageShell
+        title={t("admin.catalogue.categories.titre")}
+        description={t("admin.socle.commun.chargement")}
+      >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="h-64 animate-pulse rounded-lg border bg-muted" />
@@ -72,20 +77,25 @@ export default function AdminCategories() {
 
   return (
     <AdminPageShell
-      title="Catégories"
-      description={`${categories.length} catégories · ${products.length} produits rattachés.`}
+      title={t("admin.catalogue.categories.titre")}
+      description={t("admin.catalogue.categories.description", {
+        n: categories.length,
+        produits: String(products.length),
+      })}
       actions={
         // Niveau 1 — affichage. Niveau 3 — infobulle portée par le <span>.
         can("create") ? (
           <Link to="/admin/categories/new">
             <Button>
-              <Plus className="me-2 h-4 w-4" /> Nouvelle catégorie
+              <Plus className="me-2 h-4 w-4" />
+              {t("admin.catalogue.categories.btn_nouvelle")}
             </Button>
           </Link>
         ) : (
           <span title={denyReason("create")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Nouvelle catégorie
+              <Plus className="me-2 h-4 w-4" />
+              {t("admin.catalogue.categories.btn_nouvelle")}
             </Button>
           </span>
         )
@@ -120,7 +130,7 @@ export default function AdminCategories() {
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                  Pas d'image
+                  {t("admin.catalogue.categories.pas_image")}
                 </div>
               )}
             </Link>
@@ -135,31 +145,43 @@ export default function AdminCategories() {
                 <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{c.description}</p>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{c.count} produits</span>
+                <span className="text-muted-foreground">
+                  {t("admin.catalogue.categories.produits", { n: c.count })}
+                </span>
                 <div className="flex gap-1">
                   {/* Niveau 1+3 : bouton Modifier */}
                   {can("update") ? (
                     <Link to={`/admin/categories/${c.slug}`}>
-                      <Button variant="ghost" size="icon" title="Modifier">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title={t("admin.socle.commun.modifier")}
+                        aria-label={t("admin.socle.commun.modifier")}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </Link>
                   ) : (
                     <span title={denyReason("update")} className="inline-flex">
-                      <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled
+                        aria-label={t("admin.socle.commun.modifier")}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </span>
                   )}
                   {/* Niveau 1+3 : bouton Supprimer */}
                   <span
-                    title={denyReason("delete") ?? "Supprimer"}
+                    title={denyReason("delete") ?? t("admin.socle.commun.supprimer")}
                     className="inline-flex align-middle"
                   >
                     <Button
                       variant="ghost"
                       size="icon"
-                      aria-label="Supprimer"
+                      aria-label={t("admin.socle.commun.supprimer")}
                       disabled={!can("delete")}
                       onClick={() => setPending(c)}
                     >
@@ -170,7 +192,8 @@ export default function AdminCategories() {
                     to={`/admin/categories/${c.slug}/view`}
                     className="flex items-center gap-1 text-primary hover:underline text-xs"
                   >
-                    Détails <ArrowRight className="h-3 w-3" />
+                    {t("admin.catalogue.categories.details")}
+                    <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
               </div>
@@ -180,7 +203,7 @@ export default function AdminCategories() {
 
         {rows.length === 0 && (
           <p className="col-span-full rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            Aucune catégorie.
+            {t("admin.catalogue.categories.vide_aucune")}
           </p>
         )}
       </div>
@@ -188,35 +211,25 @@ export default function AdminCategories() {
       <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer « {pending?.label} » ?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("admin.catalogue.categories.supprimer_titre", { nom: pending?.label ?? "" })}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingCount > 0 ? (
-                <>
-                  Impossible :{" "}
-                  <strong>
-                    {pendingCount} produit{pendingCount > 1 ? "s" : ""}
-                  </strong>{" "}
-                  encore rattaché{pendingCount > 1 ? "s" : ""} à cette catégorie.
-                  <br />
-                  Réassignez-les à une autre catégorie depuis{" "}
-                  <Link to="/admin/products" className="text-primary underline">
-                    /admin/products
-                  </Link>
-                  , puis réessayez.
-                </>
-              ) : (
-                <>Cette action est irréversible. Les paramètres de la catégorie seront perdus.</>
-              )}
+              {pendingCount > 0
+                ? t("admin.catalogue.categories.supprimer_impossible", { n: pendingCount })
+                : t("admin.catalogue.categories.supprimer_confirmation")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("admin.socle.confirmation.annuler")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={pendingCount > 0 || deleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleting ? "Suppression…" : "Supprimer"}
+              {deleting
+                ? t("admin.catalogue.categories.supprimer_en_cours")
+                : t("admin.socle.commun.supprimer")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

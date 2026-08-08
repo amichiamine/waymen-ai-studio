@@ -7,11 +7,13 @@ import { AlertTriangle, Plus, Tag, Pencil } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useBrandList, useProductList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function AdminBrands() {
   const { data: brands, loading, error } = useBrandList();
   const { data: products } = useProductList();
   const { can, denyReason } = usePermissions();
+  const { t } = useI18n();
 
   const rows = useMemo(() => {
     return brands
@@ -29,7 +31,10 @@ export default function AdminBrands() {
 
   if (loading) {
     return (
-      <AdminPageShell title="Marques" description="Chargement…">
+      <AdminPageShell
+        title={t("admin.catalogue.marques.titre")}
+        description={t("admin.socle.commun.chargement")}
+      >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-busy="true">
           {Array.from({ length: 8 }, (_, i) => (
             <div key={i} className="h-32 animate-pulse rounded-lg border bg-muted" />
@@ -41,20 +46,22 @@ export default function AdminBrands() {
 
   return (
     <AdminPageShell
-      title="Marques"
-      description={`${brands.length} marques référencées.`}
+      title={t("admin.catalogue.marques.titre")}
+      description={t("admin.catalogue.marques.description", { n: brands.length })}
       actions={
         // Niveau 1 — affichage. Niveau 3 — infobulle portée par le <span>.
         can("create") ? (
           <Link to="/admin/brands/new">
             <Button>
-              <Plus className="me-2 h-4 w-4" /> Nouvelle marque
+              <Plus className="me-2 h-4 w-4" />
+              {t("admin.catalogue.marques.btn_nouvelle")}
             </Button>
           </Link>
         ) : (
           <span title={denyReason("create")} className="inline-flex">
             <Button disabled>
-              <Plus className="me-2 h-4 w-4" /> Nouvelle marque
+              <Plus className="me-2 h-4 w-4" />
+              {t("admin.catalogue.marques.btn_nouvelle")}
             </Button>
           </span>
         )
@@ -84,7 +91,7 @@ export default function AdminBrands() {
                       {b.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {b.count} produit{b.count > 1 ? "s" : ""}
+                      {t("admin.catalogue.marques.produits", { n: b.count })}
                       {b.country ? ` · ${b.country}` : ""}
                     </p>
                   </div>
@@ -92,13 +99,23 @@ export default function AdminBrands() {
                 {/* Niveau 1+3 : bouton Modifier */}
                 {can("update") ? (
                   <Link to={`/admin/brands/${b.id}`}>
-                    <Button variant="ghost" size="icon" title="Modifier">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title={t("admin.socle.commun.modifier")}
+                      aria-label={t("admin.socle.commun.modifier")}
+                    >
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </Link>
                 ) : (
                   <span title={denyReason("update")} className="inline-flex">
-                    <Button variant="ghost" size="icon" disabled aria-label="Modifier">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled
+                      aria-label={t("admin.socle.commun.modifier")}
+                    >
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </span>
@@ -106,7 +123,7 @@ export default function AdminBrands() {
               </div>
 
               <div className="mt-4 border-t pt-3 text-xs text-muted-foreground">
-                Prix moyen ·{" "}
+                {t("admin.catalogue.marques.prix_moyen")} ·{" "}
                 <span className="font-medium text-foreground">
                   {b.avg ? formatDZD(b.avg) : "—"}
                 </span>

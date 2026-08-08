@@ -18,6 +18,7 @@ import {
   toApiError,
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 const schema = z.object({
   id: z
@@ -42,6 +43,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
   const { data: products } = useProductList();
   const { can, guard, denyReason } = usePermissions();
   const { id } = useParams();
+  const { t } = useI18n();
 
   // useBrandDetail reste monté et inactif quand id est undefined — jamais de hook conditionnel.
   const { data: existing } = useBrandDetail(mode === "edit" ? id : undefined);
@@ -86,7 +88,15 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
     e.preventDefault();
     // Niveau 2 — vérification dans le handler avant toute mutation.
     const perm = mode === "new" ? "create" : "update";
-    if (!guard(perm, mode === "new" ? "Créer la marque" : "Modifier la marque")) return;
+    if (
+      !guard(
+        perm,
+        mode === "new"
+          ? t("admin.catalogue.marque_form.creer_garde")
+          : t("admin.catalogue.marque_form.modifier_garde"),
+      )
+    )
+      return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Partial<Record<keyof V, string>> = {};
@@ -94,17 +104,17 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
         errs[i.path[0] as keyof V] = i.message;
       });
       setErr(errs);
-      toast.error("Corrigez les erreurs du formulaire.");
+      toast.error(t("admin.catalogue.marque_form.toast_form_invalide"));
       return;
     }
     if (mode === "new" && brands.some((b) => b.id === p.data.id)) {
-      setErr({ id: "Ce slug existe déjà" });
-      toast.error("Slug déjà utilisé");
+      setErr({ id: t("admin.catalogue.marque_form.erreur_slug_existant") });
+      toast.error(t("admin.catalogue.marque_form.toast_slug_existant"));
       return;
     }
     if (mode === "new" && brands.some((b) => b.name.toLowerCase() === p.data.name.toLowerCase())) {
-      setErr({ name: "Une marque avec ce nom existe déjà" });
-      toast.error("Nom déjà utilisé");
+      setErr({ name: t("admin.catalogue.marque_form.erreur_nom_existant") });
+      toast.error(t("admin.catalogue.marque_form.toast_nom_existant"));
       return;
     }
     setSaving(true);
@@ -120,7 +130,11 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       } else {
         await updateBrand(p.data.id, payload);
       }
-      toast.success(mode === "new" ? "Marque créée" : "Marque mise à jour");
+      toast.success(
+        mode === "new"
+          ? t("admin.catalogue.marque_form.toast_creee")
+          : t("admin.catalogue.marque_form.toast_mise_a_jour"),
+      );
       nav("/admin/brands");
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -135,16 +149,16 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
   const doDelete = async () => {
     if (!existing) return;
     // Niveau 2 — vérification dans le handler avant toute mutation.
-    if (!guard("delete", "Supprimer la marque")) return;
+    if (!guard("delete", t("admin.catalogue.marque_form.supprimer_garde"))) return;
     // Garde métier préservée : refus si des produits sont encore rattachés.
     if (usedCount > 0) {
-      toast.error(`Impossible : ${usedCount} produit(s) utilisent cette marque.`);
+      toast.error(t("admin.catalogue.marque_form.erreur_produits_utilises", { n: usedCount }));
       return;
     }
     setDeleting(true);
     try {
       await remove(existing.id);
-      toast.success("Marque supprimée");
+      toast.success(t("admin.catalogue.marque_form.toast_supprimee"));
       nav("/admin/brands");
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -159,13 +173,17 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
 
   return (
     <AdminPageShell
-      title={mode === "new" ? "Nouvelle marque" : "Modifier la marque"}
+      title={
+        mode === "new"
+          ? t("admin.catalogue.marque_form.titre_nouveau")
+          : t("admin.catalogue.marque_form.titre_modifier")
+      }
       actions={
         <div className="flex gap-2">
           <Link to="/admin/brands">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.marque_form.retour")}
             </Button>
           </Link>
           {mode === "edit" && existing && (
@@ -177,7 +195,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
                 onClick={() => setConfirmOpen(true)}
               >
                 <Trash2 className="me-2 h-4 w-4" />
-                Supprimer
+                {t("admin.catalogue.marque_form.supprimer")}
               </Button>
             </span>
           )}
@@ -187,12 +205,13 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       <form onSubmit={submit} className="max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle>Informations</CardTitle>
+            <CardTitle>{t("admin.catalogue.marque_form.section_informations")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label>
-                Slug <span className="text-destructive">*</span>
+                {t("admin.catalogue.marque_form.label_slug")}{" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 value={v.id}
@@ -205,7 +224,8 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
             </div>
             <div>
               <Label>
-                Nom <span className="text-destructive">*</span>
+                {t("admin.catalogue.marque_form.label_nom")}{" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 value={v.name}
@@ -215,19 +235,21 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
               {err.name && <p className="mt-1 text-xs text-destructive">{err.name}</p>}
             </div>
             <div>
-              <Label>Pays d'origine</Label>
+              <Label>{t("admin.catalogue.marque_form.label_pays")}</Label>
               <Input value={v.country ?? ""} onChange={(e) => update("country", e.target.value)} />
               {err.country && <p className="mt-1 text-xs text-destructive">{err.country}</p>}
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t("admin.catalogue.marque_form.label_description")}</Label>
               <Textarea
                 rows={3}
                 value={v.description ?? ""}
                 onChange={(e) => update("description", e.target.value)}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                {(v.description ?? "").length}/300
+                {t("admin.catalogue.marque_form.compteur_description", {
+                  n: (v.description ?? "").length,
+                })}
               </p>
               {err.description && (
                 <p className="mt-1 text-xs text-destructive">{err.description}</p>
@@ -238,13 +260,17 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
         <div className="mt-4 flex justify-end gap-2">
           <Link to="/admin/brands">
             <Button variant="outline" type="button">
-              Annuler
+              {t("admin.catalogue.marque_form.annuler")}
             </Button>
           </Link>
           {/* Niveau 1+3 : bouton de soumission désactivé si pas la permission. */}
           <span title={denyReason(formPerm)} className="inline-flex">
             <Button type="submit" disabled={!can(formPerm) || saving}>
-              {saving ? "Enregistrement…" : mode === "new" ? "Créer" : "Enregistrer"}
+              {saving
+                ? t("admin.catalogue.marque_form.enregistrement")
+                : mode === "new"
+                  ? t("admin.catalogue.marque_form.creer")
+                  : t("admin.catalogue.marque_form.enregistrer")}
             </Button>
           </span>
         </div>
@@ -252,22 +278,19 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Supprimer cette marque ?"
+        title={t("admin.catalogue.marque_form.supprimer_titre")}
         description={
-          existing ? (
-            usedCount > 0 ? (
-              <>
-                Impossible de supprimer : <strong>{usedCount}</strong> produit(s) utilisent encore
-                cette marque.
-              </>
-            ) : (
-              <>
-                La marque « <strong>{existing.name}</strong> » sera supprimée définitivement.
-              </>
-            )
-          ) : null
+          existing
+            ? usedCount > 0
+              ? t("admin.catalogue.marque_form.supprimer_impossible", { n: usedCount })
+              : t("admin.catalogue.marque_form.supprimer_confirmation", { nom: existing.name })
+            : null
         }
-        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
+        confirmLabel={
+          deleting
+            ? t("admin.catalogue.marque_form.suppression")
+            : t("admin.catalogue.marque_form.supprimer")
+        }
         destructive
         onConfirm={doDelete}
       />

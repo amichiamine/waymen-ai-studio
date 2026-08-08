@@ -19,6 +19,7 @@ import {
   toApiError,
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { useI18n } from "@/lib/i18n";
 
 const optionalUrl = z
   .string()
@@ -58,6 +59,7 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
   const { data: products } = useProductList();
   const { can, guard, denyReason } = usePermissions();
   const { slug } = useParams();
+  const { t } = useI18n();
 
   // useProductDetail reste monté et inactif quand slug est undefined — jamais de hook conditionnel.
   const { data: existing } = useCategoryDetail(mode === "edit" ? slug : undefined);
@@ -97,7 +99,15 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
     e.preventDefault();
     // Niveau 2 — vérification dans le handler avant toute mutation.
     const perm = mode === "new" ? "create" : "update";
-    if (!guard(perm, mode === "new" ? "Créer la catégorie" : "Modifier la catégorie")) return;
+    if (
+      !guard(
+        perm,
+        mode === "new"
+          ? t("admin.catalogue.categorie_form.creer_garde")
+          : t("admin.catalogue.categorie_form.modifier_garde"),
+      )
+    )
+      return;
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Partial<Record<keyof V, string>> = {};
@@ -105,12 +115,12 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
         errs[i.path[0] as keyof V] = i.message;
       });
       setErr(errs);
-      toast.error("Corrigez les erreurs du formulaire.");
+      toast.error(t("admin.catalogue.categorie_form.toast_form_invalide"));
       return;
     }
     if (mode === "new" && categories.some((c) => c.slug === p.data.slug)) {
-      setErr({ slug: "Ce slug existe déjà" });
-      toast.error("Slug déjà utilisé");
+      setErr({ slug: t("admin.catalogue.categorie_form.erreur_slug_existant") });
+      toast.error(t("admin.catalogue.categorie_form.toast_slug_existant"));
       return;
     }
     setSaving(true);
@@ -126,7 +136,11 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
       } else {
         await updateCategory(p.data.slug, payload);
       }
-      toast.success(mode === "new" ? "Catégorie créée" : "Catégorie mise à jour");
+      toast.success(
+        mode === "new"
+          ? t("admin.catalogue.categorie_form.toast_creee")
+          : t("admin.catalogue.categorie_form.toast_mise_a_jour"),
+      );
       nav("/admin/categories");
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -141,16 +155,16 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
   const doDelete = async () => {
     if (!existing) return;
     // Niveau 2 — vérification dans le handler avant toute mutation.
-    if (!guard("delete", "Supprimer la catégorie")) return;
+    if (!guard("delete", t("admin.catalogue.categorie_form.supprimer_garde"))) return;
     // Garde métier préservée : refus si des produits sont encore rattachés.
     if (usedCount > 0) {
-      toast.error(`Impossible : ${usedCount} produit(s) utilisent cette catégorie.`);
+      toast.error(t("admin.catalogue.categorie_form.erreur_produits_utilises", { n: usedCount }));
       return;
     }
     setDeleting(true);
     try {
       await remove(existing.slug);
-      toast.success("Catégorie supprimée");
+      toast.success(t("admin.catalogue.categorie_form.toast_supprimee"));
       nav("/admin/categories");
     } catch (cause) {
       const apiErr = toApiError(cause);
@@ -165,13 +179,17 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
 
   return (
     <AdminPageShell
-      title={mode === "new" ? "Nouvelle catégorie" : "Modifier la catégorie"}
+      title={
+        mode === "new"
+          ? t("admin.catalogue.categorie_form.titre_nouveau")
+          : t("admin.catalogue.categorie_form.titre_modifier")
+      }
       actions={
         <div className="flex gap-2">
           <Link to="/admin/categories">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.categorie_form.retour")}
             </Button>
           </Link>
           {mode === "edit" && existing && (
@@ -183,7 +201,7 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
                 onClick={() => setConfirmOpen(true)}
               >
                 <Trash2 className="me-2 h-4 w-4" />
-                Supprimer
+                {t("admin.catalogue.categorie_form.supprimer")}
               </Button>
             </span>
           )}
@@ -193,12 +211,13 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
       <form onSubmit={submit} className="max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle>Informations</CardTitle>
+            <CardTitle>{t("admin.catalogue.categorie_form.section_informations")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label>
-                Slug (URL) <span className="text-destructive">*</span>
+                {t("admin.catalogue.categorie_form.label_slug")}{" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 value={v.slug}
@@ -211,7 +230,8 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
             </div>
             <div>
               <Label>
-                Nom affiché <span className="text-destructive">*</span>
+                {t("admin.catalogue.categorie_form.label_nom")}{" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 value={v.label}
@@ -222,7 +242,8 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
             </div>
             <div>
               <Label>
-                Description <span className="text-destructive">*</span>
+                {t("admin.catalogue.categorie_form.label_description")}{" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 rows={3}
@@ -230,13 +251,17 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
                 onChange={(e) => update("description", e.target.value)}
                 aria-invalid={!!err.description}
               />
-              <p className="mt-1 text-xs text-muted-foreground">{v.description.length}/300</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("admin.catalogue.categorie_form.compteur_description", {
+                  n: v.description.length,
+                })}
+              </p>
               {err.description && (
                 <p className="mt-1 text-xs text-destructive">{err.description}</p>
               )}
             </div>
             <div>
-              <Label>Image de couverture (URL, optionnel)</Label>
+              <Label>{t("admin.catalogue.categorie_form.label_image")}</Label>
               <Input value={v.cover ?? ""} onChange={(e) => update("cover", e.target.value)} />
               {err.cover && <p className="mt-1 text-xs text-destructive">{err.cover}</p>}
               {v.cover && (
@@ -250,13 +275,17 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
         <div className="mt-4 flex justify-end gap-2">
           <Link to="/admin/categories">
             <Button variant="outline" type="button">
-              Annuler
+              {t("admin.catalogue.categorie_form.annuler")}
             </Button>
           </Link>
           {/* Niveau 1+3 : bouton de soumission désactivé si pas la permission. */}
           <span title={denyReason(formPerm)} className="inline-flex">
             <Button type="submit" disabled={!can(formPerm) || saving}>
-              {saving ? "Enregistrement…" : mode === "new" ? "Créer" : "Enregistrer"}
+              {saving
+                ? t("admin.catalogue.categorie_form.enregistrement")
+                : mode === "new"
+                  ? t("admin.catalogue.categorie_form.creer")
+                  : t("admin.catalogue.categorie_form.enregistrer")}
             </Button>
           </span>
         </div>
@@ -264,22 +293,21 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Supprimer cette catégorie ?"
+        title={t("admin.catalogue.categorie_form.supprimer_titre")}
         description={
-          existing ? (
-            usedCount > 0 ? (
-              <>
-                Impossible de supprimer : <strong>{usedCount}</strong> produit(s) utilisent encore
-                cette catégorie.
-              </>
-            ) : (
-              <>
-                La catégorie « <strong>{existing.label}</strong> » sera supprimée définitivement.
-              </>
-            )
-          ) : null
+          existing
+            ? usedCount > 0
+              ? t("admin.catalogue.categorie_form.supprimer_impossible", { n: usedCount })
+              : t("admin.catalogue.categorie_form.supprimer_confirmation", {
+                  nom: existing.label,
+                })
+            : null
         }
-        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
+        confirmLabel={
+          deleting
+            ? t("admin.catalogue.categorie_form.suppression")
+            : t("admin.catalogue.categorie_form.supprimer")
+        }
         destructive
         onConfirm={doDelete}
       />

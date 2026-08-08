@@ -31,7 +31,7 @@ import {
 import type { Product, Category } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 import type { Localized } from "@/lib/i18n";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -313,6 +313,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const { can, guard, denyReason } = usePermissions();
   const { create, update: updateProduct, remove } = useProductMutations();
   const L = useLocalize();
+  const { t } = useI18n();
 
   const nav = useNavigate();
   const { id } = useParams();
@@ -344,31 +345,38 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const actionKey = mode === "new" ? "create" : "update";
-    if (!guard(actionKey, mode === "new" ? "Créer le produit" : "Modifier le produit")) return;
+    if (
+      !guard(
+        actionKey,
+        mode === "new"
+          ? t("admin.catalogue.produit_form.creer_garde")
+          : t("admin.catalogue.produit_form.modifier_garde"),
+      )
+    )
+      return;
     const parsed = schema.safeParse(v);
     if (!parsed.success) {
       const errs: Partial<Record<string, string>> = {};
       for (const issue of parsed.error.issues) {
         const path = issue.path.join(".");
         errs[path] = issue.message;
-        // Remonte aussi sur la clé de premier niveau pour l'affichage inline.
         if (issue.path.length > 0) {
           errs[issue.path[0] as string] ??= issue.message;
         }
       }
       setErrors(errs);
-      toast.error("Certains champs sont invalides — corrigez les erreurs en rouge.");
+      toast.error(t("admin.catalogue.produit_form.toast_champs_invalides"));
       return;
     }
     const data = parsed.data;
     if (mode === "new" && products.some((p) => p.id === data.id)) {
-      setErrors({ id: "Cet ID existe déjà" });
-      toast.error("ID déjà utilisé");
+      setErrors({ id: t("admin.catalogue.produit_form.erreur_id_existant") });
+      toast.error(t("admin.catalogue.produit_form.toast_id_existant"));
       return;
     }
     if (!categories.some((c) => c.slug === data.category)) {
-      setErrors({ category: "Catégorie inconnue" });
-      toast.error("Catégorie inconnue");
+      setErrors({ category: t("admin.catalogue.produit_form.erreur_categorie_inconnue") });
+      toast.error(t("admin.catalogue.produit_form.toast_categorie_inconnue"));
       return;
     }
 
@@ -402,7 +410,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       } else {
         await updateProduct(product.id, product);
       }
-      toast.success(mode === "new" ? "Produit créé" : "Produit mis à jour");
+      toast.success(
+        mode === "new"
+          ? t("admin.catalogue.produit_form.toast_cree")
+          : t("admin.catalogue.produit_form.toast_mis_a_jour"),
+      );
       nav("/admin/products");
     } catch (cause) {
       const err = toApiError(cause);
@@ -415,13 +427,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   // Niveau 2 — vérification dans le handler de suppression.
   const doDelete = async () => {
     if (!existing) return;
-    if (!guard("delete", "Supprimer le produit")) return;
+    if (!guard("delete", t("admin.catalogue.produit_form.supprimer_garde"))) return;
     setDeleting(true);
     // Résoudre le nom pour l'affichage dans le toast (jamais interpoler un Localized brut).
     const existingName = L(existing.name) ?? "";
     try {
       await remove(existing.id);
-      toast.success(`« ${existingName} » supprimé`);
+      toast.success(t("admin.catalogue.produit_form.supprimer_description", { nom: existingName }));
       nav("/admin/products");
     } catch (cause) {
       const err = toApiError(cause);
@@ -437,16 +449,30 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   // Nom résolu pour l'affichage dans la boîte de confirmation de suppression.
   const existingName = L(existing?.name) ?? "";
 
+  const STOCK_LABEL_KEY: Record<string, string> = {
+    in: "admin.catalogue.commun.stock_in",
+    low: "admin.catalogue.commun.stock_low",
+    out: "admin.catalogue.commun.stock_out",
+  };
+
   return (
     <AdminPageShell
-      title={mode === "new" ? "Nouveau produit" : "Modifier le produit"}
-      description={mode === "new" ? "Créer une fiche produit." : `Identifiant : ${id}`}
+      title={
+        mode === "new"
+          ? t("admin.catalogue.produit_form.titre_nouveau")
+          : t("admin.catalogue.produit_form.titre_modifier")
+      }
+      description={
+        mode === "new"
+          ? t("admin.catalogue.produit_form.description_nouveau")
+          : t("admin.catalogue.produit_form.description_modifier", { id: id ?? "" })
+      }
       actions={
         <div className="flex gap-2">
           <Link to="/admin/products">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.produit_form.retour")}
             </Button>
           </Link>
           {/* Niveau 1 — masquer / désactiver le bouton de suppression si non autorisé. */}
@@ -455,13 +481,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             (can("delete") ? (
               <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
                 <Trash2 className="me-2 h-4 w-4" />
-                Supprimer
+                {t("admin.catalogue.produit_form.supprimer")}
               </Button>
             ) : (
               <span title={denyReason("delete")} className="inline-flex">
                 <Button variant="destructive" disabled>
                   <Trash2 className="me-2 h-4 w-4" />
-                  Supprimer
+                  {t("admin.catalogue.produit_form.supprimer")}
                 </Button>
               </span>
             ))}
@@ -472,13 +498,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <Card>
             <CardHeader>
-              <CardTitle>Informations</CardTitle>
+              <CardTitle>{t("admin.catalogue.produit_form.section_informations")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Champs non localisés */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label>ID (slug unique)</Label>
+                  <Label>{t("admin.catalogue.produit_form.label_id")}</Label>
                   <Input
                     value={v.id}
                     disabled={mode === "edit"}
@@ -488,7 +514,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   {errors.id && <p className="mt-1 text-xs text-destructive">{errors.id}</p>}
                 </div>
                 <div>
-                  <Label>Marque</Label>
+                  <Label>{t("admin.catalogue.produit_form.label_marque")}</Label>
                   <Input
                     list="brand-list"
                     value={v.brand}
@@ -502,7 +528,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   {errors.brand && <p className="mt-1 text-xs text-destructive">{errors.brand}</p>}
                 </div>
                 <div>
-                  <Label>Catégorie</Label>
+                  <Label>{t("admin.catalogue.produit_form.label_categorie")}</Label>
                   <Select
                     value={v.category}
                     onValueChange={(x) => updateField("category", x as Category)}
@@ -538,7 +564,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 {/* Onglet FR — obligatoire */}
                 <TabsContent value="fr" className="space-y-4 pt-2">
                   <div>
-                    <Label>Nom</Label>
+                    <Label>{t("admin.catalogue.produit_form.label_nom")}</Label>
                     <Input
                       value={v.name.fr}
                       onChange={(e) => updateField("name", { ...v.name, fr: e.target.value })}
@@ -551,7 +577,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     )}
                   </div>
                   <div>
-                    <Label>Ligne de specs (résumé)</Label>
+                    <Label>{t("admin.catalogue.produit_form.label_specs")}</Label>
                     <Input
                       value={v.specLine.fr}
                       onChange={(e) =>
@@ -585,12 +611,10 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 {/* Onglet EN — facultatif */}
                 <TabsContent value="en" className="space-y-4 pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Traductions facultatives. Un produit sans traduction reste valide.
+                    {t("admin.catalogue.produit_form.traductions_facultatives")}
                   </p>
                   <div>
-                    <Label>
-                      Nom <span className="text-muted-foreground">(EN)</span>
-                    </Label>
+                    <Label>{t("admin.catalogue.produit_form.label_nom_en")}</Label>
                     <Input
                       dir="ltr"
                       value={v.name.en ?? ""}
@@ -598,9 +622,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     />
                   </div>
                   <div>
-                    <Label>
-                      Ligne de specs <span className="text-muted-foreground">(EN)</span>
-                    </Label>
+                    <Label>{t("admin.catalogue.produit_form.label_specs_en")}</Label>
                     <Input
                       dir="ltr"
                       value={v.specLine.en ?? ""}
@@ -628,11 +650,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 {/* Onglet AR — facultatif */}
                 <TabsContent value="ar" className="space-y-4 pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Traductions facultatives. Un produit sans traduction reste valide.
+                    {t("admin.catalogue.produit_form.traductions_facultatives")}
                   </p>
                   <div>
                     <Label className="block text-end">
-                      <span className="text-muted-foreground">(AR)</span> الاسم
+                      {t("admin.catalogue.produit_form.label_nom_ar")}
                     </Label>
                     <Input
                       dir="rtl"
@@ -643,7 +665,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   </div>
                   <div>
                     <Label className="block text-end">
-                      <span className="text-muted-foreground">(AR)</span> سطر المواصفات
+                      {t("admin.catalogue.produit_form.label_specs_ar")}
                     </Label>
                     <Input
                       dir="rtl"
@@ -676,11 +698,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
           <div className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Prix & stock</CardTitle>
+                <CardTitle>{t("admin.catalogue.produit_form.section_prix_stock")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <Label>Prix (DA)</Label>
+                  <Label>{t("admin.catalogue.produit_form.label_prix")}</Label>
                   <Input
                     type="number"
                     value={v.price}
@@ -689,7 +711,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   {errors.price && <p className="mt-1 text-xs text-destructive">{errors.price}</p>}
                 </div>
                 <div>
-                  <Label>Ancien prix (optionnel)</Label>
+                  <Label>{t("admin.catalogue.produit_form.label_ancien_prix")}</Label>
                   <Input
                     type="number"
                     value={v.oldPrice as number | ""}
@@ -705,7 +727,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                   )}
                 </div>
                 <div>
-                  <Label>Quantité (unités)</Label>
+                  <Label>{t("admin.catalogue.produit_form.label_quantite")}</Label>
                   <Input
                     type="number"
                     min={0}
@@ -713,11 +735,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     onChange={(e) => updateField("stockQty", Number(e.target.value))}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Le statut se recalcule selon les seuils définis dans /admin/settings.
+                    {t("admin.catalogue.produit_form.hint_quantite")}
                   </p>
                 </div>
                 <div>
-                  <Label>État du stock (surcharge)</Label>
+                  <Label>{t("admin.catalogue.produit_form.label_etat_stock")}</Label>
                   <Select
                     value={v.stock}
                     onValueChange={(x) => updateField("stock", x as "in" | "low" | "out")}
@@ -726,16 +748,16 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="in">En stock</SelectItem>
-                      <SelectItem value="low">Stock faible</SelectItem>
-                      <SelectItem value="out">Rupture</SelectItem>
+                      <SelectItem value="in">{t(STOCK_LABEL_KEY["in"])}</SelectItem>
+                      <SelectItem value="low">{t(STOCK_LABEL_KEY["low"])}</SelectItem>
+                      <SelectItem value="out">{t(STOCK_LABEL_KEY["out"])}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="flex items-center justify-between rounded-md border p-2">
                   <Label htmlFor="bs" className="mb-0">
-                    Best-seller
+                    {t("admin.catalogue.produit_form.label_bestseller")}
                   </Label>
                   <Switch
                     id="bs"
@@ -745,7 +767,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                 </div>
                 <div className="flex items-center justify-between rounded-md border p-2">
                   <Label htmlFor="sale" className="mb-0">
-                    En promotion
+                    {t("admin.catalogue.produit_form.label_promotion")}
                   </Label>
                   <Switch
                     id="sale"
@@ -757,15 +779,17 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Image</CardTitle>
+                <CardTitle>{t("admin.catalogue.produit_form.section_image")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {mediaAssets.length > 0 && (
                   <div>
-                    <Label>Depuis la médiathèque</Label>
+                    <Label>{t("admin.catalogue.produit_form.label_depuis_mediatheque")}</Label>
                     <Select value="" onValueChange={(src) => updateField("image", src)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Choisir un média…" />
+                        <SelectValue
+                          placeholder={t("admin.catalogue.produit_form.placeholder_choisir_media")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {mediaAssets.map((m) => (
@@ -777,11 +801,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     </Select>
                   </div>
                 )}
-                <Label>URL ou chemin</Label>
+                <Label>{t("admin.catalogue.produit_form.label_url_image")}</Label>
                 <Input
                   value={v.image}
                   onChange={(e) => updateField("image", e.target.value)}
-                  placeholder="URL ou chemin de l'image"
+                  placeholder={t("admin.catalogue.produit_form.placeholder_url_image")}
                 />
                 {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
                 {v.image && (
@@ -798,17 +822,23 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         <div className="flex justify-end gap-2">
           <Link to="/admin/products">
             <Button variant="outline" type="button">
-              Annuler
+              {t("admin.catalogue.produit_form.annuler")}
             </Button>
           </Link>
           {can(mutateKey) ? (
             <Button type="submit" disabled={saving}>
-              {saving ? "Enregistrement…" : mode === "new" ? "Créer" : "Enregistrer"}
+              {saving
+                ? t("admin.catalogue.produit_form.enregistrement")
+                : mode === "new"
+                  ? t("admin.catalogue.produit_form.creer")
+                  : t("admin.catalogue.produit_form.enregistrer")}
             </Button>
           ) : (
             <span title={denyReason(mutateKey)} className="inline-flex">
               <Button type="submit" disabled>
-                {mode === "new" ? "Créer" : "Enregistrer"}
+                {mode === "new"
+                  ? t("admin.catalogue.produit_form.creer")
+                  : t("admin.catalogue.produit_form.enregistrer")}
               </Button>
             </span>
           )}
@@ -817,16 +847,17 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Supprimer ce produit ?"
+        title={t("admin.catalogue.produit_form.supprimer_titre")}
         description={
-          existing ? (
-            <>
-              Le produit « <strong>{existingName}</strong> » sera supprimé du catalogue local. Cette
-              action est irréversible.
-            </>
-          ) : null
+          existing
+            ? t("admin.catalogue.produit_form.supprimer_description", { nom: existingName })
+            : null
         }
-        confirmLabel={deleting ? "Suppression…" : "Supprimer"}
+        confirmLabel={
+          deleting
+            ? t("admin.catalogue.produit_form.suppression")
+            : t("admin.catalogue.produit_form.supprimer")
+        }
         destructive
         onConfirm={doDelete}
       />

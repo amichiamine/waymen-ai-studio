@@ -8,14 +8,19 @@ import { AlertTriangle, ArrowLeft, Pencil, Plus } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useCategoryDetail, useProductList, useBrandList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, useI18n } from "@/lib/i18n";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   in: "default",
   low: "secondary",
   out: "destructive",
 };
-const STOCK_LABEL: Record<string, string> = { in: "En stock", low: "Stock faible", out: "Rupture" };
+
+const STOCK_LABEL_KEY: Record<string, string> = {
+  in: "admin.catalogue.commun.stock_in",
+  low: "admin.catalogue.commun.stock_low",
+  out: "admin.catalogue.commun.stock_out",
+};
 
 export default function AdminCategoryDetail() {
   const { slug } = useParams();
@@ -24,16 +29,17 @@ export default function AdminCategoryDetail() {
   const { data: brands } = useBrandList();
   const { can, denyReason } = usePermissions();
   const L = useLocalize();
+  const { t } = useI18n();
 
   if (loading) {
     return (
       <AdminPageShell
-        title="Catégorie"
+        title={t("admin.catalogue.categorie_detail.titre_chargement")}
         actions={
           <Link to="/admin/categories">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.categorie_detail.retour")}
             </Button>
           </Link>
         }
@@ -51,12 +57,12 @@ export default function AdminCategoryDetail() {
   if (error) {
     return (
       <AdminPageShell
-        title="Catégorie"
+        title={t("admin.catalogue.categorie_detail.titre_chargement")}
         actions={
           <Link to="/admin/categories">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.categorie_detail.retour")}
             </Button>
           </Link>
         }
@@ -75,17 +81,19 @@ export default function AdminCategoryDetail() {
   if (!category) {
     return (
       <AdminPageShell
-        title="Catégorie introuvable"
+        title={t("admin.catalogue.categorie_detail.titre_introuvable")}
         actions={
           <Link to="/admin/categories">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.categorie_detail.retour")}
             </Button>
           </Link>
         }
       >
-        <AdminEmptyState label={`Aucune catégorie « ${slug} »`} />
+        <AdminEmptyState
+          label={t("admin.catalogue.categorie_detail.vide_introuvable", { slug: slug ?? "" })}
+        />
       </AdminPageShell>
     );
   }
@@ -104,7 +112,7 @@ export default function AdminCategoryDetail() {
           <Link to="/admin/categories">
             <Button variant="outline">
               <ArrowLeft className="me-2 h-4 w-4" />
-              Retour
+              {t("admin.catalogue.categorie_detail.retour")}
             </Button>
           </Link>
           {/* Niveau 1+3 : bouton Modifier (action update sur la catégorie). */}
@@ -112,14 +120,14 @@ export default function AdminCategoryDetail() {
             <Link to={`/admin/categories/${category.slug}`}>
               <Button>
                 <Pencil className="me-2 h-4 w-4" />
-                Modifier
+                {t("admin.catalogue.categorie_detail.modifier")}
               </Button>
             </Link>
           ) : (
             <span title={denyReason("update")} className="inline-flex">
               <Button disabled>
                 <Pencil className="me-2 h-4 w-4" />
-                Modifier
+                {t("admin.catalogue.categorie_detail.modifier")}
               </Button>
             </span>
           )}
@@ -139,18 +147,22 @@ export default function AdminCategoryDetail() {
             </div>
           ) : (
             <div className="aspect-[16/10] flex items-center justify-center bg-muted text-xs text-muted-foreground">
-              Pas d'image
+              {t("admin.catalogue.categorie_detail.pas_image")}
             </div>
           )}
           <CardContent className="p-5 text-sm">
             <p className="font-mono text-xs text-muted-foreground">/{category.slug}</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="rounded-md border p-2">
-                <p className="text-xs text-muted-foreground">Produits</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.catalogue.categorie_detail.kpi_produits")}
+                </p>
                 <p className="text-lg font-bold">{items.length}</p>
               </div>
               <div className="rounded-md border p-2">
-                <p className="text-xs text-muted-foreground">Prix moyen</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.catalogue.categorie_detail.kpi_prix_moyen")}
+                </p>
                 <p className="text-lg font-bold">{avg ? formatDZD(avg) : "—"}</p>
               </div>
             </div>
@@ -160,7 +172,9 @@ export default function AdminCategoryDetail() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Marques présentes ({brandsUsed.length})</CardTitle>
+              <CardTitle className="text-base">
+                {t("admin.catalogue.categorie_detail.marques_presentes", { n: brandsUsed.length })}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               {brandsUsed.length === 0 ? (
@@ -186,27 +200,31 @@ export default function AdminCategoryDetail() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Produits ({items.length})</CardTitle>
+              <CardTitle className="text-base">
+                {t("admin.catalogue.categorie_detail.produits", { n: items.length })}
+              </CardTitle>
               {/* Niveau 1+3 : raccourci Nouveau produit (action create sur produit). */}
               {can("create") ? (
                 <Link to="/admin/products/new">
                   <Button size="sm" variant="outline">
                     <Plus className="me-2 h-4 w-4" />
-                    Nouveau produit
+                    {t("admin.catalogue.categorie_detail.btn_nouveau_produit")}
                   </Button>
                 </Link>
               ) : (
                 <span title={denyReason("create")} className="inline-flex">
                   <Button size="sm" variant="outline" disabled>
                     <Plus className="me-2 h-4 w-4" />
-                    Nouveau produit
+                    {t("admin.catalogue.categorie_detail.btn_nouveau_produit")}
                   </Button>
                 </span>
               )}
             </CardHeader>
             <CardContent>
               {items.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun produit dans cette catégorie.</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("admin.catalogue.categorie_detail.vide_produits")}
+                </p>
               ) : (
                 <ul className="divide-y">
                   {items.map((p) => (
@@ -228,7 +246,7 @@ export default function AdminCategoryDetail() {
                           {p.brand} · {L(p.specLine) ?? ""}
                         </p>
                       </div>
-                      <Badge variant={STOCK_VARIANT[p.stock]}>{STOCK_LABEL[p.stock]}</Badge>
+                      <Badge variant={STOCK_VARIANT[p.stock]}>{t(STOCK_LABEL_KEY[p.stock])}</Badge>
                       <span className="w-24 text-end font-medium">{formatDZD(p.price)}</span>
                     </li>
                   ))}
