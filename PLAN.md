@@ -823,11 +823,47 @@ installés en développement l'a fait apparaître immédiatement.
   réalité mesurée le 8 août — 26/27 conformes, 0 risques latents, 98 routes,
   dette de tri identifiée (voir §8 vague 4.1).
 
-**Ce qui reste :**
+#### Vague 4.8 — SOLDÉE le 8 août 2026. Phase 4 close.
 
-- [ ] 4.8 — bascule `VITE_API_MODE=http` et recette de bout en bout
-- [ ] `.auditLogs` — écrire dans `audit_logs` depuis les contrôleurs de mutation,
-      puis brancher `useAuditLogList()` (voir `docs/CONFORMITE-API.md` §2.1)
+- [x] `.auditLogs` — classe `KaTech\Journal`, 16 contrôleurs instrumentés,
+      ~55 actions consignées. La table cesse d'être un décor.
+- [x] Configurateur — route `POST /builds`, **prix recalculé côté serveur** à
+      partir de `site_content.builder`, identifiant généré par le serveur,
+      `custom_build = 1`. Le navigateur n'envoie plus aucun prix. Les
+      configurations sortent du catalogue public sans casser le panier, qui les
+      résout désormais par `GET /products/:id`.
+- [x] `GET /orders/:id` — un client peut consulter SA commande, et elle seule.
+      Vérifié : client B sur la commande de A → 403. La page de confirmation
+      après paiement était cassée pour tous les clients.
+- [x] Prérendu au build — 27 URL du sitemap, 1736 caractères de texte en moyenne
+      là où un robot n'en voyait **aucun**. Build 6,5 s → 17,3 s.
+- [x] **Bascule `VITE_API_MODE=http` PRONONCÉE.**
+
+**La recette qui l'autorise** — elle n'a pas été décrétée, elle a été gagnée :
+
+| Épreuve                           | Résultat                                     |
+| --------------------------------- | -------------------------------------------- |
+| `scripts/conformite-api.ts`       | **27 / 27 conformes, 0 divergence**          |
+| `scripts/parcours.mjs` (Chromium) | **38 / 38 étapes, 0 appel réseau en échec**  |
+| `bun run lint && tsc && build`    | verts, 0 erreur                              |
+| `preuve-concurrence.php`          | 2 acceptées, 4 refusées, stock final 0       |
+| `verifier-parite-schema.php`      | 23 tables, 184 colonnes, 25 index, 3 pilotes |
+
+**Ce qui reste, et qui ne bloque pas la mise en ligne :**
+
+- [ ] Tri divergent sous MySQL (`utf8mb4_unicode_ci` contre tri binaire) — 14
+      contrôleurs construisent leur `ORDER BY` eux-mêmes ; le correctif est une
+      normalisation centrale, pas 14 rustines. Voir §8 vague 4.1.
+- [ ] `sort` / `order` absents du mode `mock` : les deux modes ne se comportent
+      pas pareil.
+- [ ] Commande invitée : ni `customerId`, ni fiche client. **Arbitrage produit.**
+- [ ] Administration en français codé en dur : 29 appels `t()` sur 7 fichiers de
+      36, contre 304 côté visiteur. **Décision ouverte, §11.**
+- [ ] Aucun test unitaire : pas de lanceur, pas de configuration. `parcours.mjs`
+      tient lieu de filet, il est désormais en CI.
+- [ ] 5 `text-left` / `text-right` résiduels, dont 3 volontaires pour l'arabe.
+- [ ] En développement seulement : le proxy Vite n'achemine que `/api`, donc
+      `/uploads` n'est pas servi. Sans objet en production.
 
 **Ce qui reste à documenter une fois les autres agents rentrés :**
 les images du catalogue (`public/media/`) et les règles de cache
