@@ -37,6 +37,7 @@ import {
 } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 import { formatDZD } from "@/data/products";
+import { useI18n } from "@/lib/i18n";
 
 // Répartition des permissions — voir docs/PERMISSIONS.md §2 et §3.3 :
 //
@@ -76,6 +77,7 @@ export default function AdminSettings() {
   const { replace: replaceBuilder } = useBuilderStepMutations();
 
   const { can, guard, denyReason } = usePermissions();
+  const { t } = useI18n();
   const [form, setForm] = useState<SiteSettings>(siteSettings);
   const [saving, setSaving] = useState(false);
 
@@ -85,19 +87,19 @@ export default function AdminSettings() {
 
   async function saveSettings() {
     // Niveau 2 — vérification dans l'action avant toute mutation.
-    if (!guard("manageSettings", "Enregistrer les paramètres")) return;
+    if (!guard("manageSettings", t("admin.reglages.parametres.garde_enregistrer"))) return;
     if (form.contactEmail && !/^\S+@\S+\.\S+$/.test(form.contactEmail)) {
-      toast.error("E-mail invalide");
+      toast.error(t("admin.reglages.parametres.toast_email_invalide"));
       return;
     }
     if (form.whatsapp && !/^\d{6,20}$/.test(form.whatsapp)) {
-      toast.error("WhatsApp : chiffres uniquement (avec l'indicatif pays, ex. 213555000000)");
+      toast.error(t("admin.reglages.parametres.toast_whatsapp_invalide"));
       return;
     }
     setSaving(true);
     try {
       await updateSettings(form);
-      toast.success("Paramètres enregistrés");
+      toast.success(t("admin.reglages.parametres.toast_enregistre"));
     } catch (cause) {
       const err = toApiError(cause);
       toast.error(err.message);
@@ -108,13 +110,13 @@ export default function AdminSettings() {
 
   async function resetSettings() {
     // Réinitialiser les réglages courants — même niveau que saveSettings.
-    if (!guard("manageSettings", "Réinitialiser les paramètres")) return;
+    if (!guard("manageSettings", t("admin.reglages.parametres.garde_reinitialiser"))) return;
     setSaving(true);
     try {
       // Le provider ne propose pas de reset vers les valeurs seed ; on passe
       // par la primitive du store (migration douce — DATA-PROVIDER.md §4).
       resetData("siteSettings");
-      toast.success("Paramètres réinitialisés");
+      toast.success(t("admin.reglages.parametres.toast_reinitialise"));
     } catch (cause) {
       const err = toApiError(cause);
       toast.error(err.message);
@@ -132,8 +134,8 @@ export default function AdminSettings() {
 
   return (
     <AdminPageShell
-      title="Paramètres"
-      description="Configuration générale de la boutique et contenu du site."
+      title={t("admin.reglages.parametres.titre")}
+      description={t("admin.reglages.parametres.description")}
     >
       {eSettings && (
         <p
@@ -147,7 +149,7 @@ export default function AdminSettings() {
 
       {lSettings ? (
         <div className="grid gap-6 lg:grid-cols-2" aria-busy="true">
-          <span className="sr-only">Chargement…</span>
+          <span className="sr-only">{t("admin.reglages.parametres.chargement")}</span>
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="h-64 animate-pulse rounded-xl border border-border bg-card" />
           ))}
@@ -157,11 +159,11 @@ export default function AdminSettings() {
           {/* ── Boutique ── manageSettings ─────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <CardTitle>Boutique</CardTitle>
+              <CardTitle>{t("admin.reglages.parametres.carte_boutique_titre")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Nom</Label>
+                <Label>{t("admin.reglages.parametres.champ_nom")}</Label>
                 <Input
                   value={form.storeName}
                   onChange={(e) => set("storeName", e.target.value)}
@@ -169,7 +171,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <Label>E-mail de contact</Label>
+                <Label>{t("admin.reglages.parametres.champ_email_contact")}</Label>
                 <Input
                   type="email"
                   value={form.contactEmail}
@@ -178,7 +180,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <Label>Téléphone</Label>
+                <Label>{t("admin.reglages.parametres.champ_telephone")}</Label>
                 <Input
                   value={form.contactPhone}
                   onChange={(e) => set("contactPhone", e.target.value)}
@@ -187,7 +189,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <Label>WhatsApp (chiffres seulement)</Label>
+                <Label>{t("admin.reglages.parametres.champ_whatsapp")}</Label>
                 <Input
                   value={form.whatsapp}
                   onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))}
@@ -195,25 +197,25 @@ export default function AdminSettings() {
                   disabled={disabledSettings}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Utilisé pour les liens wa.me sur tout le site.
+                  {t("admin.reglages.parametres.champ_whatsapp_aide")}
                 </p>
               </div>
               <div>
-                <Label>Adresse</Label>
+                <Label>{t("admin.reglages.parametres.champ_adresse")}</Label>
                 <Textarea
                   rows={2}
                   value={form.address}
                   onChange={(e) => set("address", e.target.value)}
-                  placeholder="Adresse du siège"
+                  placeholder={t("admin.reglages.parametres.champ_adresse_placeholder")}
                   disabled={disabledSettings}
                 />
               </div>
               <div>
-                <Label>Horaires</Label>
+                <Label>{t("admin.reglages.parametres.champ_horaires")}</Label>
                 <Input
                   value={form.hours}
                   onChange={(e) => set("hours", e.target.value)}
-                  placeholder="Dim → Jeu, 9h – 19h"
+                  placeholder={t("admin.reglages.parametres.champ_horaires_placeholder")}
                   disabled={disabledSettings}
                 />
               </div>
@@ -223,11 +225,11 @@ export default function AdminSettings() {
           {/* ── Options ── manageSettings ───────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <CardTitle>Options</CardTitle>
+              <CardTitle>{t("admin.reglages.parametres.carte_options_titre")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Notifications e-mail</Label>
+                <Label>{t("admin.reglages.parametres.opt_notifications_email")}</Label>
                 {/* Niveau 3 — infobulle sur le Switch quand désactivé. */}
                 <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
                   <Switch
@@ -238,7 +240,7 @@ export default function AdminSettings() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <Label>Sélecteur de langue (FR / AR / EN)</Label>
+                <Label>{t("admin.reglages.parametres.opt_selecteur_langue")}</Label>
                 <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
                   <Switch
                     checked={form.languageSelectorEnabled}
@@ -248,7 +250,7 @@ export default function AdminSettings() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <Label>Masquer la note produit sans avis</Label>
+                <Label>{t("admin.reglages.parametres.opt_masquer_note")}</Label>
                 <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
                   <Switch
                     checked={form.hideRatingWhenNoReviews}
@@ -257,9 +259,9 @@ export default function AdminSettings() {
                   />
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t">
+              <div className="grid grid-cols-2 gap-3 border-t pt-3">
                 <div>
-                  <Label>Seuil « stock faible » (≤)</Label>
+                  <Label>{t("admin.reglages.parametres.seuil_stock_faible")}</Label>
                   <Input
                     type="number"
                     min={0}
@@ -269,7 +271,7 @@ export default function AdminSettings() {
                   />
                 </div>
                 <div>
-                  <Label>Seuil « rupture » (≤)</Label>
+                  <Label>{t("admin.reglages.parametres.seuil_rupture")}</Label>
                   <Input
                     type="number"
                     min={0}
@@ -279,8 +281,7 @@ export default function AdminSettings() {
                   />
                 </div>
                 <p className="col-span-2 text-xs text-muted-foreground">
-                  Les statuts « en stock / faible / rupture » sont recalculés sur toute la vitrine à
-                  l'enregistrement.
+                  {t("admin.reglages.parametres.seuils_aide")}
                 </p>
               </div>
             </CardContent>
@@ -289,14 +290,14 @@ export default function AdminSettings() {
           {/* ── Mode maintenance ── manageCriticalSettings ─────────────────── */}
           <Card>
             <CardHeader>
-              <CardTitle>Mode maintenance</CardTitle>
+              <CardTitle>{t("admin.reglages.parametres.carte_maintenance_titre")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Activer le mode maintenance</Label>
+                  <Label>{t("admin.reglages.parametres.maintenance_activer")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Bloque l'accès public au site. L'admin et /auth restent accessibles.
+                    {t("admin.reglages.parametres.maintenance_aide")}
                   </p>
                 </div>
                 <span title={disabledCritical ? denyReason("manageCriticalSettings") : undefined}>
@@ -308,7 +309,7 @@ export default function AdminSettings() {
                 </span>
               </div>
               <div>
-                <Label>Message affiché</Label>
+                <Label>{t("admin.reglages.parametres.maintenance_message")}</Label>
                 <Textarea
                   rows={3}
                   value={form.maintenanceMessage}
@@ -322,11 +323,11 @@ export default function AdminSettings() {
           {/* ── Bandeau promotionnel ── manageSettings ─────────────────────── */}
           <Card>
             <CardHeader>
-              <CardTitle>Bandeau promotionnel</CardTitle>
+              <CardTitle>{t("admin.reglages.parametres.carte_bandeau_titre")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Afficher le bandeau promo</Label>
+                <Label>{t("admin.reglages.parametres.bandeau_afficher")}</Label>
                 <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
                   <Switch
                     checked={form.showPromoBanner}
@@ -336,7 +337,7 @@ export default function AdminSettings() {
                 </span>
               </div>
               <div>
-                <Label>Message du bandeau</Label>
+                <Label>{t("admin.reglages.parametres.bandeau_message")}</Label>
                 <Input
                   value={form.promoBannerText}
                   onChange={(e) => set("promoBannerText", e.target.value)}
@@ -345,7 +346,7 @@ export default function AdminSettings() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Libellé du bouton</Label>
+                  <Label>{t("admin.reglages.parametres.bandeau_libelle_bouton")}</Label>
                   <Input
                     value={form.promoBannerLabel}
                     onChange={(e) => set("promoBannerLabel", e.target.value)}
@@ -353,7 +354,7 @@ export default function AdminSettings() {
                   />
                 </div>
                 <div>
-                  <Label>Lien du bouton</Label>
+                  <Label>{t("admin.reglages.parametres.bandeau_lien_bouton")}</Label>
                   <Input
                     value={form.promoBannerHref}
                     onChange={(e) => set("promoBannerHref", e.target.value)}
@@ -363,8 +364,7 @@ export default function AdminSettings() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Le bandeau réapparaît automatiquement dès qu'on modifie son texte, son libellé ou
-                son lien.
+                {t("admin.reglages.parametres.bandeau_aide")}
               </p>
             </CardContent>
           </Card>
@@ -372,12 +372,12 @@ export default function AdminSettings() {
           {/* ── Devise & format ── manageSettings ──────────────────────────── */}
           <Card>
             <CardHeader>
-              <CardTitle>Devise & format des prix</CardTitle>
+              <CardTitle>{t("admin.reglages.parametres.carte_devise_titre")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Symbole</Label>
+                  <Label>{t("admin.reglages.parametres.devise_symbole")}</Label>
                   <Input
                     value={form.currencySymbol}
                     onChange={(e) => set("currencySymbol", e.target.value)}
@@ -386,7 +386,7 @@ export default function AdminSettings() {
                   />
                 </div>
                 <div>
-                  <Label>Position</Label>
+                  <Label>{t("admin.reglages.parametres.devise_position")}</Label>
                   <Select
                     value={form.currencyPosition}
                     onValueChange={(v) =>
@@ -398,13 +398,17 @@ export default function AdminSettings() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="suffix">Suffixe (12 000 DA)</SelectItem>
-                      <SelectItem value="prefix">Préfixe (DA 12 000)</SelectItem>
+                      <SelectItem value="suffix">
+                        {t("admin.reglages.parametres.devise_position_suffixe")}
+                      </SelectItem>
+                      <SelectItem value="prefix">
+                        {t("admin.reglages.parametres.devise_position_prefixe")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="col-span-2">
-                  <Label>Séparateur de milliers</Label>
+                  <Label>{t("admin.reglages.parametres.devise_separateur")}</Label>
                   <Select
                     value={form.currencyThousandSeparator || "none"}
                     onValueChange={(v) =>
@@ -419,19 +423,30 @@ export default function AdminSettings() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value=" ">Espace (12 000)</SelectItem>
-                      <SelectItem value=",">Virgule (12,000)</SelectItem>
-                      <SelectItem value=".">Point (12.000)</SelectItem>
-                      <SelectItem value="'">Apostrophe (12'000)</SelectItem>
-                      <SelectItem value="none">Aucun (12000)</SelectItem>
+                      <SelectItem value=" ">
+                        {t("admin.reglages.parametres.devise_sep_espace")}
+                      </SelectItem>
+                      <SelectItem value=",">
+                        {t("admin.reglages.parametres.devise_sep_virgule")}
+                      </SelectItem>
+                      <SelectItem value=".">
+                        {t("admin.reglages.parametres.devise_sep_point")}
+                      </SelectItem>
+                      <SelectItem value="'">
+                        {t("admin.reglages.parametres.devise_sep_apostrophe")}
+                      </SelectItem>
+                      <SelectItem value="none">
+                        {t("admin.reglages.parametres.devise_sep_aucun")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="rounded-md border border-dashed p-3 text-sm">
-                Aperçu : <strong>{formatDZD(123456)}</strong> · <strong>{formatDZD(7500)}</strong>
+                {t("admin.reglages.parametres.devise_apercu")} <strong>{formatDZD(123456)}</strong>{" "}
+                · <strong>{formatDZD(7500)}</strong>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Enregistrez pour appliquer les changements à tout le site.
+                  {t("admin.reglages.parametres.devise_apercu_aide")}
                 </p>
               </div>
             </CardContent>
@@ -443,23 +458,28 @@ export default function AdminSettings() {
         {/* Niveau 1 — affichage des boutons globaux. */}
         {can("manageSettings") ? (
           <Button variant="outline" onClick={resetSettings} disabled={saving}>
-            <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+            <RotateCcw className="me-2 h-4 w-4" />{" "}
+            {t("admin.reglages.parametres.btn_reinitialiser")}
           </Button>
         ) : (
           <span title={denyReason("manageSettings")} className="inline-flex">
             <Button variant="outline" disabled>
-              <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+              <RotateCcw className="me-2 h-4 w-4" />{" "}
+              {t("admin.reglages.parametres.btn_reinitialiser")}
             </Button>
           </span>
         )}
         {can("manageSettings") ? (
           <Button onClick={saveSettings} disabled={saving}>
-            <Save className="me-2 h-4 w-4" /> Enregistrer
+            <Save className="me-2 h-4 w-4" />{" "}
+            {saving
+              ? t("admin.reglages.parametres.btn_enregistrement")
+              : t("admin.reglages.parametres.btn_enregistrer")}
           </Button>
         ) : (
           <span title={denyReason("manageSettings")} className="inline-flex">
             <Button disabled>
-              <Save className="me-2 h-4 w-4" /> Enregistrer
+              <Save className="me-2 h-4 w-4" /> {t("admin.reglages.parametres.btn_enregistrer")}
             </Button>
           </span>
         )}
@@ -469,8 +489,8 @@ export default function AdminSettings() {
 
       {/* manageCriticalSettings : écrase une structure visible en tête de site */}
       <JsonEditorCard<TickerMessage[]>
-        title="Bandeau défilant (messages)"
-        description="Liste des messages du ruban en haut de page."
+        title={t("admin.reglages.parametres.json_tickers_titre")}
+        description={t("admin.reglages.parametres.json_tickers_description")}
         value={tickerMessages}
         permission="manageCriticalSettings"
         onSave={async (v) => {
@@ -486,12 +506,13 @@ export default function AdminSettings() {
         can={can}
         guard={guard}
         denyReason={denyReason}
+        t={t}
       />
 
       {/* manageSettings : liste de noms de marques, impact cosmétique seulement */}
       <JsonEditorCard<string[]>
-        title="Marques défilantes (carrousel)"
-        description="Liste de noms de marques affichés en défilement horizontal."
+        title={t("admin.reglages.parametres.json_marques_titre")}
+        description={t("admin.reglages.parametres.json_marques_description")}
         value={marqueeBrands}
         permission="manageSettings"
         onSave={async (v) => {
@@ -504,12 +525,13 @@ export default function AdminSettings() {
         can={can}
         guard={guard}
         denyReason={denyReason}
+        t={t}
       />
 
       {/* manageSettings : contenu de la page À propos, impact marketing */}
       <JsonEditorCard<AboutValue[]>
-        title="Valeurs — page À propos"
-        description="4 cartes affichées sur /about. icon ∈ shield | truck | headphones | award | star | heart."
+        title={t("admin.reglages.parametres.json_valeurs_titre")}
+        description={t("admin.reglages.parametres.json_valeurs_description")}
         value={aboutValues}
         permission="manageSettings"
         onSave={async (v) => {
@@ -534,12 +556,13 @@ export default function AdminSettings() {
         can={can}
         guard={guard}
         denyReason={denyReason}
+        t={t}
       />
 
       {/* manageCriticalSettings : composants + tarifs du builder, impact métier fort */}
       <JsonEditorCard<BuilderStep[]>
-        title="Étapes du configurateur PC"
-        description="Composants du builder. icon ∈ case | mb | cpu | ram | ssd | gpu | psu | cool."
+        title={t("admin.reglages.parametres.json_builder_titre")}
+        description={t("admin.reglages.parametres.json_builder_description")}
         value={builderSteps}
         permission="manageCriticalSettings"
         onSave={async (v) => {
@@ -571,6 +594,7 @@ export default function AdminSettings() {
         can={can}
         guard={guard}
         denyReason={denyReason}
+        t={t}
       />
     </AdminPageShell>
   );
@@ -589,6 +613,7 @@ function JsonEditorCard<T>({
   can,
   guard,
   denyReason,
+  t,
 }: {
   title: string;
   description: string;
@@ -600,6 +625,7 @@ function JsonEditorCard<T>({
   can: (r: PermissionRequirement) => boolean;
   guard: (r: PermissionRequirement, action?: string) => boolean;
   denyReason: (r: PermissionRequirement) => string | undefined;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
   const [text, setText] = useState(() => JSON.stringify(value, null, 2));
   const [parseError, setParseError] = useState<string | null>(null);
@@ -613,25 +639,26 @@ function JsonEditorCard<T>({
 
   async function commit() {
     // Niveau 2 — vérification dans l'action avant toute mutation.
-    if (!guard(permission, `Sauvegarder ${title}`)) return;
+    if (!guard(permission, t("admin.reglages.parametres.json_garde_sauvegarder", { titre: title })))
+      return;
     let parsed: unknown;
     try {
       parsed = JSON.parse(text);
     } catch {
-      setParseError("JSON invalide");
-      toast.error("JSON invalide");
+      setParseError(t("admin.reglages.parametres.json_json_invalide"));
+      toast.error(t("admin.reglages.parametres.json_json_invalide"));
       return;
     }
     if (!validate(parsed)) {
-      setParseError("Structure invalide");
-      toast.error("Structure invalide");
+      setParseError(t("admin.reglages.parametres.json_structure_invalide"));
+      toast.error(t("admin.reglages.parametres.json_structure_invalide"));
       return;
     }
     setParseError(null);
     setSaving(true);
     try {
       await onSave(parsed as T);
-      toast.success(`${title} — sauvegardé`);
+      toast.success(t("admin.reglages.parametres.json_toast_sauvegarde", { titre: title }));
     } catch (cause) {
       const err = toApiError(cause);
       toast.error(err.message);
@@ -642,11 +669,14 @@ function JsonEditorCard<T>({
 
   async function handleReset() {
     // Niveau 2 — même garde que commit.
-    if (!guard(permission, `Réinitialiser ${title}`)) return;
+    if (
+      !guard(permission, t("admin.reglages.parametres.json_garde_reinitialiser", { titre: title }))
+    )
+      return;
     setSaving(true);
     try {
       await onReset();
-      toast.success(`${title} — réinitialisé`);
+      toast.success(t("admin.reglages.parametres.json_toast_reinitialise", { titre: title }));
     } catch (cause) {
       const err = toApiError(cause);
       toast.error(err.message);
@@ -674,23 +704,29 @@ function JsonEditorCard<T>({
         <div className="flex justify-end gap-2">
           {can(permission) ? (
             <Button variant="outline" size="sm" onClick={handleReset} disabled={saving}>
-              <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+              <RotateCcw className="me-2 h-4 w-4" />{" "}
+              {t("admin.reglages.parametres.btn_reinitialiser")}
             </Button>
           ) : (
             <span title={denyReason(permission)} className="inline-flex">
               <Button variant="outline" size="sm" disabled>
-                <RotateCcw className="me-2 h-4 w-4" /> Réinitialiser
+                <RotateCcw className="me-2 h-4 w-4" />{" "}
+                {t("admin.reglages.parametres.btn_reinitialiser")}
               </Button>
             </span>
           )}
           {can(permission) ? (
             <Button size="sm" onClick={commit} disabled={saving}>
-              <Save className="me-2 h-4 w-4" /> Sauvegarder
+              <Save className="me-2 h-4 w-4" />{" "}
+              {saving
+                ? t("admin.reglages.parametres.json_enregistrement")
+                : t("admin.reglages.parametres.json_btn_sauvegarder")}
             </Button>
           ) : (
             <span title={denyReason(permission)} className="inline-flex">
               <Button size="sm" disabled>
-                <Save className="me-2 h-4 w-4" /> Sauvegarder
+                <Save className="me-2 h-4 w-4" />{" "}
+                {t("admin.reglages.parametres.json_btn_sauvegarder")}
               </Button>
             </span>
           )}
