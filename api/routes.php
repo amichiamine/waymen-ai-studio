@@ -28,6 +28,9 @@ use KaTech\Controllers\ControleurJournal;
 use KaTech\Controllers\ControleurLivraison;
 use KaTech\Controllers\ControleurMaintenance;
 use KaTech\Controllers\ControleurMarques;
+use KaTech\Controllers\ControleurNotion;
+// ControleurNotionWebhook est ecrit par un agent parallele : pas de use ici.
+// L'instanciation est differee dans la closure de /notion/webhook.
 use KaTech\Controllers\ControleurMedias;
 use KaTech\Controllers\ControleurNotifications;
 use KaTech\Controllers\ControleurPaiements;
@@ -237,6 +240,35 @@ $routeur->post('/auth/forgot-password', [$auth, 'motDePasseOublie']);
 $routeur->post('/auth/reset-password', [$auth, 'reinitialiserMotDePasse']);
 $routeur->post('/auth/change-password', [$auth, 'changerMotDePasse']);
 
+// --------------------------------------------------------- Notion / miroir
+// Toutes les routes /notion/* sauf le webhook sont reservees au proprietaire.
+// La garde est posee ICI, visiblement — meme logique que pour /maintenance/*.
+// Le webhook est PUBLIQUE par nature : Notion appelle depuis ses propres
+// serveurs, sans session ni cookie. La securite repose sur la signature
+// HMAC-SHA256 (X-Notion-Signature), verifiee dans ControleurNotionWebhook.
+// ATTENTION : les chemins litteraux (/notion/status, etc.) sont declares AVANT
+// tout chemin parametre eventuel, conformement a la regle de ce fichier.
+$notion = new ControleurNotion($db);
+$routeur->get('/notion/status', Garde::protege('resetData', [$notion, 'etat']));
+$routeur->post('/notion/token', Garde::protege('resetData', [$notion, 'enregistrerToken']));
+$routeur->get('/notion/pages', Garde::protege('resetData', [$notion, 'listerPages']));
+$routeur->post('/notion/base', Garde::protege('resetData', [$notion, 'creerBase']));
+$routeur->patch('/notion/parametres', Garde::protege('resetData', [$notion, 'parametres']));
+$routeur->post('/notion/renvoyer', Garde::protege('resetData', [$notion, 'renvoyer']));
+// Route PUBLIQUE du webhook — ControleurNotionWebhook est ecrit par un autre agent
+// en parallele. La classe est declaree ici pour que la route existe des le deploiement
+// de cette vague ; elle sera effective des que ControleurNotionWebhook.php arrivera.
+// L'instanciation est differee (closure) pour ne pas bloquer le demarrage si le
+// fichier n'est pas encore present.
+$routeur->post('/notion/webhook', static function (Requete $r) use ($db): Reponse {
+    if (!class_exists(ControleurNotionWebhook::class)) {
+        // L'autre agent n'a pas encore poussé — réponse 200 sans traitement.
+        // Notion rejoue les webhooks non traites ; aucun evenement n'est perdu.
+        return Reponse::ok(['recu' => true, 'traite' => false]);
+    }
+    return (new ControleurNotionWebhook($db))->recevoir($r);
+});
+
 // ROUTES PUBLIQUES ASSUMEES, listees ici pour que l'absence de garde soit un
 // choix visible et non un oubli :
 //   GET  /products, /categories, /brands, /blog, /content, /settings/*  → vitrine
@@ -244,5 +276,6 @@ $routeur->post('/auth/change-password', [$auth, 'changerMotDePasse']);
 //   POST /coupons/validate  → verification au panier, avant connexion
 //   POST /subscribers       → inscription a l'infolettre
 //   GET  /products/:id/reviews → avis approuves uniquement (filtre en dur)
+//   POST /notion/webhook    → appele par les serveurs Notion, signature HMAC
 
 return $routeur;
