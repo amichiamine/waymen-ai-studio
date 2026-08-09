@@ -1043,6 +1043,68 @@ client attend la fin de l'envoi. En production avec LiteSpeed/FastCGI,
 
 ---
 
+## 9 quater. Phase 7 — Notion comme miroir des commandes (livrée le 9 août 2026)
+
+### La demande, et ce qui a été écarté
+
+Le commanditaire voulait piloter commandes et suivi depuis **Notion**. La version
+naïve — Notion comme source de vérité des commandes — a été **écartée sur une
+preuve du code, pas sur une opinion** : `ControleurCommandes` décrémente le stock
+par `UPDATE products SET stock_qty = stock_qty - :q WHERE id = :id AND stock_qty >= :qmin`
+**dans la transaction de la commande**. Les produits ne sont donc pas « en lecture
+seule » : couper commandes et produits entre deux systèmes, c'est couper une
+transaction en deux, et perdre l'anti-survente **par construction**. Même motif
+qu'au §9 ter pour l'API HTTPS de Supabase. Notion n'a d'ailleurs ni transaction ni
+écriture groupée, et plafonne à 3 requêtes/seconde.
+
+### Ce qui a été retenu
+
+**Notion est un miroir.** La base reste maîtresse du stock, des prix et des
+paiements ; Notion ne pilote que le **suivi** — statut, transporteur, numéro de
+colis, notes. Aucune architecture nouvelle : l'`Outbox` existante a simplement
+reçu un consommateur de plus, à côté des e-mails.
+
+| Brique                            | Emplacement                                    |
+| --------------------------------- | ---------------------------------------------- |
+| Client, coffre, miroir, doublure  | `api/src/Notion/`, `api/tools/faux-notion.php` |
+| Table de liaison (anti-écho)      | `notion_links`, présente dans les 3 schémas    |
+| Routes de configuration (`owner`) | `ControleurNotion` — 6 routes `/notion/*`      |
+| Webhook signé (publique)          | `ControleurNotionWebhook`                      |
+| Écran d'administration            | `/admin/notion`, traduit fr/en/ar              |
+| Contrat et mode d'emploi          | `docs/NOTION.md`                               |
+
+### Ce qui est garanti, et prouvé
+
+- **Notion éteint, la boutique vend quand même** : commande acceptée en 201,
+  événement en attente, signalé par `GET /maintenance/status`, reparti au réveil.
+- **Anti-survente intacte** avec le miroir armé : 2 acceptées, 4 refusées, stock 0.
+- **Secrets chiffrés au repos** (AES-256-GCM, clé dans `api/.env`) : le token et le
+  jeton de webhook sont **absents en clair d'une sauvegarde téléchargeable**.
+- **Le webhook ne peut pas tout faire** : signature HMAC-SHA256 vérifiée à temps
+  constant, toute tentative de modifier prix, total, quantité ou client est
+  **refusée et tracée**, statut inconnu ignoré, rejeu sans effet, pas d'oracle.
+- **Anti-écho** : une poussée suivie du rappel de Notion ne déclenche aucune boucle.
+
+### Le piège payé comptant, à ne pas réintroduire
+
+La route du webhook a d'abord été écrite avec
+`class_exists(ControleurNotionWebhook::class)` dans `api/routes.php`, fichier **sans
+`namespace`** : sans instruction `use`, le nom se résolvait en
+`\ControleurNotionWebhook` et le test était **toujours faux**. La route répondait
+200 sans jamais vérifier la signature ni rien appliquer. **Un webhook muet qui
+répond 200 est le pire des cas** : Notion le croit livré et ne le rejoue jamais.
+Trouvé par l'agent voisin, pas par le sien — c'est l'intérêt des périmètres
+disjoints et des rapports honnêtes.
+
+### Limites assumées
+
+Un changement de statut fait **au back-office** n'est pas poussé automatiquement
+vers Notion (aucun événement `order.updated` n'existe) : `POST /notion/renvoyer` le
+rattrape. Le webhook n'a été éprouvé que contre la doublure locale — **la recette
+avec un vrai compte Notion reste à faire par le commanditaire**, écran par écran.
+
+---
+
 ## 10. Décisions prises
 
 | Décision                 | Choix                                                                                                  | Date        |
