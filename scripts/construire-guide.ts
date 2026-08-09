@@ -683,6 +683,16 @@ VITE_API_MODE=http SITE_URL=https://votre-domaine.dz bun run build`,
         ar: "بدونه، يتلقّى محرّك البحث الذي يزور الموقع صفحةً فارغة: إذ لا يظهر المحتوى إلا بعد تنفيذ الجافاسكريبت، وليست كل العناكب تفعل ذلك. أما معه فإنّ **المحتوى موجود في الصفحة سلفًا** — فتقرأه غوغل، وتَعرِض معاينات المشاركة على الشبكات الاجتماعية العنوانَ والصورة الصحيحين. وإذا أخفق التصيير المسبق في صفحة ما، تظلّ تلك الصفحة متاحة كالمعتاد: فالتجميع لا يفشل بسبب ذلك.",
       },
       {
+        t: "encadre",
+        genre: "danger",
+        titre: {
+          fr: "Ne laissez pas l'hébergeur construire",
+          ar: "لا تدَع المستضيف يجمِّع",
+        },
+        fr: "**Le site est statique : la compilation se fait sur votre ordinateur, pas chez l'hébergeur.** Vous téléversez ensuite le dossier `dist/` tout prêt. L'API est en PHP — l'hébergeur n'a rien à construire.\n\nSi vous déclenchez la construction directement chez l'hébergeur (bouton « Build » ou pipeline CI), son serveur n'a **pas de navigateur** : le prérendu est silencieusement ignoré. La compilation aboutit, le site semble fonctionner — mais les moteurs de recherche reçoivent des pages vides. Pour une boutique en ligne, c'est une perte de visibilité organique, donc une perte de ventes, **sans qu'aucun message d'erreur ne l'annonce**.\n\nLa marche à suivre complète, geste par geste, est dans `docs/GUIDE-DEPLOIEMENT-HOSTINGER.md`.",
+        ar: "**الموقع ثابت: يجري التجميع على جهازك، لا لدى المستضيف.** وبعدها ترفع مجلّد `dist/` جاهزًا. والواجهة البرمجية بلغة PHP — فالمستضيف ليس لديه ما يجمِّعه.\n\nإن شغّلتَ البناء مباشرةً لدى المستضيف (زرّ «Build» أو خطّ CI)، فإنّ خادمه لا يملك **متصفّحًا**: ويُتجاهَل التصيير المسبق في صمت تامّ. يكتمل التجميع، ويبدو الموقع يعمل — لكنّ محرّكات البحث تتلقّى صفحات فارغة. وبالنسبة إلى متجر إلكتروني، يعني ذلك فقدان الظهور في نتائج البحث، وبالتالي خسارة في المبيعات، **دون أن تُصدر أيّ رسالة خطأ تنبّه إلى ذلك**.\n\nالإجراء الكامل، خطوةً بخطوة، موجود في `docs/GUIDE-DEPLOIEMENT-HOSTINGER.md`.",
+      },
+      {
         t: "p",
         fr: "**Trois vérifications avant d'aller plus loin.** Aucune n'est facultative.",
         ar: "**ثلاثة فحوص قبل المضيّ قدمًا.** ولا واحد منها اختياري.",
