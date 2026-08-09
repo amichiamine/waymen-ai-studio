@@ -28,11 +28,10 @@ use KaTech\Controllers\ControleurJournal;
 use KaTech\Controllers\ControleurLivraison;
 use KaTech\Controllers\ControleurMaintenance;
 use KaTech\Controllers\ControleurMarques;
-use KaTech\Controllers\ControleurNotion;
-// ControleurNotionWebhook est ecrit par un agent parallele : pas de use ici.
-// L'instanciation est differee dans la closure de /notion/webhook.
 use KaTech\Controllers\ControleurMedias;
 use KaTech\Controllers\ControleurNotifications;
+use KaTech\Controllers\ControleurNotion;
+use KaTech\Controllers\ControleurNotionWebhook;
 use KaTech\Controllers\ControleurPaiements;
 use KaTech\Controllers\ControleurProduits;
 use KaTech\Controllers\ControleurStock;
@@ -255,19 +254,20 @@ $routeur->get('/notion/pages', Garde::protege('resetData', [$notion, 'listerPage
 $routeur->post('/notion/base', Garde::protege('resetData', [$notion, 'creerBase']));
 $routeur->patch('/notion/parametres', Garde::protege('resetData', [$notion, 'parametres']));
 $routeur->post('/notion/renvoyer', Garde::protege('resetData', [$notion, 'renvoyer']));
-// Route PUBLIQUE du webhook — ControleurNotionWebhook est ecrit par un autre agent
-// en parallele. La classe est declaree ici pour que la route existe des le deploiement
-// de cette vague ; elle sera effective des que ControleurNotionWebhook.php arrivera.
-// L'instanciation est differee (closure) pour ne pas bloquer le demarrage si le
-// fichier n'est pas encore present.
-$routeur->post('/notion/webhook', static function (Requete $r) use ($db): Reponse {
-    if (!class_exists(ControleurNotionWebhook::class)) {
-        // L'autre agent n'a pas encore poussé — réponse 200 sans traitement.
-        // Notion rejoue les webhooks non traites ; aucun evenement n'est perdu.
-        return Reponse::ok(['recu' => true, 'traite' => false]);
-    }
-    return (new ControleurNotionWebhook($db))->recevoir($r);
-});
+// Route PUBLIQUE du webhook. C'est la SEULE porte non authentifiee en ecriture de
+// l'API : l'identite de l'appelant est etablie par la signature HMAC-SHA256 de
+// l'en-tete `X-Notion-Signature`, verifiee dans ControleurNotionWebhook::recevoir.
+//
+// PIEGE PAYE COMPTANT, 9 aout 2026 — a ne pas reintroduire. Ce bloc a d'abord ete
+// ecrit en differe, avec `class_exists(ControleurNotionWebhook::class)`, parce que
+// la classe etait alors ecrite par un agent parallele. Ce fichier n'a PAS de
+// `namespace` : sans instruction `use`, `ControleurNotionWebhook::class` se resout
+// en `\ControleurNotionWebhook`, qui n'existe pas. Le test etait donc TOUJOURS faux.
+// La route repondait 200 `{recu:true, traite:false}` sans jamais appeler le
+// controleur : signature jamais verifiee, aucun changement Notion jamais applique.
+// Un webhook muet qui repond 200 est le pire des cas — Notion le croit livre et ne
+// le rejoue jamais. L'instanciation est desormais directe, et le `use` est en tete.
+$routeur->post('/notion/webhook', [new ControleurNotionWebhook($db), 'recevoir']);
 
 // ROUTES PUBLIQUES ASSUMEES, listees ici pour que l'absence de garde soit un
 // choix visible et non un oubli :
