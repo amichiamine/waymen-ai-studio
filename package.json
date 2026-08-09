@@ -17,6 +17,7 @@
     "build": "vite build",
     "postbuild": "tsx scripts/prerendu.ts",
     "prerendu": "tsx scripts/prerendu.ts",
+    "paqueter": "tsx scripts/paqueter.ts",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "construire-guide": "tsx scripts/construire-guide.ts",
