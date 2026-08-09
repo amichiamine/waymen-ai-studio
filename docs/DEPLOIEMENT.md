@@ -79,6 +79,16 @@ c'est ce qui décide si le pilote SQLite est utilisable.
 
 ## 3. Construire le site en local
 
+> **Ne pas construire sur le serveur de l'hébergeur.** Trois raisons :
+> (a) ce site est statique — l'API est en PHP, rien ne tourne en Node en
+> production, le serveur n'a rien à construire ; (b) le serveur de l'hébergeur
+> ne dispose pas d'un navigateur, donc le prérendu (`scripts/prerendu.ts`) est
+> sauté silencieusement, et les pages arriveraient vides pour les moteurs de
+> recherche ; (c) avant le 9 août 2026, le build échouait sur
+> `bunx: command not found` — depuis ce correctif, le build aboutit mais sans
+> prérendu. Le conseil tient quelle que soit la version. Construire en local,
+> téléverser `dist/`.
+
 ```bash
 bun install
 VITE_API_MODE=http bun run build      # produit dist/ (~17 s avec prérendu)

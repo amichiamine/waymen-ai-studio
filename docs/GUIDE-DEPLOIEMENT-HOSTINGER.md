@@ -70,6 +70,41 @@ sont à refaire que lorsque le site change.
 
 ---
 
+> ## ⛔ Ne laissez pas l'hébergeur construire le site à votre place
+>
+> Hostinger propose un constructeur Node.js. **N'utilisez pas cette
+> fonctionnalité pour ce projet.** Si vous l'avez déjà lancé et obtenu
+> une erreur, lisez la suite — vous êtes au bon endroit.
+>
+> **Raison 1 — Ce site n'a pas besoin d'un serveur Node.** Le résultat de la
+> compilation est un ensemble de fichiers HTML, CSS et JavaScript que n'importe
+> quel hébergeur peut servir. L'API est en PHP. Rien ne tourne en Node en
+> production : construire sur le serveur ne sert à rien.
+>
+> **Raison 2 — Sans navigateur, pas de prérendu, et le site devient invisible
+> pour Google.** La compilation produit une version de chaque page lisible par
+> les moteurs de recherche (le prérendu). Cette étape exige un navigateur web,
+> que le serveur de l'hébergeur n'a pas. Sans prérendu, Google reçoit une page
+> vide et ne peut pas indexer vos produits. **Une boutique que Google ne voit
+> pas perd des ventes.** C'est la raison la plus importante, et elle ne
+> disparaîtra jamais quelle que soit la version du projet.
+>
+> **Raison 3 — Historique (pour qui cherche un message d'erreur).** Avant le
+> 9 août 2026, tenter de construire chez l'hébergeur échouait immédiatement
+> avec le message :
+>
+> ```
+> sh: line 1: bunx: command not found
+> ```
+>
+> Ce n'est plus le cas depuis le correctif du 9 août 2026 : le build
+> aboutit maintenant même sans `bun`. Mais il le fait **sans prérendu** —
+> sans le signaler clairement. Le conseil reste donc le même : construisez
+> sur votre ordinateur, et téléversez le résultat. Les étapes 2 et 3
+> décrivent exactement comment.
+
+---
+
 ## Étape 0 — Ce qu'il faut avoir sous la main
 
 Rassemblez ces éléments **avant** de commencer. Les chercher en cours de route
@@ -771,6 +806,35 @@ déploiement à la racine du domaine.
 ## Ce qui ne marche pas, et pourquoi
 
 Chaque symptôme, sa cause, son geste.
+
+### J'ai vu `bunx: command not found` chez l'hébergeur
+
+Vous avez lancé le constructeur Node.js de Hostinger sur ce projet.
+Depuis le 9 août 2026, ce message n'apparaît plus — mais le problème de fond
+reste entier : l'hébergeur ne dispose pas du navigateur nécessaire au prérendu.
+Le site se construit, mais il arrive **sans les pages prérendues**, ce que
+Google ne peut pas lire.
+
+**Le geste** : ignorez le constructeur de l'hébergeur. Construisez sur votre
+ordinateur (étapes 2 et 3), puis téléversez le dossier `dist/` produit.
+
+### Mon site est en ligne mais introuvable sur Google
+
+Si vous avez construit sur l'hébergeur (ou reçu un `dist/` construit sans
+navigateur disponible), le prérendu n'a pas été produit. Chaque page du site
+est une page vide pour les moteurs de recherche.
+
+Pour vérifier : ouvrez la source de la page d'accueil (clic droit →
+« Afficher le code source ») depuis un navigateur. Si le `<body>` ne contient
+qu'une balise `<div id="root"></div>` sans texte visible, le prérendu est
+absent.
+
+**Le geste** : recompilez sur votre ordinateur avec la commande de l'étape 3.
+La sortie doit afficher des lignes du type
+`[prerendu] 27 route(s) du sitemap…`. Retéléversez ensuite le contenu de
+`dist/` (les sous-dossiers `about/`, `blog/`, `category/`, `contact/`… font
+partie du résultat prérendu). **Ne touchez pas** à `api/.env`, ni au dossier
+`uploads/`, ni à `katech-data/`.
 
 ### La page est entièrement blanche
 
