@@ -266,12 +266,10 @@ function main() {
   log(`  Chemin               : ${ZIP_OUT}`);
   log(``);
   log(`Pour déployer :`);
-  log(`  1. S'envoyer katech-site.zip par e-mail ou le téléverser directement.`);
-  log(`  2. Dans hPanel → Gestionnaire de fichiers, déposer le zip dans public_html.`);
-  log(`  3. Extraire sur place (clic droit → Extraire).`);
-  log(`  4. Créer api/.env depuis api/.env.example et renseigner les variables.`);
-  log(`  5. Ouvrir https://votre-domaine/api/install.php`);
-  log(`  6. Suivre docs/DEPLOIEMENT.md pour le reste.`);
+  log(`  1. Dans hPanel → Gestionnaire de fichiers, déposer katech-site.zip dans public_html.`);
+  log(`  2. Extraire sur place (clic droit → Extraire).`);
+  log(`  3. Ouvrir https://votre-domaine/api/install.php et suivre les trois écrans.`);
+  log(`  4. Cliquer le bouton « Supprimer ce fichier » à la fin de l'assistant.`);
 }
 
 main();

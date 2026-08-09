@@ -115,16 +115,16 @@ comme un succès. Rapport : `docs/CONFORMITE-API.md`.
 La procédure complète sans SSH est dans `docs/DEPLOIEMENT.md`.
 Résumé :
 
-1. `VITE_API_MODE=http bun run build` — produit `dist/` (Vite ~6 s, puis
-   prérendu des 27 URL ~17 s au total). La variable `VITE_API_MODE=http` est
-   désormais la valeur par défaut de `.env.example` ; elle est obligatoire pour
-   tout déploiement réel. Désactiver le prérendu : `PRERENDU=0 bun run build`.
-2. Téléverser le contenu de `dist/` dans `public_html/` et `api/` dans
-   `public_html/api/`. Le prérendu produit des sous-dossiers
-   (`about/`, `blog/`, `category/`…) — les téléverser aussi.
-3. Créer `api/.env` à partir de `api/.env.example`. Choisir `DB_DRIVER`
-   (`sqlite`, `mysql` ou `pgsql`).
-4. Ouvrir `/api/install.php` une fois, puis le supprimer.
+1. `VITE_API_MODE=http bun run build && bun run paqueter` — produit
+   `katech-site.zip` (site + `api/` embarqué). La variable `VITE_API_MODE=http`
+   est la valeur par défaut de `.env.example` ; elle est obligatoire pour tout
+   déploiement réel. Désactiver le prérendu : `PRERENDU=0 bun run build`.
+2. Déposer `katech-site.zip` dans `public_html` et l'extraire sur place
+   (clic droit → Extraire dans hPanel). Plus de double téléversement.
+3. Ouvrir `https://votre-domaine/api/install.php` et suivre les trois écrans :
+   l'assistant écrit `api/.env`, crée `katech-data/` hors racine web et prouve
+   que la base n'est pas téléchargeable.
+4. Cliquer le bouton « Supprimer ce fichier » à la fin de l'assistant.
 
 **La base de données ne doit jamais être dans `public_html`.** La sonde
 `scripts/sonde-hebergeur.php` vérifie que les prérequis sont réunis avant

@@ -211,10 +211,11 @@ final class Coffre
     /**
      * Ajoute la clé à `api/.env`.
      *
-     * On ne CRÉE pas le fichier s'il n'existe pas : `install.php` a fait le
-     * choix explicite de ne jamais fabriquer de `.env` à la place de
-     * l'exploitant, et un fichier apparu tout seul est précisément ce qui rend
-     * une configuration incompréhensible. On dit alors quoi faire.
+     * On ne CRÉE pas le fichier s'il n'existe pas : depuis le commit 74be474,
+     * c'est l'assistant `install.php` (trois écrans dans le navigateur) qui
+     * écrit `api/.env` à partir du formulaire de configuration. Si le fichier
+     * est absent ici, c'est que l'assistant n'a pas encore été exécuté — on
+     * dit alors quoi faire.
      */
     private static function persisterDansEnv(string $cleBase64): void
     {

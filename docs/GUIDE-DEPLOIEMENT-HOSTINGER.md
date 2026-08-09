@@ -53,19 +53,19 @@ Ces mots ont un sens unique, du début à la fin.
 
 ## Les neuf étapes
 
-| #   | Étape                              | Où cela se passe    | Durée  |
-| --- | ---------------------------------- | ------------------- | ------ |
-| 1   | Sonder l'hébergement               | hPanel + navigateur | 10 min |
-| 2   | Préparer la machine de compilation | Votre ordinateur    | 15 min |
-| 3   | Compiler le site                   | Votre ordinateur    | 5 min  |
-| 4   | Préparer le colis                  | Votre ordinateur    | 10 min |
-| 5   | Téléverser                         | hPanel              | 15 min |
-| 6   | Renseigner la configuration        | hPanel              | 15 min |
-| 7   | Lancer l'installateur              | Navigateur          | 5 min  |
-| 8   | Verrouiller                        | hPanel + navigateur | 10 min |
-| 9   | Recette finale                     | Navigateur          | 15 min |
+| #   | Étape                                 | Où cela se passe    | Durée  |
+| --- | ------------------------------------- | ------------------- | ------ |
+| 1   | Sonder l'hébergement                  | hPanel + navigateur | 10 min |
+| 2   | Préparer la machine de compilation    | Votre ordinateur    | 15 min |
+| 3   | Compiler le site                      | Votre ordinateur    | 5 min  |
+| 4   | Préparer le colis (`katech-site.zip`) | Votre ordinateur    | 5 min  |
+| 5   | Téléverser et extraire le zip         | hPanel              | 10 min |
+| 6   | Rassembler les informations           | Votre ordinateur    | 10 min |
+| 7   | Lancer l'assistant d'installation     | Navigateur          | 10 min |
+| 8   | Verrouiller                           | hPanel + navigateur | 10 min |
+| 9   | Recette finale                        | Navigateur          | 15 min |
 
-Comptez **deux heures** la première fois, sans se presser. Les étapes 2 et 3 ne
+Comptez **deux heures** la première fois, sans se presser. Les étapes 2 à 4 ne
 sont à refaire que lorsque le site change.
 
 ---
@@ -342,39 +342,31 @@ compte. Recommencez l'étape.
 
 ## Étape 4 — Préparer le colis à téléverser
 
-Vous allez envoyer **deux ensembles de fichiers**, et créer **deux dossiers**.
+La commande `bun run paqueter` (exécutée à la suite de `bun run build`) produit
+un fichier unique : **`katech-site.zip`**. Il contient le site et le dossier
+`api/`. Rien d'autre à préparer.
 
-### Ce qui part sur le serveur
-
-| Sur votre ordinateur       | Sur le serveur         | Remarque                       |
-| -------------------------- | ---------------------- | ------------------------------ |
-| Le **contenu** de `dist/`  | `public_html/`         | Pas le dossier `dist` lui-même |
-| Le dossier `api/` entier   | `public_html/api/`     | Le dossier, cette fois         |
-| — (à créer sur le serveur) | `public_html/uploads/` | Vide au départ                 |
-| — (à créer sur le serveur) | `katech-data/`         | **À côté** de `public_html`    |
-
-Le résultat visé :
+### Ce que contient `katech-site.zip`
 
 ```
 ~/                                  ← la racine de votre compte d'hébergement
 ├── katech-data/                    ← HORS de la racine web. Jamais accessible par Internet.
-│   └── backups/
+│   └── backups/                       (créé par l'assistant à l'étape 7)
 └── public_html/                    ← LA RACINE WEB. Tout ce qui est ici est public.
-    ├── .htaccess                      ← vient de dist/.htaccess
+    ├── .htaccess                      ← repli SPA, sécurité, cache
     ├── index.php                      ← le point d'entrée. Indispensable.
     ├── index.html
     ├── assets/
     ├── media/
     ├── about/                         ← sous-dossiers prérendus (produits par bun run build)
     ├── blog/                             Chacun contient un index.html prérendu.
-    ├── builder/                          Téléversez-les avec le reste du contenu de dist/.
+    ├── builder/
     ├── category/
     ├── contact/
     ├── favicon.ico, robots.txt, sitemap.xml, …
-    ├── uploads/                       ← images envoyées depuis l'administration
+    ├── uploads/
     └── api/
         ├── .htaccess
-        ├── .env                       ← à créer à l'étape 6
         ├── index.php
         ├── install.php                ← à supprimer à l'étape 8
         ├── routes.php
@@ -383,8 +375,8 @@ Le résultat visé :
         └── tools/
 ```
 
-**Ne téléversez pas** : `node_modules`, `src`, `public`, `scripts`,
-`package.json`, ni aucun fichier `.md`. Le serveur n'en a aucun usage.
+> **`api/.env` n'est pas dans le zip** — il contient vos identifiants, et il
+> sera créé par l'assistant à l'étape 7. Ne le cherchez pas dans l'archive.
 
 ### Deux règles qui expliquent toute cette structure
 
@@ -396,22 +388,10 @@ Le résultat visé :
    indique au navigateur l'endroit exact où le site est déposé. C'est ce
    mécanisme qui rend possible le déploiement en sous-dossier.
 
-### Si vous passez par une archive ZIP
-
-Téléverser une archive puis la décompresser depuis hPanel est beaucoup plus
-rapide et plus fiable que d'envoyer des centaines de fichiers un par un.
-
-**Le piège de l'archive : les fichiers commençant par un point.** `.htaccess`
-en fait partie. La plupart des outils de compression les excluent par défaut, en
-silence. Avant de téléverser l'archive, ouvrez-la avec votre outil habituel et
-cherchez `.htaccess` dans la liste. S'il n'y est pas, l'archive est
-inutilisable : activez l'option « inclure les fichiers cachés » et recommencez,
-ou bien téléversez `.htaccess` séparément après la décompression.
-
 ### Vérifier avant de continuer
 
-- Le dossier à envoyer contient `index.php`, `index.html`, `.htaccess`, `assets/`.
-- L'archive ZIP, si vous en faites une, contient bien `.htaccess`.
+- Le fichier `katech-site.zip` existe sur votre ordinateur.
+- Sa taille est supérieure à 1 Mo (le zip contient des centaines de fichiers).
 
 ---
 
@@ -426,12 +406,10 @@ ou bien téléversez `.htaccess` séparément après la décompression.
    option se trouve dans les réglages ou le menu d'affichage du gestionnaire.
 3. Ouvrez `public_html`. Videz-le s'il contient une page d'accueil par défaut
    posée par l'hébergeur.
-4. Téléversez le **contenu** de `dist/` dans `public_html`.
-5. Téléversez le dossier `api/` dans `public_html`, de façon à obtenir
-   `public_html/api/`.
-6. Créez le dossier `public_html/uploads/`.
-7. Remontez d'un niveau, **au-dessus** de `public_html`, et créez le dossier
-   `katech-data/`, puis `katech-data/backups/` à l'intérieur.
+4. Téléversez **`katech-site.zip`** dans `public_html`.
+5. Clic droit sur l'archive → **Extraire**. Le gestionnaire décompresse sur place.
+6. Vérifiez que `public_html/.htaccess` est bien présent (les fichiers cachés
+   doivent être affichés).
 
 **Droits d'accès** : `755` pour les dossiers, `644` pour les fichiers. Ce sont
 les valeurs par défaut du gestionnaire de fichiers. N'y touchez que si une
@@ -451,7 +429,6 @@ Dans le gestionnaire de fichiers, avec les fichiers cachés affichés :
 | `public_html/api/index.php` | Présent                                |
 | `public_html/api/schema/`   | Présent, contient **trois** fichiers   |
 | `public_html/uploads/`      | Présent, vide                          |
-| `katech-data/`              | Présent, **à côté** de `public_html`   |
 
 Puis, dans un navigateur, ouvrez `https://votre-domaine/`.
 
@@ -464,96 +441,41 @@ Si vous obtenez une page blanche ou une erreur, allez au chapitre
 
 ---
 
-## Étape 6 — Renseigner la configuration
+## Étape 6 — Préparer les informations de configuration
 
-L'API a besoin d'un fichier nommé `.env`, placé dans `public_html/api/`. Ce
-fichier contient vos identifiants. Il n'est livré avec aucune valeur, et
-personne ne peut le remplir à votre place.
+Avant d'ouvrir l'assistant, rassemblez ces informations. L'assistant vous les
+demandera dans son formulaire et écrira `api/.env` lui-même à partir de vos
+réponses — vous n'avez rien à créer ni à copier dans le gestionnaire de
+fichiers.
 
-### Les gestes
+| Information                                   | Où la trouver                                                             |
+| --------------------------------------------- | ------------------------------------------------------------------------- |
+| Moteur de base (`mysql`, `sqlite` ou `pgsql`) | Résultat de la sonde (étape 1)                                            |
+| Identifiants de la base                       | `docs/GUIDE-BASES-DE-DONNEES.md`                                          |
+| URL du site (`https://…`)                     | Votre domaine, avec `https://`                                            |
+| Nom, e-mail, mot de passe propriétaire        | À choisir maintenant, à enregistrer dans un gestionnaire de mots de passe |
 
-1. Dans le gestionnaire de fichiers, ouvrez `public_html/api/`.
-2. Repérez le fichier `.env.example`. Il est déjà là — c'est le modèle.
-3. Faites-en une **copie**, et renommez la copie en `.env` (avec le point, sans
-   extension). Ne supprimez pas l'original.
-4. Ouvrez `.env` avec l'éditeur de texte du gestionnaire de fichiers.
+> **Lisez le chapitre « Défauts connus » avant de choisir l'adresse e-mail du
+> compte propriétaire.** Un défaut constaté sur un déploiement d'essai limite
+> aujourd'hui les adresses acceptées par le back-office.
 
-### Ce qu'il faut renseigner
-
-**Les trois lignes générales :**
-
-```ini
-APP_ENV=production
-APP_URL=https://votre-domaine.dz
-CORS_ORIGINS=
-```
-
-- `APP_ENV=production` masque les détails techniques en cas d'erreur. **Ne
-  jamais mettre `dev` sur un site en ligne** : les chemins de fichiers et les
-  messages internes seraient visibles par les visiteurs.
-- `CORS_ORIGINS` reste **vide** : le site et son API sont sur le même domaine.
-  Y mettre une valeur sans raison ouvre l'API à un autre site.
-
-**Les lignes de la base de données :**
-
-Elles dépendent du moteur choisi. **Elles sont décrites dans `docs/GUIDE-BASES-DE-DONNEES.md`**, qui vous donne les valeurs exactes à recopier. Ne les
-inventez pas.
-
-**Le compte propriétaire :**
-
-```ini
-INSTALL_OWNER_NAME=Votre Nom
-INSTALL_OWNER_EMAIL=vous@votre-domaine.dz
-INSTALL_OWNER_PASSWORD=une-phrase-de-passe-longue-et-unique
-```
-
-L'installateur **refuse** un mot de passe faible : moins de dix caractères, une
-suite de touches du clavier, un caractère répété, ou un terme de la liste noire
-(`password`, `motdepasse`, `admin1234`, `katech2026`…). Cette liste se trouve
-dans `api/install.php`, fonction `motDePasseTropPrevisible`. Prenez une phrase
-de plusieurs mots et conservez-la dans un gestionnaire de mots de passe.
-
-> **Lisez le chapitre « Défauts connus » avant de choisir l'adresse
-> e-mail du compte propriétaire.** Un défaut constaté sur un déploiement d'essai
-> limite aujourd'hui les adresses acceptées par le back-office.
-
-**Le dossier des images téléversées :**
-
-```ini
-UPLOAD_DIR=/home/uXXXXXXXXX/domains/votre-domaine.dz/public_html/uploads
-UPLOAD_BASE_URL=/uploads
-```
-
-**Renseignez ces deux lignes explicitement.** Elles sont commentées dans le
-modèle, et la valeur par défaut est incorrecte une fois le dossier `api/` placé
-dans `public_html` : les images atterrissent dans un dossier que le site ne sert
-pas, et apparaissent comme cassées. Le détail est au chapitre « Défauts
-connus ». Le chemin absolu exact de `public_html` est affiché par la sonde de
-l'étape 1, à la ligne `Racine web détectée`, et par le gestionnaire de fichiers.
-
-**Les sauvegardes :** ces lignes appartiennent à `docs/GUIDE-BASES-DE-DONNEES.md`.
-Renseignez-les en suivant ce guide-là.
-
-5. Enregistrez le fichier.
-6. Si votre gestionnaire de fichiers permet de changer les permissions,
-   passez `.env` en `640`. L'installateur tentera de le faire lui-même à
-   l'étape 7, et vous préviendra s'il n'y parvient pas.
+> **Le dossier des images téléversées.** L'assistant vous demandera aussi
+> `UPLOAD_DIR` (chemin absolu vers `public_html/uploads`) et `UPLOAD_BASE_URL`
+> (valeur : `/uploads`). Le chemin absolu de `public_html` est affiché par la
+> sonde à la ligne `Racine web détectée`.
 
 ### Vérifier avant de continuer
 
-Dans un navigateur, ouvrez `https://votre-domaine/api/.env`.
-
-**Attendu : une erreur 403.** Jamais le contenu du fichier, jamais un
-téléchargement qui démarre. Si le contenu apparaît, votre mot de passe de base
-de données est public : arrêtez tout, vérifiez que `public_html/api/.htaccess`
-est bien présent, et changez ce mot de passe.
+Vous avez sous la main les identifiants de la base et une phrase de passe pour
+le compte propriétaire (au moins dix caractères, pas de terme évident).
 
 ---
 
-## Étape 7 — Lancer l'installateur
+## Étape 7 — Lancer l'assistant d'installation
 
-L'installateur crée les tables de la base et le compte propriétaire. Il ne
-s'exécute **qu'une seule fois**.
+L'assistant crée `api/.env`, `katech-data/`, les tables de la base et le compte
+propriétaire. Il se déroule en **trois écrans** et ne s'exécute **qu'une seule
+fois**.
 
 ### Le geste
 
@@ -563,60 +485,34 @@ Dans un navigateur, ouvrez, **une seule fois** :
 https://votre-domaine.dz/api/install.php
 ```
 
-La page répond en texte brut, sans mise en forme. C'est normal.
+### Ce que vous verrez
 
-### Ce que vous devez lire
+**Écran 1 — Formulaire de configuration.**
+L'assistant présente les champs à remplir : URL du site, moteur de base,
+identifiants, compte propriétaire, dossier des images. Remplissez-les avec les
+informations préparées à l'étape 6 et soumettez.
 
-Voici la sortie réelle d'une installation réussie, relevée sur un déploiement
-d'essai complet :
+**Écran 2 — Vérification et installation.**
+L'assistant écrit `api/.env`, crée `katech-data/` hors racine web (avec repli
+à l'intérieur et **avertissement rouge** si l'hébergeur refuse le dossier hors
+racine), applique le schéma de la base, crée le compte propriétaire, puis
+effectue une **requête HTTP réelle** pour prouver que la base n'est pas
+téléchargeable depuis Internet et affiche le résultat.
 
-```
-== Installation KA Tech Hub ==
-Pilote : sqlite
-Fichier : /chemin/vers/katech-data/katech.sqlite
+Un point à contrôler : **`24 tables présentes`**. Un nombre inférieur signifie
+que `api/schema/` n'a pas été téléversé entièrement — retournez à l'étape 5.
 
-Schéma appliqué : 48 instructions, 24 tables présentes.
-Compte propriétaire créé : proprietaire@exemple.dz
-Mot de passe haché avec : bcrypt (Argon2id indisponible sur ce PHP — repli automatique, et re-hachage en Argon2id à la première connexion si l'extension apparaît).
-Effacez maintenant INSTALL_OWNER_PASSWORD de api/.env : le mot de passe est en base,
-haché ; le laisser en clair dans un fichier du serveur annule tout le bénéfice.
+**Écran 3 — Fin.**
+Bouton **« Supprimer ce fichier »** : cliquez-le. Il efface `install.php` du
+serveur et vous redirige automatiquement vers l'étape 8.
 
-TERMINÉ.
-Étape suivante OBLIGATOIRE : supprimez api/install.php du serveur.
-```
+### Si quelque chose échoue
 
-Trois lignes à contrôler :
-
-- **`Pilote :`** doit nommer le moteur que vous avez choisi.
-- **`24 tables présentes.`** Un nombre inférieur signifie que le dossier
-  `api/schema/` n'a pas été téléversé entièrement. Retournez à l'étape 5.
-- **`TERMINÉ.`** doit apparaître. Sans ce mot, l'installation a échoué.
-
-La ligne `Mot de passe haché avec :` peut indiquer `argon2id` ou `bcrypt` selon
-le serveur. Les deux conviennent ; la sonde de l'étape 1 l'annonçait déjà.
-
-### Si la page affiche autre chose
-
-**« ÉTAPE MANQUANTE : le fichier api/.env n'existe pas encore. »**
-L'installateur affiche alors un mode d'emploi complet en cinq points. Le fichier
-n'a pas été créé, ou il ne s'appelle pas exactement `.env`. Attention aux
-renommages qui produisent `.env.txt` ou `env`. Reprenez l'étape 6.
-
-**« CONFIGURATION INCOMPLÈTE : le fichier api/.env existe mais des variables
-obligatoires sont vides ou absentes. »**
-L'installateur **nomme les variables manquantes**, une par ligne. Complétez-les
-dans `.env`, enregistrez, puis rechargez la page.
-
-**« ÉCHEC DE L'INSTALLATION »**
-Le message qui suit nomme la cause. Il se termine toujours par une phrase qui
-décrit l'état réel de votre base — soit `La transaction a été ANNULÉE : la base
-est revenue exactement à son état d'avant.`, soit un avertissement propre à
-MySQL. Lisez cette phrase : elle dit s'il faut vider la base avant de
-recommencer. Les causes liées à la base de données sont traitées dans
-`docs/GUIDE-BASES-DE-DONNEES.md`.
+L'assistant nomme la cause dans le même écran. Les causes liées à la base sont
+traitées dans `docs/GUIDE-BASES-DE-DONNEES.md`.
 
 **« INSTALLATION DÉJÀ EFFECTUÉE. »**
-L'installateur a déjà tourné. Il refuse de recommencer, car il détruirait vos
+L'assistant a déjà tourné. Il refuse de recommencer, car il détruirait vos
 données. Ce n'est pas une erreur : passez à l'étape 8.
 
 ### Vérifier avant de continuer
@@ -634,37 +530,32 @@ répond, le site et sa base se parlent.
 ## Étape 8 — Verrouiller
 
 > **Cette étape n'est pas facultative.** Tant qu'elle n'est pas faite, votre
-> site est en ligne avec trois portes ouvertes.
+> site est en ligne avec des portes ouvertes.
 
-### Les quatre gestes, dans cet ordre
+### Les trois gestes, dans cet ordre
 
-**1. Effacer le mot de passe d'installation.**
+**1. Supprimer l'installateur.**
 
-Dans le gestionnaire de fichiers, ouvrez `public_html/api/.env` et videz la
-valeur :
+Si vous avez cliqué le bouton « Supprimer ce fichier » à la fin de l'écran 3
+de l'assistant, c'est déjà fait. Vérifiez :
 
-```ini
-INSTALL_OWNER_PASSWORD=
+```
+https://votre-domaine.dz/api/install.php
 ```
 
-Effacez la valeur, gardez la ligne. Le mot de passe est désormais enregistré
-dans la base sous forme chiffrée ; le laisser en clair dans un fichier du
-serveur annule tout le bénéfice de ce chiffrement.
-
-**2. Supprimer l'installateur.**
-
-Supprimez le fichier `public_html/api/install.php`.
+Cette adresse doit renvoyer **404**. Si ce n'est pas le cas, supprimez
+manuellement `public_html/api/install.php` dans le gestionnaire de fichiers.
 
 L'installateur se protège déjà lui-même par un témoin nommé `installed.lock`,
 mais **un fichier absent protège mieux qu'un fichier protégé** : il suffirait
 qu'un téléversement futur efface le témoin pour rouvrir la porte.
 
-**3. Supprimer la sonde.**
+**2. Supprimer la sonde.**
 
 Supprimez le fichier `public_html/sonde-hebergeur.php`. Elle publie la version
 de PHP, la liste des extensions et les chemins absolus du serveur.
 
-**4. Vérifier HTTPS.**
+**3. Vérifier HTTPS.**
 
 Dans hPanel, confirmez que le certificat SSL est actif sur le domaine, et que la
 redirection automatique de HTTP vers HTTPS est activée. Ouvrez ensuite
@@ -751,7 +642,7 @@ en ligne de commande.` avec un code 403.
 1. Connectez-vous à l'administration avec le compte propriétaire.
 2. Ouvrez la page des produits et créez un produit d'essai.
 3. Téléversez une image sur ce produit, et **vérifiez qu'elle s'affiche**.
-   C'est le test des lignes `UPLOAD_DIR` et `UPLOAD_BASE_URL` de l'étape 6.
+   C'est le test des lignes `UPLOAD_DIR` et `UPLOAD_BASE_URL` renseignées à l'étape 7.
 4. Passez une commande d'essai depuis la boutique.
 5. Vérifiez que la commande apparaît dans l'administration.
 6. Supprimez le produit et la commande d'essai.
@@ -775,14 +666,14 @@ réel où le site se trouve, et qui le dit au navigateur.
 
 ### Ce qui change dans la marche à suivre
 
-| Étape | Changement                                                                                                 |
-| ----- | ---------------------------------------------------------------------------------------------------------- |
-| 5     | Le contenu de `dist/` va dans `public_html/ma-boutique/`, et `api/` devient `public_html/ma-boutique/api/` |
-| 5     | Le dossier `uploads/` devient `public_html/ma-boutique/uploads/`                                           |
-| 6     | `APP_URL=https://votre-domaine.dz/ma-boutique`                                                             |
-| 6     | `UPLOAD_DIR` doit désigner `.../public_html/ma-boutique/uploads`                                           |
-| 7     | L'installateur s'ouvre à `https://votre-domaine.dz/ma-boutique/api/install.php`                            |
-| 9     | Toutes les adresses de contrôle prennent le préfixe `/ma-boutique`                                         |
+| Étape | Changement                                                                         |
+| ----- | ---------------------------------------------------------------------------------- |
+| 5     | `katech-site.zip` est téléversé dans `public_html/ma-boutique/` et extrait là      |
+| 6     | Aucun changement — les informations se rassemblent de la même façon                |
+| 7     | Dans le formulaire de l'assistant : `APP_URL=https://votre-domaine.dz/ma-boutique` |
+| 7     | Dans le formulaire : `UPLOAD_DIR` désigne `.../public_html/ma-boutique/uploads`    |
+| 7     | L'assistant s'ouvre à `https://votre-domaine.dz/ma-boutique/api/install.php`       |
+| 9     | Toutes les adresses de contrôle prennent le préfixe `/ma-boutique`                 |
 
 Le dossier `katech-data/` ne bouge pas : il reste **à côté** de `public_html`,
 jamais dedans.
@@ -960,11 +851,13 @@ casser le site.
 
 1. **Sauvegardez d'abord.** Suivez `docs/GUIDE-BASES-DE-DONNEES.md`, et vérifiez
    que le fichier de sauvegarde existe bien avant de continuer.
-2. Recompilez à l'étape 3, avec les mêmes variables.
+2. Recompilez : `bun run build && bun run paqueter` sur votre ordinateur.
 3. Refaites les trois vérifications de l'étape 3, y compris celle de
    `dist/.htaccess`.
 4. Dans `public_html`, remplacez `index.php`, `index.html`, `.htaccess`,
    le dossier `assets/`, le dossier `media/` et les fichiers statiques modifiés.
+   Vous pouvez aussi déposer le nouveau `katech-site.zip` et l'extraire sur
+   place — cela remplace les fichiers sans toucher à `api/.env` ni à `uploads/`.
 5. **Ne supprimez jamais** : `uploads/`, `api/.env`, ni le dossier
    `katech-data/`.
 6. Si le code de l'API a changé, remplacez `api/src/`, `api/routes.php`,

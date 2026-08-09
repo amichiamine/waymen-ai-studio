@@ -231,23 +231,27 @@ gérée côté navigateur et qu'aucun fichier `produits` n'existe sur le disque.
 
 ## 5. Téléverser les fichiers
 
-Avec le gestionnaire de fichiers de hPanel :
+Depuis le commit `96c997e`, `bun run paqueter` produit **`katech-site.zip`**,
+une archive unique qui contient le site et le dossier `api/`. Il n'y a plus de
+double téléversement.
 
-1. **Le site** : envoyer le **contenu** de `dist/` dans `public_html/`
-   (donc `index.html` directement dans `public_html`, pas dans un sous-dossier
-   `dist`). Vérifier que `public_html/.htaccess` **et** `public_html/index.php`
-   sont bien présents.
-2. **L'API** : envoyer le dossier `api/` **entier** dans `public_html/`, pour
-   obtenir `public_html/api/`. Vérifier que `public_html/api/.htaccess` est
-   présent.
-3. **Le dossier de données** : créer `katech-data/` **au même niveau que**
-   `public_html`, jamais dedans. Y créer un sous-dossier `backups/`.
-4. **Les médias** : créer `public_html/uploads/` s'il n'existe pas.
+### Procédure normale (recommandée)
 
-> **Astuce.** Téléverser une archive ZIP puis la décompresser depuis hPanel est
-> beaucoup plus rapide et plus fiable que d'envoyer les fichiers un à un.
-> Après décompression, **vérifiez la présence des fichiers `.htaccess`** :
-> beaucoup d'outils de compression les excluent par défaut.
+1. Dans hPanel → **Gestionnaire de fichiers**, déposer `katech-site.zip`
+   **directement dans `public_html`**.
+2. Clic droit sur l'archive → **Extraire**. Le gestionnaire de fichiers de
+   Hostinger décompresse sur place.
+3. Vérifier que `public_html/.htaccess`, `public_html/index.php` et
+   `public_html/api/.htaccess` sont bien présents (activer l'affichage des
+   fichiers cachés si nécessaire).
+4. Créer `public_html/uploads/` s'il n'existe pas.
+5. Créer `katech-data/` **au même niveau que `public_html`**, jamais dedans.
+   Y créer un sous-dossier `backups/`.
+
+> **Pourquoi l'archive contient les fichiers `.htaccess`.** `bun run paqueter`
+> force leur inclusion (ils commencent par un point et la plupart des outils
+> de compression les excluent par défaut). Vérifiez tout de même leur présence
+> après décompression.
 
 Droits attendus : `755` pour les dossiers, `644` pour les fichiers. Pour
 `katech-data/` et ses sous-dossiers, `755` convient ; `770` si l'hébergeur
@@ -352,11 +356,30 @@ que le site. Cela convient parfaitement à un hébergement mutualisé.
 
 ## 7. Renseigner `api/.env`
 
-Copier `api/.env.example` en `api/.env` (gestionnaire de fichiers → renommer
-une copie), puis l'éditer. `api/.env.example` documente **toutes** les
-variables ; voici les seules obligatoires pour démarrer.
+Depuis le commit `74be474`, **l'assistant `install.php` écrit lui-même
+`api/.env`** à partir d'un formulaire en trois écrans dans le navigateur. Il
+n'est plus nécessaire de copier `api/.env.example` ni d'éditer le fichier à la
+main.
 
-### Communes aux deux pilotes
+L'assistant :
+
+- crée `katech-data/` **hors racine web** (avec repli à l'intérieur et
+  **avertissement rouge** si l'hébergeur refuse le dossier hors racine) ;
+- **prouve par une requête HTTP réelle** que la base de données n'est pas
+  téléchargeable depuis Internet, et affiche le résultat ;
+- propose un bouton pour se supprimer en fin d'installation.
+
+Passez directement au [§8 — Lancer l'installation](#8-lancer-linstallation).
+
+---
+
+### Référence des variables (pour information ou repli manuel)
+
+Si l'assistant ne peut pas être utilisé (contexte automatisé, reprise après
+incident), voici les variables nécessaires. `api/.env.example` les documente
+toutes.
+
+#### Communes aux trois pilotes
 
 ```ini
 APP_ENV=production
@@ -371,7 +394,7 @@ APP_URL=https://votre-domaine.dz
   requête n'est cross-origin. Y mettre une valeur sans nécessité ouvre l'API à
   un autre domaine.
 
-### Si `DB_DRIVER=mysql`
+#### Si `DB_DRIVER=mysql`
 
 ```ini
 DB_DRIVER=mysql
@@ -382,14 +405,14 @@ DB_USER=u123456789_katech
 DB_PASSWORD=le-mot-de-passe-genere
 ```
 
-### Si `DB_DRIVER=sqlite`
+#### Si `DB_DRIVER=sqlite`
 
 ```ini
 DB_DRIVER=sqlite
 DB_SQLITE_PATH=/home/uXXXXXXXXX/domains/votre-domaine.dz/katech-data/katech.sqlite
 ```
 
-### Si `DB_DRIVER=pgsql`
+#### Si `DB_DRIVER=pgsql`
 
 ```ini
 DB_DRIVER=pgsql
@@ -404,7 +427,7 @@ DB_SSLMODE=require
 `DB_SSLMODE=require` est obligatoire chez Supabase et la plupart des services
 PostgreSQL hébergés. Laisser vide seulement pour un PostgreSQL local.
 
-### Le compte propriétaire — lu une seule fois
+#### Le compte propriétaire — lu une seule fois
 
 ```ini
 INSTALL_OWNER_NAME=Votre Nom
@@ -417,16 +440,17 @@ jamais de compte `admin/admin` par défaut. Le mot de passe est haché
 (Argon2id, ou bcrypt si Argon2id est absent) ; il n'est jamais stocké en clair.
 
 **Ces trois lignes sont à effacer du `.env` juste après l'installation**
-(voir [§9](#9-suppressions-obligatoires)).
+(voir [§9](#9-suppressions-obligatoires)). L'assistant propose un bouton
+dédié pour cela.
 
-### Sauvegardes — à renseigner maintenant
+#### Sauvegardes
 
 ```ini
 BACKUP_DIR=/home/uXXXXXXXXX/domains/votre-domaine.dz/katech-data/backups
 BACKUP_KEEP=14
 ```
 
-### Variables Notion — facultatives, à ne pas toucher manuellement
+#### Variables Notion — facultatives, à ne pas toucher manuellement
 
 Le miroir Notion (suivi des commandes, page `/admin/notion`) ne nécessite aucune
 variable dans `.env` pour être mis en service : la clé de connexion se saisit
@@ -456,27 +480,23 @@ Deux variables sont générées ou utilisées automatiquement par l'API :
 
 ## 8. Lancer l'installation
 
-Ouvrir **une seule fois** :
+Ouvrir **une seule fois** dans un navigateur :
 
 ```
 https://votre-domaine.dz/api/install.php
 ```
 
-La page répond en texte brut. En cas de succès :
+L'assistant se déroule en **trois écrans** :
 
-```
-== Installation KA Tech Hub ==
-Pilote : mysql
-
-Schéma appliqué : 48 instructions, 24 tables présentes.
-Compte propriétaire créé : vous@votre-domaine.dz
-Mot de passe haché avec : argon2id.
-Effacez maintenant INSTALL_OWNER_PASSWORD de api/.env : le mot de passe est en base,
-haché ; le laisser en clair dans un fichier du serveur annule tout le bénéfice.
-
-TERMINÉ.
-Étape suivante OBLIGATOIRE : supprimez api/install.php du serveur.
-```
+1. **Écran 1 — Configuration.** Formulaire qui demande les informations de la
+   base de données, l'URL du site et les identifiants du compte propriétaire.
+   L'assistant écrit lui-même `api/.env` à partir de vos réponses.
+2. **Écran 2 — Vérification.** L'assistant crée `katech-data/` hors racine web
+   (avec repli à l'intérieur et **avertissement rouge** si l'hébergeur refuse),
+   applique le schéma de base et crée le compte propriétaire. Il effectue
+   ensuite une **requête HTTP réelle** pour prouver que la base n'est pas
+   téléchargeable depuis Internet.
+3. **Écran 3 — Fin.** Bouton pour supprimer le fichier d'installation.
 
 **Le nombre de tables doit être 24.** S'il est inférieur, le dossier
 `api/schema/` n'a pas été téléversé entièrement.
