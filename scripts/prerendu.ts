@@ -768,7 +768,34 @@ async function principal(): Promise<void> {
   }
 
   const { origine, fermer } = await demarrerServeur(html);
-  const navigateur = await chromium.launch();
+
+  // Détection préalable : Chromium lançable ?
+  // Sur un hébergeur sans navigateur (Hostinger, Netlify, Vercel…), `chromium.launch()`
+  // lève une erreur du type "Failed to launch the browser process" ou "Executable doesn't
+  // exist". On l'intercepte ici — AVANT toute visite — pour distinguer deux cas :
+  //   • navigateur absent  → avertissement explicite, sortie en 0 (build nu mais valide)
+  //   • navigateur présent → on continue normalement ; un échec de rendu reste visible
+  let navigateur;
+  try {
+    navigateur = await chromium.launch();
+  } catch (cause) {
+    await fermer();
+    stdout.write(
+      "[prerendu] AVERTISSEMENT — Chromium n'est pas disponible sur cet environnement de build.\n" +
+        "[prerendu] Ce qui ne sera PAS fait : le prérendu des 27 pages du sitemap.\n" +
+        "[prerendu] Ce que ça coûte : les moteurs de recherche ne verront aucun texte dans les\n" +
+        "[prerendu]   pages de la boutique (SEO dégradé), mais le site fonctionnera normalement\n" +
+        "[prerendu]   pour les visiteurs — le repli SPA (index.php) prend le relais.\n" +
+        "[prerendu] Pour obtenir le prérendu complet : construire sur un poste disposant d'un\n" +
+        "[prerendu]   navigateur Chromium/Playwright (ex. : bun run build en local), puis\n" +
+        "[prerendu]   téléverser le dossier dist/ obtenu sur l'hébergeur.\n" +
+        `[prerendu] Cause technique : ${cause instanceof Error ? cause.message.split("\n")[0] : String(cause)}\n` +
+        "[prerendu] Le build reste valide : dist/ est déployable, sans prérendu.\n",
+    );
+    exit(STRICT ? 1 : 0);
+    return; // satisfaire le compilateur TypeScript après exit()
+  }
+
   const resultats: Resultat[] = [];
 
   try {
