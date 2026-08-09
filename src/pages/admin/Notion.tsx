@@ -340,6 +340,7 @@ export default function AdminNotion() {
       {/* ── Étape 4 — Webhook (visible dès que relié) ───────────────────── */}
       {etat.relie && (
         <Etape4Webhook
+          etat={etat}
           webhookUrl={webhookUrl}
           webhookCopie={webhookCopie}
           verifCopie={verifCopie}
@@ -839,19 +840,30 @@ function Etape3Base({
 // ── Étape 4 — Webhook ─────────────────────────────────────────────────────────
 
 /**
- * Étape 4 : affiche l'adresse du webhook à coller dans le portail Notion.
+ * Étape 4 : affiche l'adresse du webhook et le jeton de vérification.
  *
- * Le jeton de vérification (`secretWebhook`) est chiffré côté serveur et
- * NON exposé par GET /notion/status (Configuration::etat() ne le contient pas).
- * Cela est signalé dans le rapport, conformément à NOTION.md §9.
+ * Le jeton de vérification (`jetonVerification`) est renvoyé par
+ * `GET /notion/status` uniquement au rang `owner` (garde `resetData`
+ * dans `api/routes.php`). Il vient de `Configuration::etat()` et provient
+ * de la poignée de main initiale de Notion.
+ *
+ * Précautions maintenues (S13, NOTION.md §5) :
+ *   - Masqué par défaut (type="password") — l'utilisateur clique « Afficher »
+ *     pour le voir : réduit la surface d'exposition lors du partage d'écran.
+ *   - Bouton de copie : l'utilisateur copie sans jamais sélectionner la valeur.
+ *   - Avertissement court : « ne pas partager ».
+ *   - Jamais dans le localStorage (la valeur vient du state React du composant
+ *     parent, pas d'un hook de stockage persistant).
  */
 function Etape4Webhook({
+  etat,
   webhookUrl,
   webhookCopie,
   verifCopie,
   onCopierWebhook,
   onCopierVerification,
 }: {
+  etat: NotionEtat;
   webhookUrl: string;
   webhookCopie: boolean;
   verifCopie: boolean;
@@ -859,10 +871,9 @@ function Etape4Webhook({
   onCopierVerification: (s: string) => void;
 }) {
   const { t } = useI18n();
+  const [afficherJeton, setAfficherJeton] = useState(false);
 
-  // Note : le jeton de vérification n'est pas exposé par GET /notion/status.
-  // Voir NOTION.md §9 et le commentaire de rapport à la fin de ce fichier.
-  const jetonVerification: string | null = null;
+  const jetonVerification: string | null = etat.jetonVerification ?? null;
 
   return (
     <Card>
@@ -902,34 +913,58 @@ function Etape4Webhook({
         </div>
 
         {/* Jeton de vérification */}
-        <div className="rounded-md border p-4">
-          <p className="mb-1 font-medium text-sm">
-            {t("admin.reglages.notion.webhook_verification_titre")}
-          </p>
-          <p className="mb-2 text-xs text-muted-foreground">
-            {t("admin.reglages.notion.webhook_verification_desc")}
-          </p>
+        <div className="rounded-md border p-4 space-y-3">
+          <div>
+            <p className="mb-1 font-medium text-sm">
+              {t("admin.reglages.notion.webhook_verification_titre")}
+            </p>
+            <p className="mb-2 text-xs text-muted-foreground">
+              {t("admin.reglages.notion.webhook_verification_desc")}
+            </p>
+          </div>
           {jetonVerification ? (
-            <div className="flex gap-2">
-              <Input
-                readOnly
-                value={jetonVerification}
-                className="font-mono text-sm"
-                onClick={(e) => (e.target as HTMLInputElement).select()}
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onCopierVerification(jetonVerification)}
-                aria-label={t("admin.reglages.notion.btn_copier_verification")}
-              >
-                {verifCopie ? (
-                  <Check className="h-4 w-4 text-green-600" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            <>
+              {/* Avertissement de sécurité bref — S13 */}
+              <p className="flex items-start gap-1.5 rounded-md bg-amber-500/10 px-3 py-2 text-xs text-amber-800">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                {t("admin.reglages.notion.webhook_verification_avertissement")}
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={jetonVerification}
+                  type={afficherJeton ? "text" : "password"}
+                  className="font-mono text-sm"
+                  aria-label={t("admin.reglages.notion.webhook_verification_titre")}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAfficherJeton((v) => !v)}
+                  aria-label={
+                    afficherJeton
+                      ? t("admin.reglages.notion.btn_masquer_verification")
+                      : t("admin.reglages.notion.btn_afficher_verification")
+                  }
+                >
+                  {afficherJeton
+                    ? t("admin.reglages.notion.btn_masquer_verification")
+                    : t("admin.reglages.notion.btn_afficher_verification")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onCopierVerification(jetonVerification)}
+                  aria-label={t("admin.reglages.notion.btn_copier_verification")}
+                >
+                  {verifCopie ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </>
           ) : (
             <p className="text-sm text-muted-foreground italic">
               {t("admin.reglages.notion.webhook_verification_absent")}
@@ -940,17 +975,3 @@ function Etape4Webhook({
     </Card>
   );
 }
-
-/*
- * NOTE DE RAPPORT (NOTION.md §9, instructions §11) :
- *
- * Le jeton de vérification du webhook (`secretWebhook`) est chiffré au repos
- * dans `api/.env` et NON exposé par GET /notion/status. Configuration::etat()
- * ne contient aucun champ « secretWebhook » ni « webhookSecret ».
- *
- * Conséquence : la carte « Jeton de vérification » de l'étape 4 affiche
- * toujours le message d'attente, même si la poignée de main initiale de Notion
- * a déjà eu lieu. Pour exposer ce jeton au frontend, il faudrait ajouter un
- * champ `jetonVerification` à Configuration::etat() côté backend — hors périmètre
- * du présent chantier (AGENTS.md §6, règle « Additivité »).
- */

@@ -182,6 +182,16 @@ export type NotionEtat = {
   /** Nombre de commandes en attente de poussée vers Notion. */
   enAttente: number;
   /**
+   * Jeton de vérification webhook — renvoyé uniquement au rang `owner`.
+   * Valeur reçue lors de la poignée de main initiale de Notion
+   * (`{"verification_token":"…"}`), à recopier une fois dans le portail
+   * Notion pour confirmer l'abonnement. `null` si aucune poignée de main
+   * n'a encore eu lieu.
+   *
+   * NE PAS stocker dans localStorage. NE PAS afficher dans un journal.
+   */
+  jetonVerification: string | null;
+  /**
    * Avertissement optionnel : colonnes manquantes lors d'un rattachement
    * (`POST /notion/base` avec `databaseId`).
    */

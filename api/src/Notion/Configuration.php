@@ -11,9 +11,10 @@
  * INVARIANT DE SÉCURITÉ, à ne jamais relâcher :
  *   - `payload.token` contient une valeur CHIFFRÉE, jamais le jeton en clair ;
  *   - `etat()` — ce que verra `GET /notion/status` — ne contient AUCUN champ
- *     dérivé du jeton, pas même tronqué. Un jeton « partiellement affiché »
- *     reste un jeton partiellement fuité, et il n'apporte rien : le commerçant
- *     ne le vérifie pas à l'oeil, il le ressaisit.
+ *     dérivé du jeton Notion (API), pas même tronqué. Le `jetonVerification`
+ *     présent dans `etat()` est un SECRET DIFFÉRENT : le jeton de poignée de
+ *     main webhook, renvoyé uniquement au rang owner pour la saisie unique dans
+ *     le portail Notion. Il ne dérive pas du jeton Notion.
  *
  * INVARIANT D'ADDITIVITÉ : tant qu'aucune ligne « notion » n'existe dans
  * `settings`, TOUT ce module se comporte comme s'il n'était pas là. Aucune
@@ -147,7 +148,17 @@ final class Configuration
     }
 
     /**
-     * État destiné à `GET /notion/status`. AUCUN secret, par construction.
+     * État destiné à `GET /notion/status`. Aucun secret d'API, par construction.
+     *
+     * Le jeton de vérification du webhook (`webhookSecret`) est un secret
+     * DIFFÉRENT du jeton Notion : il sert à confirmer l'abonnement webhook une
+     * seule fois dans le portail Notion. Il est exposé ici UNIQUEMENT au rang
+     * `owner` (la garde `resetData` dans `api/routes.php` l'impose).
+     *
+     * Invariants maintenus :
+     *   - Le jeton Notion (API) n'est JAMAIS dans cet état.
+     *   - `jetonVerification` n'est que le secret de poignée de main initiale.
+     *   - Renvoyé sur session authentifiée owner uniquement (garde dans routes.php).
      *
      * @param int $enAttente Nombre d'événements Notion en attente (fourni par l'appelant :
      *                       la Configuration ne connaît pas l'outbox).
@@ -167,6 +178,9 @@ final class Configuration
             'derniereVerification' => $this->payload['verifieAt'] ?? null,
             'derniereErreur' => $this->payload['derniereErreur'] ?? null,
             'enAttente' => $enAttente,
+            // Jeton de vérification webhook : uniquement au rang owner, pour
+            // la saisie unique dans le portail Notion lors de la poignée de main.
+            'jetonVerification' => $this->secretWebhook(),
         ];
     }
 

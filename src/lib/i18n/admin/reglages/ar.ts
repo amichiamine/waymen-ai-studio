@@ -305,6 +305,10 @@ const reglagesAr: Record<string, string> = {
   "admin.reglages.notion.webhook_verification_absent":
     "سيظهر رمز التحقق هنا بمجرد أن يُرسل Notion مصافحته الأولية.",
   "admin.reglages.notion.btn_copier_verification": "نسخ",
+  "admin.reglages.notion.btn_afficher_verification": "إظهار",
+  "admin.reglages.notion.btn_masquer_verification": "إخفاء",
+  "admin.reglages.notion.webhook_verification_avertissement":
+    "هذا الرمز سرّي ولمرة واحدة. لا تشاركه مع أحد — انسخه فقط في بوابة Notion.",
   // خطأ الخادم
   "admin.reglages.notion.erreur_backend_titre": "الخدمة غير متاحة مؤقتاً",
   "admin.reglages.notion.erreur_backend_desc":

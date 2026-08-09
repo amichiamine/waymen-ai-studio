@@ -4,7 +4,9 @@
  * SÉCURITÉ (docs/NOTION.md §5, SKILLS.md S13) :
  *   - Le jeton est envoyé dans le corps d'une requête POST — jamais dans une URL,
  *     jamais dans le localStorage, jamais dans un log de console.
- *   - Le serveur ne le renvoie JAMAIS : `NotionEtat` n'a aucun champ dérivé du jeton.
+ *   - Le serveur ne renvoie JAMAIS le jeton Notion (API) au client.
+ *   - `jetonVerification` est un secret DIFFÉRENT (poignée de main webhook), renvoyé
+ *     uniquement au rang owner et jamais persisté côté client.
  *   - Ce module ne lit ni n'écrit `localStorage`.
  *
  * DÉGRADATION GRACIEUSE (SKILLS.md S3) :
@@ -35,6 +37,7 @@ export const NOTION_ETAT_VIDE: NotionEtat = {
   derniereVerification: null,
   derniereErreur: null,
   enAttente: 0,
+  jetonVerification: null,
 };
 
 /** Mock simulant un espace connecté mais sans base encore créée. */
@@ -50,6 +53,7 @@ const NOTION_ETAT_MOCK: NotionEtat = {
   derniereVerification: null,
   derniereErreur: null,
   enAttente: 0,
+  jetonVerification: null,
 };
 
 // ── API Notion ────────────────────────────────────────────────────────────────

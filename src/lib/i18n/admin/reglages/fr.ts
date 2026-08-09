@@ -316,6 +316,10 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.notion.webhook_verification_absent":
     "Le jeton de vérification sera affiché ici dès que Notion aura envoyé sa poignée de main initiale.",
   "admin.reglages.notion.btn_copier_verification": "Copier",
+  "admin.reglages.notion.btn_afficher_verification": "Afficher",
+  "admin.reglages.notion.btn_masquer_verification": "Masquer",
+  "admin.reglages.notion.webhook_verification_avertissement":
+    "Ce code est un secret à usage unique. Ne le partagez pas et ne le recopiez que dans le portail Notion.",
   // Erreur backend
   "admin.reglages.notion.erreur_backend_titre": "Service temporairement indisponible",
   "admin.reglages.notion.erreur_backend_desc":

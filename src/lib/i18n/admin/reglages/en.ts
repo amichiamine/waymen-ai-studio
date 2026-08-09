@@ -309,6 +309,10 @@ const reglagesEn: Record<string, string> = {
   "admin.reglages.notion.webhook_verification_absent":
     "The verification token will appear here once Notion has sent its initial handshake.",
   "admin.reglages.notion.btn_copier_verification": "Copy",
+  "admin.reglages.notion.btn_afficher_verification": "Show",
+  "admin.reglages.notion.btn_masquer_verification": "Hide",
+  "admin.reglages.notion.webhook_verification_avertissement":
+    "This code is a one-time secret. Do not share it — only copy it into the Notion portal.",
   // Backend error
   "admin.reglages.notion.erreur_backend_titre": "Service temporarily unavailable",
   "admin.reglages.notion.erreur_backend_desc":

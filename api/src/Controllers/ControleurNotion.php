@@ -17,8 +17,9 @@
  * La garde est posée dans api/routes.php (visible, comme pour /maintenance/*).
  *
  * INVARIANT DE SÉCURITÉ (docs/NOTION.md §5) :
- *   - Le jeton n'est JAMAIS renvoyé au navigateur, ni en clair, ni tronqué.
- *   - etat() délègue à Configuration::etat() qui ne contient aucun champ dérivé du jeton.
+ *   - Le jeton Notion (API) n'est JAMAIS renvoyé au navigateur, ni en clair, ni tronqué.
+ *   - etat() délègue à Configuration::etat() : aucun champ dérivé du jeton Notion.
+ *   - jetonVerification (poignée de main webhook) est renvoyé uniquement au rang owner.
  *   - enregistrerToken() vérifie d'abord, enregistre ensuite — un jeton invalide
  *     n'écrase jamais un jeton qui fonctionnait.
  *
@@ -60,11 +61,14 @@ final class ControleurNotion
      * travail, identifiant de la base, envois en attente, date de la dernière
      * vérification, dernière erreur connue.
      *
-     * JAMAIS le jeton, ni en clair, ni tronqué, ni masqué.
+     * JAMAIS le jeton Notion (API), ni en clair, ni tronqué, ni masqué.
      * Configuration::etat() garantit cette propriété par construction.
+     * Le champ `jetonVerification` (jeton de poignée de main webhook) est
+     * renvoyé en clair uniquement au rang `owner` — la garde l'impose déjà.
      *
      * → { data: { configure, relie, actif, espace, baseTitre, baseUrl,
-     *             databaseId, dataSourceId, derniereVerification, derniereErreur, enAttente } }
+     *             databaseId, dataSourceId, derniereVerification, derniereErreur,
+     *             enAttente, jetonVerification } }
      *
      * @throws ApiException 403 si l'appelant n'est pas owner
      */

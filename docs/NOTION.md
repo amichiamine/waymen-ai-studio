@@ -411,6 +411,10 @@ Pour une **vraie** injoignabilité (connexion TCP refusée, le cas d'un Notion
 - **Le webhook n'a été éprouvé que contre la doublure**, en appelant
   `MiroirCommandes::appliquerPageEntrante()` directement. La vérification de
   signature n'a pas été confrontée à une vraie signature Notion.
+- ~~**Le jeton de vérification (`verification_token`) n'était pas exposé par
+  `GET /notion/status`**, bloquant définitivement l'étape 4 de l'écran d'administration.
+  Résolu en vague 4.8 : `Configuration::etat()` expose désormais `jetonVerification`
+  (déchiffré depuis `webhookSecret`) au rang owner.~~ **Résolu.**
 
 ---
 
