@@ -81,7 +81,7 @@ une base déjà sale.
 ### 2.3 Une cible non vide n'est jamais écrasée en silence
 
 ```
-REFUS : la base cible n'est pas vide (145 ligne(s) dans 23 table(s) : …).
+REFUS : la base cible n'est pas vide (145 ligne(s) dans 24 table(s) : …).
 Écraser ces données doit être demandé explicitement (option « remplacer »).
 Sauvegardez d'abord : api/tools/sauvegarder.php.
 ```
@@ -361,7 +361,7 @@ Forme du rapport :
   ],
   'sequences'  => [['table' => 'order_items', 'colonne' => 'id', 'valeur' => 50, 'note' => '…']],
   'anomalies'  => [['gravite' => 'erreur', 'message' => '…', 'table' => '…', 'colonne' => '…', 'ligne' => '…']],
-  'journal'    => [['a' => 0.004, 'message' => '23 table(s) au plan : …']],
+  'journal'    => [['a' => 0.004, 'message' => '24 table(s) au plan : …']],
 ]
 ```
 
@@ -388,7 +388,7 @@ Gravités : `erreur` (bloquante — la transaction est annulée),
 
 Toutes les valeurs ci-dessous ont été mesurées, pas estimées.
 
-**Jeu de données** : 23 tables, 145 lignes. Données de démonstration du projet
+**Jeu de données** : 24 tables, 145 lignes. Données de démonstration du projet
 (`api/tools/importer-donnees-front.php` puis `api/tools/semer-demo.php`),
 complétées de lignes volontairement hostiles : `NULL` contre chaîne vide,
 apostrophes, guillemets, retours à la ligne et tabulations dans les valeurs,
@@ -398,11 +398,11 @@ entiers négatifs, borne exacte d'`INT` (2 147 483 647), chaîne de la longueur
 maximale d'un `VARCHAR(64)`, identifiants auto-incrémentés troués (1, 2, 50).
 
 ```
-SQLite  →  MySQL      145 lues / 145 écrites   23/23 tables identiques
-MySQL   →  PostgreSQL 145 lues / 145 écrites   23/23 tables identiques
-PostgreSQL → SQLite   145 lues / 145 écrites   23/23 tables identiques
+SQLite  →  MySQL      145 lues / 145 écrites   24/24 tables identiques
+MySQL   →  PostgreSQL 145 lues / 145 écrites   24/24 tables identiques
+PostgreSQL → SQLite   145 lues / 145 écrites   24/24 tables identiques
 ─────────────────────────────────────────────────────────────────────
-SQLite de départ vs SQLite d'arrivée :         23/23 tables identiques
+SQLite de départ vs SQLite d'arrivée :         24/24 tables identiques
 ```
 
 Le sens inverse (SQLite → PostgreSQL → MySQL → SQLite) donne le même résultat :
@@ -425,7 +425,7 @@ champs JSON réordonnés :  53   (même contenu, ordre des clés normalisé — 
 | --------------------------------------------- | ----------------------------------------------------------- |
 | `kill -9` en plein transfert de 40 000 lignes | 0 ligne dans la cible, témoin `en_cours`                    |
 | Migration suivante sur cette cible            | refusée, message nommant la date et le jeton                |
-| Puis `--remplacer`                            | 40 000 lignes, 23/23 identiques, `AUTO_INCREMENT → 40001`   |
+| Puis `--remplacer`                            | 40 000 lignes, 24/24 identiques, `AUTO_INCREMENT → 40001`   |
 | Budget de temps épuisé                        | tout annulé, 0 ligne, témoin `annulee`                      |
 | Cible non vide sans `--remplacer`             | refusée, données de la cible intactes, code de sortie 1     |
 | Cible sans schéma                             | refus explicite renvoyant à `--creer-schema`                |
@@ -436,7 +436,21 @@ champs JSON réordonnés :  53   (même contenu, ordre des clés normalisé — 
 
 ---
 
-## 9. Après la migration
+## 9. La table `notion_links` et ce qui se passe lors d'une migration
+
+`notion_links` est migrée comme toutes les autres tables par le migrateur. Elle contient les liaisons commandes-pages Notion, avec leurs empreintes `pushed_hash` et `pulled_hash`.
+
+**Ce qui est préservé :** les `page_id`, `pushed_hash`, `pulled_hash`, `carrier`, `tracking_number`, ainsi que les éventuelles `last_error`. Les empreintes restent valides après migration — le mécanisme anti-écho de Notion fonctionne immédiatement sans resynchronisation forcée.
+
+**Ce qui ne change pas côté Notion :** la page Notion n'est pas une copie locale — c'est un service externe. La migration ne la modifie pas. Les liens sont intacts, le webhook continue de router correctement par `page_id`.
+
+**Ce que la migration ne fait PAS :** elle ne rétablit pas de connexion Notion. Si la boutique n'était pas connectée à Notion avant la migration, elle ne l'est pas après. Si elle l'était, la connexion continue de fonctionner — les réglages Notion sont dans la table `settings` (scope `notion`), également migrée.
+
+**Piège chiffrement.** Le jeton Notion est chiffré avec `NOTION_CRYPTO_KEY` depuis `api/.env`. Une migration vers un serveur avec un `.env` différent (clé différente ou absente) rend le jeton indéchiffrable — le miroir se désactive proprement (`configure = false`) sans panne. Il suffit de ressaisir le jeton. Voir `docs/GUIDE-BASES-DE-DONNEES.md §12.3`.
+
+---
+
+## 10. Après la migration
 
 1. **Vérifier le témoin** : `SELECT * FROM _katech_migration` doit montrer
    `terminee`. Cette table n'est jamais migrée (elle appartient au migrateur) ;

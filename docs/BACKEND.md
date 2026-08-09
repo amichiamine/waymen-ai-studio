@@ -1,7 +1,6 @@
 # BACKEND.md — le socle `api/` et sa recette de réplication
 
-> **Statut** : vague 4.1 livrée (skill S1, pilote). Ce document est la **recette
-> à suivre** par toutes les vagues suivantes de la phase 4.
+> **Statut** : vague 4.1 livrée (skill S1, pilote) — mis à jour 8-9 août 2026 (journal d'audit, configurateur, Notion, 24e table `notion_links`). Ce document est la **recette à suivre** par toutes les vagues suivantes de la phase 4.
 > Contrat de référence : `docs/API-CONTRACT.md`. Chemins de référence :
 > `src/api/endpoints.ts`. Ni l'un ni l'autre ne se renégocie.
 
@@ -46,12 +45,18 @@ api/
 │   ├── Routeur.php              Motifs d'URL, 404 vs 405
 │   ├── Pagination.php           page / perPage normalisés et bornés
 │   └── Controllers/
-│       └── ControleurProduits.php   ★ EXEMPLAIRE À RECOPIER
+│       ├── ControleurProduits.php   ★ EXEMPLAIRE À RECOPIER
+│       ├── ControleurBuilds.php     Configurateur PC (POST /builds)
+│       ├── ControleurCommandes.php  Commandes — dont GET /orders/:id (appartenance)
+│       ├── ControleurJournal.php    Journal d'audit (GET /analytics/audit)
+│       ├── ControleurNotion.php     Routes /notion/* (owner uniquement)
+│       └── ControleurNotionWebhook.php  POST /notion/webhook (signature HMAC)
 ├── schema/
-│   ├── schema.sqlite.sql        21 tables — jumeau obligatoire du fichier suivant
-│   └── schema.mysql.sql         21 tables
+│   ├── schema.sqlite.sql        24 tables — jumeau obligatoire des deux suivants
+│   ├── schema.mysql.sql         24 tables
+│   └── schema.pgsql.sql         24 tables
 ├── tools/
-│   ├── verifier-parite-schema.php   Garde-fou CI : échoue si les schémas divergent
+│   ├── verifier-parite-schema.php   Garde-fou CI : compare les 3 schémas, échoue si divergents
 │   └── semer-demo.php               Semis de développement (CLI uniquement)
 └── var/                         Base SQLite en local. HORS public_html en production.
 ```
@@ -235,7 +240,7 @@ DB_DRIVER=mysql DB_HOST=127.0.0.1 DB_NAME=katech DB_USER=katech DB_PASSWORD=… 
 | Transaction d'écriture | `Db::transaction()` (ou `beginWrite()`) : `BEGIN IMMEDIATE` en SQLite, `BEGIN` en MySQL                              |
 | Décompte de stock      | `UPDATE … SET stock_qty = stock_qty - :q WHERE id = :id AND stock_qty >= :q2` — identique et atomique des deux côtés |
 | Tri venant de l'URL    | `Db::colonneTri()` + `Db::sens()` contre une liste blanche. Jamais interpolé brut                                    |
-| Nouvelle table/colonne | **Les DEUX fichiers de `schema/`**, dans le même ordre, puis le vérificateur                                         |
+| Nouvelle table/colonne | **Les TROIS fichiers de `schema/`** (sqlite, mysql, pgsql), dans le même ordre, puis le vérificateur                 |
 
 ### Quatre pièges vérifiés sur les deux pilotes
 
@@ -272,12 +277,10 @@ DB_DRIVER=mysql DB_HOST=127.0.0.1 DB_NAME=katech DB_USER=katech DB_PASSWORD=… 
 
 ```bash
 php api/tools/verifier-parite-schema.php
-# PARITÉ OK — 21 tables, 172 colonnes, 22 index identiques des deux côtés.
+# PARITÉ OK — 24 tables, 196 colonnes, 27 index identiques dans les 3 schémas (sqlite, mysql, pgsql).
 ```
 
-Il compare tables, ordre des tables, colonnes, ordre des colonnes, type
-canonique, nullabilité, clé primaire, unicité, auto-incrément, valeur par
-défaut, et la définition de chaque index. Code de sortie **1** au moindre écart.
+Il compare les **trois** schémas (sqlite, mysql, pgsql), SQLite servant de référence. Colonnes, ordre, type canonique, nullabilité, clé primaire, unicité, auto-incrément, valeur par défaut, chaque index. Code de sortie **1** au moindre écart.
 
 Correspondances de types tolérées, et elles seules :
 
@@ -342,7 +345,7 @@ Ne jamais « corriger » ces trois colonnes en JSON.
    - `APP_ENV=production`, `CORS_ORIGINS` vide.
    - `INSTALL_OWNER_EMAIL` / `INSTALL_OWNER_PASSWORD` pour le compte propriétaire.
 4. Ouvrir `https://votre-domaine/api/install.php` **une seule fois**. Il crée
-   les 21 tables, le compte propriétaire, dépose `installed.lock` et refuse
+   les 24 tables, le compte propriétaire, dépose `installed.lock` et refuse
    tout appel ultérieur.
 5. **Supprimer `api/install.php` du serveur**, et vider les deux variables
    `INSTALL_OWNER_*` du `.env`.
@@ -441,7 +444,7 @@ de référence :
 
 ```bash
 php api/tools/verifier-parite-schema.php
-# PARITÉ OK — 23 tables, 184 colonnes, 25 index identiques dans les 3 schémas (sqlite, mysql, pgsql).
+# PARITÉ OK — 24 tables, 196 colonnes, 27 index identiques dans les 3 schémas (sqlite, mysql, pgsql).
 ```
 
 ---
@@ -471,6 +474,46 @@ VITE_API_BASE_URL=http://127.0.0.1:8099
 
 et dans `api/.env` : `CORS_ORIGINS=http://localhost:5173`. `*` est inutilisable
 ici, car le client envoie `credentials: include`.
+
+---
+
+## 10. Ce qui a été ajouté en vague 4.10 (8-9 août 2026)
+
+### 10.1 Configurateur PC — `POST /builds`
+
+Route d'écriture gardée par `protegeConnecte` (pas par `protege('create')`). Le corps ne contient que `{ "picks": { "<idEtape>": "<idPiece>", … } }`. Le prix est recalculé côté serveur à partir de `site_content.builder`. Un produit `custom_build = 1` est créé dans la table `products` avec un identifiant dérivé des pièces choisies (idempotent). Ce produit est exclu du catalogue public mais accessible par `GET /products/:id`. La limitation de débit est posée dans `ControleurBuilds`.
+
+### 10.2 Journal d'audit — classe `KaTech\Journal`
+
+Classe statique `api/src/Journal.php`, instrumentée dans 16 contrôleurs. Elle écrit dans la table `audit_logs` à chaque opération significative.
+
+**Forme d'une entrée :**
+
+```
+id          TEXT    identifiant unique (aud-<timestamp-µs>-<hex>)
+actor       TEXT    email ou identifiant de session — résolu depuis SESSION, jamais depuis la requête
+action      TEXT    verbe métier (ex. « commande_creee », « statut_modifie »)
+entity      TEXT    entité concernée (ex. « order », « product »)
+detail      TEXT    JSON contextuel — clés sensibles filtrées avant sérialisation
+created_at  TEXT    ISO-8601 UTC
+```
+
+**Garanties :**
+
+- L'acteur vient toujours de la session PHP. Une écriture non authentifiée est consignée sous « invité ».
+- Les clés sensibles (password, token, secret, api_key, hash…) sont filtrées récursivement du champ `detail` avant sérialisation (S13). Un mot de passe ne figure jamais dans un log.
+- Une consignation qui échoue ne fait pas échouer l'opération métier : l'exception est capturée et renvoyée vers `error_log` (dégradation gracieuse).
+- Si une transaction est ouverte, l'insertion y participe — pas de transaction imbriquée.
+
+**Routes :** `GET /analytics/audit` et `GET /analytics/audit/:id`, gardées par `protege('read')`.
+
+### 10.3 Routes `/notion/*`
+
+Sept routes ajoutées. Leur contrat complet est dans `docs/NOTION.md`. Ce fichier ne duplique pas ce contrat. Les six routes owner sont gardées par `protege('resetData')`. Le webhook est public, sécurisé par HMAC-SHA256. Voir `docs/PERMISSIONS.md §3.3` pour la justification de sécurité.
+
+### 10.4 Table `notion_links` — 24e table
+
+La 24e table du schéma, présente sur les trois pilotes. Elle fait la liaison entre une commande locale et sa page Notion. Ses empreintes `pushed_hash` et `pulled_hash` coupent l'écho entre le site et Notion : avant toute écriture sortante, l'empreinte est comparée — si rien n'a bougé, aucun appel réseau n'est émis. Détail dans `docs/GUIDE-BASES-DE-DONNEES.md §12` et `docs/NOTION.md §6`.
 
 ---
 

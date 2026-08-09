@@ -51,14 +51,26 @@ VITE_API_TIMEOUT_MS=15000
 
 Filtres produits : `category`, `brand`, `minPrice`, `maxPrice`, `stock`, `use`, `bestSeller`, `sale`.
 
+### Configurateur PC
+
+| Méthode | Chemin    | Garde             |
+| ------- | --------- | ----------------- |
+| POST    | `/builds` | `protegeConnecte` |
+
+Corps : `{ "picks": { "<idEtape>": "<idPiece>", … } }`. Le prix est **recalculé côté serveur** à partir de `site_content.builder` — tout champ `price` ou `id` fourni par le client est ignoré sans erreur. Le résultat est un produit avec `customBuild = true`, exclu du catalogue public mais accessible par `GET /products/:id` (panier, paiement). Le débit est limité côté contrôleur. Détails : `ControleurBuilds.php`.
+
 ### Commandes
 
-| Méthode    | Chemin               |
-| ---------- | -------------------- |
-| GET/POST   | `/orders`            |
-| GET/DELETE | `/orders/:id`        |
-| PATCH      | `/orders/:id/status` |
-| GET        | `/me/orders`         |
+| Méthode | Chemin               | Remarque de sécurité                                    |
+| ------- | -------------------- | ------------------------------------------------------- |
+| GET     | `/orders`            | `protege('read')` — back-office uniquement              |
+| POST    | `/orders`            | public (commande invité)                                |
+| GET     | `/orders/:id`        | `protegeConnecte` + appartenance vérifiée en contrôleur |
+| PATCH   | `/orders/:id/status` | `protege('update')` — back-office uniquement            |
+| DELETE  | `/orders/:id`        | `protege('delete')` — back-office uniquement            |
+| GET     | `/me/orders`         | `protegeConnecte`                                       |
+
+`GET /orders/:id` est gardé par `protegeConnecte` (non par `protege('read')`). La logique de contrôle d'accès est déléguée au contrôleur : un client propriétaire de la commande reçoit 200, un client tiers reçoit 403, un anonyme reçoit 401. Voir `docs/PERMISSIONS.md §3` pour la justification de sécurité.
 
 La création de commande décrémente le stock côté serveur (transaction) et valide le coupon.
 
@@ -84,19 +96,61 @@ Tous les champs éditoriaux sont **multilingues** : `{ "fr": "...", "en": "...",
 `/media` (upload multipart), `/media/:id`,
 `/messages`, `/subscribers`,
 `/admin/users`,
-`/analytics/dashboard`, `/analytics/reports`, `/analytics/audit`.
+`/analytics/audit`.
+
+`/analytics/dashboard` et `/analytics/reports` ne sont pas implémentés (optionnels non livrés).
+
+### Notion / miroir des commandes
+
+Les sept routes `/notion/*` sont documentées en détail dans `docs/NOTION.md`, qui est leur contrat. Ce fichier les liste uniquement pour la complétude.
+
+| Méthode | Chemin               | Garde                                                     |
+| ------- | -------------------- | --------------------------------------------------------- |
+| GET     | `/notion/status`     | `protege('resetData')` — owner uniquement                 |
+| POST    | `/notion/token`      | `protege('resetData')` — owner uniquement                 |
+| GET     | `/notion/pages`      | `protege('resetData')` — owner uniquement                 |
+| POST    | `/notion/base`       | `protege('resetData')` — owner uniquement                 |
+| PATCH   | `/notion/parametres` | `protege('resetData')` — owner uniquement                 |
+| POST    | `/notion/renvoyer`   | `protege('resetData')` — owner uniquement                 |
+| POST    | `/notion/webhook`    | **publique** — identité établie par signature HMAC-SHA256 |
+
+`POST /notion/webhook` est la seule route d'écriture non authentifiée par session. C'est un choix explicite : Notion appelle depuis ses propres serveurs, sans cookie ni session. La sécurité repose sur la vérification de la signature `X-Notion-Signature` dans `ControleurNotionWebhook`. Voir `docs/PERMISSIONS.md §3` pour la justification.
+
+### Journal d'audit
+
+| Méthode | Chemin                 | Garde             |
+| ------- | ---------------------- | ----------------- |
+| GET     | `/analytics/audit`     | `protege('read')` |
+| GET     | `/analytics/audit/:id` | `protege('read')` |
+
+Les entrées du journal sont écrites par la classe `KaTech\Journal` (statique), instrumentée dans 16 contrôleurs. Les secrets (mots de passe, jetons, clés) en sont explicitement filtrés avant sérialisation.
 
 ## Rôles et autorisations
 
-| Rôle       | Portée                              |
-| ---------- | ----------------------------------- |
-| `customer` | ses commandes, ses avis, son profil |
-| `viewer`   | lecture back-office                 |
-| `editor`   | catalogue, contenu, blog            |
-| `admin`    | + commandes, réglages, CRM          |
-| `owner`    | + utilisateurs et réinitialisations |
+| Rôle       | Portée                                    |
+| ---------- | ----------------------------------------- |
+| `customer` | ses commandes, ses avis, son profil       |
+| `viewer`   | lecture back-office                       |
+| `editor`   | catalogue, contenu, blog                  |
+| `admin`    | + commandes, réglages, CRM                |
+| `owner`    | + utilisateurs, réinitialisations, Notion |
 
-Toutes les routes `/admin/*`, `/settings/*`, `/analytics/*`, `/inventory/*` exigent un rôle back-office.
+Toutes les routes `/admin/*`, `/settings/*`, `/analytics/*`, `/inventory/*` exigent un rôle back-office. La matrice complète est dans `docs/PERMISSIONS.md`.
+
+## Routes publiques assumées
+
+Ces routes sont sans garde par décision explicite, pas par oubli :
+
+| Route                                 | Justification                                                |
+| ------------------------------------- | ------------------------------------------------------------ |
+| `GET /products` et ses sous-routes    | Vitrine publique                                             |
+| `GET /categories`, `/brands`, `/blog` | Vitrine publique                                             |
+| `GET /content`, `GET /settings/site`  | Vitrine publique                                             |
+| `POST /orders`                        | Commande invité — usage courant en Algérie                   |
+| `POST /coupons/validate`              | Vérification avant connexion, au panier                      |
+| `POST /subscribers`                   | Inscription à l'infolettre                                   |
+| `GET /products/:id/reviews`           | Avis approuvés uniquement (filtre en dur dans le contrôleur) |
+| `POST /notion/webhook`                | Appelé par les serveurs Notion ; sécurisé par HMAC-SHA256    |
 
 ## Côté frontend
 

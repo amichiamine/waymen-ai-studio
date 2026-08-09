@@ -82,12 +82,56 @@ Périmètres :
 
 ---
 
-## 3. Recette de réplication
+## 3. Règles de sécurité des routes API — décisions et justifications
+
+### 3.1 `GET /orders/:id` — garde `protegeConnecte`, non `protege('read')`
+
+**Contexte.** Avant la vague 4.10, cette route était gardée par `protege('read')`, qui exige le rang `viewer` (back-office). Un client authentifié voyait ses commandes dans `/me/orders` mais recevait `403` sur `/orders/<son-id>`. Conséquence concrète : `/checkout/success` était cassée pour tous les clients.
+
+**Décision.** La garde est abaissée à `protegeConnecte` sur la route. La logique d'accès est descendue dans `ControleurCommandes::detail()` via `Garde::exigerAppartenanceOu('read', …)`.
+
+**Conséquences.**
+
+| Appelant                        | Code reçu | Raison                                                                                                 |
+| ------------------------------- | --------- | ------------------------------------------------------------------------------------------------------ |
+| Anonyme                         | 401       | `protegeConnecte` rejette sans session                                                                 |
+| Client — sa propre commande     | 200       | `commandeAppartientAuCompte()` retourne `true`                                                         |
+| Client — commande d'autrui      | 403       | `commandeAppartientAuCompte()` retourne `false`, puis `exigerAppartenanceOu` applique le rang `viewer` |
+| Viewer / Editor / Admin / Owner | 200       | Rang `viewer` atteint, comportement back-office inchangé                                               |
+
+Vérifié sur les trois moteurs le 9 août 2026, via l'API SQLite au port 8330.
+
+**Pourquoi `PATCH /orders/:id/status` et `DELETE /orders/:id` restent `protege('update')` et `protege('delete')`.** Modifier le statut d'une commande ou la supprimer sont des gestes de back-office, pas des gestes de client. Un client qui changerait lui-même son statut de `pending` à `delivered` contournerait le flux logistique. Ces deux routes conservent donc le garde-rangée élevé.
+
+### 3.2 `POST /builds` — garde `protegeConnecte`
+
+**Contexte.** La route existante `POST /products` est gardée par `protege('create')` (rang `editor`). Un client authentifié obtenait 403 en utilisant le configurateur.
+
+**Décision.** Une route dédiée `POST /builds`, gardée par `protegeConnecte` (rang `customer` suffit). Le prix n'est jamais lu depuis la requête : il est recalculé côté serveur depuis `site_content.builder`. Un accès anonyme est refusé pour éviter de remplir la table `products` sans recours.
+
+**Conséquences.** Un client authentifié peut matérialiser sa configuration. Un anonyme reçoit 401.
+
+### 3.3 `POST /notion/webhook` — porte publique non authentifiée par session
+
+**Contexte.** Notion appelle cette route depuis ses propres serveurs, sans cookie, sans session. Exiger une session PHP la rendrait inutilisable par Notion.
+
+**Décision.** La route est publique au sens des gardes de session. La sécurité repose exclusivement sur la vérification de la signature `X-Notion-Signature` (HMAC-SHA256) dans `ControleurNotionWebhook::recevoir()`. C'est la seule porte d'écriture non authentifiée par session de toute l'API.
+
+**Ce n'est pas un oubli.** C'est un choix documenté ici et dans `api/routes.php` (commentaire de bloc). Toute tentative future de « corriger » cette route en ajoutant une garde de session la casserait silencieusement — Notion recevrait 401 et cesserait de rejouer le webhook.
+
+**Conséquences.** Un appel sans signature valide reçoit 401. Un appel avec une page inconnue de `notion_links` est ignoré sans erreur. Aucun secret en clair ne transite : le `webhookSecret` est chiffré en AES-256-GCM dans `settings` (voir `docs/NOTION.md §5`).
+
+---
+
+## 4. Recette de réplication
 
 À appliquer telle quelle sur chaque page de `src/pages/admin/`.
 Référence vivante : `src/pages/admin/Products.tsx`.
 
-### 3.1 Import et hook
+À appliquer telle quelle sur chaque page de `src/pages/admin/`.
+Référence vivante : `src/pages/admin/Products.tsx`.
+
+### 4.1 Import et hook
 
 ```tsx
 import { usePermissions } from "@/lib/admin-auth";
@@ -102,7 +146,7 @@ export default function AdminXxx() {
 soit directement un rôle plancher (`can("admin")`) quand l'action n'entre dans
 aucune catégorie. Les deux jeux de littéraux sont disjoints, donc sans ambiguïté.
 
-### 3.2 Les trois niveaux — les trois sont obligatoires
+### 4.2 Les trois niveaux — les trois sont obligatoires
 
 **Niveau 1 — affichage.** Désactiver (de préférence) ou masquer les actions
 interdites.
@@ -156,7 +200,7 @@ Le second argument de `guard` est facultatif : il préfixe le message
 </span>
 ```
 
-### 3.3 Correspondance action → clé
+### 4.3 Correspondance action → clé
 
 | Élément d'interface                              | Clé                      |
 | ------------------------------------------------ | ------------------------ |
@@ -168,7 +212,7 @@ Le second argument de `guard` est facultatif : il préfixe le message
 | Maintenance, données de démonstration            | `manageCriticalSettings` |
 | Écran `/admin/reset`                             | `resetData`              |
 
-### 3.4 Pièges à éviter
+### 4.4 Pièges à éviter
 
 - **Ne jamais appeler `canPerform()` sans second argument** dans une page :
   c'est le sélecteur de démonstration qui répondrait. Passer par
@@ -182,7 +226,7 @@ Le second argument de `guard` est facultatif : il préfixe le message
 - **Chaînes en français**, l'admin n'est pas internationalisé (choix assumé) ;
   alignement en `text-start` / `text-end`, jamais `left` / `right`.
 
-### 3.5 Vérification avant commit
+### 4.5 Vérification avant commit
 
 ```bash
 bunx tsc --noEmit

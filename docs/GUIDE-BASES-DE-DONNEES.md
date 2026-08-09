@@ -40,6 +40,8 @@ pas le moteur employé — toute la divergence entre les trois est concentrée d
 9. [La garantie anti-survente, et comment la rejouer soi-même](#9-la-garantie-anti-survente-et-comment-la-rejouer-soi-même)
 10. [Ce qui est garanti, ce qui ne l'est pas](#10-ce-qui-est-garanti-ce-qui-ne-lest-pas)
 11. [Le banc d'essai de ce guide](#11-le-banc-dessai-de-ce-guide)
+12. [La table `notion_links` et la clé de chiffrement](#12-la-table-notion_links-et-la-clé-de-chiffrement)
+13. [Dette technique — divergence de tri entre moteurs](#13-dette-technique--divergence-de-tri-entre-moteurs)
 
 ---
 
@@ -167,7 +169,7 @@ Ce que chaque moteur apporte **en plus**, en dehors du projet :
 
 #### La taille sur le disque
 
-Mesurée sur le même jeu de données (23 tables, 143 lignes), via
+Mesurée sur le même jeu de données (24 tables, 143 lignes), via
 `GET /maintenance/status` :
 
 | Moteur     | Taille occupée |
@@ -337,7 +339,7 @@ Sortie observée :
 Pilote : sqlite
 Fichier : /home/monuser/katech-data/katech.sqlite
 
-Schéma appliqué : 48 instructions, 23 tables présentes.
+Schéma appliqué : 48+ instructions, 24 tables présentes.
 Compte propriétaire créé : votre-adresse@exemple.dz
 TERMINÉ.
 Étape suivante OBLIGATOIRE : supprimez api/install.php du serveur.
@@ -416,7 +418,7 @@ php api/install.php
 == Installation KA Tech Hub ==
 Pilote : mysql
 
-Schéma appliqué : 48 instructions, 23 tables présentes.
+Schéma appliqué : 48+ instructions, 24 tables présentes.
 Compte propriétaire créé : votre-adresse@exemple.dz
 TERMINÉ.
 ```
@@ -594,7 +596,7 @@ php api/install.php
 == Installation KA Tech Hub ==
 Pilote : pgsql
 
-Schéma appliqué : 48 instructions, 23 tables présentes.
+Schéma appliqué : 48+ instructions, 24 tables présentes.
 Compte propriétaire créé : votre-adresse@exemple.dz
 TERMINÉ.
 ```
@@ -698,7 +700,7 @@ réellement obtenus sur les trois, avec le même jeu de données :
 ```
 [sauvegarde] Démarrage — pilote : sqlite
 [sauvegarde] Instantané SQLite pris via VACUUM INTO.
-[sauvegarde] Vérification du CONTENU : intégrité OK, 23 table(s), 143 ligne(s),
+[sauvegarde] Vérification du CONTENU : intégrité OK, 24 table(s), 143 ligne(s),
              empreintes identiques à la base.
 [sauvegarde] Fichier écrit : katech-20260806-223927.sqlite.gz (20.6 Ko)
 [sauvegarde] TERMINÉ avec succès en 0.01 s.
@@ -756,7 +758,7 @@ Résultats réellement obtenus :
 
 ```
 [sauvegarde] Vérification de « … » (pilote sqlite).
-[sauvegarde] Vérification du CONTENU : intégrité OK, 23 table(s), 143 ligne(s),
+[sauvegarde] Vérification du CONTENU : intégrité OK, 24 table(s), 143 ligne(s),
              empreintes identiques à la base.
 
 [sauvegarde] Vérification de « … » (pilote mysql).
@@ -772,7 +774,7 @@ Ce que « vérifiée » signifie ici : le contrôle porte sur le **contenu**, pa
 la structure. Une empreinte est calculée par table, ligne à ligne, sur la base
 vivante, puis **recalculée depuis le fichier de sauvegarde**. Les deux doivent
 coïncider. Un contrôle qui se contenterait de compter les tables déclarerait
-« 23 tables, OK » sur une sauvegarde entièrement vide.
+« 24 tables, OK » sur une sauvegarde entièrement vide.
 
 Les empreintes sont écrites dans le fichier lui-même (lignes `-- EMPREINTE …`),
 ce qui rend l'archive auto-descriptive : des mois plus tard, `--verifier`
@@ -861,7 +863,7 @@ migration de SQLite vers une base MySQL vide :
  site_content               20        0 ffe1fb23f4afd7b3406fa58f.20 —
  outbox                     13        0 3d187c0a74a40974711ea44e.13 —
  ------------------------------------------------------------------------
- TOTAL (23 tables)         143        0  0/23 table(s) au contenu identique
+ TOTAL (24 tables)         143        0  0/24 table(s) au contenu identique
 
  ANOMALIES (0 bloquante(s), 0 avertissement(s)) :
    [INFO] Simulation : les tables absentes de la cible ont été CRÉÉES (vides)
@@ -940,7 +942,7 @@ cela, laissez `INSTALL_OWNER_EMAIL` et `INSTALL_OWNER_PASSWORD` vides dans le
 `.env` pointant vers la cible :
 
 ```
-Schéma appliqué : 48 instructions, 23 tables présentes.
+Schéma appliqué : 48+ instructions, 24 tables présentes.
 Compte propriétaire NON créé : renseignez INSTALL_OWNER_EMAIL et
 INSTALL_OWNER_PASSWORD dans api/.env puis relancez après avoir effacé le témoin.
 AVERTISSEMENT : sans compte propriétaire, personne ne peut administrer le site.
@@ -1303,7 +1305,7 @@ sur une même machine. Trois instances de l'API servies par le serveur intégré
 PHP avec `PHP_CLI_SERVER_WORKERS=8`, aux ports 8410 (SQLite), 8411 (MySQL) et
 8412 (PostgreSQL).
 
-**Jeu de données** : 23 tables, 143 lignes — les données de démonstration du
+**Jeu de données** : 24 tables, 143 lignes — les données de démonstration du
 projet (12 produits, 8 marques, 4 catégories, 59 tarifs de livraison, 5 articles
 de blog, 20 blocs de contenu, 4 moyens de paiement, 2 réglages, 1 compte
 propriétaire) plus 5 commandes réelles, leurs 5 lignes de commande, leurs 5
@@ -1313,17 +1315,17 @@ mouvements de stock et 13 événements, créés par les tests de concurrence.
 
 | Opération                                                         | Résultat                                                     |
 | ----------------------------------------------------------------- | ------------------------------------------------------------ |
-| Installation par `api/install.php`, sur les trois moteurs         | 48 instructions, 23 tables, compte propriétaire créé         |
+| Installation par `api/install.php`, sur les trois moteurs         | 48+ instructions, 24 tables, compte propriétaire créé        |
 | Installation pilotée par un fichier `api/.env` réel               | Réussie ; permissions du `.env` corrigées en 0640            |
 | Installation du schéma seul (sans compte propriétaire)            | Réussie, avertissement explicite                             |
 | Import des données de démonstration, sur les trois                | Réussi et rejouable                                          |
 | `preuve-concurrence.php` — 6, 12 et 20 processus, sur 3 moteurs   | 9 exécutions, 9 verdicts OK, 0 survente                      |
-| SQLite → MySQL                                                    | 143 lues / 143 écrites, 23/23 identiques, 0,045 s            |
-| MySQL → PostgreSQL                                                | 143 lues / 143 écrites, 23/23 identiques, 0,149 s            |
-| PostgreSQL → SQLite (base neuve, `--creer-schema`)                | 143 lues / 143 écrites, 23/23 identiques, 0,087 s            |
-| SQLite → PostgreSQL                                               | 143 lues / 143 écrites, 23/23 identiques, 0,134 s            |
-| PostgreSQL → MySQL                                                | 143 lues / 143 écrites, 23/23 identiques, 0,099 s            |
-| MySQL → SQLite (base neuve)                                       | 143 lues / 143 écrites, 23/23 identiques, 0,043 s            |
+| SQLite → MySQL                                                    | 143 lues / 143 écrites, 24/24 identiques, 0,045 s            |
+| MySQL → PostgreSQL                                                | 143 lues / 143 écrites, 24/24 identiques, 0,149 s            |
+| PostgreSQL → SQLite (base neuve, `--creer-schema`)                | 143 lues / 143 écrites, 24/24 identiques, 0,087 s            |
+| SQLite → PostgreSQL                                               | 143 lues / 143 écrites, 24/24 identiques, 0,134 s            |
+| PostgreSQL → MySQL                                                | 143 lues / 143 écrites, 24/24 identiques, 0,099 s            |
+| MySQL → SQLite (base neuve)                                       | 143 lues / 143 écrites, 24/24 identiques, 0,043 s            |
 | Contrôle SQLite de départ vs SQLite d'arrivée, sur les 2 circuits | 13 tables peuplées identiques, 0 divergente, 0 anomalie      |
 | Migration réelle sans `--remplacer` sur une cible peuplée         | Refusée, cible intacte, code de sortie 1                     |
 | Migration depuis `/admin/developpeur` — simulation                | 143 lues / 0 écrite / 0 anomalie                             |
@@ -1344,6 +1346,101 @@ MySQL → SQLite) rendent une base d'arrivée identique à la base de départ.
 
 ---
 
+---
+
+## 12. La table `notion_links` et la clé de chiffrement
+
+### 12.1 La 24e table — `notion_links`
+
+Ajoutée lors de la vague 4.7. Elle fait la liaison entre une commande locale (`order_id`) et sa page Notion (`page_id`). Présente sur les trois pilotes (schémas `schema.sqlite.sql`, `schema.mysql.sql`, `schema.pgsql.sql`, à partir du §24 de chaque fichier).
+
+**Colonnes :**
+
+| Colonne           | Type TEXT | Rôle                                                                  |
+| ----------------- | --------- | --------------------------------------------------------------------- |
+| `order_id`        | clé PK    | Identifiant de la commande locale                                     |
+| `page_id`         | unique    | Identifiant de la page Notion (index UNIQUE — le webhook n'a que lui) |
+| `data_source_id`  |           | Identifiant de la data source Notion (connexion)                      |
+| `pushed_hash`     | nullable  | Empreinte SHA-256 du dernier état ÉCRIT vers Notion                   |
+| `pushed_at`       | nullable  | Horodatage de la dernière écriture sortante                           |
+| `pulled_hash`     | nullable  | Empreinte SHA-256 du dernier état LU depuis Notion (webhook)          |
+| `pulled_at`       | nullable  | Horodatage de la dernière réception                                   |
+| `carrier`         | nullable  | Transporteur reçu via webhook                                         |
+| `tracking_number` | nullable  | Numéro de colis reçu via webhook                                      |
+| `last_error`      | nullable  | Dernière erreur connue (effacée au premier succès)                    |
+| `created_at`      |           | ISO-8601 UTC                                                          |
+| `updated_at`      |           | ISO-8601 UTC                                                          |
+
+**À quoi servent les empreintes.** `pushed_hash` et `pulled_hash` coupent l'écho entre le site et Notion. Avant toute écriture sortante, le serveur calcule l'empreinte SHA-256 des propriétés à envoyer et la compare à `pushed_hash` (rien n'a bougé depuis la dernière poussée) et à `pulled_hash` (c'est Notion qui a écrit cet état : renvoyer la même chose serait un écho). Si les deux comparaisons sont égales, aucun appel réseau n'est émis. Ceci évite des boucles de synchronisation et réduit la consommation du quota d'API Notion (3 req/s). Détail complet dans `docs/NOTION.md §6`.
+
+### 12.2 `notion_links` et la migration entre pilotes
+
+La table `notion_links` est migrée comme toutes les autres par le migrateur (`api/src/Migration/Migrateur.php`). Elle voyage donc d'un pilote à l'autre sans traitement particulier. Après migration :
+
+- Les `pushed_hash` et `pulled_hash` sont préservés : les empreintes restent valides, le mécanisme anti-écho fonctionne immédiatement.
+- Les `page_id` pointent toujours vers Notion : les liens sont intacts, le webhook continue de router correctement.
+- Les `carrier` et `tracking_number` reçus avant la migration sont conservés : aucun suivi n'est perdu.
+
+**Ce qui change après migration :** rien côté Notion. La page Notion n'est pas une copie de la base — c'est un miroir externe. Elle reste à l'état qu'elle avait avant la migration et sera resynchronisée au prochain appel sortant si quoi que ce soit a changé entre-temps.
+
+**Ce qui ne change pas :** le `page_id` reste valide. La prochaine synchronisation après migration compare les empreintes et n'émet un appel réseau que si un changement est détecté.
+
+### 12.3 La clé de chiffrement `NOTION_CRYPTO_KEY` et la restauration de sauvegarde
+
+**Contexte.** Le jeton d'intégration Notion (`ntn_…`) est chiffré en AES-256-GCM avant d'être écrit dans la table `settings` (scope `notion`, clé `token`). La clé de chiffrement, 32 octets en base64, vit dans `api/.env` sous la variable `NOTION_CRYPTO_KEY`. Elle est **générée automatiquement** lors du premier enregistrement d'un jeton Notion, si elle est absente.
+
+**Le piège de restauration.** `GET /maintenance/backup` produit une archive qui contient la base entière, y compris la table `settings` avec le jeton chiffré. Mais l'archive ne contient pas `api/.env`. Si vous restaurez la base sur un serveur sans le `.env` correspondant (clé différente ou absente), le jeton devient indéchiffrable.
+
+**Ce qui se passe concrètement :** `Coffre::ouvrir()` retourne `null` sans lever d'exception (dégradation gracieuse). L'écran Notion affiche « non configuré », exactement comme si aucun jeton n'avait jamais été saisi. La boutique continue de fonctionner normalement — les commandes, les produits, le stock ne sont pas affectés. Seul le miroir Notion est désactivé.
+
+**Que faire :** ressaisir le jeton dans l'écran `/admin/notion`. Il sera rechiffré avec la clé du nouveau `.env`.
+
+**Recommandation :** sauvegarder `api/.env` séparément de la base, dans un endroit sécurisé. Un coffre de mots de passe ou un gestionnaire de secrets convient. Ne jamais inclure `api/.env` dans une archive de base téléchargeable — c'est précisément sa valeur de sécurité que la clé soit hors base.
+
+---
+
+## 13. Dette technique — divergence de tri entre moteurs
+
+**Statut : dette technique identifiée et mesurée le 8 août 2026. Non corrigée.**
+
+### 13.1 Le problème
+
+`GET /brands` (et 13 autres contrôleurs) construisent leur propre clause `ORDER BY name ASC`. Le résultat diffère selon le moteur :
+
+| Moteur         | Collation            | Tri observé de `brands.name` |
+| -------------- | -------------------- | ---------------------------- |
+| **MySQL**      | `utf8mb4_unicode_ci` | `apple, asus, dell, hp, …`   |
+| **SQLite**     | binaire (par défaut) | `asus, apple, dell, hp, …`   |
+| **PostgreSQL** | collation C (défaut) | `asus, apple, dell, hp, …`   |
+
+La cause : `utf8mb4_unicode_ci` est insensible à la casse — `Apple` et `apple` sont équivalents pour ce tri. SQLite et PostgreSQL trient en binaire, où `A` (65) précède `a` (97). `ASUS` commence par `A`, `apple` par `a` minuscule — en binaire, `ASUS` passe devant `apple`.
+
+Ces résultats ont été reproduits sur les trois pilotes le 9 août 2026 par requête directe :
+
+```
+MySQL  (utf8mb4_unicode_ci) : apple, asus, dell, hp, ka-build, lenovo, samsung, xiaomi
+SQLite (binaire)            : asus, apple, dell, hp, ka-build, lenovo, samsung, xiaomi
+PostgreSQL (collation C)    : asus, apple, dell, hp, ka-build, lenovo, samsung, xiaomi
+```
+
+### 13.2 Ce que `verifier-parite-schema.php` ne voit pas
+
+Le vérificateur compare la **structure** des schémas (tables, colonnes, types, index), jamais le **comportement** des tris. La divergence est donc invisible dans la CI.
+
+### 13.3 Portée
+
+14 contrôleurs construisent leur propre clause `ORDER BY` : `ControleurMarques`, `ControleurCategories`, `ControleurProduits`, `ControleurCommandes`, `ControleurClients`, `ControleurBlog`, `ControleurAvis`, `ControleurCoupons`, `ControleurMedias`, `ControleurNotifications`, `ControleurCrm`, `ControleurStock`, `ControleurJournal`, et `ControleurUtilisateurs`. Chacun est une source potentielle de tri divergent.
+
+### 13.4 Piste de correction
+
+La correction juste est une normalisation centrale dans `Db::colonneTri()` : forcer la collation au moment du tri, par exemple `ORDER BY name COLLATE NOCASE ASC` en SQLite, `ORDER BY name COLLATE utf8mb4_general_ci ASC` en MySQL, et `ORDER BY lower(name) ASC` en PostgreSQL. Ou plus simplement, normaliser sur `LOWER(name)` dans `Db::colonneTri()` pour les colonnes textuelles, ce qui est portable sur les trois pilotes.
+
+Ce n'est pas 14 rustines qu'il faut — c'est une décision centrale dans `Db`. Une rustine dans chaque contrôleur risque d'être appliquée de façon inconsistante et de créer de nouvelles divergences lors de l'ajout de futurs contrôleurs.
+
+**Ce que cela n'affecte pas :** le contenu stocké est identique sur les trois moteurs (les empreintes de migration le confirment). C'est uniquement l'ordre de présentation qui diffère.
+
+---
+
 ## Pour aller plus loin
 
 | Question                                     | Document              |
@@ -1353,3 +1450,4 @@ MySQL → SQLite) rendent une base d'arrivée identique à la base de départ.
 | L'architecture de l'API et de la persistance | `docs/BACKEND.md`     |
 | Toutes les variables de configuration        | `api/.env.example`    |
 | Le code qui porte les trois pilotes          | `api/src/Db.php`      |
+| Le miroir Notion et la table `notion_links`  | `docs/NOTION.md`      |
