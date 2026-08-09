@@ -266,10 +266,30 @@ bun run build
 - Triple pilote : **SQLite**, **MySQL/MariaDB**, **PostgreSQL**
 - Outbox vidée en fin de requête (pas de tâche planifiée pour les emails)
 
+### Par où commencer, selon qui vous êtes
+
+**Vous n'êtes pas développeur ?** Ouvrez **`GUIDE.html`**, à la racine du dépôt.
+Un seul fichier, un double-clic, aucune connexion Internet nécessaire : le guide
+complet et illustré de tout le site — configuration, compilation, installation,
+déploiement, usage quotidien, entretien, dépannage. **Français et arabe**, avec
+une bascule en haut de page. C'est le seul document à lire si vous n'en lisez
+qu'un. Il se reconstruit par `bun run construire-guide`.
+
+**Vous lisez l'arabe ?** `docs/ar/` porte la version arabe des trois guides
+destinés au commerçant : manuel d'utilisation, guide d'exploitation, guide de
+déploiement chez l'hébergeur. `docs/ar/README.md` en est l'index, et dit
+honnêtement ce qui existe en arabe et ce qui reste en français.
+
+Les documents purement techniques — contrat d'API, backend, migration, contrat
+Notion — restent en français **à dessein** : ils sont attachés à des identifiants
+du code, et une traduction y créerait une divergence silencieuse.
+
 ### Où trouver quoi
 
 | Besoin                          | Fichier                           |
 | ------------------------------- | --------------------------------- |
+| Guide complet illustré (FR/AR)  | `GUIDE.html`                      |
+| Documentation en arabe          | `docs/ar/`                        |
 | Schéma des tables               | `api/schema/`                     |
 | Contrôleurs API                 | `api/src/Controllers/`            |
 | Connexion et dialectes SQL      | `api/src/Db.php`                  |
