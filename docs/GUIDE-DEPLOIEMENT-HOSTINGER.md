@@ -199,7 +199,9 @@ un prestataire.
 > pièges connus, et tous deux ont été relus dans le code du projet.
 >
 > **1. `VITE_API_MODE` doit valoir `http`.**
-> Sa valeur par défaut est `mock` : dans ce mode, le site fonctionne
+> Le fichier `.env.example` porte déjà `VITE_API_MODE=http` depuis le 8 août
+> 2026 : si vous compilez depuis ce projet sans modifier les variables, c'est
+> le bon mode. Si jamais la variable vaut `mock`, le site fonctionne
 > entièrement dans le navigateur, avec des données de démonstration, et
 > **n'appelle jamais l'API**. Rien ne l'indique à l'écran : les pages
 > s'affichent, les produits apparaissent, et pourtant aucune commande
@@ -240,8 +242,23 @@ Sous Windows, si cette forme n'est pas acceptée par votre terminal, définissez
 les deux variables avant d'appeler `bun run build`, ou utilisez le terminal Git
 Bash livré avec Git pour Windows.
 
-La compilation dure quelques secondes et se termine par une ligne du type
-`✓ built in 6.62s`.
+La compilation se déroule en deux temps. D'abord `vite build` (~6 s), puis
+le script de prérendu visite les 27 URL du sitemap et écrit un fichier HTML
+prérendu pour chacune. La sortie ressemble à :
+
+```
+✓ built in 6.04s
+[prerendu] 27 route(s) du sitemap…
+[prerendu] 10/27 page(s) écrites…
+```
+
+Le temps total est d'environ **17 secondes**. C'est normal.
+
+Si une page n'est pas prérendue (la sortie l'indique), elle reste accessible en
+mode normal — le build n'échoue pas. Cause la plus fréquente : l'API n'est pas
+disponible sur la machine de compilation ; pour prérender les fiches produit et
+les articles, ajouter `PRERENDU_API_URL=http://127.0.0.1:8160` et démarrer
+l'API localement (`bun run dev:api`) avant de lancer `bun run build`.
 
 ### Vérifier avant de continuer
 
@@ -313,6 +330,11 @@ Le résultat visé :
     ├── index.html
     ├── assets/
     ├── media/
+    ├── about/                         ← sous-dossiers prérendus (produits par bun run build)
+    ├── blog/                             Chacun contient un index.html prérendu.
+    ├── builder/                          Téléversez-les avec le reste du contenu de dist/.
+    ├── category/
+    ├── contact/
     ├── favicon.ico, robots.txt, sitemap.xml, …
     ├── uploads/                       ← images envoyées depuis l'administration
     └── api/
@@ -518,7 +540,7 @@ d'essai complet :
 Pilote : sqlite
 Fichier : /chemin/vers/katech-data/katech.sqlite
 
-Schéma appliqué : 48 instructions, 23 tables présentes.
+Schéma appliqué : 48 instructions, 24 tables présentes.
 Compte propriétaire créé : proprietaire@exemple.dz
 Mot de passe haché avec : bcrypt (Argon2id indisponible sur ce PHP — repli automatique, et re-hachage en Argon2id à la première connexion si l'extension apparaît).
 Effacez maintenant INSTALL_OWNER_PASSWORD de api/.env : le mot de passe est en base,
@@ -531,7 +553,7 @@ TERMINÉ.
 Trois lignes à contrôler :
 
 - **`Pilote :`** doit nommer le moteur que vous avez choisi.
-- **`23 tables présentes.`** Un nombre inférieur signifie que le dossier
+- **`24 tables présentes.`** Un nombre inférieur signifie que le dossier
   `api/schema/` n'a pas été téléversé entièrement. Retournez à l'étape 5.
 - **`TERMINÉ.`** doit apparaître. Sans ce mot, l'installation a échoué.
 
@@ -975,7 +997,7 @@ l'indique l'étape 6.
 ### 3. Le fichier `.env.example` de la racine du projet fige l'adresse de l'API
 
 Le fichier `.env.example` situé à la racine du projet contient la ligne
-`VITE_API_BASE_URL=/api/v1` (ligne 30). Recopié en `.env` avant la compilation,
+`VITE_API_BASE_URL=/api/v1` (ligne 64). Recopié en `.env` avant la compilation,
 il produit exactement la panne décrite au chapitre « Le site déposé dans un
 sous-dossier ne fonctionne qu'à l'accueil ».
 

@@ -3,7 +3,8 @@
 Application e-commerce complète : SPA React/Vite en frontend, API PHP 8.2
 en backend, base de données au choix (`sqlite`, `mysql` ou `pgsql`). Hébergement
 mutualisé sans prérequis exotique : pas de Node.js côté serveur, pas de Composer
-sur le serveur. `bun run build` produit le frontend statique ; `api/` contient
+sur le serveur. `bun run build` produit le frontend statique avec prérendu des
+27 URL du sitemap (`scripts/prerendu.ts`, script `postbuild`) ; `api/` contient
 le backend PHP prêt à déployer.
 
 ## Développement
@@ -114,9 +115,13 @@ comme un succès. Rapport : `docs/CONFORMITE-API.md`.
 La procédure complète sans SSH est dans `docs/DEPLOIEMENT.md`.
 Résumé :
 
-1. `bun run build` — produit `dist/`.
+1. `VITE_API_MODE=http bun run build` — produit `dist/` (Vite ~6 s, puis
+   prérendu des 27 URL ~17 s au total). La variable `VITE_API_MODE=http` est
+   désormais la valeur par défaut de `.env.example` ; elle est obligatoire pour
+   tout déploiement réel. Désactiver le prérendu : `PRERENDU=0 bun run build`.
 2. Téléverser le contenu de `dist/` dans `public_html/` et `api/` dans
-   `public_html/api/`.
+   `public_html/api/`. Le prérendu produit des sous-dossiers
+   (`about/`, `blog/`, `category/`…) — les téléverser aussi.
 3. Créer `api/.env` à partir de `api/.env.example`. Choisir `DB_DRIVER`
    (`sqlite`, `mysql` ou `pgsql`).
 4. Ouvrir `/api/install.php` une fois, puis le supprimer.
@@ -141,6 +146,7 @@ rechargées échoueront.
 └── public_html/
     ├── index.php             ← injecte la balise <base>, permet le sous-dossier
     ├── index.html, assets/
+    ├── about/, blog/, builder/, category/, contact/ ← sous-dossiers prérendus
     ├── uploads/            ← images produits (servis par HTTP)
     └── api/                ← backend PHP
 ```
@@ -201,7 +207,7 @@ En production, aucun compte n'est semé, aucun mot de passe n'est embarqué dans
 bun run build && grep -r "katech-dev-2026" dist/   # ne doit rien renvoyer
 ```
 
-En mode `mock` (le défaut), la connexion est vérifiée localement dans le navigateur, sans appel serveur. En mode `http` (après la bascule `VITE_API_MODE=http` du build), la vérification passe par l'API PHP avec Argon2id — voir `PLAN.md` §8.
+En mode `mock`, la connexion est vérifiée localement dans le navigateur, sans appel serveur. En mode `http` (`VITE_API_MODE=http`, désormais la valeur par défaut de `.env.example`), la vérification passe par l'API PHP avec Argon2id — voir `PLAN.md` §8. `bun run dev:mock` reste la porte du mode sans serveur.
 
 ### Piège : les données semées ne le sont qu'une fois
 
@@ -241,7 +247,7 @@ La commande `bun run build:dev` exécute `vite build --mode development`. En mod
 bun run build
 ```
 
-`bun run build` produit un bundle optimisé sans aucun identifiant embarqué. En mode `mock` (le défaut), la page de connexion s'affiche mais aucun compte réel n'existe sur le serveur : la connexion fonctionnelle requiert un déploiement avec `VITE_API_MODE=http` et un `api/.env` renseigné — voir `docs/DEPLOIEMENT.md`.
+`bun run build` produit un bundle optimisé sans aucun identifiant embarqué, puis prérend les 27 URL du sitemap. La variable `VITE_API_MODE=http` est la valeur par défaut de `.env.example` ; sans elle (ou avec `VITE_API_MODE=mock`), le site ne parle jamais à l'API. La connexion fonctionnelle requiert aussi un `api/.env` renseigné — voir `docs/DEPLOIEMENT.md`.
 
 ## Architecture
 

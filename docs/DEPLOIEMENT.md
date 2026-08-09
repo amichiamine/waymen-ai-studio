@@ -81,13 +81,26 @@ c'est ce qui décide si le pilote SQLite est utilisable.
 
 ```bash
 bun install
-VITE_API_MODE=http bun run build      # produit dist/
+VITE_API_MODE=http bun run build      # produit dist/ (~17 s avec prérendu)
 ```
 
-> **`VITE_API_MODE=http` est obligatoire pour un déploiement réel.** Le défaut
-> est `mock` : un build sans cette variable ne parlera jamais à l'API PHP, quelle
-> que soit la configuration du serveur. La valeur est figée au build ; changer
-> `api/.env` après coup n'y changera rien.
+> **`VITE_API_MODE=http` est le mode du projet** (valeur par défaut dans
+> `.env.example` depuis le 8 août 2026). Un build sans cette variable ne parlera
+> jamais à l'API PHP, quelle que soit la configuration du serveur. La valeur est
+> figée au build ; changer `api/.env` après coup n'y changera rien. Pour
+> travailler sans serveur (frontend seul) : `bun run dev:mock`.
+>
+> **Le build effectue deux étapes.** D'abord `vite build` (~6 s), puis le script
+> `postbuild` (`scripts/prerendu.ts`) visite les 27 URL du sitemap avec Chromium
+> et écrit un `<route>/index.html` prérendu pour chacune (~11 s
+> supplémentaires). L'arborescence à téléverser contient donc des sous-dossiers
+> (`about/`, `blog/`, `builder/`, `category/`…) en plus des fichiers habituels.
+>
+> Si le prérendu échoue pour une page (API absente au build, données manquantes),
+> cette page reste servie par le repli SPA — le build ne s'interrompt pas et
+> `dist/` reste déployable. La sortie du build liste les pages non prérendues.
+> Pour désactiver entièrement le prérendu : `PRERENDU=0 bun run build`.
+> Pour prérender avec l'API locale : `PRERENDU_API_URL=http://127.0.0.1:8160 VITE_API_MODE=http bun run build`.
 >
 > `VITE_API_BASE_URL` n'est pas à modifier : sa valeur par défaut (`/api/v1`) est
 > un chemin relatif qui fonctionne aussi bien à la racine du domaine que dans un
@@ -149,6 +162,8 @@ gérée côté navigateur et qu'aucun fichier `produits` n'existe sur le disque.
     ├── robots.txt
     ├── sitemap.xml
     ├── assets/                        ← contenu de dist/assets/ (JS, CSS, images empreintés)
+    ├── about/, blog/, builder/,       ← sous-dossiers prérendus (chacun contient index.html)
+    │   category/, contact/               Téléverser comme le reste du contenu de dist/.
     │
     ├── uploads/                       ← médias téléversés depuis l'administration
     │
@@ -401,6 +416,32 @@ BACKUP_DIR=/home/uXXXXXXXXX/domains/votre-domaine.dz/katech-data/backups
 BACKUP_KEEP=14
 ```
 
+### Variables Notion — facultatives, à ne pas toucher manuellement
+
+Le miroir Notion (suivi des commandes, page `/admin/notion`) ne nécessite aucune
+variable dans `.env` pour être mis en service : la clé de connexion se saisit
+dans l'administration, où elle est chiffrée avant d'être enregistrée.
+
+Deux variables sont générées ou utilisées automatiquement par l'API :
+
+| Variable            | Rôle                                                                                                                                                                                                                  | Obligatoire |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `NOTION_CRYPTO_KEY` | Clé AES-256-GCM (32 octets en base64) qui protège le jeton Notion. **Créée automatiquement** par l'API à la première mise en service — ne jamais la renseigner à la main ni la recopier d'une installation à l'autre. | Non         |
+| `NOTION_API_BASE`   | URL de remplacement de l'API Notion (développement uniquement, pour viser la doublure locale `api/tools/faux-notion.php`). Laisser **vide** en production.                                                            | Non         |
+
+> **Pourquoi `NOTION_CRYPTO_KEY` vit dans `.env` et pas en base.** La
+> sauvegarde téléchargeable depuis `/admin/developpeur` contient toute la base —
+> un jeton en clair dans une table s'y retrouverait. La clé dans `.env` (que la
+> sauvegarde ne contient pas et que `api/.htaccess` interdit de télécharger)
+> garantit qu'une archive volée ne livre qu'un jeton illisible.
+>
+> **Ne jamais mettre un secret dans une variable préfixée `VITE_`.** Vite remplace
+> statiquement ces variables dans le bundle JavaScript, visible par tout
+> visiteur. Les variables `api/.env` n'ont pas ce préfixe et ne sont jamais
+> injectées dans le frontend — voir `SKILLS.md` S13 pour le détail.
+>
+> La documentation complète du miroir Notion est dans `docs/NOTION.md`.
+
 ---
 
 ## 8. Lancer l'installation
@@ -417,7 +458,7 @@ La page répond en texte brut. En cas de succès :
 == Installation KA Tech Hub ==
 Pilote : mysql
 
-Schéma appliqué : 48 instructions, 23 tables présentes.
+Schéma appliqué : 48 instructions, 24 tables présentes.
 Compte propriétaire créé : vous@votre-domaine.dz
 Mot de passe haché avec : argon2id.
 Effacez maintenant INSTALL_OWNER_PASSWORD de api/.env : le mot de passe est en base,
@@ -427,8 +468,15 @@ TERMINÉ.
 Étape suivante OBLIGATOIRE : supprimez api/install.php du serveur.
 ```
 
-**Le nombre de tables doit être 23.** S'il est inférieur, le dossier
+**Le nombre de tables doit être 24.** S'il est inférieur, le dossier
 `api/schema/` n'a pas été téléversé entièrement.
+
+> **Réinstaller volontairement** (base effacée, changement de moteur…) : le
+> témoin `api/installed.lock` protège l'installation existante. Pour le
+> contourner, supprimez ce fichier depuis le gestionnaire de fichiers, puis
+> rechargez `install.php`. Le témoin bloque même si la base a été supprimée
+> entre-temps — c'est voulu : une reinstallation accidentelle est plus dangereuse
+> qu'une reinstallation manquée.
 
 ### Accès aux données après installation : page Développeur
 
@@ -544,7 +592,7 @@ Sortie attendue :
 ```
 [sauvegarde] Démarrage — pilote : mysql
 [sauvegarde] Destination : /home/.../katech-data/backups
-[sauvegarde] Vérification : marqueur de fin présent, 23 table(s) exportées.
+[sauvegarde] Vérification : marqueur de fin présent, 24 table(s) exportées.
 [sauvegarde] Fichier écrit : katech-20260806-031500.sql.gz (412 Ko)
 [sauvegarde] Rotation : rien à supprimer (limite de 14 non atteinte).
 [sauvegarde] TERMINÉ avec succès en 1.24 s.
@@ -686,7 +734,7 @@ chronologique.
    augmentez `upload_max_filesize` dans hPanel.
 
 Le fichier se termine par une ligne
-`-- FIN DE SAUVEGARDE 23 table(s), N ligne(s)`. **Son absence signifie que
+`-- FIN DE SAUVEGARDE 24 table(s), N ligne(s)`. **Son absence signifie que
 l'export a été tronqué** : n'utilisez pas ce fichier, prenez le précédent.
 
 ### Vérifier après restauration
