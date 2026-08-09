@@ -49,9 +49,14 @@ KA Tech se compose de deux parties.
 - **L'administration**, accessible à l'adresse du site suivie de `/admin`.
   Elle regroupe 34 écrans et n'est ouverte qu'aux membres de l'équipe.
 
-L'administration est **entièrement en français**, quelle que soit la langue
-choisie sur la boutique. C'est un choix assumé : l'équipe travaille dans une
-seule langue, les clients en ont trois.
+L'administration parle **trois langues** : français, anglais, arabe. La langue
+active est celle que vous avez choisie sur la boutique. En arabe, la mise en
+page de l'administration se retourne elle aussi et se lit de droite à gauche.
+
+Pour changer de langue : cliquer sur l'icône drapeau dans l'en-tête de la
+boutique et choisir **Français**, **English** ou **العربية**. Le changement est
+immédiat, dans la boutique comme dans l'administration. Le choix est mémorisé
+dans le navigateur : la prochaine session s'ouvre dans la même langue.
 
 ### 1.2 Se connecter
 
@@ -189,10 +194,26 @@ récapitulatif affiche l'avancement, la liste des choix et le **Total** qui se
 met à jour à chaque clic. Tant que les huit étapes ne sont pas remplies, le
 message **Complétez votre sélection** liste ce qui manque.
 
-La page précise que le prix est indicatif et que la boutique rappellera le
-client pour confirmer le montage. **Le configurateur ne crée pas de commande
-automatiquement** : il produit une demande que votre équipe traite au
-téléphone. La liste des composants proposés se modifie dans
+**Le configurateur fonctionne comme un panier ordinaire.** Un client connecté
+qui a rempli les huit étapes clique sur **Ajouter au panier** : sa configuration
+est enregistrée, puis elle suit exactement le même chemin qu'un produit du
+catalogue — panier, commande, confirmation, paiement. Le bouton est désactivé
+pour un visiteur non connecté.
+
+**Le prix est calculé par le serveur, pas par le navigateur.** Le client voit
+un total indicatif à l'écran, mais c'est le serveur qui calcule la somme à
+partir de ses propres fiches de composants, au moment de l'ajout au panier.
+Personne ne peut modifier le prix depuis son navigateur.
+
+**Ce que vous verrez dans les commandes.** Une configuration commandée
+apparaît dans **Commandes** comme n'importe quelle commande : un numéro
+`KA…`, un client, un total, un statut. Dans la liste des articles, la ligne
+porte le nom de la configuration (par exemple « Configuration Gaming
+Mid-Range ») et son prix serveur. Les configurations **ne figurent pas dans
+le catalogue public** : elles n'apparaissent pas dans la liste Produits ni
+sur la boutique, mais elles s'affichent normalement dans les commandes.
+
+La liste des composants proposés se modifie dans
 Paramètres › **Étapes du configurateur PC**.
 
 ### 2.5 Le panier et la commande
@@ -698,11 +719,35 @@ Une cloche dans l'en-tête indique le nombre de notifications non lues.
 
 ### 7.5 Journal d'audit
 
-**Journal d'audit** est prévu pour conserver la trace des actions importantes.
-**À la date de ce manuel, il n'enregistre rien** : l'écran affiche « 0
-événement journalisé » et un message d'indisponibilité. Voir le chapitre 11. En
-attendant, l'**onglet Mouvements** de Stock et le **Suivi du statut** de chaque
-commande restent des historiques fiables.
+**Journal d'audit** est l'historique de toutes les actions importantes
+effectuées sur le site. Il répond à la question : _qui a fait quoi, et quand ?_
+
+C'est lui qu'on consulte le jour où un prix a changé sans qu'on sache pourquoi,
+où un produit a disparu, ou quand on veut vérifier qu'aucune action suspecte
+n'a eu lieu sur un compte.
+
+L'écran **Journal d'audit** (menu Système) affiche un tableau avec cinq
+colonnes : **Date**, **Acteur** (l'adresse e-mail de la personne ou la mention
+« invité »), **Action** (ce qui a été fait), **Entité** (sur quel type
+d'objet), **Détail** (les identifiants ou valeurs concernés). Un champ
+**Rechercher** filtre par action, entité ou acteur. Des boutons de filtre
+permettent de restreindre l'affichage à une catégorie (commandes, stock,
+produits, etc.).
+
+Le journal consigne aujourd'hui les actions suivantes : création de commande,
+création et modération d'avis, ajustement de stock, création de client, création
+de coupon, téléversement de média, réception de message de contact, changement
+de mot de passe, modification de réglages, mise à jour du contenu, création de
+notification, inscription à la newsletter, changement de statut de commande,
+création d'utilisateur, et les événements liés à la synchronisation Notion.
+
+Le bouton **CSV** exporte la liste filtrée dans un fichier. Le bouton **Vider**
+efface le journal local (action réservée à l'administrateur) ; le journal se
+remplit de nouveau au fil des actions suivantes.
+
+**Comment savoir que l'écran fonctionne.** Le sous-titre de la page indique
+le nombre d'événements enregistrés, par exemple « 42 événements journalisés
+(500 max, roulement) ». Un journal actif grossit à chaque action de l'équipe.
 
 ---
 
@@ -904,7 +949,23 @@ n'utilisez jamais cet écran sans avoir téléchargé une sauvegarde depuis
 > **Irréversible.** **Réinitialiser toute la boutique** et **Tout vider**
 > n'ont pas d'annulation. Une confirmation est demandée : lisez-la.
 
-### 9.3 Les réglages critiques
+### 9.3 La synchronisation Notion (facultatif)
+
+**Notion** permet de suivre les commandes de la boutique dans un tableau
+collaboratif, de renseigner le transporteur et le numéro de colis directement
+depuis Notion, et de piloter les statuts depuis n'importe quel appareil ou
+n'importe quel membre de l'équipe.
+
+**C'est entièrement facultatif.** La boutique continue de vendre normalement
+si Notion est en panne ou non configuré. Aucune commande n'est perdue : les
+commandes passées pendant une interruption de Notion sont synchronisées dès que
+la connexion est rétablie.
+
+La marche à suivre pour connecter Notion et l'explication complète du
+fonctionnement sont dans `docs/NOTION.md`. L'écran de configuration est
+accessible depuis **Système › Notion** dans l'administration.
+
+### 9.4 Les réglages critiques
 
 Dans **Paramètres**, deux réglages dépassent le cadre de l'administration et
 sont réservés au propriétaire.
@@ -934,15 +995,15 @@ sans qu'on le lui demande — et ce qu'il ne fait pas.
 
 ### 10.1 Ce qui est automatique
 
-| Événement                      | Ce qui se produit, sans aucune intervention                                                          |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| Un client confirme sa commande | La commande est enregistrée avec le statut **En attente** et reçoit son numéro `KA…`.                |
-| Un client confirme sa commande | **Le courriel de confirmation part immédiatement**, à la fin de la commande.                         |
-| Un client confirme sa commande | Le **stock est décompté** et un mouvement est écrit, avec pour raison le numéro de la commande.      |
-| Un client confirme sa commande | Une **facture** est enregistrée en même temps que la commande, dans la base.                         |
-| Un client confirme sa commande | La fiche client est créée ou mise à jour (nombre de commandes, total dépensé).                       |
-| Une quantité franchit un seuil | Le statut **Stock faible** ou **Rupture** est recalculé et les compteurs du tableau de bord suivent. |
-| Un prix est modifié            | Le nouveau prix est visible sur la boutique **immédiatement**.                                       |
+| Événement                                                       | Ce qui se produit, sans aucune intervention                                                          |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Un client confirme sa commande — y compris une configuration PC | La commande est enregistrée avec le statut **En attente** et reçoit son numéro `KA…`.                |
+| Un client confirme sa commande                                  | **Le courriel de confirmation part immédiatement**, à la fin de la commande.                         |
+| Un client confirme sa commande                                  | Le **stock est décompté** et un mouvement est écrit, avec pour raison le numéro de la commande.      |
+| Un client confirme sa commande                                  | Une **facture** est enregistrée en même temps que la commande, dans la base.                         |
+| Un client confirme sa commande                                  | La fiche client est créée ou mise à jour (nombre de commandes, total dépensé).                       |
+| Une quantité franchit un seuil                                  | Le statut **Stock faible** ou **Rupture** est recalculé et les compteurs du tableau de bord suivent. |
+| Un prix est modifié                                             | Le nouveau prix est visible sur la boutique **immédiatement**.                                       |
 
 **Le point le plus important de ce manuel** : le courriel de confirmation de
 commande **part à la fin de la commande, tout seul**. Il n'y a **aucune tâche
@@ -983,13 +1044,13 @@ une manipulation qui n'existe pas. Chacune a été signalée à l'équipe techni
 | **Un membre invité ne peut pas se connecter** : le mot de passe saisi dans « Inviter un membre » n'est pas enregistré.  | Le compte existe bien. Demandez à la personne qui administre le serveur de poser le mot de passe. C'est aujourd'hui le seul chemin qui fonctionne. |
 | Après un ajustement de stock, **la colonne Qté affiche encore l'ancienne valeur**.                                      | Rechargez la page. **Ne refaites pas l'ajustement** : il serait compté deux fois. L'onglet **Mouvements** dit la vérité.                           |
 | Après un ajustement de stock, **la pastille de statut ne suit pas la quantité** (« Stock faible » à 10 unités).         | Corrigez-la sur la fiche du produit, champ **État du stock (surcharge)**. La quantité, elle, est juste.                                            |
-| **Le Journal d'audit est vide** et annonce son indisponibilité.                                                         | Utilisez l'onglet **Mouvements** de Stock et le **Suivi du statut** de chaque commande : ces deux historiques fonctionnent.                        |
 | L'écran **Réinitialiser** annonce des nombres d'enregistrements, mais **ses boutons n'agissent que sur ce navigateur**. | Ne comptez pas sur cet écran pour effacer des données en ligne. Voir la section 9.2.                                                               |
 | Sur l'écran **Développeur**, **« Dernière sauvegarde » indique toujours « Aucune sauvegarde connue »**.                 | Vérifiez la présence du fichier dans votre dossier de téléchargement : c'est lui qui fait foi.                                                     |
 | Le fichier de sauvegarde porte l'extension **`.sql`** alors que son contenu est une base **SQLite**.                    | Ne le renommez pas, ne l'ouvrez pas dans un éditeur de texte, transmettez-le tel quel.                                                             |
 | Une simulation de migration annonce **« Migration sans anomalie »** avec **0 ligne lue**.                               | **N'exécutez pas.** La base d'arrivée n'est pas prête. Voir `docs/MIGRATION.md`.                                                                   |
 | Sur la page d'accueil, un témoignage affiche **`[object Object]`** à la place d'un nom de produit.                      | Rien à faire de votre côté ; le témoignage se modifie dans **Avis › Avis d'accueil** si le texte gêne.                                             |
 | Les **noms de catégories et de marques** restent en français sur les versions anglaise et arabe.                        | Comportement attendu aujourd'hui : ces champs ne se saisissent que dans une langue.                                                                |
+| Le configurateur affiche un message d'erreur au clic sur **Ajouter au panier**.                                         | Le client doit être connecté. Si le message est « session expirée », il doit se reconnecter, puis refaire les étapes. Sa configuration est perdue. |
 
 ---
 
@@ -1016,7 +1077,9 @@ toute l'administration.
 
 ---
 
-_Manuel rédigé le 6 août 2026, après parcours complet de l'application :
-commande réelle passée sur la boutique et traitée jusqu'au statut « Livrée »,
-stock ajusté, prix modifié, compte d'équipe créé, permissions vérifiées auprès
-du serveur. Les anomalies du chapitre 11 sont datées de ce même jour._
+_Manuel rédigé le 6 août 2026, complété le 9 août 2026 après vérification des
+quatre fonctionnalités ajoutées : configurateur PC de bout en bout, journal
+d'audit (42 événements enregistrés, 18 types d'action distincts), sélecteur
+de langue de l'administration (français, anglais, arabe), écran Notion
+(`/admin/notion`). L'entrée « Journal d'audit vide » du chapitre 11, vraie le
+6 août, a été retirée : le journal est désormais actif._
