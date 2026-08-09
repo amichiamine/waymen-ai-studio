@@ -7,3 +7,6 @@ package-lock.json
 bun.lock
 routeTree.gen.ts
 scripts/sonde-hebergeur.php
+# Produit par scripts/construire-guide.ts — le reformater créerait un diff
+# que la prochaine génération effacerait aussitôt.
+GUIDE.html

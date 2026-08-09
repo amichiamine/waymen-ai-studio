@@ -15,6 +15,7 @@
     "prerendu": "bunx tsx scripts/prerendu.ts",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
+    "construire-guide": "bunx tsx scripts/construire-guide.ts",
     "verifier-i18n": "bunx tsx scripts/verifier-i18n.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
