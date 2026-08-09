@@ -38,6 +38,7 @@ use KaTech\Factures;
 use KaTech\Journal;
 use KaTech\Modeles\ConfirmationCommande;
 use KaTech\Modeles\NouvelleCommande;
+use KaTech\Notion\MiroirCommandes;
 use KaTech\Outbox;
 use KaTech\Pagination;
 use KaTech\Reponse;
@@ -571,8 +572,40 @@ final class ControleurCommandes
         // ----------------------------------------------------------------
         $appUrl = rtrim((string) Env::get('APP_URL', ''), '/');
 
+        // ----------------------------------------------------------------
+        // Miroir Notion — consommateur ADDITIONNEL de la même file (vague 4.7).
+        //
+        // C'est le SEUL point de ce fichier que la vague Notion modifie. Aucune
+        // route, aucun contrôle métier, aucun événement supplémentaire : le
+        // miroir consomme l'événement `order.created` qui existait déjà.
+        //
+        // POURQUOI NOTION AVANT LE COURRIEL, et pas l'inverse — ce n'est pas un
+        // détail de style, c'est ce qui empêche un doublon d'e-mail :
+        //   l'outbox rejoue un événement ENTIER quand son émetteur échoue. Si
+        //   le courriel partait d'abord et que Notion échouait ensuite, le
+        //   réessai renverrait le courriel de confirmation à l'acheteur — deux
+        //   fois, cinq fois. Dans cet ordre, un échec Notion survient AVANT
+        //   tout envoi, et le réessai d'une écriture Notion est inoffensif : la
+        //   table `notion_links` retrouve la page déjà créée et se contente de
+        //   la mettre à jour (et l'empreinte évite même l'appel si rien n'a
+        //   changé). Notion est idempotent, le courriel ne l'est pas : le non
+        //   idempotent passe en dernier.
+        //
+        // Si Notion n'est pas configuré, `MiroirCommandes::traiter()` rend null
+        // sans le moindre appel réseau ni la moindre trace : le comportement de
+        // cette route est alors rigoureusement celui d'avant la vague 4.7.
+        // ----------------------------------------------------------------
+        $miroirNotion = MiroirCommandes::emetteur($this->db);
+
         $this->outbox->enregistrerVidageEnSortie(
-            static function (array $evt) use ($appUrl): ?string {
+            static function (array $evt) use ($appUrl, $miroirNotion): ?string {
+                $echecNotion = $miroirNotion($evt);
+                if ($echecNotion !== null) {
+                    // L'événement reste « pending » et sera rejoué : la
+                    // boutique a vendu, seul le miroir est en retard.
+                    return $echecNotion;
+                }
+
                 return self::emettreEvenement($evt, $appUrl);
             },
             Outbox::LIMITE_EN_SORTIE,
