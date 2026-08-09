@@ -275,6 +275,17 @@ déploiement, usage quotidien, entretien, dépannage. **Français et arabe**, av
 une bascule en haut de page. C'est le seul document à lire si vous n'en lisez
 qu'un. Il se reconstruit par `bun run construire-guide`.
 
+**Vous êtes le commerçant qui exploite la boutique ?** Ouvrez plutôt
+**`MANUEL.html`**, à la racine lui aussi. Même principe — un fichier, un
+double-clic, hors connexion, français et arabe — mais **toute la technique en a
+été retirée** : ni compilation, ni déploiement, ni serveur. Uniquement ce qui se
+fait à la souris dans l'administration : produits, commandes, clients, coupons,
+avis, contenu, réglages, livraison, équipe et droits, copie de sauvegarde.
+22 sections, 39 captures de l'application réelle, une procédure numérotée par
+tâche qui dit toujours comment savoir que ça a marché. Les deux documents sont
+indépendants : `MANUEL.html` ne renvoie jamais à `GUIDE.html`. Il se reconstruit
+par `bun run construire-manuel` — la marche à suivre est en tête du script.
+
 **Vous lisez l'arabe ?** `docs/ar/` porte la version arabe des trois guides
 destinés au commerçant : manuel d'utilisation, guide d'exploitation, guide de
 déploiement chez l'hébergeur. `docs/ar/README.md` en est l'index, et dit
@@ -289,6 +300,7 @@ du code, et une traduction y créerait une divergence silencieuse.
 | Besoin                          | Fichier                           |
 | ------------------------------- | --------------------------------- |
 | Guide complet illustré (FR/AR)  | `GUIDE.html`                      |
+| Manuel du propriétaire (FR/AR)  | `MANUEL.html`                     |
 | Documentation en arabe          | `docs/ar/`                        |
 | Schéma des tables               | `api/schema/`                     |
 | Contrôleurs API                 | `api/src/Controllers/`            |

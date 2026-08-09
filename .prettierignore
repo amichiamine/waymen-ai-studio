@@ -10,3 +10,5 @@ scripts/sonde-hebergeur.php
 # Produit par scripts/construire-guide.ts — le reformater créerait un diff
 # que la prochaine génération effacerait aussitôt.
 GUIDE.html
+# Produit par scripts/construire-manuel.ts — même raison.
+MANUEL.html

@@ -20,6 +20,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "construire-guide": "tsx scripts/construire-guide.ts",
+    "construire-manuel": "tsx scripts/construire-manuel.ts",
     "verifier-i18n": "tsx scripts/verifier-i18n.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
