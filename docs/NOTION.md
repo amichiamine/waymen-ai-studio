@@ -40,13 +40,13 @@ supposer.
 - Depuis la version **2025-09-03**, une base est un **conteneur** qui abrite une
   ou plusieurs **data sources** :
 
-  | Intention           | Appel                                                                            |
-  | ------------------- | -------------------------------------------------------------------------------- |
-  | Créer la base       | `POST /v1/databases` — parent `page_id`, colonnes dans `initial_data_source.properties` |
-  | Créer une ligne     | `POST /v1/pages` — `parent: { type: "data_source_id", data_source_id: … }`       |
-  | Modifier une ligne  | `PATCH /v1/pages/{page_id}`                                                      |
-  | Lire une ligne      | `GET /v1/pages/{page_id}`                                                        |
-  | Interroger          | `POST /v1/data_sources/{id}/query`                                               |
+  | Intention          | Appel                                                                                   |
+  | ------------------ | --------------------------------------------------------------------------------------- |
+  | Créer la base      | `POST /v1/databases` — parent `page_id`, colonnes dans `initial_data_source.properties` |
+  | Créer une ligne    | `POST /v1/pages` — `parent: { type: "data_source_id", data_source_id: … }`              |
+  | Modifier une ligne | `PATCH /v1/pages/{page_id}`                                                             |
+  | Lire une ligne     | `GET /v1/pages/{page_id}`                                                               |
+  | Interroger         | `POST /v1/data_sources/{id}/query`                                                      |
 
   `POST /v1/databases/{id}/query` est **dépréciée** : elle n'est appelée nulle
   part, et la doublure locale répond 400 si on l'appelle.
@@ -70,7 +70,7 @@ supposer.
 
 ## 3. Ce qui est livré, et où
 
-| Fichier                              | Rôle                                                                 |
+| Fichier                              | Rôle                                                                  |
 | ------------------------------------ | --------------------------------------------------------------------- |
 | `api/src/Notion/ClientNotion.php`    | Client HTTP : version d'API, débit 3 req/s, `Retry-After`, erreurs.   |
 | `api/src/Notion/ErreurNotion.php`    | Les 8 erreurs normalisées et leurs messages en clair.                 |
@@ -107,23 +107,23 @@ fonctionne, l'écran Notion doit le dire plutôt que planter.
 
 Titre de la base : **« Commandes — KA Tech Hub »** (`SchemaCommandes::TITRE_BASE`).
 
-| Colonne Notion    | Type Notion    | Source                            | Qui décide  |
-| ----------------- | -------------- | --------------------------------- | ----------- |
-| `Commande`        | `title`        | `orders.id`                       | la base     |
-| `Statut`          | **`select`**   | `orders.status`                   | **les deux** |
-| `Client`          | `rich_text`    | `orders.customer_name`            | la base     |
-| `Téléphone`       | `phone_number` | `orders.phone`                    | la base     |
-| `Courriel`        | `email`        | `orders.customer_email`           | la base     |
-| `Wilaya`          | `rich_text`    | `orders.wilaya`                   | la base     |
-| `Livraison`       | `select`       | `orders.delivery_kind`            | la base     |
-| `Adresse`         | `rich_text`    | `orders.address`                  | la base     |
-| `Total (DA)`      | `number`       | `orders.total` (entier, DZD)      | la base     |
-| `Paiement`        | `rich_text`    | `payment_label` ou `payment_method` | la base   |
-| `Articles`        | `rich_text`    | `order_items` résumés             | la base     |
-| `Transporteur`    | `rich_text`    | `notion_links.carrier`            | **Notion**  |
-| `Numéro de colis` | `rich_text`    | `notion_links.tracking_number`    | **Notion**  |
-| `Note de suivi`   | `rich_text`    | `orders.note`                     | **Notion**  |
-| `Passée le`       | `date`         | `orders.created_at`               | la base     |
+| Colonne Notion    | Type Notion    | Source                              | Qui décide   |
+| ----------------- | -------------- | ----------------------------------- | ------------ |
+| `Commande`        | `title`        | `orders.id`                         | la base      |
+| `Statut`          | **`select`**   | `orders.status`                     | **les deux** |
+| `Client`          | `rich_text`    | `orders.customer_name`              | la base      |
+| `Téléphone`       | `phone_number` | `orders.phone`                      | la base      |
+| `Courriel`        | `email`        | `orders.customer_email`             | la base      |
+| `Wilaya`          | `rich_text`    | `orders.wilaya`                     | la base      |
+| `Livraison`       | `select`       | `orders.delivery_kind`              | la base      |
+| `Adresse`         | `rich_text`    | `orders.address`                    | la base      |
+| `Total (DA)`      | `number`       | `orders.total` (entier, DZD)        | la base      |
+| `Paiement`        | `rich_text`    | `payment_label` ou `payment_method` | la base      |
+| `Articles`        | `rich_text`    | `order_items` résumés               | la base      |
+| `Transporteur`    | `rich_text`    | `notion_links.carrier`              | **Notion**   |
+| `Numéro de colis` | `rich_text`    | `notion_links.tracking_number`      | **Notion**   |
+| `Note de suivi`   | `rich_text`    | `orders.note`                       | **Notion**   |
+| `Passée le`       | `date`         | `orders.created_at`                 | la base      |
 
 ### 4.1 Le statut : `select`, et pas le type `status`
 
@@ -142,13 +142,13 @@ modifiable à la souris par le commerçant, et lisible dans le webhook. Il perd
 le regroupement visuel ; le prix est faible et il est assumé. La limite de 100
 options est hors de portée : nous en déclarons cinq.
 
-| Statut interne | Libellé Notion  | Couleur |
-| -------------- | --------------- | ------- |
-| `pending`      | En attente      | yellow  |
-| `processing`   | En préparation  | blue    |
-| `shipped`      | Expédiée        | purple  |
-| `delivered`    | Livrée          | green   |
-| `cancelled`    | Annulée         | red     |
+| Statut interne | Libellé Notion | Couleur |
+| -------------- | -------------- | ------- |
+| `pending`      | En attente     | yellow  |
+| `processing`   | En préparation | blue    |
+| `shipped`      | Expédiée       | purple  |
+| `delivered`    | Livrée         | green   |
+| `cancelled`    | Annulée        | red     |
 
 Un libellé inventé à la main dans Notion **n'est pas reporté en base** : le
 contrat d'API n'accepte que ces cinq valeurs. Le cas est journalisé, pas
@@ -163,8 +163,8 @@ silencieux.
    coûterait un appel par ligne de commande, sans écriture groupée, à 3 req/s.
    Une commande de six articles coûterait sept appels au lieu d'un.
 3. **`Passée le` est une vraie colonne `date` que nous alimentons**, pas un
-   `created_time`. Ce dernier daterait la création de la *page*, pas celle de
-   la *commande* — deux dates différentes dès qu'un rattrapage a lieu.
+   `created_time`. Ce dernier daterait la création de la _page_, pas celle de
+   la _commande_ — deux dates différentes dès qu'un rattrapage a lieu.
 
 ---
 
@@ -262,15 +262,15 @@ ce dont elles ont besoin.
 
 Toutes sont réservées au rang **`owner`**, **sauf le webhook**.
 
-| Route                      | Corps            | Rend                                                             | Brique à appeler                                        |
-| -------------------------- | ---------------- | ---------------------------------------------------------------- | ------------------------------------------------------- |
-| `GET /notion/status`       | —                | `{ configure, relie, actif, espace, baseTitre, baseUrl, databaseId, dataSourceId, derniereVerification, derniereErreur, enAttente }` | `Configuration::etat($miroir->nombreEnAttente())`       |
-| `POST /notion/token`       | `{ token }`      | l'état ci-dessus. **JAMAIS le jeton.**                           | `ClientNotion::verifierToken()` **puis** `Configuration::enregistrerToken()` |
-| `GET /notion/pages`        | —                | `[{ id, titre, url }]`                                           | `ClientNotion::listerPages()`                            |
-| `POST /notion/base`        | `{ pageId }` ou `{ databaseId }` | l'état                                           | `ClientNotion::creerBase(pageId, SchemaCommandes::TITRE_BASE, SchemaCommandes::proprietes())` ou `rattacherBase()`, puis `Configuration::enregistrerBase()` |
-| `PATCH /notion/parametres` | `{ actif }`      | l'état                                                           | `Configuration::definirActif()`                          |
-| `POST /notion/renvoyer`    | —                | `{ traitees, echecs, reste, messages }`                          | `MiroirCommandes::renvoyer()`                            |
-| `POST /notion/webhook`     | corps Notion     | 200 systématiquement (voir ci-dessous)                           | `Webhook::*` puis `MiroirCommandes::appliquerPageEntrante()` |
+| Route                      | Corps                            | Rend                                                                                                                                 | Brique à appeler                                                                                                                                            |
+| -------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /notion/status`       | —                                | `{ configure, relie, actif, espace, baseTitre, baseUrl, databaseId, dataSourceId, derniereVerification, derniereErreur, enAttente }` | `Configuration::etat($miroir->nombreEnAttente())`                                                                                                           |
+| `POST /notion/token`       | `{ token }`                      | l'état ci-dessus. **JAMAIS le jeton.**                                                                                               | `ClientNotion::verifierToken()` **puis** `Configuration::enregistrerToken()`                                                                                |
+| `GET /notion/pages`        | —                                | `[{ id, titre, url }]`                                                                                                               | `ClientNotion::listerPages()`                                                                                                                               |
+| `POST /notion/base`        | `{ pageId }` ou `{ databaseId }` | l'état                                                                                                                               | `ClientNotion::creerBase(pageId, SchemaCommandes::TITRE_BASE, SchemaCommandes::proprietes())` ou `rattacherBase()`, puis `Configuration::enregistrerBase()` |
+| `PATCH /notion/parametres` | `{ actif }`                      | l'état                                                                                                                               | `Configuration::definirActif()`                                                                                                                             |
+| `POST /notion/renvoyer`    | —                                | `{ traitees, echecs, reste, messages }`                                                                                              | `MiroirCommandes::renvoyer()`                                                                                                                               |
+| `POST /notion/webhook`     | corps Notion                     | 200 systématiquement (voir ci-dessous)                                                                                               | `Webhook::*` puis `MiroirCommandes::appliquerPageEntrante()`                                                                                                |
 
 ### 7.1 Le webhook : route **publique, non authentifiée**
 
@@ -356,13 +356,13 @@ le tableau, comme sur une vraie page partagée.
 
 ### 8.3 Modes de panne
 
-| Variable                        | Effet                                                                  |
-| ------------------------------- | ---------------------------------------------------------------------- |
-| `FAUX_NOTION_MODE=429`          | 429 + `Retry-After`, puis normal après `FAUX_NOTION_429_FOIS` refus (défaut 1) |
-| `FAUX_NOTION_MODE=529`          | idem avec 529 (Notion saturé)                                          |
-| `FAUX_NOTION_MODE=injoignable`  | 502 avec une page HTML, comme une passerelle d'hébergeur en vrac       |
-| `FAUX_NOTION_RETRY_AFTER=3`     | valeur de `Retry-After`, en secondes (défaut 2)                        |
-| `FAUX_NOTION_ETAT=/tmp/x.json`  | fichier d'état (défaut `/tmp/faux-notion.json`)                        |
+| Variable                       | Effet                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------ |
+| `FAUX_NOTION_MODE=429`         | 429 + `Retry-After`, puis normal après `FAUX_NOTION_429_FOIS` refus (défaut 1) |
+| `FAUX_NOTION_MODE=529`         | idem avec 529 (Notion saturé)                                                  |
+| `FAUX_NOTION_MODE=injoignable` | 502 avec une page HTML, comme une passerelle d'hébergeur en vrac               |
+| `FAUX_NOTION_RETRY_AFTER=3`    | valeur de `Retry-After`, en secondes (défaut 2)                                |
+| `FAUX_NOTION_ETAT=/tmp/x.json` | fichier d'état (défaut `/tmp/faux-notion.json`)                                |
 
 Pour une **vraie** injoignabilité (connexion TCP refusée, le cas d'un Notion
 éteint), arrêter le processus : c'est plus fidèle que toute simulation.
@@ -370,9 +370,10 @@ Pour une **vraie** injoignabilité (connexion TCP refusée, le cas d'un Notion
 ### 8.4 Ce qu'elle refuse, exprès
 
 `Notion-Version` absente → 400 · `Authorization` mal formée → 401 · corps
+
 > 500 Ko → 400 · texte riche > 2000 caractères → 400 · propriété non
-inscriptible → 400 · `POST /v1/pages` sans parent `data_source_id` → 400 ·
-`POST /v1/databases/{id}/query` (déprécié) → 400 · colonne inconnue → 400.
+> inscriptible → 400 · `POST /v1/pages` sans parent `data_source_id` → 400 ·
+> `POST /v1/databases/{id}/query` (déprécié) → 400 · colonne inconnue → 400.
 
 ---
 
@@ -415,15 +416,15 @@ inscriptible → 400 · `POST /v1/pages` sans parent `data_source_id` → 400 ·
 
 ## 10. Preuves exécutées sur ce livrable
 
-| # | Preuve                                                        | Résultat                                                                    |
-| - | ------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| a | `notion_links` créée, parité des 3 schémas                    | `PARITÉ OK — 24 tables, 196 colonnes, 27 index` ; installée en sqlite, mysql, pgsql |
-| b | Commande passée par l'API → ligne dans le faux Notion         | `KA655043` → page `954160e7-…`, 15 colonnes remplies                        |
-| c | Faux Notion éteint → vente possible quand même                | `POST /orders` → **201**, événement `pending`, `outboxPending = 1` sur `GET /maintenance/status` ; après rallumage, `renvoyer()` → 5 traitées, 0 échec |
-| d | 429 avec `Retry-After: 3`                                     | 2 connexions espacées de **exactement 3 s**, appel abouti, 1 seul refus     |
-| e | Notion non configuré                                          | **201**, 0 appel réseau, 0 ligne de journal, 0 lien, outbox vidée           |
-| f | Sauvegarde téléchargée depuis l'administration                | 0 occurrence de `ntn_`, 1 occurrence de `ntnc1:` (le jeton chiffré)         |
-| g | `preuve-concurrence.php`                                      | voir §11                                                                     |
+| #   | Preuve                                                | Résultat                                                                                                                                               |
+| --- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| a   | `notion_links` créée, parité des 3 schémas            | `PARITÉ OK — 24 tables, 196 colonnes, 27 index` ; installée en sqlite, mysql, pgsql                                                                    |
+| b   | Commande passée par l'API → ligne dans le faux Notion | `KA655043` → page `954160e7-…`, 15 colonnes remplies                                                                                                   |
+| c   | Faux Notion éteint → vente possible quand même        | `POST /orders` → **201**, événement `pending`, `outboxPending = 1` sur `GET /maintenance/status` ; après rallumage, `renvoyer()` → 5 traitées, 0 échec |
+| d   | 429 avec `Retry-After: 3`                             | 2 connexions espacées de **exactement 3 s**, appel abouti, 1 seul refus                                                                                |
+| e   | Notion non configuré                                  | **201**, 0 appel réseau, 0 ligne de journal, 0 lien, outbox vidée                                                                                      |
+| f   | Sauvegarde téléchargée depuis l'administration        | 0 occurrence de `ntn_`, 1 occurrence de `ntnc1:` (le jeton chiffré)                                                                                    |
+| g   | `preuve-concurrence.php`                              | voir §11                                                                                                                                               |
 
 ---
 
