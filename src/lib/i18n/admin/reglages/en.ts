@@ -206,6 +206,114 @@ const reglagesEn: Record<string, string> = {
   "admin.reglages.parametres.json_toast_reinitialise": "{titre} — reset",
   "admin.reglages.parametres.json_garde_sauvegarder": "Save {titre}",
   "admin.reglages.parametres.json_garde_reinitialiser": "Reset {titre}",
+
+  // ── Notion ─────────────────────────────────────────────────────────────────
+  // Dashboard
+  "admin.reglages.notion.titre": "Notion",
+  "admin.reglages.notion.description":
+    "Sync your orders to a Notion table to track and manage them from any device.",
+  "admin.reglages.notion.tableau_bord_titre": "Sync status",
+  "admin.reglages.notion.badge_actif": "Active",
+  "admin.reglages.notion.badge_inactif": "Inactive",
+  "admin.reglages.notion.badge_non_configure": "Not configured",
+  "admin.reglages.notion.badge_non_relie": "Token saved",
+  "admin.reglages.notion.btn_activer": "Enable",
+  "admin.reglages.notion.btn_desactiver": "Disable",
+  "admin.reglages.notion.btn_renvoyer": "Retry",
+  "admin.reglages.notion.btn_renvoyer_cours": "Sending…",
+  "admin.reglages.notion.btn_rafraichir": "Refresh",
+  "admin.reglages.notion.label_espace": "Workspace",
+  "admin.reglages.notion.label_base": "Orders database",
+  "admin.reglages.notion.label_en_attente": "Pending",
+  "admin.reglages.notion.label_derniere_verif": "Last verified",
+  "admin.reglages.notion.label_derniere_erreur": "Last error",
+  "admin.reglages.notion.lien_ouvrir_notion": "Open in Notion",
+  "admin.reglages.notion.toast_actif": "Notion sync enabled",
+  "admin.reglages.notion.toast_inactif": "Notion sync disabled",
+  "admin.reglages.notion.toast_renvoyer_ok": "{traitees} order(s) sent",
+  "admin.reglages.notion.toast_renvoyer_echec": "Retry failed: {message}",
+  "admin.reglages.notion.toast_renvoyer_reste": "Batch sent — more orders still pending.",
+  // Access restricted
+  "admin.reglages.notion.acces_restreint_titre": "Owner access required",
+  "admin.reglages.notion.acces_restreint_desc": "Configuring Notion requires the owner role.",
+  // Intro (not configured)
+  "admin.reglages.notion.intro_titre": "Connect Notion to your store",
+  "admin.reglages.notion.intro_desc":
+    "Notion lets you track your orders in a collaborative table, add carrier and tracking number, and manage statuses directly from your Notion workspace.",
+  // Step 1 — Token
+  "admin.reglages.notion.etape1_titre": "Step 1 — Connect",
+  "admin.reglages.notion.etape1_desc":
+    "Create an internal integration at notion.so/my-integrations, copy the token (starts with « ntn_ ») and paste it here.",
+  "admin.reglages.notion.champ_token_label": "Notion connection token",
+  "admin.reglages.notion.champ_token_placeholder": "ntn_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "admin.reglages.notion.champ_token_aide":
+    "The token is sent directly to the server, encrypted, and will never be shown again.",
+  "admin.reglages.notion.btn_tester": "Test and save",
+  "admin.reglages.notion.btn_tester_cours": "Verifying…",
+  "admin.reglages.notion.btn_remplacer": "Replace connection",
+  "admin.reglages.notion.connexion_enregistree": "Connection saved",
+  "admin.reglages.notion.connexion_espace": "Connected to workspace « {espace} »",
+  "admin.reglages.notion.connexion_verifiee_le": "Verified on {date}",
+  "admin.reglages.notion.token_requis": "Paste the token before testing.",
+  "admin.reglages.notion.toast_token_ok": "Token verified and saved",
+  "admin.reglages.notion.toast_token_echec": "{message}",
+  // Step 2 — Pages
+  "admin.reglages.notion.etape2_titre": "Step 2 — Choose a page",
+  "admin.reglages.notion.etape2_desc":
+    "Select the Notion page under which to create the orders table.",
+  "admin.reglages.notion.pages_chargement": "Loading pages…",
+  "admin.reglages.notion.pages_vide_titre": "No accessible pages",
+  "admin.reglages.notion.pages_vide_marche_suivre":
+    "Your connection is active, but no page has been shared with it yet. To fix this:",
+  "admin.reglages.notion.pages_vide_etape1":
+    "Open the Notion page under which you want to create the table.",
+  "admin.reglages.notion.pages_vide_etape2": "Click « ••• » (top-right menu on the page).",
+  "admin.reglages.notion.pages_vide_etape3":
+    "Choose « Connections », then add your KA Tech Hub connection.",
+  "admin.reglages.notion.pages_vide_etape4": "Come back here and click « Refresh list ».",
+  "admin.reglages.notion.btn_rafraichir_pages": "Refresh list",
+  "admin.reglages.notion.btn_rafraichir_pages_cours": "Refreshing…",
+  "admin.reglages.notion.page_selectionnee": "Selected page",
+  "admin.reglages.notion.page_choisir_placeholder": "Choose a page…",
+  "admin.reglages.notion.toast_pages_echec": "Could not load pages: {message}",
+  // Step 3 — Database
+  "admin.reglages.notion.etape3_titre": "Step 3 — Create the database",
+  "admin.reglages.notion.etape3_desc":
+    "The « Commandes — KA Tech Hub » table will be created in Notion with all required columns.",
+  "admin.reglages.notion.btn_creer_base": "Create orders database",
+  "admin.reglages.notion.btn_creer_base_cours": "Creating…",
+  "admin.reglages.notion.base_existante_titre": "Database already linked",
+  "admin.reglages.notion.base_existante_desc": "Name: {nom}",
+  "admin.reglages.notion.rattacher_existante_titre": "Attach an existing database",
+  "admin.reglages.notion.rattacher_existante_desc":
+    "Already have a Notion table and want to reuse it? Paste its identifier (databaseId).",
+  "admin.reglages.notion.champ_database_id_label": "Database identifier (databaseId)",
+  "admin.reglages.notion.champ_database_id_placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "admin.reglages.notion.btn_rattacher": "Attach",
+  "admin.reglages.notion.btn_rattacher_cours": "Verifying…",
+  "admin.reglages.notion.avertissement_colonnes": "{message}",
+  "admin.reglages.notion.toast_base_ok": "Orders database created",
+  "admin.reglages.notion.toast_base_echec": "Could not create database: {message}",
+  "admin.reglages.notion.toast_rattachement_ok": "Database attached",
+  "admin.reglages.notion.toast_rattachement_echec": "Could not attach database: {message}",
+  // Step 4 — Webhook
+  "admin.reglages.notion.etape4_titre": "Step 4 — Reverse sync (optional)",
+  "admin.reglages.notion.etape4_desc":
+    "For changes made in Notion (status, carrier, tracking number) to flow back to the store, you must set up a webhook. Copy the address below and paste it in the Notion portal under « My connections → Webhooks ».",
+  "admin.reglages.notion.webhook_url_label": "Webhook URL",
+  "admin.reglages.notion.btn_copier_webhook": "Copy",
+  "admin.reglages.notion.btn_copier_webhook_ok": "Copied!",
+  "admin.reglages.notion.webhook_verification_titre": "Verification token",
+  "admin.reglages.notion.webhook_verification_desc":
+    "Notion asks you to enter this code in the portal to confirm the subscription.",
+  "admin.reglages.notion.webhook_verification_absent":
+    "The verification token will appear here once Notion has sent its initial handshake.",
+  "admin.reglages.notion.btn_copier_verification": "Copy",
+  // Backend error
+  "admin.reglages.notion.erreur_backend_titre": "Service temporarily unavailable",
+  "admin.reglages.notion.erreur_backend_desc":
+    "The server is not responding. Check your connection and refresh the page.",
+  "admin.reglages.notion.btn_reessayer": "Retry",
 };
 
 export default reglagesEn;

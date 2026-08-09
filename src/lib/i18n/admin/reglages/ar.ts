@@ -206,6 +206,110 @@ const reglagesAr: Record<string, string> = {
   "admin.reglages.parametres.json_toast_reinitialise": "{titre} — تمت إعادة التعيين",
   "admin.reglages.parametres.json_garde_sauvegarder": "حفظ {titre}",
   "admin.reglages.parametres.json_garde_reinitialiser": "إعادة تعيين {titre}",
+
+  // ── Notion ─────────────────────────────────────────────────────────────────
+  // لوحة التحكم
+  "admin.reglages.notion.titre": "Notion",
+  "admin.reglages.notion.description": "زامن طلباتك مع جدول Notion لمتابعتها وإدارتها من أي جهاز.",
+  "admin.reglages.notion.tableau_bord_titre": "حالة المزامنة",
+  "admin.reglages.notion.badge_actif": "نشط",
+  "admin.reglages.notion.badge_inactif": "غير نشط",
+  "admin.reglages.notion.badge_non_configure": "غير مُهيَّأ",
+  "admin.reglages.notion.badge_non_relie": "الرمز محفوظ",
+  "admin.reglages.notion.btn_activer": "تفعيل",
+  "admin.reglages.notion.btn_desactiver": "إيقاف",
+  "admin.reglages.notion.btn_renvoyer": "إعادة إرسال",
+  "admin.reglages.notion.btn_renvoyer_cours": "جارٍ الإرسال…",
+  "admin.reglages.notion.btn_rafraichir": "تحديث",
+  "admin.reglages.notion.label_espace": "مساحة العمل",
+  "admin.reglages.notion.label_base": "قاعدة الطلبات",
+  "admin.reglages.notion.label_en_attente": "في الانتظار",
+  "admin.reglages.notion.label_derniere_verif": "آخر تحقق",
+  "admin.reglages.notion.label_derniere_erreur": "آخر خطأ",
+  "admin.reglages.notion.lien_ouvrir_notion": "فتح في Notion",
+  "admin.reglages.notion.toast_actif": "تم تفعيل مزامنة Notion",
+  "admin.reglages.notion.toast_inactif": "تم إيقاف مزامنة Notion",
+  "admin.reglages.notion.toast_renvoyer_ok": "تم إرسال {traitees} طلب/طلبات",
+  "admin.reglages.notion.toast_renvoyer_echec": "فشل إعادة الإرسال: {message}",
+  "admin.reglages.notion.toast_renvoyer_reste": "تم إرسال الدُفعة — لا تزال طلبات في الانتظار.",
+  // البانر — الوصول مقيد
+  "admin.reglages.notion.acces_restreint_titre": "هذه الميزة حكر على المالك",
+  "admin.reglages.notion.acces_restreint_desc": "يتطلب إعداد Notion صلاحية المالك.",
+  // مقدمة (غير مُهيَّأ)
+  "admin.reglages.notion.intro_titre": "اربط Notion بمتجرك",
+  "admin.reglages.notion.intro_desc":
+    "يتيح لك Notion متابعة طلباتك في جدول تعاوني، وإضافة شركة الشحن ورقم الطرد، وإدارة الحالات مباشرةً من مساحة Notion الخاصة بك.",
+  // الخطوة 1 — الرمز
+  "admin.reglages.notion.etape1_titre": "الخطوة 1 — الاتصال",
+  "admin.reglages.notion.etape1_desc":
+    "أنشئ تكاملاً داخلياً على notion.so/my-integrations، وانسخ الرمز (يبدأ بـ « ntn_ ») والصقه هنا.",
+  "admin.reglages.notion.champ_token_label": "رمز اتصال Notion",
+  "admin.reglages.notion.champ_token_placeholder": "ntn_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "admin.reglages.notion.champ_token_aide":
+    "يُرسَل الرمز مباشرةً إلى الخادم مشفَّراً، ولن يُعرض مجدداً.",
+  "admin.reglages.notion.btn_tester": "اختبار وحفظ",
+  "admin.reglages.notion.btn_tester_cours": "جارٍ التحقق…",
+  "admin.reglages.notion.btn_remplacer": "استبدال الاتصال",
+  "admin.reglages.notion.connexion_enregistree": "تم حفظ الاتصال",
+  "admin.reglages.notion.connexion_espace": "متصل بمساحة « {espace} »",
+  "admin.reglages.notion.connexion_verifiee_le": "تم التحقق بتاريخ {date}",
+  "admin.reglages.notion.token_requis": "الصق الرمز قبل الاختبار.",
+  "admin.reglages.notion.toast_token_ok": "تم التحقق من الرمز وحفظه",
+  "admin.reglages.notion.toast_token_echec": "{message}",
+  // الخطوة 2 — الصفحات
+  "admin.reglages.notion.etape2_titre": "الخطوة 2 — اختيار صفحة",
+  "admin.reglages.notion.etape2_desc": "حدد صفحة Notion التي ستُنشأ تحتها جدول الطلبات.",
+  "admin.reglages.notion.pages_chargement": "جارٍ تحميل الصفحات…",
+  "admin.reglages.notion.pages_vide_titre": "لا توجد صفحات متاحة",
+  "admin.reglages.notion.pages_vide_marche_suivre":
+    "اتصالك نشط، لكن لم تتم مشاركة أي صفحة معه بعد. لإصلاح ذلك:",
+  "admin.reglages.notion.pages_vide_etape1": "افتح صفحة Notion التي تريد إنشاء الجدول تحتها.",
+  "admin.reglages.notion.pages_vide_etape2": "انقر على « ••• » (القائمة في أعلى يمين الصفحة).",
+  "admin.reglages.notion.pages_vide_etape3": "اختر « الاتصالات »، ثم أضف اتصال KA Tech Hub.",
+  "admin.reglages.notion.pages_vide_etape4": "عُد إلى هنا وانقر على « تحديث القائمة ».",
+  "admin.reglages.notion.btn_rafraichir_pages": "تحديث القائمة",
+  "admin.reglages.notion.btn_rafraichir_pages_cours": "جارٍ التحديث…",
+  "admin.reglages.notion.page_selectionnee": "الصفحة المختارة",
+  "admin.reglages.notion.page_choisir_placeholder": "اختر صفحة…",
+  "admin.reglages.notion.toast_pages_echec": "تعذّر تحميل الصفحات: {message}",
+  // الخطوة 3 — القاعدة
+  "admin.reglages.notion.etape3_titre": "الخطوة 3 — إنشاء القاعدة",
+  "admin.reglages.notion.etape3_desc":
+    "سيُنشأ جدول « Commandes — KA Tech Hub » في Notion بجميع الأعمدة اللازمة.",
+  "admin.reglages.notion.btn_creer_base": "إنشاء قاعدة الطلبات",
+  "admin.reglages.notion.btn_creer_base_cours": "جارٍ الإنشاء…",
+  "admin.reglages.notion.base_existante_titre": "القاعدة مرتبطة بالفعل",
+  "admin.reglages.notion.base_existante_desc": "الاسم: {nom}",
+  "admin.reglages.notion.rattacher_existante_titre": "ربط قاعدة موجودة",
+  "admin.reglages.notion.rattacher_existante_desc":
+    "لديك جدول Notion وتريد إعادة استخدامه؟ الصق معرّفه (databaseId).",
+  "admin.reglages.notion.champ_database_id_label": "معرّف القاعدة (databaseId)",
+  "admin.reglages.notion.champ_database_id_placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "admin.reglages.notion.btn_rattacher": "ربط",
+  "admin.reglages.notion.btn_rattacher_cours": "جارٍ التحقق…",
+  "admin.reglages.notion.avertissement_colonnes": "{message}",
+  "admin.reglages.notion.toast_base_ok": "تم إنشاء قاعدة الطلبات",
+  "admin.reglages.notion.toast_base_echec": "تعذّر إنشاء القاعدة: {message}",
+  "admin.reglages.notion.toast_rattachement_ok": "تم ربط القاعدة",
+  "admin.reglages.notion.toast_rattachement_echec": "تعذّر ربط القاعدة: {message}",
+  // الخطوة 4 — Webhook
+  "admin.reglages.notion.etape4_titre": "الخطوة 4 — المزامنة العكسية (اختياري)",
+  "admin.reglages.notion.etape4_desc":
+    "لكي تنعكس التغييرات التي تجريها في Notion (الحالة، الناقل، رقم الطرد) تلقائياً على المتجر، يجب إعداد webhook. انسخ العنوان أدناه والصقه في بوابة Notion ضمن « اتصالاتي ← Webhooks ».",
+  "admin.reglages.notion.webhook_url_label": "عنوان الـ Webhook",
+  "admin.reglages.notion.btn_copier_webhook": "نسخ",
+  "admin.reglages.notion.btn_copier_webhook_ok": "تم النسخ!",
+  "admin.reglages.notion.webhook_verification_titre": "رمز التحقق",
+  "admin.reglages.notion.webhook_verification_desc":
+    "يطلب منك Notion إدخال هذا الرمز في البوابة لتأكيد الاشتراك.",
+  "admin.reglages.notion.webhook_verification_absent":
+    "سيظهر رمز التحقق هنا بمجرد أن يُرسل Notion مصافحته الأولية.",
+  "admin.reglages.notion.btn_copier_verification": "نسخ",
+  // خطأ الخادم
+  "admin.reglages.notion.erreur_backend_titre": "الخدمة غير متاحة مؤقتاً",
+  "admin.reglages.notion.erreur_backend_desc":
+    "الخادم لا يستجيب. تحقق من اتصالك وأعد تحميل الصفحة.",
+  "admin.reglages.notion.btn_reessayer": "إعادة المحاولة",
 };
 
 export default reglagesAr;

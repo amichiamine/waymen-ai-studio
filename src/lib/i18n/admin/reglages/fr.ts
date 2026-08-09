@@ -211,6 +211,116 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.parametres.json_toast_reinitialise": "{titre} — réinitialisé",
   "admin.reglages.parametres.json_garde_sauvegarder": "Sauvegarder {titre}",
   "admin.reglages.parametres.json_garde_reinitialiser": "Réinitialiser {titre}",
+
+  // ── Notion ─────────────────────────────────────────────────────────────────
+  // Tableau de bord permanent
+  "admin.reglages.notion.titre": "Notion",
+  "admin.reglages.notion.description":
+    "Synchronisez vos commandes vers un tableau Notion, pour les suivre et les piloter depuis n'importe quel appareil.",
+  "admin.reglages.notion.tableau_bord_titre": "État de la synchronisation",
+  "admin.reglages.notion.badge_actif": "Actif",
+  "admin.reglages.notion.badge_inactif": "Inactif",
+  "admin.reglages.notion.badge_non_configure": "Non configuré",
+  "admin.reglages.notion.badge_non_relie": "Token enregistré",
+  "admin.reglages.notion.btn_activer": "Activer",
+  "admin.reglages.notion.btn_desactiver": "Désactiver",
+  "admin.reglages.notion.btn_renvoyer": "Renvoyer",
+  "admin.reglages.notion.btn_renvoyer_cours": "Envoi en cours…",
+  "admin.reglages.notion.btn_rafraichir": "Rafraîchir",
+  "admin.reglages.notion.label_espace": "Espace de travail",
+  "admin.reglages.notion.label_base": "Base des commandes",
+  "admin.reglages.notion.label_en_attente": "En attente",
+  "admin.reglages.notion.label_derniere_verif": "Dernière vérification",
+  "admin.reglages.notion.label_derniere_erreur": "Dernière erreur",
+  "admin.reglages.notion.lien_ouvrir_notion": "Ouvrir dans Notion",
+  "admin.reglages.notion.toast_actif": "Synchronisation Notion activée",
+  "admin.reglages.notion.toast_inactif": "Synchronisation Notion désactivée",
+  "admin.reglages.notion.toast_renvoyer_ok": "{traitees} commande(s) renvoyée(s)",
+  "admin.reglages.notion.toast_renvoyer_echec": "Renvoi échoué : {message}",
+  "admin.reglages.notion.toast_renvoyer_reste": "Lot envoyé — des commandes restent en attente.",
+  // Bannière accès restreint
+  "admin.reglages.notion.acces_restreint_titre": "Accès réservé au propriétaire",
+  "admin.reglages.notion.acces_restreint_desc":
+    "La configuration de Notion nécessite le rang propriétaire.",
+  // Description intro (non configuré)
+  "admin.reglages.notion.intro_titre": "Connectez Notion à votre boutique",
+  "admin.reglages.notion.intro_desc":
+    "Notion vous permet de suivre vos commandes dans un tableau collaboratif, d'y ajouter le transporteur et le numéro de colis, et de piloter les statuts directement depuis votre espace Notion.",
+  // Étape 1 — Token
+  "admin.reglages.notion.etape1_titre": "Étape 1 — Connexion",
+  "admin.reglages.notion.etape1_desc":
+    "Créez une connexion interne sur notion.so/my-integrations, copiez le jeton (commence par « ntn_ ») et collez-le ici.",
+  "admin.reglages.notion.champ_token_label": "Jeton de connexion Notion",
+  "admin.reglages.notion.champ_token_placeholder": "ntn_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "admin.reglages.notion.champ_token_aide":
+    "Le jeton est transmis directement au serveur, chiffré, et ne sera jamais réaffiché.",
+  "admin.reglages.notion.btn_tester": "Tester et enregistrer",
+  "admin.reglages.notion.btn_tester_cours": "Vérification…",
+  "admin.reglages.notion.btn_remplacer": "Remplacer la connexion",
+  "admin.reglages.notion.connexion_enregistree": "Connexion enregistrée",
+  "admin.reglages.notion.connexion_espace": "Connecté à l'espace « {espace} »",
+  "admin.reglages.notion.connexion_verifiee_le": "Vérifié le {date}",
+  "admin.reglages.notion.token_requis": "Collez le jeton avant de tester.",
+  "admin.reglages.notion.toast_token_ok": "Jeton vérifié et enregistré",
+  "admin.reglages.notion.toast_token_echec": "{message}",
+  // Étape 2 — Pages
+  "admin.reglages.notion.etape2_titre": "Étape 2 — Choisir une page",
+  "admin.reglages.notion.etape2_desc":
+    "Sélectionnez la page Notion sous laquelle créer le tableau des commandes.",
+  "admin.reglages.notion.pages_chargement": "Chargement des pages…",
+  "admin.reglages.notion.pages_vide_titre": "Aucune page accessible",
+  "admin.reglages.notion.pages_vide_marche_suivre":
+    "Votre connexion est active, mais aucune page ne lui a encore été partagée. Pour y remédier :",
+  "admin.reglages.notion.pages_vide_etape1":
+    "Ouvrez la page Notion sous laquelle vous souhaitez créer le tableau.",
+  "admin.reglages.notion.pages_vide_etape2":
+    "Cliquez sur « ••• » (menu en haut à droite de la page).",
+  "admin.reglages.notion.pages_vide_etape3":
+    "Choisissez « Connexions », puis ajoutez votre connexion KA Tech Hub.",
+  "admin.reglages.notion.pages_vide_etape4": "Revenez ici et cliquez sur « Rafraîchir la liste ».",
+  "admin.reglages.notion.btn_rafraichir_pages": "Rafraîchir la liste",
+  "admin.reglages.notion.btn_rafraichir_pages_cours": "Actualisation…",
+  "admin.reglages.notion.page_selectionnee": "Page choisie",
+  "admin.reglages.notion.page_choisir_placeholder": "Choisir une page…",
+  "admin.reglages.notion.toast_pages_echec": "Impossible de charger les pages : {message}",
+  // Étape 3 — Base
+  "admin.reglages.notion.etape3_titre": "Étape 3 — Créer la base",
+  "admin.reglages.notion.etape3_desc":
+    "Le tableau « Commandes — KA Tech Hub » sera créé dans Notion avec toutes les colonnes nécessaires.",
+  "admin.reglages.notion.btn_creer_base": "Créer la base des commandes",
+  "admin.reglages.notion.btn_creer_base_cours": "Création…",
+  "admin.reglages.notion.base_existante_titre": "Base déjà rattachée",
+  "admin.reglages.notion.base_existante_desc": "Nom : {nom}",
+  "admin.reglages.notion.rattacher_existante_titre": "Rattacher une base existante",
+  "admin.reglages.notion.rattacher_existante_desc":
+    "Vous avez déjà un tableau Notion et souhaitez le réutiliser ? Collez son identifiant (databaseId).",
+  "admin.reglages.notion.champ_database_id_label": "Identifiant de la base (databaseId)",
+  "admin.reglages.notion.champ_database_id_placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "admin.reglages.notion.btn_rattacher": "Rattacher",
+  "admin.reglages.notion.btn_rattacher_cours": "Vérification…",
+  "admin.reglages.notion.avertissement_colonnes": "{message}",
+  "admin.reglages.notion.toast_base_ok": "Base des commandes créée",
+  "admin.reglages.notion.toast_base_echec": "Impossible de créer la base : {message}",
+  "admin.reglages.notion.toast_rattachement_ok": "Base rattachée",
+  "admin.reglages.notion.toast_rattachement_echec": "Impossible de rattacher la base : {message}",
+  // Étape 4 — Webhook
+  "admin.reglages.notion.etape4_titre": "Étape 4 — Synchronisation en retour (optionnel)",
+  "admin.reglages.notion.etape4_desc":
+    "Pour que les changements faits dans Notion (statut, transporteur, numéro de colis) redescendent automatiquement sur la boutique, vous devez configurer un webhook. Copiez l'adresse ci-dessous et collez-la dans le portail Notion sous « Mes connexions → Webhooks ».",
+  "admin.reglages.notion.webhook_url_label": "Adresse du webhook",
+  "admin.reglages.notion.btn_copier_webhook": "Copier",
+  "admin.reglages.notion.btn_copier_webhook_ok": "Copié !",
+  "admin.reglages.notion.webhook_verification_titre": "Jeton de vérification",
+  "admin.reglages.notion.webhook_verification_desc":
+    "Notion vous demande de saisir ce code dans le portail pour confirmer l'abonnement.",
+  "admin.reglages.notion.webhook_verification_absent":
+    "Le jeton de vérification sera affiché ici dès que Notion aura envoyé sa poignée de main initiale.",
+  "admin.reglages.notion.btn_copier_verification": "Copier",
+  // Erreur backend
+  "admin.reglages.notion.erreur_backend_titre": "Service temporairement indisponible",
+  "admin.reglages.notion.erreur_backend_desc":
+    "Le serveur ne répond pas. Vérifiez votre connexion et actualisez la page.",
+  "admin.reglages.notion.btn_reessayer": "Réessayer",
 };
 
 export default reglagesFr;

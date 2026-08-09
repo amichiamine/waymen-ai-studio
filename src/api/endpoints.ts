@@ -137,6 +137,20 @@ export const endpoints = {
     audit: () => `/analytics/audit`,
   },
 
+  /**
+   * Intégration Notion — miroir des commandes.
+   * Toutes ces routes sont réservées au rang `owner`, sauf `webhook` (public).
+   * Contrat complet : docs/NOTION.md §7.
+   */
+  notion: {
+    status: () => `/notion/status`,
+    token: () => `/notion/token`,
+    pages: () => `/notion/pages`,
+    base: () => `/notion/base`,
+    parametres: () => `/notion/parametres`,
+    renvoyer: () => `/notion/renvoyer`,
+  },
+
   notifications: {
     list: () => `/notifications`,
     detail: (id: string) => `/notifications/${id}`,

@@ -149,3 +149,70 @@ export type DashboardStats = {
   pendingReviews: number;
   series: { date: string; revenue: number; orders: number }[];
 };
+
+// ── Notion ────────────────────────────────────────────────────────────────────
+
+/**
+ * État de l'intégration Notion — réponse de GET /notion/status.
+ *
+ * Champs extraits de Configuration::etat() dans ControleurNotion.php.
+ * Le jeton n'apparaît jamais ici, ni en clair, ni tronqué (NOTION.md §5).
+ */
+export type NotionEtat = {
+  /** Un jeton est enregistré et déchiffrable. */
+  configure: boolean;
+  /** Le jeton est configuré ET la base est créée/rattachée. */
+  relie: boolean;
+  /** Interrupteur marche/arrêt. */
+  actif: boolean;
+  /** Nom de l'espace de travail Notion (null si non configuré). */
+  espace: string | null;
+  /** Titre de la base Notion des commandes (null si non créée). */
+  baseTitre: string | null;
+  /** URL directe vers la base dans Notion (null si non disponible). */
+  baseUrl: string | null;
+  /** Identifiant de la base Notion (null si non créée). */
+  databaseId: string | null;
+  /** Identifiant de la data source (null si non créée). */
+  dataSourceId: string | null;
+  /** ISO 8601 — date de la dernière vérification du jeton (null si jamais vérifiée). */
+  derniereVerification: string | null;
+  /** Dernier message d'erreur connu (null si aucun). */
+  derniereErreur: string | null;
+  /** Nombre de commandes en attente de poussée vers Notion. */
+  enAttente: number;
+  /**
+   * Avertissement optionnel : colonnes manquantes lors d'un rattachement
+   * (`POST /notion/base` avec `databaseId`).
+   */
+  avertissement?: string;
+  /**
+   * Info optionnel : base déjà enregistrée, demande idempotente.
+   */
+  info?: string;
+};
+
+/** Une page Notion accessible via la connexion. */
+export type NotionPage = {
+  id: string;
+  titre: string;
+  url: string;
+};
+
+/**
+ * Réponse de GET /notion/pages.
+ * `message` est présent uniquement quand la liste est vide — c'est le guide
+ * que le serveur fournit pour aider le commerçant à partager une page.
+ */
+export type NotionPages = {
+  pages: NotionPage[];
+  message?: string;
+};
+
+/** Résultat de POST /notion/renvoyer. */
+export type NotionRenvoiResultat = {
+  traitees: number;
+  echecs: number;
+  reste: boolean;
+  messages: string[];
+};

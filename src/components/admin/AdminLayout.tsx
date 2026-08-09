@@ -32,6 +32,7 @@ import {
   Store,
   User,
   Terminal,
+  BookOpen,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
@@ -209,6 +210,12 @@ export const ADMIN_SECTIONS: { titleKey: string; items: Item[] }[] = [
         to: "/admin/developpeur",
         labelKey: "admin.socle.navigation.lien_developpeur",
         Icon: Terminal,
+        minRole: "owner",
+      },
+      {
+        to: "/admin/notion",
+        labelKey: "admin.reglages.notion.titre",
+        Icon: BookOpen,
         minRole: "owner",
       },
     ],
