@@ -340,3 +340,46 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   created_at    TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_login_attempts_axe_cle ON login_attempts (axe, cle, action, created_at);
+
+-- ---------------------------------------------------------------- 24
+-- Miroir Notion : correspondance commande <-> page Notion (vague 4.7).
+--
+-- POURQUOI UNE TABLE PLUTÔT QU'UNE COLONNE DANS `orders` :
+-- Notion est un MIROIR, jamais la source de vérité. Loger l'identifiant de
+-- page dans `orders` mêlerait un détail d'intégration au coeur transactionnel
+-- et rendrait la désactivation de Notion impossible sans toucher aux
+-- commandes. Ici, supprimer l'intégration = vider une table, rien d'autre.
+--
+-- LES DEUX SENS, ET LE PIÈGE DE L'ÉCHO :
+-- `pushed_hash` porte l'empreinte SHA-256 de l'état QU'ON A ÉCRIT dans Notion,
+-- `pulled_hash` celle de l'état QU'ON A REÇU de Notion. Avant toute écriture
+-- sortante on recalcule l'empreinte de la commande : si elle est déjà celle de
+-- `pushed_hash` (ou celle de `pulled_hash`, c'est-à-dire le changement que
+-- Notion vient lui-même de nous envoyer), on n'écrit RIEN. Sans ces deux
+-- empreintes, un changement de statut fait par le commerçant dans Notion
+-- déclenche un webhook -> écriture en base -> renvoi vers Notion -> nouveau
+-- webhook : la boucle est infinie et consomme le quota de 3 requêtes/seconde.
+--
+-- `carrier` et `tracking_number` vivent ICI et non dans `orders` : ce sont des
+-- données de SUIVI pilotées par Notion, et `orders` ne doit pas changer de
+-- forme quand Notion n'est pas configuré (additivité stricte).
+CREATE TABLE IF NOT EXISTS notion_links (
+  order_id        TEXT NOT NULL PRIMARY KEY,
+  page_id         TEXT NOT NULL,
+  data_source_id  TEXT NOT NULL,
+  pushed_hash     TEXT NULL,
+  pushed_at       TEXT NULL,
+  pulled_hash     TEXT NULL,
+  pulled_at       TEXT NULL,
+  carrier         TEXT NULL,
+  tracking_number TEXT NULL,
+  last_error      TEXT NULL,
+  created_at      TEXT NOT NULL,
+  updated_at      TEXT NOT NULL
+);
+-- Sens page -> commande : le webhook ne connaît QUE le `page_id`. L'unicité
+-- garantit qu'une page ne peut pas désigner deux commandes.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notion_links_page ON notion_links (page_id);
+-- Rattrapage : lister les commandes jamais poussées ou poussées le plus
+-- anciennement (route POST /notion/renvoyer).
+CREATE INDEX IF NOT EXISTS idx_notion_links_pushed ON notion_links (pushed_at);

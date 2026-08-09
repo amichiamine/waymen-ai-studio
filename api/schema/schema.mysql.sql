@@ -333,3 +333,25 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   created_at    VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX idx_login_attempts_axe_cle ON login_attempts (axe, cle, action, created_at);
+
+-- ---------------------------------------------------------------- 24
+-- Miroir Notion : correspondance commande <-> page Notion (vague 4.7).
+-- Justification complète dans schema.sqlite.sql §24 (fichier de référence).
+-- Rappel : `pushed_hash` / `pulled_hash` sont les deux empreintes qui coupent
+-- la boucle d'écho entre la base et Notion.
+CREATE TABLE IF NOT EXISTS notion_links (
+  order_id        VARCHAR(64) NOT NULL PRIMARY KEY,
+  page_id         VARCHAR(64) NOT NULL,
+  data_source_id  VARCHAR(64) NOT NULL,
+  pushed_hash     VARCHAR(64) NULL,
+  pushed_at       VARCHAR(32) NULL,
+  pulled_hash     VARCHAR(64) NULL,
+  pulled_at       VARCHAR(32) NULL,
+  carrier         VARCHAR(191) NULL,
+  tracking_number VARCHAR(191) NULL,
+  last_error      TEXT NULL,
+  created_at      VARCHAR(32) NOT NULL,
+  updated_at      VARCHAR(32) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE UNIQUE INDEX idx_notion_links_page ON notion_links (page_id);
+CREATE INDEX idx_notion_links_pushed ON notion_links (pushed_at);
