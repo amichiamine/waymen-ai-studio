@@ -459,7 +459,14 @@ const env = {
   // pas côté serveur, c'est le proxy Vite qui le retire (voir vite.config.ts).
   API_BASE_PATH: "/",
   SMTP_SIMULATE: process.env.SMTP_SIMULATE ?? "1",
-  INSTALL_OWNER_EMAIL: process.env.INSTALL_OWNER_EMAIL ?? "admin@katech.dz",
+  // `admin@katech.dz` était le défaut ici, mais c'est aussi l'adresse du compte
+  // « Administrateur » semé dans `seedUsers()` (admin-store.tsx). Depuis le
+  // commit 31328d4, `scripts/parcours.mjs` refuse de démarrer si l'email du
+  // parcours (`APP_EMAIL` ou son défaut `patron@boutique-test.dz`) figure dans le
+  // seed — ce qui cassait `bun run parcours` dès que ce script créait le compte.
+  // L'adresse ci-dessous est identique au défaut de `parcours.mjs` et n'appartient
+  // PAS au jeu de démonstration.
+  INSTALL_OWNER_EMAIL: process.env.INSTALL_OWNER_EMAIL ?? "patron@boutique-test.dz",
   // UN SEUL mot de passe de développement, identique en mock et en http :
   // celui que `admin-store` sème pour les comptes de démonstration
   // (`devDefaultSeedPassword()`). Ce script créait auparavant le propriétaire

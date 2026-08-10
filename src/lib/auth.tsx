@@ -91,8 +91,11 @@ function readStored(): SessionUser | null {
       name: stored.name ?? stored.user_metadata?.name,
       phone: stored.phone ?? stored.user_metadata?.phone,
       // Sessions historiques : aucun rôle enregistré. `customer` est le moindre
-      // privilège du contrat ; l'autorité admin reste dérivée de la table
-      // `users` par `useAdminRoles()`, jamais de cette valeur.
+      // privilège du contrat et le repli sûr. En mode http, cette valeur EST la
+      // source du rôle réel (commit 31328d4 : le rôle vient de la session serveur,
+      // plus du magasin local `users`). En mode mock, `useRealRole` l'ignore et
+      // la dérive depuis `admin-store`, pour que le sélecteur de démonstration
+      // continue de fonctionner sans base.
       role: stored.role ?? "customer",
     };
   } catch {
