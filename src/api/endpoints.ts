@@ -158,4 +158,16 @@ export const endpoints = {
     update: (id: string) => `/notifications/${id}`,
     remove: (id: string) => `/notifications/${id}`,
   },
+
+  /**
+   * Maintenance — réservé au rang `owner`.
+   * Ces routes permettent au propriétaire de consulter et gérer sa base
+   * sans accès SSH.
+   */
+  maintenance: {
+    status: () => `/maintenance/status`,
+    backup: () => `/maintenance/backup`,
+    migrate: () => `/maintenance/migrate`,
+    importCatalogue: () => `/maintenance/import-catalogue`,
+  },
 } as const;

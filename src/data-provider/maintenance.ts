@@ -23,6 +23,7 @@ import { useCallback } from "react";
 // signalée par Rollup au build. On importe donc directement depuis les modules.
 import { http } from "@/api/client";
 import { API_BASE_URL, AUTH_STRATEGY } from "@/api/config";
+import type { ResultatImportCatalogue } from "@/api/types";
 
 import { useResource } from "./use-resource";
 import { runMutation } from "./use-resource";
@@ -320,4 +321,33 @@ export function useMigrationMutations(): MigrationMutations {
   }, []);
 
   return { migrer };
+}
+
+// ── Import du catalogue de démonstration ─────────────────────────────────────
+
+export type ImportCatalogueMutations = {
+  /** Déclenche l'import du catalogue de démonstration dans la base courante. */
+  importerCatalogue: () => Promise<ResultatImportCatalogue>;
+};
+
+/**
+ * Déclenche l'import du catalogue depuis le back-office.
+ *
+ * En mode mock : simule un résultat réaliste.
+ * En mode http : POST /maintenance/import-catalogue
+ *
+ * L'import est idempotent : le rejouer ne double aucune donnée.
+ */
+export function useImportCatalogue(): ImportCatalogueMutations {
+  const importerCatalogue = useCallback(async (): Promise<ResultatImportCatalogue> => {
+    return runMutation(MAINTENANCE_RESOURCE, "import-catalogue", async () => {
+      if (!isHttpData()) {
+        await new Promise((r) => setTimeout(r, 600));
+        return { ok: true as const, produits: 12, categories: 4, marques: 8 };
+      }
+      return http.post<ResultatImportCatalogue>("/maintenance/import-catalogue", {});
+    });
+  }, []);
+
+  return { importerCatalogue };
 }

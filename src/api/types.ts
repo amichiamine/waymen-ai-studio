@@ -150,6 +150,21 @@ export type DashboardStats = {
   series: { date: string; revenue: number; orders: number }[];
 };
 
+// ── Maintenance — import catalogue ────────────────────────────────────────────
+
+/**
+ * Résultat de POST /maintenance/import-catalogue.
+ *
+ * Les compteurs sont en nombre de lignes TOTALES en base après l'import
+ * (et non le delta), conformément à ce que retourne ImporteurDonneesFront.
+ */
+export type ResultatImportCatalogue = {
+  ok: true;
+  produits: number;
+  categories: number;
+  marques: number;
+};
+
 // ── Notion ────────────────────────────────────────────────────────────────────
 
 /**

@@ -64,6 +64,7 @@ namespace KaTech\Controllers;
 use KaTech\ApiException;
 use KaTech\Auth\Garde;
 use KaTech\Db;
+use KaTech\Installation\ImporteurDonneesFront;
 use KaTech\Migration\Migrateur;
 use KaTech\Migration\Rapport;
 use KaTech\Reponse;
@@ -378,6 +379,59 @@ final class ControleurMaintenance
             'ok'         => $ok,
             'message'    => $message,
             'tables'     => $tablesReponse,
+        ]);
+    }
+
+    /**
+     * POST /maintenance/import-catalogue
+     *
+     * Importe le catalogue de démonstration dans la base courante.
+     *
+     * POURQUOI CETTE ROUTE EXISTE.
+     * L'import par le sous-processus CLI échoue systématiquement sur les
+     * hébergements mutualisés (proc_open désactivé, PHP absent du PATH web).
+     * Cette route appelle directement ImporteurDonneesFront, une classe PHP
+     * pure sans aucune dépendance à l'environnement CLI.
+     *
+     * IDEMPOTENCE.
+     * ImporteurDonneesFront utilise des upserts par clé : rejouer l'import
+     * n'écrase que les champs gérés et ne double rien. Le commerçant peut
+     * utiliser ce bouton pour réinitialiser le catalogue à tout moment.
+     *
+     * → { data: { ok, produits, categories, marques, details, erreur } }
+     *
+     * @throws ApiException 403 si l'appelant n'est pas owner
+     * @throws ApiException 503 si le fichier JSON source est absent
+     */
+    public function importerCatalogue(Requete $r): Reponse
+    {
+        Garde::exiger('owner');
+
+        // Le fichier JSON est produit par `bun run scripts/extraire-donnees-front.ts`
+        // et doit être présent dans le paquet d'installation.
+        $cheminJson = dirname(__DIR__, 2) . '/tools/donnees-front.json';
+
+        if (!is_file($cheminJson)) {
+            throw new ApiException(503, 'IMPORT_ERROR',
+                "Le fichier api/tools/donnees-front.json est absent du serveur. "
+                . "Il doit être téléversé avec le dossier api/tools/."
+            );
+        }
+
+        $importeur = new ImporteurDonneesFront($cheminJson, $this->db);
+        $resultat  = $importeur->importer();
+
+        if (!$resultat['ok']) {
+            throw new ApiException(503, 'IMPORT_ERROR',
+                $resultat['erreur'] ?? "L'import a échoué."
+            );
+        }
+
+        return Reponse::ok([
+            'ok'         => true,
+            'produits'   => $resultat['produits'],
+            'categories' => $resultat['categories'],
+            'marques'    => $resultat['marques'],
         ]);
     }
 

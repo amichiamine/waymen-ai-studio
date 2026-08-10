@@ -374,6 +374,23 @@ const systemeEn: Record<string, string> = {
   // Severity badges
   "admin.systeme.developpeur.gravite_erreur": "Error",
   "admin.systeme.developpeur.gravite_avertissement": "Warning",
+
+  // Section 4 — Catalogue import
+  "admin.systeme.developpeur.import_catalogue_titre": "Demo catalogue import",
+  "admin.systeme.developpeur.import_catalogue_description":
+    "Fills the shop with the products, categories and brands from the demo catalogue. Use this button if your shop is empty after installation, or to reset the catalogue.",
+  "admin.systeme.developpeur.import_catalogue_alerte_titre": "Warning: catalogue replacement",
+  "admin.systeme.developpeur.import_catalogue_alerte_desc":
+    "This action replaces existing products, categories and brands with those from the demo catalogue. Orders, customers and other data are not affected.",
+  "admin.systeme.developpeur.import_catalogue_btn": "Import catalogue",
+  "admin.systeme.developpeur.import_catalogue_en_cours": "Importing…",
+  "admin.systeme.developpeur.import_catalogue_dialog_titre": "Import catalogue?",
+  "admin.systeme.developpeur.import_catalogue_dialog_desc":
+    "This action will replace the current catalogue with the demo data. Orders and customers will not be modified.",
+  "admin.systeme.developpeur.import_catalogue_dialog_btn": "Import",
+  "admin.systeme.developpeur.import_catalogue_toast_ok":
+    "{produits} product(s), {categories} category/ies, {marques} brand(s) imported.",
+  "admin.systeme.developpeur.import_catalogue_toast_echec": "Import failed: {message}",
 };
 
 export default systemeEn;

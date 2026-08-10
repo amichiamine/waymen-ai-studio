@@ -389,6 +389,24 @@ const systemeFr: Record<string, string> = {
   // Badges de gravité
   "admin.systeme.developpeur.gravite_erreur": "Erreur",
   "admin.systeme.developpeur.gravite_avertissement": "Avertissement",
+
+  // Section 4 — Import du catalogue
+  "admin.systeme.developpeur.import_catalogue_titre": "Import du catalogue de démonstration",
+  "admin.systeme.developpeur.import_catalogue_description":
+    "Remplit la boutique avec les produits, catégories et marques du catalogue de démonstration. Utilisez ce bouton si votre boutique est vide après l'installation, ou pour réinitialiser le catalogue.",
+  "admin.systeme.developpeur.import_catalogue_alerte_titre":
+    "Attention : remplacement du catalogue",
+  "admin.systeme.developpeur.import_catalogue_alerte_desc":
+    "Cette action remplace les produits, catégories et marques existants par ceux du catalogue de démonstration. Les commandes, clients et autres données ne sont pas touchés.",
+  "admin.systeme.developpeur.import_catalogue_btn": "Importer le catalogue",
+  "admin.systeme.developpeur.import_catalogue_en_cours": "Import en cours…",
+  "admin.systeme.developpeur.import_catalogue_dialog_titre": "Importer le catalogue ?",
+  "admin.systeme.developpeur.import_catalogue_dialog_desc":
+    "Cette action va remplacer le catalogue actuel par les données de démonstration. Les commandes et clients ne seront pas modifiés.",
+  "admin.systeme.developpeur.import_catalogue_dialog_btn": "Importer",
+  "admin.systeme.developpeur.import_catalogue_toast_ok":
+    "{produits} produit(s), {categories} catégorie(s), {marques} marque(s) importés.",
+  "admin.systeme.developpeur.import_catalogue_toast_echec": "Import échoué : {message}",
 };
 
 export default systemeFr;

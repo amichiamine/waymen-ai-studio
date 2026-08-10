@@ -31,6 +31,7 @@ import {
   ChevronRight,
   Info,
   OctagonX,
+  PackageOpen,
 } from "lucide-react";
 import { usePermissions } from "@/lib/admin-auth";
 import { useI18n } from "@/lib/i18n";
@@ -38,6 +39,7 @@ import {
   useEtatBase,
   useSauvegarde,
   useMigrationMutations,
+  useImportCatalogue,
   type MigrationInput,
   type MigrationResult,
   type MigrationResultTable,
@@ -51,7 +53,10 @@ import { toApiError } from "@/data-provider/errors";
 type FormMigration = Omit<MigrationInput, "simulation">;
 
 /** Dialogue de confirmation en attente. */
-type DialogAttente = { type: "sauvegarde" } | { type: "migration_exec"; form: FormMigration };
+type DialogAttente =
+  | { type: "sauvegarde" }
+  | { type: "migration_exec"; form: FormMigration }
+  | { type: "import_catalogue" };
 
 // ── Page principale ───────────────────────────────────────────────────────────
 
@@ -88,6 +93,10 @@ export default function AdminDeveloppeur() {
 
   // ── Section 3 : migration ────────────────────────────────────────────────
   const { migrer } = useMigrationMutations();
+
+  // ── Section 4 : import du catalogue ─────────────────────────────────────
+  const { importerCatalogue } = useImportCatalogue();
+  const [importCours, setImportCours] = useState(false);
   const [form, setForm] = useState<FormMigration>({
     cible: "mysql",
     dsn: "",
@@ -192,16 +201,46 @@ export default function AdminDeveloppeur() {
     }
   }
 
+  async function lancerImportCatalogue() {
+    if (!guard("resetData", t("admin.systeme.developpeur.import_catalogue_btn"))) return;
+    if (dialogue?.type !== "import_catalogue") return;
+    setImportCours(true);
+    try {
+      const resultat = await importerCatalogue();
+      toast.success(
+        t("admin.systeme.developpeur.import_catalogue_toast_ok", {
+          produits: resultat.produits,
+          categories: resultat.categories,
+          marques: resultat.marques,
+        }),
+      );
+      // Rafraîchir l'état de la base pour refléter les nouvelles lignes.
+      void recharger();
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(
+        t("admin.systeme.developpeur.import_catalogue_toast_echec", { message: err.message }),
+      );
+    } finally {
+      setImportCours(false);
+      setDialogue(null);
+    }
+  }
+
   // ── Titre du dialogue ────────────────────────────────────────────────────
 
   const dialogueTitre = !dialogue
     ? ""
     : dialogue.type === "sauvegarde"
       ? t("admin.systeme.developpeur.dialog_sauvegarde_titre")
-      : t("admin.systeme.developpeur.dialog_migration_titre");
+      : dialogue.type === "import_catalogue"
+        ? t("admin.systeme.developpeur.import_catalogue_dialog_titre")
+        : t("admin.systeme.developpeur.dialog_migration_titre");
 
   const dialogueDesc = !dialogue ? null : dialogue.type === "sauvegarde" ? (
     t("admin.systeme.developpeur.dialog_sauvegarde_desc")
+  ) : dialogue.type === "import_catalogue" ? (
+    t("admin.systeme.developpeur.import_catalogue_dialog_desc")
   ) : (
     <div className="space-y-2 text-sm">
       <p>
@@ -396,6 +435,47 @@ export default function AdminDeveloppeur() {
         </CardContent>
       </Card>
 
+      {/* ── Section 4 : Import du catalogue ──────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PackageOpen className="h-4 w-4" />{" "}
+            {t("admin.systeme.developpeur.import_catalogue_titre")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {t("admin.systeme.developpeur.import_catalogue_description")}
+          </p>
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>{t("admin.systeme.developpeur.import_catalogue_alerte_titre")}</AlertTitle>
+            <AlertDescription>
+              {t("admin.systeme.developpeur.import_catalogue_alerte_desc")}
+            </AlertDescription>
+          </Alert>
+          {can("resetData") ? (
+            <Button
+              variant="outline"
+              onClick={() => setDialogue({ type: "import_catalogue" })}
+              disabled={importCours}
+            >
+              <PackageOpen className="me-2 h-4 w-4" />
+              {importCours
+                ? t("admin.systeme.developpeur.import_catalogue_en_cours")
+                : t("admin.systeme.developpeur.import_catalogue_btn")}
+            </Button>
+          ) : (
+            <span title={denyReason("resetData")} className="inline-flex">
+              <Button variant="outline" disabled>
+                <PackageOpen className="me-2 h-4 w-4" />{" "}
+                {t("admin.systeme.developpeur.import_catalogue_btn")}
+              </Button>
+            </span>
+          )}
+        </CardContent>
+      </Card>
+
       {/* ── Section 3 : Migration ──────────────────────────────────────────── */}
       <Card>
         <CardHeader>
@@ -572,12 +652,16 @@ export default function AdminDeveloppeur() {
         confirmLabel={
           dialogue?.type === "sauvegarde"
             ? t("admin.systeme.developpeur.dialog_btn_telecharger")
-            : t("admin.systeme.developpeur.dialog_btn_executer")
+            : dialogue?.type === "import_catalogue"
+              ? t("admin.systeme.developpeur.import_catalogue_dialog_btn")
+              : t("admin.systeme.developpeur.dialog_btn_executer")
         }
         destructive={dialogue?.type === "migration_exec"}
         onConfirm={() => {
           if (dialogue?.type === "sauvegarde") {
             void lancerSauvegarde();
+          } else if (dialogue?.type === "import_catalogue") {
+            void lancerImportCatalogue();
           } else {
             void executer();
           }

@@ -369,6 +369,23 @@ const systemeAr: Record<string, string> = {
   // شارات الخطورة
   "admin.systeme.developpeur.gravite_erreur": "خطأ",
   "admin.systeme.developpeur.gravite_avertissement": "تنبيه",
+
+  // القسم 4 — استيراد كتالوج العرض
+  "admin.systeme.developpeur.import_catalogue_titre": "استيراد كتالوج العرض",
+  "admin.systeme.developpeur.import_catalogue_description":
+    "يملأ المتجر بالمنتجات والفئات والعلامات التجارية من كتالوج العرض. استخدم هذا الزر إذا كان متجرك فارغًا بعد التثبيت، أو لإعادة تعيين الكتالوج.",
+  "admin.systeme.developpeur.import_catalogue_alerte_titre": "تنبيه: استبدال الكتالوج",
+  "admin.systeme.developpeur.import_catalogue_alerte_desc":
+    "يستبدل هذا الإجراء المنتجات والفئات والعلامات التجارية الحالية ببيانات كتالوج العرض. لا تتأثر الطلبات والعملاء وسائر البيانات.",
+  "admin.systeme.developpeur.import_catalogue_btn": "استيراد الكتالوج",
+  "admin.systeme.developpeur.import_catalogue_en_cours": "جارٍ الاستيراد…",
+  "admin.systeme.developpeur.import_catalogue_dialog_titre": "استيراد الكتالوج؟",
+  "admin.systeme.developpeur.import_catalogue_dialog_desc":
+    "سيستبدل هذا الإجراء الكتالوج الحالي ببيانات العرض. لن تتأثر الطلبات والعملاء.",
+  "admin.systeme.developpeur.import_catalogue_dialog_btn": "استيراد",
+  "admin.systeme.developpeur.import_catalogue_toast_ok":
+    "تم استيراد {produits} منتج و{categories} فئة و{marques} علامة تجارية.",
+  "admin.systeme.developpeur.import_catalogue_toast_echec": "فشل الاستيراد: {message}",
 };
 
 export default systemeAr;
