@@ -1,22 +1,24 @@
 <?php
 
 /**
- * Importateur du catalogue de démonstration — pont entre l'assistant HTTP et
- * l'outil existant `api/tools/importer-donnees-front.php`.
+ * Importateur du catalogue de démonstration — appelable depuis le web ou la CLI.
  *
- * RÈGLE DE RÉUTILISATION SANS DUPLICATION
+ * PROBLÈME RÉSOLU
  *
- * `api/tools/importer-donnees-front.php` contient toute la logique d'import :
- * upserts idempotents, rattrapage JSON, rapport. Ce fichier ne duplique RIEN :
- * il l'appelle en sous-processus CLI.
+ * La version précédente lançait `api/tools/importer-donnees-front.php` comme
+ * sous-processus via `proc_open`. Sur les hébergements mutualisés (Hostinger,
+ * o2switch, PlanetHoster…), `proc_open` est désactivé par `disable_functions`
+ * et le binaire `php` est absent du PATH du serveur web. Conséquence : code 255,
+ * boutique vide, aucun remède sans SSH.
  *
- * POURQUOI UN SOUS-PROCESSUS
+ * SOLUTION
  *
- * L'outil vérife `PHP_SAPI !== 'cli'` et répond 403 s'il est appelé en HTTP.
- * C'est intentionnel : il s'exécute avec les variables d'environnement de la
- * base, pas via une requête HTTP. On l'appelle donc en ligne de commande depuis
- * ce processus parent (qui, lui, est HTTP), en transmettant les bonnes variables
- * d'environnement.
+ * La logique d'import est désormais dans `ImporteurDonneesFront`, une classe
+ * PHP pure. Ce fichier l'appelle DIRECTEMENT, sans processus. Aucune dépendance
+ * à `proc_open`, aucun binaire PHP requis.
+ *
+ * L'outil en ligne de commande `api/tools/importer-donnees-front.php` appelle
+ * lui aussi cette classe : une seule logique, deux points d'entrée.
  *
  * POLITIQUE D'ÉCHEC
  *
@@ -24,18 +26,13 @@
  * propriétaire et les 24 tables sont l'essentiel — le catalogue est un bonus.
  * Ce code retourne un résultat structuré : l'assistant l'affiche, sans lever
  * d'exception si l'import n'a pas abouti.
- *
- * MODE CLI
- *
- * Cette classe n'est PAS utilisée en ligne de commande : `install.php` CLI
- * n'appelle pas l'import. Le CLI reste inchangé. C'est volontaire : la CI et
- * les harnais contrôlent l'import séparément (voir les instructions de
- * `scripts/conformite-api.ts`).
  */
 
 declare(strict_types=1);
 
 namespace KaTech\Installation;
+
+use KaTech\Db;
 
 /**
  * @phpstan-type ResultatImport array{
@@ -51,98 +48,47 @@ final class ImportateurCatalogue
 {
     /**
      * @param string $racineApi Chemin absolu vers le dossier `api/`.
-     * @param array<string,string> $env Variables d'environnement de la base (DB_DRIVER, etc.).
+     * @param Db     $db        Instance de base de données déjà initialisée.
      */
     public function __construct(
         private readonly string $racineApi,
-        private readonly array $env,
+        private readonly Db $db,
     ) {
     }
 
     /**
-     * Lance l'import en sous-processus et retourne le résultat.
+     * Importe le catalogue et retourne un résultat structuré.
+     *
+     * Appelle directement `ImporteurDonneesFront` — aucun sous-processus,
+     * aucune dépendance à `proc_open` ou au binaire PHP en ligne de commande.
      *
      * @return ResultatImport
      */
     public function importer(): array
     {
-        $script = $this->racineApi . '/tools/importer-donnees-front.php';
-        $json   = $this->racineApi . '/tools/donnees-front.json';
-
-        if (!is_file($script)) {
-            return $this->echec(
-                "Le fichier {$script} est introuvable. L'import ne peut pas avoir lieu."
-            );
-        }
+        $json = $this->racineApi . '/tools/donnees-front.json';
 
         if (!is_file($json)) {
             return $this->echec(
                 "Le fichier {$json} est introuvable. L'import ne peut pas avoir lieu. "
-                . 'Il est normalement inclus dans le paquet d\'installation.'
+                . "Il est normalement inclus dans le paquet d'installation."
             );
         }
 
-        // Environnement transmis au sous-processus : uniquement les variables
-        // nécessaires, plus celles déjà dans l'environnement courant.
-        $envSousProcessus = array_merge(
-            // Variables de base du serveur PHP courant (PATH, HOME…)
-            array_filter($_ENV, static fn ($v) => is_string($v)),
-            // Variables de base de données passées par l'assistant
-            $this->env,
-        );
+        $importeur = new ImporteurDonneesFront($json, $this->db);
+        $resultat  = $importeur->importer();
 
-        // `php` doit être accessible dans le PATH du serveur web. Sur Hostinger
-        // et la plupart des mutualisés, c'est le cas. S'il ne l'est pas,
-        // `proc_open` échouera et on renvoie un résultat d'échec.
-        $commande = [PHP_BINARY, $script];
-
-        $descripteurs = [
-            0 => ['pipe', 'r'],   // stdin
-            1 => ['pipe', 'w'],   // stdout
-            2 => ['pipe', 'w'],   // stderr
-        ];
-
-        $process = @proc_open($commande, $descripteurs, $pipes, $this->racineApi, $envSousProcessus);
-
-        if ($process === false) {
-            return $this->echec(
-                'Impossible de lancer le sous-processus PHP. '
-                . 'L\'import n\'a pas eu lieu, mais votre boutique est installée et fonctionnelle.'
-            );
+        if (!$resultat['ok']) {
+            // L'import a échoué mais ne doit pas bloquer l'installation.
+            return array_merge($resultat, [
+                'erreur' => ($resultat['erreur'] ?? "L'import a échoué.")
+                    . ' Votre boutique est installée, mais le catalogue est vide. '
+                    . 'Pour importer plus tard : '
+                    . 'DB_DRIVER=… php api/tools/importer-donnees-front.php',
+            ]);
         }
 
-        fclose($pipes[0]);
-        $stdout = (string) stream_get_contents($pipes[1]);
-        $stderr = (string) stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        $code = proc_close($process);
-
-        if ($code !== 0) {
-            $erreur = $stderr !== '' ? $stderr : 'Code de sortie : ' . $code;
-
-            return $this->echec(
-                'L\'import a rencontré une erreur (code ' . $code . '). '
-                . 'Votre boutique est installée, mais le catalogue est vide. '
-                . 'Pour importer plus tard : '
-                . 'DB_DRIVER=… php api/tools/importer-donnees-front.php',
-                $erreur,
-            );
-        }
-
-        // Extraire les compteurs depuis la sortie de l'outil.
-        $produits   = self::extraireCompteur($stdout, 'products');
-        $categories = self::extraireCompteur($stdout, 'categories');
-        $marques    = self::extraireCompteur($stdout, 'brands');
-
-        return [
-            'ok'         => true,
-            'produits'   => $produits,
-            'categories' => $categories,
-            'marques'    => $marques,
-            'details'    => $stdout,
-            'erreur'     => null,
-        ];
+        return $resultat;
     }
 
     /**
@@ -162,8 +108,9 @@ final class ImportateurCatalogue
 
     /**
      * Extrait un compteur depuis la sortie texte de l'outil d'import.
+     * Conservé pour rétro-compatibilité (utilisé nulle part en interne).
      *
-     * Exemple de ligne : "  products : 12 ligne(s) en base"
+     * @deprecated Utiliser directement les champs du tableau retourné par importer().
      */
     private static function extraireCompteur(string $sortie, string $table): int
     {

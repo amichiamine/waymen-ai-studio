@@ -477,22 +477,18 @@ final class Assistant
 
         // ---- 6. Import du catalogue de démonstration (optionnel, non bloquant) --
         //
-        // L'import arrive APRÈS le témoin : même si le sous-processus échoue,
+        // L'import arrive APRÈS le témoin : même si l'import échoue,
         // l'installation est déclarée réussie. Le compte propriétaire et les
         // tables sont l'essentiel ; le catalogue est un bonus.
         //
-        // `ImportateurCatalogue` appelle `api/tools/importer-donnees-front.php`
-        // en sous-processus CLI, avec les mêmes variables d'environnement que
-        // ce processus parent. Il ne duplique aucune logique de l'outil.
+        // `ImportateurCatalogue` appelle directement `ImporteurDonneesFront`,
+        // une classe PHP pure — aucun sous-processus, aucune dépendance à
+        // `proc_open` ou au binaire PHP en ligne de commande. Fonctionnel sur
+        // tous les hébergements mutualisés, même avec `disable_functions`.
         /** @var array{ok:bool,produits:int,categories:int,marques:int,details:string,erreur:string|null}|null $resultImport */
         $resultImport = null;
         if ($importerCatalogue) {
-            $envImport = array_filter(
-                $valeurs,
-                static fn (string $k) => str_starts_with($k, 'DB_'),
-                ARRAY_FILTER_USE_KEY,
-            );
-            $importateur = new ImportateurCatalogue($this->racineApi, $envImport);
+            $importateur = new ImportateurCatalogue($this->racineApi, $db);
             $resultImport = $importateur->importer();
             $this->journal[] = $resultImport['ok']
                 ? sprintf(
