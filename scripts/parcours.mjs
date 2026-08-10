@@ -13,6 +13,7 @@
  * sont rapportés. Sortie 0 si le parcours est propre, 1 sinon.
  */
 
+import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
 
 const BASE = process.env.APP_URL ?? "http://127.0.0.1:8080";
@@ -23,8 +24,24 @@ const BASE = process.env.APP_URL ?? "http://127.0.0.1:8080";
 // voir avec le produit. `APP_URL=http://hote/ma-boutique` suffit a le dire.
 const PREFIXE = new URL(BASE).pathname.replace(/\/+$/, "");
 const API = `${PREFIXE}/api/v1`;
-const EMAIL = process.env.APP_EMAIL ?? "admin@katech.dz";
-const MOTDEPASSE = process.env.APP_PASSWORD ?? "katech-dev-2026";
+// =====================================================================
+// LE COMPTE DU PARCOURS NE DOIT JAMAIS ÊTRE UN COMPTE DU JEU DE DÉMONSTRATION
+// =====================================================================
+//
+// Ce parcours a longtemps visité 36 écrans d'administration « au vert » alors
+// que le back-office était inaccessible à toute installation neuve. Il
+// s'authentifiait avec `admin@katech.dz`, adresse justement semée dans le
+// magasin mock (`seedUsers()`). L'interface cherchait alors le rôle dans ce
+// magasin local au lieu de la session : la correspondance réussissait **par
+// homonymie**, sur une coïncidence d'adresse. Le commanditaire, lui, a installé
+// sa boutique avec sa propre adresse et s'est retrouvé dehors.
+//
+// Un harnais qui valide une coïncidence est pire qu'un harnais absent : il
+// donne confiance. Le compte par défaut est donc un compte que l'INSTALLATEUR
+// crée en base et que le jeu de démonstration ne contient pas — et la garde
+// ci-dessous rend le retour en arrière structurellement impossible.
+const EMAIL = process.env.APP_EMAIL ?? "patron@boutique-test.dz";
+const MOTDEPASSE = process.env.APP_PASSWORD ?? "Patron-2026!xY";
 
 const V = "\x1b[32m",
   R = "\x1b[31m",
@@ -38,6 +55,82 @@ let pageCourante = "(démarrage)";
 
 /** Erreurs réseau attendues : un 401 sur une route protégée sans session en est une. */
 const ECHECS_ATTENDUS = [/\/auth\/login/];
+
+/** Chemin d'un fichier du dépôt, depuis `scripts/`. */
+const fichier = (relatif) => new URL(`../${relatif}`, import.meta.url);
+
+/**
+ * Adresses semées dans le magasin mock, LUES DANS LA SOURCE plutôt que
+ * recopiées ici. Recopier une liste, c'est la laisser diverger : le jour où
+ * quelqu'un ajoute un compte au jeu de démonstration, une copie figée
+ * continuerait d'affirmer que tout va bien. La garde ci-dessous reste donc
+ * exacte sans que personne ait à y penser.
+ */
+function emailsDuJeuDeDemonstration() {
+  const source = readFileSync(fichier("src/lib/admin-store.tsx"), "utf8");
+  const debut = source.indexOf("function seedUsers()");
+  if (debut === -1) {
+    throw new Error(
+      "seedUsers() introuvable dans src/lib/admin-store.tsx : la garde anti-homonymie " +
+        "ne peut plus lire le jeu de démonstration. Corrigez-la plutôt que de la retirer.",
+    );
+  }
+  const bloc = source.slice(debut, source.indexOf("\n}\n", debut));
+  return [...bloc.matchAll(/email:\s*"([^"]+)"/g)].map((m) => m[1].toLowerCase());
+}
+
+/**
+ * Refus d'accès au back-office, dans TOUTES les langues de l'interface.
+ *
+ * Deuxième raison — la plus sournoise — pour laquelle ce parcours ne voyait
+ * rien : il ne cherchait que la formule FRANÇAISE « Zone réservée ». Or
+ * Playwright démarre en `en-US`, l'application suit la langue du navigateur, et
+ * l'écran de refus s'affichait donc en anglais. Le test cherchait une phrase qui
+ * ne pouvait pas apparaître : même avec un compte non semé, il restait vert.
+ *
+ * Les libellés sont lus dans les dictionnaires, jamais recopiés : une
+ * traduction retouchée ne doit pas rendre le harnais aveugle à nouveau.
+ */
+function formulesDeRefus() {
+  const formules = [];
+  for (const langue of ["fr", "en", "ar"]) {
+    const source = readFileSync(fichier(`src/lib/i18n/${langue}.ts`), "utf8");
+    const trouve = source.match(/"admin\.restricted\.title":\s*"([^"]+)"/);
+    if (!trouve) {
+      throw new Error(
+        `admin.restricted.title introuvable dans src/lib/i18n/${langue}.ts : ` +
+          "le parcours ne saurait plus reconnaître un refus d'accès.",
+      );
+    }
+    formules.push(trouve[1]);
+  }
+  return formules;
+}
+
+const REFUS = formulesDeRefus();
+
+/** Vrai si l'écran affiché est le refus d'accès au back-office, quelle que soit la langue. */
+const estUnRefusDAcces = (texte) => REFUS.some((f) => texte.includes(f));
+
+// ---- Garde anti-homonymie, avant même d'ouvrir le navigateur ----------
+{
+  const semees = emailsDuJeuDeDemonstration();
+  if (semees.includes(EMAIL.toLowerCase())) {
+    console.error(
+      `\n${R}PARCOURS REFUSÉ${F} — le compte « ${EMAIL} » appartient au jeu de\n` +
+        `démonstration du magasin mock (${semees.join(", ")}).\n\n` +
+        "S'authentifier avec cette adresse ne prouve RIEN : l'interface peut lui\n" +
+        "accorder le back-office par simple coïncidence d'adresse avec un compte\n" +
+        "local, sans jamais lire la session. C'est exactement le défaut qui a\n" +
+        "laissé un propriétaire légitime enfermé dehors de sa boutique.\n\n" +
+        "Installez la base avec une adresse À VOUS, puis relancez :\n" +
+        "  INSTALL_OWNER_EMAIL=patron@boutique-test.dz \\\n" +
+        "  INSTALL_OWNER_PASSWORD='Patron-2026!xY' php api/install.php\n" +
+        "  APP_EMAIL=patron@boutique-test.dz APP_PASSWORD='Patron-2026!xY' bun run parcours\n",
+    );
+    process.exit(1);
+  }
+}
 
 function noter(gravite, message) {
   anomalies.push({ gravite, page: pageCourante, message });
@@ -194,9 +287,21 @@ await etape("Connexion", async () => {
   // Preuve que la session est réelle : le serveur nous reconnaît.
   const moi = await page.evaluate(async (API) => {
     const r = await fetch(`${API}/auth/me`, { credentials: "include" });
-    return (await r.json())?.data?.user?.email ?? null;
+    const u = (await r.json())?.data?.user ?? null;
+    return { email: u?.email ?? null, role: u?.role ?? null };
   }, API);
-  if (moi !== EMAIL) throw new Error(`session non reconnue par le serveur (${moi})`);
+  if (moi.email !== EMAIL) throw new Error(`session non reconnue par le serveur (${moi.email})`);
+
+  // Le rôle que le SERVEUR attribue à cette session. Les écrans d'administration
+  // qui suivent ne valent que par lui : le compte n'existe pas dans le jeu de
+  // démonstration (garde en tête de fichier), donc aucune correspondance locale
+  // ne peut plus expliquer un accès accordé.
+  if (!["owner", "admin", "editor"].includes(moi.role)) {
+    throw new Error(
+      `le serveur attribue le rôle « ${moi.role} » à cette session : il n'ouvre pas ` +
+        "le back-office, les écrans suivants ne prouveraient rien",
+    );
+  }
 });
 
 console.log("\nADMINISTRATION");
@@ -237,8 +342,11 @@ for (const [nom, chemin] of pagesAdmin) {
     // succès puisque la page de connexion est, elle aussi, « non vide ».
     if (!page.url().includes(chemin))
       throw new Error(`redirigé vers ${page.url().replace(BASE, "")}`);
-    if (/Zone réservée|réservée à l'équipe/i.test(t))
-      throw new Error("accès refusé alors qu'on est propriétaire");
+    if (estUnRefusDAcces(t))
+      throw new Error(
+        "accès refusé alors que la session porte un rôle du back-office " +
+          "— l'interface ne lit pas le rôle au bon endroit",
+      );
     // Une page qui plante au rendu affiche le repli de l'ErrorBoundary : elle
     // est « non vide », donc indétectable sans ce contrôle. C'est ainsi que le
     // plantage de /admin/media est passé pour un succès au premier passage.

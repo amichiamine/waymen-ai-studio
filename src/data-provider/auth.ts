@@ -25,6 +25,7 @@ import {
   setUserPassword,
   touchUserLogin,
   upsertUser,
+  useAdminState,
   verifyUserCredentials,
   type AdminUser,
 } from "@/lib/admin-store";
@@ -85,6 +86,64 @@ export type UpdateProfileInput = { name: string; phone?: string };
  */
 function toAuthUser(u: AdminUser, phone?: string): AuthUser {
   return { id: u.id, email: u.email, name: u.name, phone, role: u.role };
+}
+
+/**
+ * Rôle RÉEL de l'utilisateur connecté — l'autorité dont dépend tout le socle de
+ * permissions de l'interface (`useAdminRoles` → `useEffectiveRole` →
+ * `usePermissions`, plus la garde de route `/admin`).
+ *
+ * # Pourquoi ce hook existe
+ *
+ * `useAdminRoles` cherchait le rôle dans `useAdminState().users`, c'est-à-dire
+ * dans le magasin MOCK du navigateur, **dans les deux modes**. En http, un
+ * compte créé en base n'y figure évidemment pas : aucune correspondance, aucun
+ * rôle, `isAdmin === false`. Sur une installation neuve, le propriétaire créé
+ * par l'installateur était donc enfermé dehors de son propre back-office,
+ * pendant que `GET /auth/me` lui répondait `role: "owner"`.
+ *
+ * Le défaut n'a pas été vu parce que tous les essais employaient
+ * `admin@katech.dz`, adresse justement semée dans le jeu de démonstration : la
+ * correspondance réussissait **par homonymie**, sur une coïncidence d'adresse,
+ * jamais sur la session.
+ *
+ * # Pourquoi ici, et nulle part ailleurs
+ *
+ * `docs/DATA-PROVIDER.md` pose qu'aucun composant ni hook d'entité ne doit
+ * savoir dans quel mode il tourne : un `isHttpData()` dans `admin-auth.tsx`
+ * aurait corrigé le symptôme en violant la règle. Ce module est déjà **le seul**
+ * endroit qui possède les deux branches de l'authentification et le seul
+ * autorisé à connaître `admin-store`. Le choix de la source du rôle est
+ * exactement de la même nature que le choix de la source de la session : il
+ * appartient donc ici, une fois pour toutes.
+ *
+ * # Ce que chaque mode considère comme autorité, et pourquoi
+ *
+ * - **http** : la SESSION. Le serveur l'a signée (`ControleurAuth::session`),
+ *   c'est la seule chose qui corresponde à ce que `Garde` appliquera côté API.
+ *   Aligner l'interface dessus, c'est garantir qu'elle n'affiche pas des boutons
+ *   qui finiront en 403, ni ne refuse une porte que le serveur ouvrirait.
+ * - **mock** : le MAGASIN LOCAL, comme avant — il n'y a pas d'autre source, et
+ *   c'est lui qui rend les démonstrations vivantes : changer un rôle dans
+ *   `/admin/users` ou désactiver un compte prend effet sans se reconnecter,
+ *   ce qu'une session figée ne saurait pas faire.
+ *
+ * Le serveur reste dans tous les cas la seule autorité RÉELLE ; ce hook ne règle
+ * que la cohérence de l'interface.
+ *
+ * @param user Session courante, ou `null` si personne n'est connecté.
+ * @returns Le rôle qui fait foi, ou `undefined` sans session ni correspondance.
+ */
+export function useRealRole(user: AuthUser | null): AuthUser["role"] | undefined {
+  // Appelé inconditionnellement : un hook ne se saute jamais (docs §6). En http
+  // la lecture du magasin est simplement ignorée.
+  const { users } = useAdminState();
+
+  if (!user) return undefined;
+  if (isHttpData()) return user.role;
+
+  const match = users.find((u) => u.email.toLowerCase() === user.email.toLowerCase() && u.active);
+  return match?.role;
 }
 
 /**

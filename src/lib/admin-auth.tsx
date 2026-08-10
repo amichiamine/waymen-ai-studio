@@ -1,25 +1,39 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
-import { canPerform, getActiveRole, useAdminState, type AdminUserRole } from "@/lib/admin-store";
+import { canPerform, getActiveRole, type AdminUserRole } from "@/lib/admin-store";
+// IMPORT PROFOND VOLONTAIRE — même raison que dans `src/lib/auth.tsx` : passer
+// par le baril `@/data-provider` créerait une dépendance circulaire entre
+// chunks au build.
+import { useRealRole } from "@/data-provider/auth";
 
 export type AdminRole = AdminUserRole;
 
 /**
- * Rôle admin dérivé de l'entrée correspondante dans /admin/users (par email).
+ * Rôle admin de l'utilisateur connecté.
+ *
+ * La SOURCE du rôle est choisie par la couche de données (`useRealRole`), pas
+ * ici : en http il vient de la session que le serveur a signée, en mock du
+ * magasin local. Ce module ne sait pas — et ne doit pas savoir — dans quel mode
+ * il tourne (`docs/DATA-PROVIDER.md`).
+ *
+ * Il cherchait auparavant l'email de la session dans `useAdminState().users`,
+ * le magasin mock, **y compris en http** : un compte réellement créé en base
+ * n'y figurant pas, son propriétaire se voyait refuser `/admin` alors que
+ * `GET /auth/me` lui répondait `role: "owner"`. Voir `useRealRole`.
+ *
  * - owner / admin / editor  → accès au back-office (isAdmin = true)
  * - viewer                  → connecté, mais pas d'accès admin
- * - pas d'entrée            → utilisateur client standard (pas admin)
+ * - customer / pas d'entrée → utilisateur client standard (pas admin)
  */
 export function useAdminRoles() {
   const { user, loading } = useAuth();
-  const { users } = useAdminState();
+  const sessionRole = useRealRole(user);
 
-  const match = user
-    ? users.find((u) => u.email.toLowerCase() === user.email.toLowerCase() && u.active)
-    : undefined;
-
-  const role = match?.role;
+  // `customer` est un rôle du contrat, jamais un rang du back-office : il ne
+  // doit pas se retrouver dans `AdminRole`. On le traite comme « pas d'entrée »,
+  // ce qui laisse `useEffectiveRole` retomber sur `viewer` (moindre privilège).
+  const role: AdminRole | undefined = sessionRole === "customer" ? undefined : sessionRole;
   const isAdmin = role === "owner" || role === "admin" || role === "editor";
 
   return {
