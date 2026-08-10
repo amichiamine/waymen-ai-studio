@@ -15,7 +15,7 @@
     "parcours": "node scripts/parcours.mjs",
     "prebuild": "tsx scripts/generate-sitemap.ts",
     "build": "vite build",
-    "postbuild": "tsx scripts/prerendu.ts",
+    "postbuild": "tsx scripts/prerendu.ts && tsx scripts/paqueter.ts",
     "prerendu": "tsx scripts/prerendu.ts",
     "paqueter": "tsx scripts/paqueter.ts",
     "build:dev": "vite build --mode development",

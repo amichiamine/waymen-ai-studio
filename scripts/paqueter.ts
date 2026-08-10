@@ -15,19 +15,22 @@
  * dans docs/DEPLOIEMENT.md §4.
  *
  * =====================================================================
- * POURQUOI PAS D'ENCHAÎNEMENT AUTOMATIQUE AU BUILD
+ * ENCHAÎNEMENT AU BUILD — DEUX BESOINS CONCILIÉS
  * =====================================================================
- * `bun run build` est déclenché à chaque poussée par la CI (Lovable,
- * GitHub Actions éventuels). La CI n'a que faire d'un zip — elle veut
- * un dist/ statique, pas un artefact binaire de 10 Mo. Relier le zip
- * au postbuild alourdirait chaque CI sans bénéfice et ralentirait le
- * feedback de build.
+ * `bun run build` déclenche maintenant ce script en `postbuild`, juste
+ * après le prérendu, SAUF dans les deux cas suivants :
  *
- * Le paquetage est donc une commande à part (`bun run paqueter`), que
- * le commanditaire lance seulement quand il veut déployer.
- * L'additivité est préservée : `bun run build` continue de produire
- * un dist/ directement téléversable pour qui préfère la méthode
- * classique fichier par fichier.
+ *   CI=true (ou CI=1) : posé automatiquement par GitHub Actions, Lovable
+ *   CI, et la plupart des pipelines. La CI veut un dist/ statique, pas
+ *   une archive de 10 Mo — la détection évite d'alourdir chaque push.
+ *
+ *   PAQUET=0 : sortie explicite pour qui lance le build localement mais
+ *   n'a pas besoin du zip (tests rapides, mesure du prerendu…).
+ *
+ * Pour un humain qui déploie : `bun run build` produit dist/ ET
+ * katech-site.zip en une seule commande.
+ * Pour la CI : aucun changement de comportement, aucune archive produite.
+ * `bun run paqueter` reste disponible pour un paquetage isolé.
  *
  * =====================================================================
  * CE QUI EST EXCLU DE api/ ET POURQUOI
@@ -191,6 +194,36 @@ function creerZip(dossierSource: string, zipDest: string) {
 // ── Point d'entrée ────────────────────────────────────────────────────────────
 
 function main() {
+  // 0. Sortie rapide si le paquetage n'est pas voulu.
+  //
+  //    Deux conditions, par ordre de priorité :
+  //
+  //    a) CI=true (ou CI=1) — variable posée automatiquement par GitHub Actions,
+  //       Lovable CI et la plupart des pipelines d'intégration continue. La CI
+  //       veut un dist/ statique, pas une archive binaire de 10 Mo — relier le
+  //       zip au postbuild alourdirait chaque push sans bénéfice et ralentirait
+  //       le feedback. Mais `bun run build` hors CI le produit désormais, ce
+  //       qui est ce que le commanditaire demandait.
+  //
+  //    b) PAQUET=0 — sortie explicite pour qui lance le build localement mais
+  //       n'a pas besoin du zip (tests rapides, mesures de prerendu…).
+  //
+  //    Dans les deux cas la sortie est affichée, jamais silencieuse, pour que
+  //    l'absence du zip s'explique d'elle-même dans les logs.
+  const envCI = (process.env.CI ?? "").toLowerCase();
+  const estCI = envCI === "true" || envCI === "1";
+  const paquet = (process.env.PAQUET ?? "").toLowerCase();
+  const paquetDesactive = paquet === "0";
+
+  if (estCI) {
+    log("CI détecté (CI=" + process.env.CI + ") — paquetage ignoré.");
+    return;
+  }
+  if (paquetDesactive) {
+    log("PAQUET=0 — paquetage ignoré à la demande.");
+    return;
+  }
+
   // 1. Vérifications préalables
   if (!fs.existsSync(DIST)) {
     abort("dist/ est absent. Lance d'abord : bun run build (ou npm run build).");
