@@ -81,6 +81,33 @@ DirectoryIndex index.php index.html
   # le servir, quelle que soit la configuration des handlers.
   RewriteRule ^uploads/.*\.(php|phtml|phps|php[0-9]|phar|pl|py|cgi|sh|jsp|asp|htaccess)$ - [F,L]
 
+  # --- origine.php n'est pas une page --------------------------------
+  # C'est la bibliothèque partagée par index.php, sitemap.php et robots.php :
+  # elle ne définit que des fonctions et n'émet rien. Appelée directement,
+  # elle répondrait 200 avec un corps vide — donc une URL qu'un robot
+  # indexerait. On la refuse.
+  RewriteRule ^origine\.php$ - [F,L]
+
+  # --- sitemap.xml et robots.txt : produits à l'exécution ------------
+  # Ces deux documents portent des URL ABSOLUES par protocole : `<loc>` pour
+  # les sitemaps (sitemaps.org), `Sitemap:` pour robots.txt. On ne peut donc
+  # pas les rendre relatives comme le reste du livrable, et un fichier écrit
+  # au build ne peut porter que le domaine du build. Mesuré : 27 `<loc>` sur
+  # katech.dz, servies telles quelles depuis n'importe quel hébergement —
+  # c'est demander à Google d'indexer le site d'un tiers.
+  #
+  # sitemap.php et robots.php LISENT le fichier statique voisin et n'en
+  # réécrivent que l'origine, avec celle de la requête (public/origine.php).
+  # Le fichier statique reste donc en place : il est le repli si PHP ne tourne
+  # pas, et c'est lui que lit `scripts/prerendu.ts` pour connaître les routes.
+  #
+  # Ces deux règles doivent précéder « fichiers et dossiers réels » : sinon
+  # sitemap.xml, qui EXISTE, s'arrêterait là et serait servi tel quel.
+  # Substitutions RELATIVES, donc préfixées par mod_rewrite du répertoire
+  # réel : le dossier reste renommable et déplaçable.
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
+  RewriteRule ^robots\.txt$ robots.php [L]
+
   # --- Pages prérendues -----------------------------------------------
   # `scripts/prerendu.ts` écrit au build le HTML rendu de chaque URL du
   # sitemap dans `<route>/index.html`. Sans les deux règles ci-dessous, ces
@@ -88,19 +115,26 @@ DirectoryIndex index.php index.html
   # « dossiers réels » juste en dessous rendrait la main à mod_dir, qui
   # redirigerait en 301 vers la forme avec barre finale.
   #
-  # POURQUOI CE N'EST PAS ACCEPTABLE. Une page prérendue est servie par
-  # Apache SANS passer par index.php : personne n'y insère la balise <base>,
-  # c'est donc le prérendu qui l'écrit, avec une valeur RELATIVE déduite de la
-  # profondeur de la route (« ../ » pour /product/xyz). Cette valeur n'est
-  # juste que pour UNE forme d'URL — celle du sitemap, sans barre finale.
-  # Laisser le serveur choisir la forme, c'est confier la résolution des
-  # scripts de la page à un réglage d'hébergeur (DirectorySlash) que
-  # src/main.tsx a déjà de bonnes raisons de ne pas croire.
+  # POURQUOI CE N'EST PAS ACCEPTABLE. Servie directement par Apache, une page
+  # prérendue ne passe par aucun PHP : personne n'y insère la balise <base>, et
+  # surtout personne n'y corrige le DOMAINE. Or ces pages sont les seules à
+  # porter un <link rel="canonical"> — mesuré : 7 occurrences du domaine de
+  # build dans /product/rog-strix-g16/index.html, canonique comprise. Le même
+  # paquet déposé sur deux domaines demandait donc à Google d'indexer le
+  # premier depuis le second, et obligeait à reconstruire le paquet par
+  # domaine.
   #
-  # Ces deux règles sont donc placées AVANT la règle « fichiers et dossiers
+  # Elles passent donc par index.php, comme la page d'accueil : il retrouve le
+  # fichier prérendu à partir de l'URL, réécrit le domaine avec l'origine réelle
+  # et pose la balise <base> calculée (voir public/index.php, « LES PAGES
+  # PRÉRENDUES PASSENT PAR ICI »). Le fichier <route>/index.html reste un
+  # document complet et valide : servi en statique pur, il s'affiche encore,
+  # avec ses URL de repli.
+  #
+  # Ces deux règles sont placées AVANT la règle « fichiers et dossiers
   # réels » : sinon /product/xyz, qui EST un dossier depuis le prérendu,
-  # s'arrêterait là et repartirait en redirection. L'ordre porte la
-  # correction, pas la condition.
+  # s'arrêterait là et repartirait en redirection vers la forme avec barre
+  # finale. L'ordre porte la correction, pas la condition.
   #
   # a) une seule forme d'URL, sans barre finale, identique au sitemap.
   #    Conditionnée à la présence d'un index.html : les autres dossiers
@@ -113,11 +147,13 @@ DirectoryIndex index.php index.html
   # b) service SANS redirection de la page prérendue à l'URL du sitemap.
   #    Substitution relative, donc préfixée par mod_rewrite du répertoire
   #    réel : le dossier reste renommable et déplaçable.
-  #    Pas de boucle : au second passage, %{REQUEST_FILENAME} vaut déjà
-  #    « …/index.html », dont « /index.html » n'existe pas, et la règle
-  #    « fichiers réels » sert le document.
+  #    index.php retrouve la page voulue par REQUEST_URI, que la réécriture
+  #    ne modifie pas.
+  #    Pas de boucle : au second passage l'URI est « index.php », et
+  #    « index.php/index.html » n'existe pas — la règle « fichiers réels »
+  #    prend alors la main.
   RewriteCond %{REQUEST_FILENAME}/index.html -f
-  RewriteRule ^(.+?)/?$ $1/index.html [L]
+  RewriteRule ^(.+?)/?$ index.php [L]
 
   # --- Fichiers et dossiers réels : servis tels quels -----------------
   RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -301,6 +337,13 @@ DirectoryIndex index.php index.html
   # --- Fichiers non empreintés : cache court, revalidé ---------------
   # Le sitemap et robots.txt changent sans changer de nom ; les médias
   # téléversés aussi (une fiche produit peut être recorrigée).
+  #
+  # Ce motif porte sur le NOM DU FICHIER servi. Quand /sitemap.xml et
+  # /robots.txt sont réécrits vers sitemap.php et robots.php (§1), le fichier
+  # servi ne s'appelle plus ainsi : le motif ne s'applique pas, et ces deux
+  # scripts posent eux-mêmes le MÊME en-tête (katech_cache_court(), dans
+  # public/origine.php). Une seule valeur, deux chemins de service — ne pas
+  # ajouter « sitemap\.php » ici, ce serait la dupliquer.
   <FilesMatch "^(robots\.txt|sitemap\.xml|favicon\.ico|manifest\.webmanifest)$">
     Header set Cache-Control "public, max-age=3600, must-revalidate"
   </FilesMatch>

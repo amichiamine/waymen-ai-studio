@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Point d'entrée HTML du site — vingt lignes utiles qui rendent le dossier
- * de build renommable et déplaçable.
+ * Point d'entrée HTML du site — les lignes utiles qui rendent le dossier
+ * de build renommable, déplaçable, ET déposable sur n'importe quel domaine.
  *
  * =====================================================================
  * LE PROBLÈME QU'IL RÉSOUT
@@ -52,8 +52,9 @@
  * et PHP est déjà une exigence dure du projet, puisque l'API en est faite.
  *
  * Le chemin est déduit de `SCRIPT_NAME`, exactement comme le fait déjà
- * `api/src/Requete.php` pour retirer son propre préfixe. Rien n'est écrit en
- * dur, ni d'un côté ni de l'autre.
+ * `api/src/Requete.php` pour retirer son propre préfixe (voir
+ * `katech_base_web()` dans `public/origine.php`). Rien n'est écrit en dur,
+ * ni d'un côté ni de l'autre.
  *
  * =====================================================================
  * BALISES OG ET JSON-LD — DOMAINE DÉDUIT À L'EXÉCUTION
@@ -67,118 +68,121 @@
  * récupèrent la page depuis leurs propres serveurs ; un chemin relatif ne
  * produit aucune vignette.
  *
- * Deux voies sont possibles pour les rendre portables :
+ * Deux voies étaient possibles pour les rendre portables :
  *
- *  a) Variable d'environnement VITE_SITE_URL au moment du build.
+ *  a) Variable d'environnement SITE_URL au moment du build.
  *     Avantage : simple. Inconvénient : fige le domaine dans le livrable ;
  *     le commerçant qui reçoit un dist/ tout fait ne peut plus rien changer
  *     sans reconstruire — c'est exactement le problème que ce projet évite.
+ *     Cette voie reste DISPONIBLE pour qui veut délibérément figer un
+ *     domaine, mais elle n'est plus NÉCESSAIRE.
  *
  *  b) Réécriture à l'exécution par PHP (approche retenue).
- *     Ce fichier connaît déjà le protocole (HTTPS ou non, via
- *     $_SERVER['HTTPS'] et X-Forwarded-Proto) et le chemin. Il suffit
- *     d'ajouter la lecture de HTTP_HOST pour obtenir l'origine complète.
+ *     La déduction d'origine et la réécriture vivent dans
+ *     `public/origine.php`, partagées avec `sitemap.php` et `robots.php` :
+ *     la validation de HTTP_HOST n'existe qu'à un seul endroit.
  *
- * Sécurité de HTTP_HOST : l'en-tête vient du navigateur, pas du serveur.
- * Mais nous ne le stockons pas, n'y faisons aucune décision de sécurité,
- * et nous le reflètons uniquement dans les balises meta de la page HTML
- * (non dans un cookie, non dans une session). C'est exactement l'usage
- * décrit dans les recommandations OWASP pour les URL canoniques.
- * Le format est validé par un masque strict avant utilisation.
+ * Repli propre : si un HTML est servi directement (sans PHP, sans Host), les
+ * URL de repli « https://katech.dz/… » restent en place — c'est un domaine
+ * réel, donc les vignettes fonctionnent quand même.
  *
- * Repli propre : si index.html est servi directement (sans PHP, sans Host),
- * les URL de repli « https://katech.dz/… » restent en place — c'est le
- * domaine de production réel, donc les vignettes fonctionnent quand même.
+ * =====================================================================
+ * LES PAGES PRÉRENDUES PASSENT PAR ICI, ELLES AUSSI
+ * =====================================================================
+ * `scripts/prerendu.ts` écrit au build le HTML rendu de chaque URL du sitemap
+ * dans `dist/<route>/index.html`. Ces fichiers portent ce qu'aucune autre page
+ * ne porte : un `<link rel="canonical">`, et des `og:url` propres à la route.
+ *
+ * Servis en STATIQUE par Apache — ce qu'ils étaient — ils annonçaient à Google
+ * la canonique du domaine de BUILD. Un même paquet déposé sur deux domaines
+ * demandait donc à Google d'indexer le premier depuis le second : le pire
+ * défaut de référencement possible, et une raison de reconstruire le paquet
+ * pour chaque domaine.
+ *
+ * Ils sont donc servis PAR CE FICHIER (voir `public/.htaccess`, §1 « Pages
+ * prérendues »), qui leur applique exactement le traitement de l'accueil :
+ * réécriture du domaine, puis balise `<base>` calculée. Deux propriétés en
+ * découlent, et sont le motif du choix :
+ *
+ *  - ZÉRO DUPLICATION : une seule réécriture, une seule validation d'hôte.
+ *    L'alternative — faire écrire au prérendu une forme « neutre » que PHP
+ *    substituerait — exigeait un jeton dans le fichier, et ce jeton serait
+ *    parti tel quel vers Google le jour où PHP ne tourne pas.
+ *  - LE FICHIER RESTE VALIDE SEUL : `<route>/index.html` demeure un document
+ *    complet, avec son `<base>` relatif et ses URL de repli. Servi en statique
+ *    pur, il s'affiche et se référence encore — sur le domaine de repli.
+ *
+ * La balise `<base>` relative écrite par le prérendu (`../` pour
+ * /product/xyz) est retirée et remplacée par la base ABSOLUE de ce
+ * déploiement. Les deux sont justes ; l'absolue l'est indépendamment de la
+ * forme d'URL servie, ce qui retire une hypothèse au lieu d'en ajouter une.
  */
 
 declare(strict_types=1);
 
-$fichier = __DIR__ . '/index.html';
-
-// -----------------------------------------------------------------------
-// Origine calculée à l'exécution — sert à réécrire les URL absolues OG/LD
-// -----------------------------------------------------------------------
+require_once __DIR__ . '/origine.php';
 
 /**
- * Vrai si la requête courante arrive en HTTPS.
+ * Chemin du fichier prérendu correspondant à l'URL demandée, ou null s'il n'y
+ * en a pas — auquel cas c'est le document d'amorçage de la SPA qui est servi.
  *
- * Copie fidèle de la logique de api/src/Auth/Session.php::estHttps() :
- * le projet a une position documentée sur ce sujet — ne pas diverger.
- * X-Forwarded-Proto est pris en compte car, derrière le proxy d'un
- * hébergeur mutualisé, $_SERVER['HTTPS'] est vide alors que le visiteur
- * est bien en HTTPS.
+ * `public/.htaccess` ne réécrit vers ce script que si `<route>/index.html`
+ * existe, mais cette fonction ne s'appuie PAS sur cette garantie : le chemin
+ * vient de l'URL, donc du visiteur. Trois barrières, et c'est volontairement
+ * redondant — la même règle que les trois barrières de `api/.htaccess` :
+ *
+ *   1. chaque segment doit correspondre à `[A-Za-z0-9._-]+` : ni barre
+ *      oblique inversée, ni octet nul, ni « .. », ni chemin absolu ;
+ *   2. « . » et « .. » sont refusés nommément ;
+ *   3. `realpath()` doit rester SOUS le dossier de ce script.
+ *
+ * Sans cela, ce fichier serait une primitive de lecture arbitraire dès qu'un
+ * hébergeur servirait `index.php` sans passer par les règles de réécriture.
  */
-function katech_est_https(): bool
+function katech_document_prerendu(string $racine, string $base): ?string
 {
-    $https = (string) ($_SERVER['HTTPS'] ?? '');
-    if ($https !== '' && strtolower($https) !== 'off') {
-        return true;
+    $uri = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+    $chemin = rawurldecode((string) (parse_url($uri, PHP_URL_PATH) ?: '/'));
+
+    // Retirer le préfixe de déploiement : « /ma-boutique/product/x » vue de la
+    // racine du domaine est « /product/x » vue de l'application.
+    $prefixe = rtrim($base, '/');
+    if ($prefixe !== '' && str_starts_with($chemin, $prefixe)) {
+        $chemin = substr($chemin, strlen($prefixe));
     }
 
-    if ((int) ($_SERVER['SERVER_PORT'] ?? 0) === 443) {
-        return true;
-    }
-
-    $transmis = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
-
-    return str_contains($transmis, 'https');
-}
-
-/**
- * Hôte HTTP validé, ou null si absent ou invalide.
- *
- * HTTP_HOST est fourni par le navigateur. On ne l'utilise que pour construire
- * une URL de partage (balises OG/JSON-LD) — jamais pour une décision de
- * sécurité, jamais dans un cookie. On valide son format pour rejeter toute
- * valeur malformée avant de l'injecter dans le HTML.
- *
- * Format accepté : lettres, chiffres, tirets, points, deux-points (port
- * optionnel), entre 1 et 253 caractères. Les crochets IPv6 sont aussi tolérés.
- */
-function katech_hote_valide(): ?string
-{
-    $hote = (string) ($_SERVER['HTTP_HOST'] ?? '');
-    if ($hote === '') {
+    $relatif = trim($chemin, '/');
+    if ($relatif === '') {
         return null;
     }
 
-    // Longueur maximale d'un nom d'hôte + port
-    if (strlen($hote) > 253) {
+    foreach (explode('/', $relatif) as $segment) {
+        if ($segment === '' || $segment === '.' || $segment === '..') {
+            return null;
+        }
+        if (preg_match('/^[A-Za-z0-9._-]+$/', $segment) !== 1) {
+            return null;
+        }
+    }
+
+    $reel = realpath($racine . '/' . $relatif . '/index.html');
+    $racineReelle = realpath($racine);
+    if ($reel === false || $racineReelle === false) {
+        return null;
+    }
+    if (!str_starts_with($reel, $racineReelle . DIRECTORY_SEPARATOR)) {
         return null;
     }
 
-    // Format strict : hôte DNS avec port optionnel, ou adresse IPv6 entre crochets
-    if (!preg_match('/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(:\d{1,5})?$/', $hote)
-        && !preg_match('/^\[[\da-fA-F:]+\](:\d{1,5})?$/', $hote)) {
-        return null;
-    }
-
-    return $hote;
-}
-
-/**
- * Origine complète déduite de la requête, ex. « https://katech.dz » ou
- * « http://localhost:8080 ».
- *
- * Si HTTP_HOST est absent ou invalide, on retourne null : les URL de repli
- * codées dans index.html (« https://katech.dz/… ») seront conservées telles
- * quelles, ce qui est correct sur le domaine de production.
- */
-function katech_origine(): ?string
-{
-    $hote = katech_hote_valide();
-    if ($hote === null) {
-        return null;
-    }
-
-    return (katech_est_https() ? 'https' : 'http') . '://' . $hote;
+    return $reel;
 }
 
 // Échec visible plutôt que silencieux : sans index.html il n'y a pas de site,
 // et une page blanche n'expliquerait rien. Le cas se produit pour de bon —
 // voir docs/DEPLOIEMENT.md, « Après le build » : des clients FTP sautent des
 // fichiers.
-if (!is_file($fichier)) {
+$amorce = __DIR__ . '/index.html';
+if (!is_file($amorce)) {
     http_response_code(500);
     header('Content-Type: text/plain; charset=UTF-8');
     echo "index.html est absent a cote de index.php : le televersement est incomplet.\n";
@@ -188,52 +192,46 @@ if (!is_file($fichier)) {
 
 // Dossier qui contient ce script, vu depuis le web : « / » à la racine du
 // domaine, « /boutique/ » dans un sous-dossier, quel que soit son nom.
-$base = str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php')));
-$base = rtrim($base, '/') . '/';
+$base = katech_base_web();
+
+// Page prérendue si l'URL en désigne une, document d'amorçage sinon.
+$fichier = katech_document_prerendu(__DIR__, $base) ?? $amorce;
 
 $html = (string) file_get_contents($fichier);
 
 // -----------------------------------------------------------------------
-// Réécriture des URL absolues OG/JSON-LD selon le domaine réel de la requête.
+// Réécriture des URL absolues selon le domaine réel de la requête.
 //
-// index.html contient des URL figées sur « https://katech.dz » dans :
-//   - og:url, og:image
-//   - twitter:image
-//   - le bloc JSON-LD (clés "url" et "logo")
+// Les documents du build portent des URL figées sur « https://katech.dz » :
+//   - index.html          : og:url, og:image, twitter:image, bloc JSON-LD
+//   - <route>/index.html  : en plus, <link rel="canonical"> et og:url de la
+//                           route — les balises qui pilotent l'indexation
 //
-// Ces balises DOIVENT être absolues (Facebook, WhatsApp, robots SEO les
-// récupèrent depuis leurs propres serveurs). Elles doivent aussi pointer
-// vers le bon domaine, y compris sur un hébergement de recette ou après un
-// déplacement du site.
+// Ces URL DOIVENT être absolues (Facebook, WhatsApp, robots SEO les
+// récupèrent depuis leurs propres serveurs). Elles doivent aussi pointer vers
+// le bon domaine ET le bon sous-dossier, y compris sur un hébergement de
+// recette ou après un déplacement du site.
 //
-// On remplace « https://katech.dz » (la valeur de repli dans index.html) par
-// l'origine calculée à la requête. Si l'hôte est absent ou invalide, la
-// valeur de repli reste en place — correcte sur le domaine de production.
-//
-// On remplace ensuite « https://katech.dz/ » (URL racine codée dans og:url et
-// le JSON-LD) par l'URL racine réelle de CE déploiement — qui peut être en
-// sous-dossier. Cela garantit que l'URL partagée sur WhatsApp correspond à
-// l'adresse réellement accessible, même si le site tourne dans
-// public_html/boutique/.
+// Tout est fait par `katech_reecrire_domaine()` (public/origine.php), qui sert
+// aussi `sitemap.php` et `robots.php` : une seule réécriture, une seule
+// validation de HTTP_HOST. Si l'hôte est absent ou invalide, les valeurs de
+// repli restent en place.
 // -----------------------------------------------------------------------
-$origine = katech_origine();
-if ($origine !== null) {
-    // Étape 1 : adapter l'origine (protocole + hôte)
-    if ($origine !== 'https://katech.dz') {
-        $html = str_replace('https://katech.dz', $origine, $html);
-    }
+$html = katech_reecrire_domaine($html, $base);
 
-    // Étape 2 : si le site tourne en sous-dossier, corriger og:url et l'URL
-    // du JSON-LD qui pointent sur la racine (ex. "https://katech.dz/") vers
-    // la racine réelle de l'application (ex. "https://katech.dz/boutique/").
-    // On ne modifie que "origin/" pour éviter de toucher og:image.
-    if ($base !== '/') {
-        $html = str_replace($origine . '/', $origine . $base, $html);
-    }
-}
-
+// -----------------------------------------------------------------------
+// Balise <base> — calculée, absolue, et unique.
+//
+// On retire d'abord celle qu'une page prérendue porte déjà (`../`, relative à
+// la profondeur de la route) : deux balises `<base>` dans un document sont une
+// invitation à ce qu'un navigateur retienne la mauvaise. La valeur absolue
+// posée ici est juste quelle que soit la forme d'URL servie.
+//
 // Insertion juste après <head> : la balise doit précéder TOUTE URL relative du
 // document, sinon celles qui la précèdent seraient résolues autrement.
+// -----------------------------------------------------------------------
+$html = (string) preg_replace('#\n?\s*<base\s[^>]*>#i', '', $html, 1);
+
 $remplacements = 0;
 $html = preg_replace(
     '#<head(\s[^>]*)?>#i',
@@ -248,7 +246,7 @@ $html = preg_replace(
 if ($html === null || $remplacements !== 1) {
     http_response_code(500);
     header('Content-Type: text/plain; charset=UTF-8');
-    echo "index.html ne contient pas de <head> : impossible d'y poser la balise <base>.\n";
+    echo "Le document HTML ne contient pas de <head> : impossible d'y poser la balise <base>.\n";
 
     exit;
 }
@@ -256,7 +254,8 @@ if ($html === null || $remplacements !== 1) {
 header('Content-Type: text/html; charset=UTF-8');
 // Même règle que pour index.html : le document d'amorçage désigne les
 // empreintes du jour ; le mettre en cache rendrait tout déploiement invisible
-// pour les visiteurs déjà venus.
+// pour les visiteurs déjà venus. Une page prérendue référence les mêmes
+// empreintes — même politique, pour la même raison.
 header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');

@@ -26,30 +26,45 @@
  * TROIS POINTS DÉLICATS, ET LEUR TRAITEMENT
  * =====================================================================
  *
- * 1. LA BALISE <base> — c'est ici que tout se joue.
+ * 1. LA BALISE <base>, ET LE DOMAINE — c'est ici que tout se joue.
  *
  *    `vite.config.ts` construit en base relative (`base: "./"`), et
  *    `public/index.php` insère une balise `<base>` calculée à l'exécution,
- *    ce qui rend le dossier de build renommable et déplaçable. Une page
- *    prérendue, elle, est servie par Apache SANS passer par PHP : personne
- *    n'insère la balise, et `./assets/index-XXXX.js` se résoudrait contre
- *    l'URL du document (`/product/rog-strix-g16/…`) — 404 garantie.
+ *    ce qui rend le dossier de build renommable et déplaçable. Un fichier
+ *    prérendu servi en statique n'a rien de tout cela : `./assets/index-XXXX.js`
+ *    se résoudrait contre l'URL du document (`/product/rog-strix-g16/…`) —
+ *    404 garantie.
  *
  *    On insère donc la balise NOUS-MÊMES, à l'écriture du fichier, avec une
  *    valeur RELATIVE déduite de la profondeur de la route : `./` pour
  *    `/about`, `../` pour `/product/rog-strix-g16`. Relative, elle reste
- *    juste quel que soit le dossier de dépôt : le dossier demeure
- *    renommable et déplaçable, exactement comme avant.
+ *    juste quel que soit le dossier de dépôt, et fait du fichier un document
+ *    COMPLET, valide même servi en statique pur.
  *
- *    Cette valeur suppose une SEULE forme d'URL, celle du sitemap : sans
- *    barre finale. `public/.htaccess` la garantit par une règle explicite
- *    (§1, « Pages prérendues ») au lieu de s'en remettre à `DirectorySlash`,
- *    que `src/main.tsx` a déjà de bonnes raisons de ne pas croire.
+ *    Cela ne suffisait pas, et c'est le défaut qu'a corrigé le chantier
+ *    « plus aucun domaine figé » : ces pages sont les SEULES à porter un
+ *    `<link rel="canonical">` et des `og:url` propres à la route, et elles
+ *    étaient servies par Apache sans passer par PHP. Elles annonçaient donc à
+ *    Google la canonique du domaine de BUILD, depuis n'importe quel
+ *    hébergement — le pire défaut de référencement possible, et l'obligation
+ *    de reconstruire le paquet par domaine.
+ *
+ *    `public/.htaccess` (§1, « Pages prérendues ») les fait désormais servir
+ *    par `public/index.php`, qui retrouve le fichier par l'URL demandée,
+ *    remplace l'origine de repli par celle de la requête, et remplace le
+ *    `<base>` relatif écrit ici par la base ABSOLUE du déploiement. Ce qui est
+ *    écrit ici reste donc la forme de REPLI — juste, et suffisante si PHP ne
+ *    tourne pas.
+ *
+ *    La forme d'URL servie reste unique, celle du sitemap : sans barre finale.
+ *    `public/.htaccess` la garantit par une règle explicite au lieu de s'en
+ *    remettre à `DirectorySlash`, que `src/main.tsx` a déjà de bonnes raisons
+ *    de ne pas croire.
  *
  *    À vérifier : `deduireCheminBase()` (src/api/config.ts) lit
- *    `HTMLBaseElement.href`, donc l'URL DÉJÀ RÉSOLUE — `../` y devient
- *    `https://hôte/` ou `https://hôte/boutique/`. Le routeur et l'adresse de
- *    l'API restent donc justes, sans rien modifier dans `src/`.
+ *    `HTMLBaseElement.href`, donc l'URL DÉJÀ RÉSOLUE — `../` comme
+ *    `/boutique/` y devient `https://hôte/boutique/`. Le routeur et l'adresse
+ *    de l'API restent donc justes, sans rien modifier dans `src/`.
  *
  * 2. LE SORT DU HTML PRÉRENDU AU CHARGEMENT.
  *
@@ -90,7 +105,8 @@
  *
  *   PRERENDU=0                     désactive l'étape (build nu)
  *   PRERENDU_API_URL=http://127.0.0.1:8160   API à mandater pour /api
- *   SITE_URL=https://www.katech.dz           domaine des URL canoniques
+ *   SITE_URL=https://www.katech.dz           FIGE le domaine des canoniques
+ *                                            (inutile : index.php le déduit)
  *   PRERENDU_MIN_CARACTERES=400    seuil du contrôle de qualité
  *   PRERENDU_ROUTES=/,/product/x   restreint aux routes listées (diagnostic)
  *   PRERENDU_PARALLELE=4           pages rendues en parallèle (1 = séquentiel)
@@ -442,6 +458,13 @@ function destination(route: string): string {
  *     `window.location.origin` (src/pages/Product.tsx) : sans cette étape,
  *     `dist/` annoncerait `http://127.0.0.1:41337/product/x` à Google.
  *     `SITE_URL` pilote déjà le sitemap — les deux restent donc cohérents.
+ *
+ *     La valeur par défaut de `SITE_URL` est une valeur de REPLI, pas une
+ *     configuration : `public/index.php` la remplace à chaque requête par
+ *     l'origine réelle. Elle doit rester LITTÉRALEMENT `KATECH_ORIGINE_REPLI`
+ *     de `public/origine.php`, car c'est cette chaîne exacte que la réécriture
+ *     recherche. Renseigner `SITE_URL` reste possible et FIGE alors le domaine
+ *     dans le livrable — c'est un choix, plus une fatalité.
  *
  *  2. TOUTES LES AUTRES URL portant l'origine locale deviennent RELATIVES.
  *

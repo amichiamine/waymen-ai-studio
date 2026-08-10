@@ -1,8 +1,29 @@
-// Runs before `vite dev` and `vite build` — writes public/sitemap.xml.
+/**
+ * Écrit `public/sitemap.xml` — étape `predev` et `prebuild`.
+ *
+ * Ce fichier reste l'UNIQUE endroit où les routes publiques sont énumérées :
+ * `scripts/prerendu.ts` le lit pour savoir quelles pages prérendre, et
+ * `public/sitemap.php` le lit pour le servir. Ajouter une route ici la fait
+ * apparaître partout ; l'ajouter ailleurs crée une seconde liste.
+ *
+ * LE DOMAINE ÉCRIT ICI N'EST QU'UN REPLI. Le protocole des sitemaps
+ * (sitemaps.org) exige des URL absolues dans `<loc>` : contrairement au reste
+ * du livrable, on ne peut pas les rendre relatives, et un fichier écrit au
+ * build ne peut porter que le domaine du build. C'est pourquoi
+ * `public/sitemap.php` sert ce fichier en remplaçant son origine par celle de
+ * la requête (`public/origine.php`) : le MÊME paquet déposé sur deux domaines
+ * annonce les bonnes URL sur chacun, sans reconstruction.
+ *
+ * `SITE_URL` reste donc DISPONIBLE pour qui veut délibérément figer un domaine
+ * au build, mais n'est plus NÉCESSAIRE. Sa valeur par défaut doit rester
+ * LITTÉRALEMENT `KATECH_ORIGINE_REPLI` de `public/origine.php` : c'est cette
+ * chaîne exacte que la réécriture recherche. Les changer séparément ne casse
+ * rien — ça rend simplement la réécriture inopérante, en silence.
+ */
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 
-// Get site URL from environment, with fallback to katech.dz domain
+// Repli, remplacé à l'exécution par public/sitemap.php — voir l'en-tête.
 const BASE_URL = (process.env.SITE_URL || "https://katech.dz").replace(/\/$/, "");
 
 type Entry = { path: string; changefreq?: string; priority?: string };

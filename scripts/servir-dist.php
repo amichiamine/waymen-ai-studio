@@ -54,11 +54,25 @@ $chemin = rawurldecode(parse_url($uri, PHP_URL_PATH) ?: '/');
  * racine — alors que le dossier renommable et déplaçable est justement la
  * propriété la plus fragile du prérendu (la balise <base> relative).
  * Avec cela, `cp -r dist /tmp/web/ma-boutique` se parcourt tel quel.
+ *
+ * `api/` EST EXCLU, et ce n'est pas un détail. Depuis que `scripts/paqueter.ts`
+ * embarque l'API dans le paquet, `api/index.php` existe dans l'extraction : le
+ * détecteur y voyait une « racine d'application » et prenait `/api` pour un
+ * préfixe de déploiement. `/api/health` devenait alors le chemin `health`,
+ * échappait à la règle « l'API d'abord » et finissait servi par le repli SPA —
+ * qui, par chance, était ici l'API elle-même. La propriété que ce fichier
+ * existe pour vérifier — le repli SPA ne répond JAMAIS sous /api — n'était donc
+ * plus vérifiée du tout, elle était contournée. En production, `api/` n'est pas
+ * une racine d'application : c'est un dossier avec son propre `.htaccess`, et
+ * le `.htaccess` racine le laisse passer sans y toucher.
  */
 $prefixe = '';
 $segments = array_values(array_filter(explode('/', trim($chemin, '/')), 'strlen'));
 $essai = '';
 foreach ($segments as $segment) {
+    if ($segment === 'api') {
+        break;
+    }
     $essai .= '/' . $segment;
     if (is_file($documentRoot . $essai . '/index.php')) {
         $prefixe = $essai;
@@ -80,10 +94,81 @@ function refuser(int $code, string $pourquoi): never
 }
 
 // --- L'API d'abord, et on s'arrête là (RewriteRule ^api(/|$) - [L]) --------
-// En production la requête poursuit vers public_html/api/.htaccess. Ici il n'y
-// a pas d'API dans dist/ : on refuse, SANS jamais servir le document SPA.
+// En production la requête poursuit vers public_html/api/.htaccess, qui fait
+// son propre routage. Ici, deux cas — et dans les DEUX, le repli SPA ne répond
+// jamais du HTML sous /api, ce qui est précisément la propriété à vérifier :
+//
+//   • SERVIR_API_URL renseignée : la requête est mandatée vers une API PHP déjà
+//     lancée, ce qui permet de vérifier /api/health sur l'extraction servie ;
+//   • sinon : 404 en texte brut.
 if ($relatif === 'api' || str_starts_with($relatif, 'api/')) {
-    refuser(404, 'aucune API dans dist/ — mais surtout : le repli SPA ne repond pas ici.');
+    $amont = rtrim((string) (getenv('SERVIR_API_URL') ?: ''), '/');
+    if ($amont === '') {
+        refuser(404, 'aucune API mandatee — mais surtout : le repli SPA ne repond pas ici.');
+    }
+
+    // Mandat FIDÈLE, et pas seulement « ça répond ». Une première version ne
+    // transmettait que l'URL : méthode perdue (tout partait en GET, d'où des 405
+    // sur les routes POST) et cookies perdus (donc aucune session — 20 écrans
+    // d'administration renvoyés vers /auth). Un mandat qui perd la session ne
+    // vérifie pas le produit, il vérifie le mandat.
+    $chaine = (string) (parse_url($uri, PHP_URL_QUERY) ?? '');
+    $requete = $amont
+        . preg_replace('#^/?api#', '', $relatif === 'api' ? '/api' : '/' . $relatif)
+        . ($chaine === '' ? '' : '?' . $chaine);
+
+    // En-têtes NON transmis, et chacun pour une raison mesurée :
+    //   • Host             : l'amont a le sien ;
+    //   • Accept-Encoding  : sans cela l'amont répond en gzip, et ce mandat
+    //     relaie les octets comprimés SANS le Content-Encoding qui les décrit.
+    //     Le navigateur reçoit alors du gzip étiqueté JSON : le décodage échoue,
+    //     et la connexion « échoue » sans qu'aucune erreur ne l'explique. C'est
+    //     exactement ce qui faisait retomber 25 écrans d'administration sur
+    //     /auth alors que la même requête en curl passait — curl n'annonce pas
+    //     gzip par défaut ;
+    //   • Connection / Content-Length / Transfer-Encoding : propres au saut
+    //     réseau, recalculés par le client HTTP de PHP.
+    $exclus = ['HTTP_HOST', 'HTTP_ACCEPT_ENCODING', 'HTTP_CONNECTION', 'HTTP_CONTENT_LENGTH', 'HTTP_TRANSFER_ENCODING'];
+    $entetes = [];
+    foreach ($_SERVER as $cle => $valeur) {
+        if (str_starts_with((string) $cle, 'HTTP_') && !in_array($cle, $exclus, true)) {
+            $nom = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr((string) $cle, 5)))));
+            $entetes[] = "$nom: $valeur";
+        }
+    }
+    $entetes[] = 'Accept-Encoding: identity';
+    if (($_SERVER['CONTENT_TYPE'] ?? '') !== '') {
+        $entetes[] = 'Content-Type: ' . $_SERVER['CONTENT_TYPE'];
+    }
+
+    $entrant = (string) file_get_contents('php://input');
+    $contexte = stream_context_create(['http' => [
+        'method' => (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'),
+        'header' => implode("\r\n", $entetes),
+        'content' => $entrant,
+        'ignore_errors' => true,
+        'follow_location' => 0,
+        'timeout' => 20,
+    ]]);
+
+    $corps = @file_get_contents($requete, false, $contexte);
+    if ($corps === false) {
+        refuser(502, 'API mandatee injoignable — le repli SPA ne repond pas ici pour autant.');
+    }
+
+    // Set-Cookie doit être RÉPÉTÉ, pas écrasé : c'est lui qui porte la session.
+    foreach ($http_response_header ?? [] as $entete) {
+        if (preg_match('#^HTTP/#i', $entete) === 1) {
+            header($entete);
+        } elseif (preg_match('#^(Content-Type|Location|WWW-Authenticate):#i', $entete) === 1) {
+            header($entete);
+        } elseif (preg_match('#^Set-Cookie:#i', $entete) === 1) {
+            header($entete, false);
+        }
+    }
+    echo $corps;
+
+    exit;
 }
 
 // --- Refus des fichiers cachés et des extensions sensibles -----------------
@@ -99,6 +184,24 @@ if (preg_match('#^uploads/.*\.(php|phtml|phps|php[0-9]|phar|pl|py|cgi|sh|jsp|asp
     refuser(403, 'script refuse dans uploads/');
 }
 
+// --- origine.php n'est pas une page ---------------------------------------
+if ($relatif === 'origine.php') {
+    refuser(403, 'bibliotheque partagee, pas une page');
+}
+
+// --- sitemap.xml et robots.txt : produits a l'execution -------------------
+// Leurs URL sont absolues PAR PROTOCOLE : elles doivent porter le domaine reel
+// de la requete, donc passer par PHP. Le fichier statique voisin reste le repli.
+// Avant la regle « fichiers reels » : sinon sitemap.xml, qui existe, gagnerait.
+foreach (['sitemap.xml' => 'sitemap.php', 'robots.txt' => 'robots.php'] as $demande => $script) {
+    if ($relatif === $demande && is_file($racine . '/' . $script)) {
+        $_SERVER['SCRIPT_NAME'] = $prefixe . '/' . $script;
+        require $racine . '/' . $script;
+
+        exit;
+    }
+}
+
 // --- Pages prerendues (a) : une seule forme d'URL, sans barre finale -------
 if ($relatif !== '' && str_ends_with($relatif, '/')) {
     $dossier = $racine . '/' . rtrim($relatif, '/');
@@ -110,11 +213,13 @@ if ($relatif !== '' && str_ends_with($relatif, '/')) {
     }
 }
 
-// --- Pages prerendues (b) : service sans redirection -----------------------
+// --- Pages prerendues (b) : service par index.php, PAS en statique --------
+// index.php retrouve la page voulue par REQUEST_URI, reecrit le domaine avec
+// l'origine reelle et pose la balise <base> calculee. Servir le .html tel quel
+// figerait la canonique sur le domaine du build (voir public/.htaccess §1).
 if ($relatif !== '' && is_file(rtrim($fichier, '/') . '/index.html')) {
-    header('Content-Type: text/html; charset=UTF-8');
-    header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
-    readfile(rtrim($fichier, '/') . '/index.html');
+    $_SERVER['SCRIPT_NAME'] = $prefixe . '/index.php';
+    require $racine . '/index.php';
 
     exit;
 }
