@@ -39,9 +39,14 @@ const EST_ABSOLUE = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
  *
  * - `""` / `undefined` → `""` : au composant d'afficher un repli VISIBLE.
  * - URL absolue (http, data, blob) → rendue telle quelle.
- * - chemin commençant par « / » → respecté tel quel. C'est le cas du mode
- *   `mock`, où les images sont des modules importés (« /src/assets/p-rog.webp »
- *   en dev) : le mode de démonstration ne perd rien.
+ * - chemin commençant par « / » → préfixé par le dossier de dépôt si le site
+ *   ne tourne pas à la racine du domaine, inchangé sinon. Un chemin absolu
+ *   comme « /media/p-rog.webp » ignore la balise `<base>` : sans ce préfixe,
+ *   il pointe toujours vers la racine du domaine, jamais vers
+ *   « /ma-boutique/media/p-rog.webp ». C'est le défaut qui cassait les 8
+ *   images du catalogue en déploiement sous-dossier. En dev (CHEMIN_BASE = "/"),
+ *   ce branchement est un no-op : les chemins « /src/assets/… » du mode mock
+ *   restent inchangés.
  * - tout le reste → préfixé par le chemin de dépôt de l'application.
  */
 export function resoudreUrlMedia(src: string | undefined | null): string {
@@ -49,7 +54,11 @@ export function resoudreUrlMedia(src: string | undefined | null): string {
   const valeur = src.trim();
   if (valeur === "") return "";
   if (EST_ABSOLUE.test(valeur)) return valeur;
-  if (valeur.startsWith("/")) return valeur;
+  if (valeur.startsWith("/")) {
+    // À la racine du domaine (CHEMIN_BASE = "/"), aucun préfixe à ajouter.
+    // En sous-dossier (CHEMIN_BASE = "/ma-boutique/"), le préfixe seul manquait.
+    return CHEMIN_BASE === "/" ? valeur : CHEMIN_BASE.slice(0, -1) + valeur;
+  }
 
   return `${CHEMIN_BASE}${valeur}`;
 }
