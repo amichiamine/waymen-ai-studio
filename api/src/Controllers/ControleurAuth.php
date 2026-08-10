@@ -549,7 +549,11 @@ final class ControleurAuth
                 'email'     => $email,
                 'token'     => $jeton,    // jeton en clair, à usage unique
                 'expiresAt' => $expiresAt,
-                'appUrl'    => (string) (\KaTech\Env::get('APP_URL', '') ?? ''),
+                // URL déduite à l'exécution — APP_URL en priorité (inaccessible
+                // au client, l'empoisonnement d'en-tête d'hôte est impossible),
+                // puis HTTP_HOST validé. Voir api/src/Origine.php pour le
+                // détail de la protection.
+                'appUrl'    => (string) (\KaTech\Origine::deduireUrl() ?? ''),
             ]);
         });
 
