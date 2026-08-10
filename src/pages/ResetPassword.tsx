@@ -2,12 +2,10 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
-import { z } from "zod";
+import { ZodError } from "zod";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-
-const emailSchema = z.string().trim().email().max(255);
-const passwordSchema = z.string().min(6).max(72);
+import { emailSchema, passwordSchema, PASSWORD_MIN, PASSWORD_MAX } from "@/lib/auth-schemas";
 
 /** Latence simulée du parcours mock — conservée à l'identique. */
 const SUBMIT_DELAY_MS = 400;
@@ -27,18 +25,40 @@ export default function ResetPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Normalisation identique au serveur : trim + minuscules sur l'e-mail.
+    const normalizedEmail = email.trim().toLowerCase();
+
     try {
-      emailSchema.parse(email);
+      emailSchema.parse(normalizedEmail);
+    } catch (err) {
+      const msg =
+        err instanceof ZodError && err.errors[0]?.message === "email"
+          ? t("auth.err.email")
+          : t("auth.err.invalid");
+      return toast.error(msg);
+    }
+
+    try {
       passwordSchema.parse(password);
-    } catch {
+    } catch (err) {
+      if (err instanceof ZodError) {
+        const code = err.errors[0]?.message;
+        const msg =
+          code === "tooShort" || err.errors[0]?.code === "too_small"
+            ? t("auth.err.pw.tooShort")
+            : t("auth.err.pw.tooLong");
+        return toast.error(msg);
+      }
       return toast.error(t("auth.err.invalid"));
     }
+
     if (password !== confirm) return toast.error(t("reset.err.match"));
 
     setBusy(true);
     await new Promise((resolve) => setTimeout(resolve, SUBMIT_DELAY_MS));
     try {
-      const outcome = await resetPassword({ email, password, token });
+      const outcome = await resetPassword({ email: normalizedEmail, password, token });
       if (!outcome.ok) {
         // En http, le fournisseur fournit un message précis (jeton expiré,
         // service injoignable) que `reason` seul ne peut pas porter : on le
@@ -85,8 +105,8 @@ export default function ResetPassword() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t("reset.newpw")}
             required
-            minLength={6}
-            maxLength={72}
+            minLength={PASSWORD_MIN}
+            maxLength={PASSWORD_MAX}
             className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
           />
           <input
@@ -95,8 +115,8 @@ export default function ResetPassword() {
             onChange={(e) => setConfirm(e.target.value)}
             placeholder={t("reset.confirm")}
             required
-            minLength={6}
-            maxLength={72}
+            minLength={PASSWORD_MIN}
+            maxLength={PASSWORD_MAX}
             className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
           />
           <button

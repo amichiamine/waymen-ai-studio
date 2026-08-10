@@ -1,14 +1,12 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { z } from "zod";
+import { ZodError } from "zod";
 import { toApiError } from "@/data-provider";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
-
-const emailSchema = z.string().email().max(255);
-const passwordSchema = z.string().min(6).max(72);
+import { emailSchema, passwordSchema } from "@/lib/auth-schemas";
 
 export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -27,15 +25,49 @@ export default function Auth() {
     if (!loading && user) navigate(redirectTo, { replace: true });
   }, [user, loading, navigate, redirectTo]);
 
+  /**
+   * Traduit une ZodError en message i18n précis.
+   * Le serveur fait autorité sur les règles ; ici on ne valide que pour guider
+   * l'utilisateur AVANT l'appel réseau, avec le même vocabulaire que l'API.
+   */
+  const traduireErreur = (err: ZodError): string => {
+    const first = err.errors[0];
+    if (!first) return t("auth.err.invalid");
+
+    // emailSchema : le message du refine vaut "email"
+    if (first.message === "email") return t("auth.err.email");
+
+    // passwordSchema : messages "tooShort" / "tooLong"
+    if (first.message === "tooShort") return t("auth.err.pw.tooShort");
+    if (first.message === "tooLong") return t("auth.err.pw.tooLong");
+
+    // Zod built-ins (too_small, too_big) pour les limites de longueur
+    if (first.code === "too_small") return t("auth.err.pw.tooShort");
+    if (first.code === "too_big") return t("auth.err.pw.tooLong");
+
+    return t("auth.err.invalid");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Normalisation identique au serveur : trim + minuscules sur l'e-mail.
+    const normalizedEmail = email.trim().toLowerCase();
+
     try {
-      emailSchema.parse(email);
-      passwordSchema.parse(password);
-    } catch {
-      toast.error(t("auth.err.invalid"));
+      emailSchema.parse(normalizedEmail);
+    } catch (err) {
+      toast.error(err instanceof ZodError ? traduireErreur(err) : t("auth.err.email"));
       return;
     }
+
+    try {
+      passwordSchema.parse(password);
+    } catch (err) {
+      toast.error(err instanceof ZodError ? traduireErreur(err) : t("auth.err.pw.tooShort"));
+      return;
+    }
+
     setBusy(true);
     try {
       // Le retour du contexte PORTE le refus (`{ error: { message } }`) : l'ignorer
@@ -44,8 +76,8 @@ export default function Auth() {
       // Un refus doit se voir, et ne doit surtout pas être suivi d'une
       // redirection ni d'un toast de succès.
       const { error } = await (mode === "signup"
-        ? signUp(email, password, { name: fullName })
-        : signIn(email, password));
+        ? signUp(normalizedEmail, password, { name: fullName })
+        : signIn(normalizedEmail, password));
 
       if (error) {
         toast.error(error.message);
@@ -64,8 +96,9 @@ export default function Auth() {
   };
 
   const handleForgotPassword = () => {
+    const normalizedEmail = email.trim().toLowerCase();
     try {
-      emailSchema.parse(email);
+      emailSchema.parse(normalizedEmail);
     } catch {
       toast.error(t("auth.err.enterEmail"));
       return;
@@ -110,7 +143,7 @@ export default function Auth() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t("auth.password")}
             required
-            minLength={6}
+            minLength={10}
             className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
           />
           <button
