@@ -7,6 +7,7 @@ import { isHttpMode } from "@/api/config";
 import { http } from "@/api/client";
 import { endpoints as E } from "@/api/endpoints";
 
+import { normaliserListe } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -26,6 +27,7 @@ export function usePaymentMethodList(): ResourceState<PaymentMethod[]> {
     key: PAYMENT_METHODS_RESOURCE,
     fromStore: (state) => state.paymentMethods,
     fromHttp: async () => settingsApi.payments(),
+    normaliser: (brut) => normaliserListe(PAYMENT_METHODS_RESOURCE, brut, NO_PAYMENT_METHODS),
     fallback: NO_PAYMENT_METHODS,
   });
 }

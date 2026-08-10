@@ -3,6 +3,7 @@ import { endpoints as E } from "@/api/endpoints";
 import type { AuditLog } from "@/lib/admin-store";
 import type { Paginated } from "@/api/types";
 
+import { extraireItems } from "./normalisation";
 import { useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -35,8 +36,11 @@ export function useAuditLogList(): ResourceState<AuditLog[]> {
     key: AUDIT_LOGS_RESOURCE,
     fromStore: (state) => state.auditLogs,
     fromHttp: async () =>
-      (await http.get<Paginated<AuditLog>>(E.analytics.audit(), { perPage: DEFAULT_PER_PAGE }))
-        .items,
+      extraireItems(
+        AUDIT_LOGS_RESOURCE,
+        await http.get<Paginated<AuditLog>>(E.analytics.audit(), { perPage: DEFAULT_PER_PAGE }),
+        NO_AUDIT_LOGS,
+      ),
     fallback: NO_AUDIT_LOGS,
   });
 }

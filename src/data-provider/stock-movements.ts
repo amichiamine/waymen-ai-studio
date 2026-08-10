@@ -4,6 +4,7 @@ import { inventoryApi } from "@/api/resources/inventory";
 import type { StockAdjustInput } from "@/api/resources/inventory";
 import type { StockMovement } from "@/api/types";
 
+import { normaliserListe } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -30,6 +31,7 @@ export function useStockMovementList(): ResourceState<StockMovement[]> {
     key: STOCK_MOVEMENTS_RESOURCE,
     fromStore: (state) => state.stockMovements,
     fromHttp: async () => inventoryApi.movements({ perPage: DEFAULT_PER_PAGE }),
+    normaliser: (brut) => normaliserListe(STOCK_MOVEMENTS_RESOURCE, brut, NO_STOCK_MOVEMENTS),
     fallback: NO_STOCK_MOVEMENTS,
   });
 }

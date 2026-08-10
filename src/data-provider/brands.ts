@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { brandsApi } from "@/api/resources/brands";
 import type { AdminBrand } from "@/api/types";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -28,7 +29,12 @@ export function useBrandList(): ResourceState<AdminBrand[]> {
   return useResource<AdminBrand[]>({
     key: BRANDS_RESOURCE,
     fromStore: (state) => state.brands,
-    fromHttp: async () => (await brandsApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(
+        BRANDS_RESOURCE,
+        await brandsApi.list({ perPage: DEFAULT_PER_PAGE }),
+        NO_BRANDS,
+      ),
     fallback: NO_BRANDS,
   });
 }

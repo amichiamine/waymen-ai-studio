@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { homeReviewsApi } from "@/api/resources/content";
 import type { HomeReview } from "@/api/types";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -25,7 +26,8 @@ export function useHomeReviewList(): ResourceState<HomeReview[]> {
   return useResource<HomeReview[]>({
     key: HOME_REVIEWS_RESOURCE,
     fromStore: (state) => state.homeReviews,
-    fromHttp: async () => (await homeReviewsApi.list()).items,
+    fromHttp: async () =>
+      extraireItems(HOME_REVIEWS_RESOURCE, await homeReviewsApi.list(), NO_HOME_REVIEWS),
     fallback: NO_HOME_REVIEWS,
   });
 }

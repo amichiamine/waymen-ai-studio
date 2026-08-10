@@ -6,8 +6,9 @@ import { contentApi } from "@/api/resources/content";
 import type { SiteContent } from "@/api/types";
 import { isHttpMode } from "@/api/config";
 import { resetSiteContentSection } from "@/lib/admin-store";
-import { seedSiteContent } from "@/lib/site-content";
+import { mergeSiteContent, seedSiteContent } from "@/lib/site-content";
 
+import { normaliserSingleton } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -41,6 +42,18 @@ export function useSiteContent(): ResourceState<SiteContent> {
     fromStore: (state) => state.siteContent,
     fromHttp: async () => contentApi.get(),
     fallback: FALLBACK_SITE_CONTENT,
+    // Le mode mock passait déjà par `mergeSiteContent` (admin-store) ; le mode
+    // http, lui, injectait la réponse brute. Cette asymétrie est exactement la
+    // divergence de sémantique entre modes que ce fournisseur existe pour
+    // empêcher — et elle cassait la page entière sur une base vide, où
+    // `GET /content` répond `[]`. La fusion est désormais faite des deux côtés.
+    normaliser: (brut) =>
+      normaliserSingleton<SiteContent>(
+        SITE_CONTENT_RESOURCE,
+        FALLBACK_SITE_CONTENT,
+        brut,
+        mergeSiteContent,
+      ),
   });
 }
 

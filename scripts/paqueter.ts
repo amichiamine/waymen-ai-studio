@@ -297,12 +297,76 @@ function main() {
   log(`  Fichiers dans le zip : ${nbFichiers}`);
   log(`  Taille               : ${tailleKo} Ko (${tailleMo} Mo)`);
   log(`  Chemin               : ${ZIP_OUT}`);
+
+  const prerendu = etatPrerendu();
+  log(`  Pages prérendues     : ${prerendu.ecrites}/${prerendu.attendues}`);
+
   log(``);
   log(`Pour déployer :`);
   log(`  1. Dans hPanel → Gestionnaire de fichiers, déposer katech-site.zip dans public_html.`);
   log(`  2. Extraire sur place (clic droit → Extraire).`);
   log(`  3. Ouvrir https://votre-domaine/api/install.php et suivre les trois écrans.`);
   log(`  4. Cliquer le bouton « Supprimer ce fichier » à la fin de l'assistant.`);
+
+  // DERNIER MOT DU BUILD. `scripts/prerendu.ts` avertit déjà, mais son message
+  // part ~80 lignes plus haut, suivi d'une liste de pages recalées puis de ce
+  // récapitulatif qui se termine par « Terminé » et une marche à suivre : la
+  // dernière impression laissée à l'exploitant était donc un succès. Le
+  // constat manquant est répété ICI, en toute fin, là où le regard s'arrête.
+  if (prerendu.ecrites < prerendu.attendues) {
+    const manquantes = prerendu.attendues - prerendu.ecrites;
+    log(``);
+    log(`  ⚠  ATTENTION — ${manquantes} page(s) du sitemap sur ${prerendu.attendues} ne sont PAS`);
+    log(`     prérendues dans ce paquet. Le site fonctionnera pour les visiteurs, mais les`);
+    log(`     moteurs de recherche ne verront aucun texte sur ces URL.`);
+    log(`     Cause la plus fréquente : API absente au moment du build. Pour les obtenir :`);
+    log(`       PRERENDU_API_URL=http://127.0.0.1:8160 VITE_API_MODE=http bun run build`);
+    log(`     Le détail page par page figure plus haut, section [prerendu].`);
+  }
+}
+
+/**
+ * Compte les pages réellement prérendues dans `dist/`, face aux URL annoncées
+ * par le sitemap.
+ *
+ * On compte des FICHIERS sur le disque, pas les résultats rapportés par
+ * `prerendu.ts` : c'est l'état du paquet qu'on livre qui compte, pas ce qu'une
+ * étape antérieure croyait avoir fait. Une page vaut `dist/<route>/index.html`,
+ * l'accueil mis à part — il occupe `dist/index.html`, toujours présent puisque
+ * c'est aussi le document d'amorçage. On ne le retient donc que s'il porte le
+ * marqueur écrit par `prerendu.ts`.
+ */
+function etatPrerendu(): { ecrites: number; attendues: number } {
+  const sitemap = path.join(DIST, "sitemap.xml");
+  if (!fs.existsSync(sitemap)) return { ecrites: 0, attendues: 0 };
+
+  const xml = fs.readFileSync(sitemap, "utf8");
+  const routes = [
+    ...new Set(
+      [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => {
+        let chemin = m[1];
+        try {
+          chemin = new URL(m[1]).pathname;
+        } catch {
+          chemin = m[1].startsWith("/") ? m[1] : `/${m[1]}`;
+        }
+        return chemin === "/" ? "/" : chemin.replace(/\/+$/, "");
+      }),
+    ),
+  ];
+
+  const MARQUEUR = "prerendu-katech";
+  let ecrites = 0;
+  for (const route of routes) {
+    const fichier =
+      route === "/"
+        ? path.join(DIST, "index.html")
+        : path.join(DIST, ...route.split("/").filter(Boolean), "index.html");
+    if (!fs.existsSync(fichier)) continue;
+    if (fs.readFileSync(fichier, "utf8").includes(MARQUEUR)) ecrites += 1;
+  }
+
+  return { ecrites, attendues: routes.length };
 }
 
 main();

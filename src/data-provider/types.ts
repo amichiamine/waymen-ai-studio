@@ -50,4 +50,26 @@ export type ResourceSource<T> = {
    * conditionnellement, donc on le désactive au lieu de ne pas l'appeler.
    */
   enabled?: boolean;
+  /**
+   * Remise en conformité du corps reçu du RÉSEAU, avant mise en cache et avant
+   * tout rendu. Point d'entrée unique : c'est ici, et nulle part dans les
+   * composants, qu'une réponse hors contrat est ramenée à une valeur sûre.
+   *
+   * POURQUOI CE CROCHET EXISTE. `fromHttp` est typé `Promise<T>`, mais ce
+   * typage est une PROMESSE, pas une vérification : rien ne contrôle à
+   * l'exécution ce que le serveur a réellement envoyé. Le socle ne substituait
+   * `fallback` que sur `undefined` ; tout autre corps — y compris un `[]` reçu
+   * là où un objet est attendu — traversait le fournisseur intact et cassait
+   * le composant appelant. Sur une base vide, `GET /content` répond
+   * littéralement `[]` (`json_encode` d'un tableau associatif vide en PHP) :
+   * `siteContent.header` devenait `undefined`, `Header.tsx` levait un
+   * `TypeError` au rendu, et React démontait la racine entière. La boutique
+   * n'affichait alors plus que l'instantané prérendu au build — un catalogue
+   * FIGÉ, donc un mensonge, là où la base était réellement vide.
+   *
+   * Ne l'employer que pour une remise en CONFORMITÉ DE TYPE. Une liste vide ou
+   * un objet sans clés sont des données légitimes : les « corriger » ici
+   * reviendrait à fabriquer un contenu que le commerçant n'a pas saisi.
+   */
+  normaliser?: (brut: T) => T;
 };

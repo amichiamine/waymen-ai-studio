@@ -4,6 +4,7 @@ import { productsApi } from "@/api/resources/products";
 import type { ProductQuery } from "@/api/types";
 import type { Product, UseTag } from "@/data/products";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -102,7 +103,8 @@ export function useProductList(query: ProductQuery = {}): ResourceState<Product[
   return useResource<Product[]>({
     key,
     fromStore: (state) => applyProductQuery(state.products, normalized),
-    fromHttp: async () => (await productsApi.list(normalized)).items,
+    fromHttp: async () =>
+      extraireItems(PRODUCTS_RESOURCE, await productsApi.list(normalized), NO_PRODUCTS),
     fallback: NO_PRODUCTS,
   });
 }

@@ -7,6 +7,7 @@ import { getAdminSnapshot } from "@/lib/admin-store";
 import type { CreateOrderInput, Order, OrderQuery, OrderStatus } from "@/api/types";
 import { isHttpData } from "./mode";
 
+import { extraireItems, normaliserListe } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -48,7 +49,8 @@ export function useOrderList(query: OrderQuery = {}): ResourceState<Order[]> {
       if (query.status) items = items.filter((o) => o.status === query.status);
       return items;
     },
-    fromHttp: async () => (await ordersApi.list(normalized)).items,
+    fromHttp: async () =>
+      extraireItems(ORDERS_RESOURCE, await ordersApi.list(normalized), NO_ORDERS),
     fallback: NO_ORDERS,
   });
 }
@@ -97,6 +99,7 @@ export function useMyOrderList(): ResourceState<Order[]> {
     // peut-être pas dans la liste.
     // En mock, on passe customerId pour que ordersApi.mine() filtre à la source.
     fromHttp: async () => ordersApi.mine(customerId),
+    normaliser: (brut) => normaliserListe(ORDERS_RESOURCE, brut, NO_ORDERS),
     fallback: NO_ORDERS,
   });
 }

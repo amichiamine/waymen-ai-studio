@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { notificationsApi } from "@/api/resources/notifications";
 import type { AdminNotification } from "@/lib/admin-store";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import { invalidateResource } from "./cache";
 import type { ResourceState } from "./types";
@@ -29,7 +30,12 @@ export function useNotificationList(): ResourceState<AdminNotification[]> {
   return useResource<AdminNotification[]>({
     key: NOTIFICATIONS_RESOURCE,
     fromStore: (state) => state.notifications,
-    fromHttp: async () => (await notificationsApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(
+        NOTIFICATIONS_RESOURCE,
+        await notificationsApi.list({ perPage: DEFAULT_PER_PAGE }),
+        NO_NOTIFICATIONS,
+      ),
     fallback: NO_NOTIFICATIONS,
   });
 }

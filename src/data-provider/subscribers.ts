@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { subscribersApi } from "@/api/resources/crm";
 import type { Subscriber } from "@/lib/admin-store";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -25,7 +26,12 @@ export function useSubscriberList(): ResourceState<Subscriber[]> {
   return useResource<Subscriber[]>({
     key: SUBSCRIBERS_RESOURCE,
     fromStore: (state) => state.subscribers,
-    fromHttp: async () => (await subscribersApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(
+        SUBSCRIBERS_RESOURCE,
+        await subscribersApi.list({ perPage: DEFAULT_PER_PAGE }),
+        NO_SUBSCRIBERS,
+      ),
     fallback: NO_SUBSCRIBERS,
   });
 }

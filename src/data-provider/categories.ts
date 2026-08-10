@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { categoriesApi } from "@/api/resources/categories";
 import type { AdminCategory } from "@/api/types";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -28,7 +29,12 @@ export function useCategoryList(): ResourceState<AdminCategory[]> {
   return useResource<AdminCategory[]>({
     key: CATEGORIES_RESOURCE,
     fromStore: (state) => state.categories,
-    fromHttp: async () => (await categoriesApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(
+        CATEGORIES_RESOURCE,
+        await categoriesApi.list({ perPage: DEFAULT_PER_PAGE }),
+        NO_CATEGORIES,
+      ),
     fallback: NO_CATEGORIES,
   });
 }

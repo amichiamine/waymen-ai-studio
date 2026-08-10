@@ -17,6 +17,12 @@ export { invalidateResource, invalidateAll } from "./cache";
 export { toApiError } from "./errors";
 export { getResourceFailures, clearResourceFailures } from "./log";
 export type { ResourceFailure } from "./log";
+export {
+  estObjetSingleton,
+  extraireItems,
+  normaliserListe,
+  normaliserSingleton,
+} from "./normalisation";
 
 // Ressources.
 export {

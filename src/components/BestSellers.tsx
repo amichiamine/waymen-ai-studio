@@ -20,6 +20,11 @@ export function BestSellers() {
         .slice(0, 4),
     [products],
   );
+  // Même règle que `FlashSale` : pas de titre « Meilleures ventes » au-dessus
+  // d'une grille vide. Sur une base sans produit la vitrine reste propre ;
+  // c'est `BandeauBoutiqueVide` qui dit la vérité au commerçant.
+  if (list.length === 0) return null;
+
   return (
     <section className="container-page py-16">
       <Reveal variant="up">

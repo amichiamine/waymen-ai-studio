@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { couponsApi } from "@/api/resources/coupons";
 import type { Coupon, CouponCheckResult } from "@/api/types";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -25,7 +26,12 @@ export function useCouponList(): ResourceState<Coupon[]> {
   return useResource<Coupon[]>({
     key: COUPONS_RESOURCE,
     fromStore: (state) => state.coupons,
-    fromHttp: async () => (await couponsApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(
+        COUPONS_RESOURCE,
+        await couponsApi.list({ perPage: DEFAULT_PER_PAGE }),
+        NO_COUPONS,
+      ),
     fallback: NO_COUPONS,
   });
 }

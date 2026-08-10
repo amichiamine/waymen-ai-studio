@@ -40,6 +40,13 @@ export function FlashSale() {
     [products],
   );
 
+  // Boutique neuve, ou aucune promotion en cours : on n'annonce pas des
+  // « offres de la semaine » sous lesquelles il n'y a rien. Un compte à rebours
+  // au-dessus d'une grille vide n'est pas une vitrine, c'est une promesse non
+  // tenue. Le commerçant, lui, est averti par `BandeauBoutiqueVide` — la
+  // section se tait pour le visiteur, pas pour l'administrateur.
+  if (sale.length === 0) return null;
+
   return (
     <section className="py-16" style={{ background: "#0f172a" }}>
       <div className="container-page text-white">

@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Logo } from "./Logo";
+import { BandeauBoutiqueVide } from "./BandeauBoutiqueVide";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { ThemeToggle, LanguageToggle } from "./ThemeLanguageToggles";
@@ -61,6 +62,9 @@ export function Header() {
         scrolled ? "bg-background/75 backdrop-blur-xl border-b border-border" : "bg-transparent"
       }`}
     >
+      {/* Visible du seul exploitant connecté : dit que la base est vide, sans
+          rien montrer au visiteur de passage (voir BandeauBoutiqueVide). */}
+      <BandeauBoutiqueVide />
       <div className="container-page flex h-16 items-center gap-2 md:gap-4">
         <Link to="/" className="shrink-0 text-foreground">
           <Logo />

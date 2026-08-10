@@ -7,6 +7,7 @@ import { isHttpMode } from "@/api/config";
 import { http } from "@/api/client";
 import { endpoints as E } from "@/api/endpoints";
 
+import { normaliserListe } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -29,6 +30,7 @@ export function useShippingRateList(): ResourceState<ShippingRate[]> {
     key: SHIPPING_RATES_RESOURCE,
     fromStore: (state) => state.shippingRates,
     fromHttp: async () => settingsApi.shippingRates(),
+    normaliser: (brut) => normaliserListe(SHIPPING_RATES_RESOURCE, brut, NO_SHIPPING_RATES),
     fallback: NO_SHIPPING_RATES,
   });
 }

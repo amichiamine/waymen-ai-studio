@@ -6,6 +6,7 @@ import type { Product, ProductRating } from "@/data/products";
 import { useAdminState } from "@/lib/admin-store";
 
 import { isHttpData } from "./mode";
+import { normaliserListe } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -35,6 +36,7 @@ export function useReviewList(): ResourceState<Review[]> {
     key: REVIEWS_RESOURCE,
     fromStore: (state) => state.reviews,
     fromHttp: async () => reviewsApi.list({ perPage: DEFAULT_PER_PAGE }),
+    normaliser: (brut) => normaliserListe(REVIEWS_RESOURCE, brut, NO_REVIEWS),
     fallback: NO_REVIEWS,
   });
 }

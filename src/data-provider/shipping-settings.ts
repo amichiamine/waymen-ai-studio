@@ -7,6 +7,7 @@ import { isHttpMode } from "@/api/config";
 import { http } from "@/api/client";
 import { endpoints as E } from "@/api/endpoints";
 
+import { normaliserSingleton } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -38,6 +39,11 @@ export function useShippingSettings(): ResourceState<ShippingSettings> {
     fromStore: (state) => state.shippingSettings,
     fromHttp: async () => settingsApi.shipping(),
     fallback: DEFAULT_SHIPPING_SETTINGS,
+    // `GET /settings/shipping` répond `{}` sur une base neuve : sans fusion,
+    // `homeEnabled` et `deskEnabled` valent `undefined` et le tunnel de
+    // commande n'offre plus AUCUN mode de livraison, sans rien expliquer.
+    normaliser: (brut) =>
+      normaliserSingleton(SHIPPING_SETTINGS_RESOURCE, DEFAULT_SHIPPING_SETTINGS, brut),
   });
 }
 

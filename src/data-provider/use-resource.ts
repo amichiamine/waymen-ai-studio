@@ -32,7 +32,7 @@ type RemoteState<T> = { data: T; loading: boolean; error: ApiError | null };
  * l'ordre des hooks.
  */
 export function useResource<T>(source: ResourceSource<T>): ResourceState<T> {
-  const { key, fromStore, fromHttp, fallback, enabled = true } = source;
+  const { key, fromStore, fromHttp, fallback, enabled = true, normaliser } = source;
   const httpActive = isHttpData() && enabled;
 
   // --- Moteur mock ---------------------------------------------------------
@@ -65,6 +65,8 @@ export function useResource<T>(source: ResourceSource<T>): ResourceState<T> {
   fromHttpRef.current = fromHttp;
   const fallbackRef = useRef(fallback);
   fallbackRef.current = fallback;
+  const normaliserRef = useRef(normaliser);
+  normaliserRef.current = normaliser;
 
   const revision = useSyncExternalStore(subscribeRevision, getRevision, getRevision);
 
@@ -101,8 +103,12 @@ export function useResource<T>(source: ResourceSource<T>): ResourceState<T> {
 
     fromHttpRef
       .current(controller.signal)
-      .then((data) => {
+      .then((brut) => {
         if (!alive) return;
+        // Remise en conformité AVANT la mise en cache : le cache ne doit jamais
+        // contenir une valeur qui casserait le rendu au prochain montage, et
+        // toutes les vues abonnées à cette clé lisent donc la même valeur sûre.
+        const data = normaliserRef.current ? normaliserRef.current(brut) : brut;
         writeCache(key, data);
         setRemote({ data, loading: false, error: null });
       })

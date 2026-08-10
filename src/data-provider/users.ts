@@ -4,6 +4,7 @@ import { usersApi } from "@/api/resources/users";
 import type { AdminUserPayload } from "@/api/resources/users";
 import type { AdminUser } from "@/api/types";
 
+import { normaliserListe } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -29,6 +30,7 @@ export function useUserList(): ResourceState<AdminUser[]> {
     key: USERS_RESOURCE,
     fromStore: (state) => state.users,
     fromHttp: async () => usersApi.list({ perPage: DEFAULT_PER_PAGE }),
+    normaliser: (brut) => normaliserListe(USERS_RESOURCE, brut, NO_USERS),
     fallback: NO_USERS,
   });
 }

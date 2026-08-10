@@ -5,6 +5,7 @@ import type { SiteSettings } from "@/api/types";
 import { updateSiteSettings, getAdminSnapshot } from "@/lib/admin-store";
 import { isHttpMode } from "@/api/config";
 
+import { normaliserSingleton } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -53,6 +54,11 @@ export function useSiteSettings(): ResourceState<SiteSettings> {
     fromStore: (state) => state.siteSettings,
     fromHttp: async () => settingsApi.site(),
     fallback: DEFAULT_SITE_SETTINGS,
+    // Même exposition que `site-content` : sur une base neuve l'API répond
+    // `{}` ici, et pourrait répondre `[]` le jour où la table est vide côté
+    // serveur. La fusion garantit en outre qu'un objet PARTIEL — seuls
+    // quelques réglages enregistrés — ne laisse pas les autres à `undefined`.
+    normaliser: (brut) => normaliserSingleton(SITE_SETTINGS_RESOURCE, DEFAULT_SITE_SETTINGS, brut),
   });
 }
 

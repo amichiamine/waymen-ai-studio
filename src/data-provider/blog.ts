@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { blogApi } from "@/api/resources/blog";
 import type { BlogPost } from "@/api/types";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -29,7 +30,8 @@ export function useBlogPostList(): ResourceState<BlogPost[]> {
   return useResource<BlogPost[]>({
     key: BLOG_RESOURCE,
     fromStore: (state) => state.blogPosts,
-    fromHttp: async () => (await blogApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(BLOG_RESOURCE, await blogApi.list({ perPage: DEFAULT_PER_PAGE }), NO_POSTS),
     fallback: NO_POSTS,
   });
 }

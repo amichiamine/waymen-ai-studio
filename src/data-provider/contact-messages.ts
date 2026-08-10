@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { contactMessagesApi } from "@/api/resources/crm";
 import type { ContactMessage } from "@/lib/admin-store";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -25,7 +26,12 @@ export function useContactMessageList(): ResourceState<ContactMessage[]> {
   return useResource<ContactMessage[]>({
     key: CONTACT_MESSAGES_RESOURCE,
     fromStore: (state) => state.messages,
-    fromHttp: async () => (await contactMessagesApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(
+        CONTACT_MESSAGES_RESOURCE,
+        await contactMessagesApi.list({ perPage: DEFAULT_PER_PAGE }),
+        NO_MESSAGES,
+      ),
     fallback: NO_MESSAGES,
   });
 }

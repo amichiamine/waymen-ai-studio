@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { mediaApi } from "@/api/resources/media";
 import type { MediaAsset } from "@/lib/admin-store";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -25,7 +26,8 @@ export function useMediaAssetList(): ResourceState<MediaAsset[]> {
   return useResource<MediaAsset[]>({
     key: MEDIA_RESOURCE,
     fromStore: (state) => state.mediaAssets,
-    fromHttp: async () => (await mediaApi.list({ perPage: DEFAULT_PER_PAGE })).items,
+    fromHttp: async () =>
+      extraireItems(MEDIA_RESOURCE, await mediaApi.list({ perPage: DEFAULT_PER_PAGE }), NO_MEDIA),
     fallback: NO_MEDIA,
   });
 }

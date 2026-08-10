@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { customersApi } from "@/api/resources/customers";
 import type { Customer, ListQuery } from "@/api/types";
 
+import { extraireItems } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import type { ResourceState } from "./types";
 
@@ -45,7 +46,8 @@ export function useCustomerList(query: ListQuery = {}): ResourceState<Customer[]
       }
       return items;
     },
-    fromHttp: async () => (await customersApi.list(normalized)).items,
+    fromHttp: async () =>
+      extraireItems(CUSTOMERS_RESOURCE, await customersApi.list(normalized), NO_CUSTOMERS),
     fallback: NO_CUSTOMERS,
   });
 }
