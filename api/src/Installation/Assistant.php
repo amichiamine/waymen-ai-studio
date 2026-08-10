@@ -211,8 +211,26 @@ final class Assistant
             . self::champ('owner_password2', 'Répétez le mot de passe', '', 'password', $erreurs)
             . '</fieldset>';
 
+        // ---- Catalogue de démonstration — choix explicite ------------------
+        $importChoix = $saisie['import_catalogue'] ?? 'demo';
+        $corps .= '<fieldset><legend>4. Catalogue de produits</legend>'
+            . '<p class="aide">Votre boutique peut démarrer avec des produits de démonstration, ou '
+            . 'complètement vide si vous souhaitez y ajouter vos propres produits dès le départ.</p>'
+            . '<label class="choix"><input type="radio" name="import_catalogue" value="demo"'
+            . ($importChoix === 'demo' ? ' checked' : '') . '>'
+            . ' <strong>Démarrer avec les produits de démonstration</strong>'
+            . ' — ordinateurs, téléphones et configurations d\'exemple, que vous pourrez modifier '
+            . 'ou supprimer depuis l\'administration. Idéal pour découvrir le site en conditions réelles.</label>'
+            . '<label class="choix"><input type="radio" name="import_catalogue" value="vide"'
+            . ($importChoix === 'vide' ? ' checked' : '') . '>'
+            . ' <strong>Démarrer sur une boutique vide</strong>'
+            . ' — aucun produit ajouté, vous partez d\'une feuille blanche. Pour importer le catalogue '
+            . 'plus tard, utilisez la commande : '
+            . '<code>php api/tools/importer-donnees-front.php</code></label>'
+            . '</fieldset>';
+
         if ($diag->envExistant) {
-            $corps .= '<fieldset><legend>4. Configuration existante</legend>'
+            $corps .= '<fieldset><legend>5. Configuration existante</legend>'
                 . '<p class="aide">Un fichier de configuration <code>api/.env</code> existe déjà. '
                 . 'L\'assistant en fera une copie datée avant de le remplacer.</p>'
                 . '<label class="choix"><input type="checkbox" name="confirmer_env" value="1"> '
@@ -271,13 +289,14 @@ final class Assistant
 
         // Ce qui peut être réaffiché sans risque. Les mots de passe n'y sont pas.
         $saisie = [
-            'pilote' => $lire('pilote'),
-            'db_host' => $lire('db_host'),
-            'db_port' => $lire('db_port'),
-            'db_name' => $lire('db_name'),
-            'db_user' => $lire('db_user'),
-            'owner_name' => $lire('owner_name'),
-            'owner_email' => $lire('owner_email'),
+            'pilote'           => $lire('pilote'),
+            'db_host'          => $lire('db_host'),
+            'db_port'          => $lire('db_port'),
+            'db_name'          => $lire('db_name'),
+            'db_user'          => $lire('db_user'),
+            'owner_name'       => $lire('owner_name'),
+            'owner_email'      => $lire('owner_email'),
+            'import_catalogue' => $lire('import_catalogue') === 'vide' ? 'vide' : 'demo',
         ];
         if (($_POST['db_ssl'] ?? '') !== '') {
             $saisie['db_ssl'] = '1';
@@ -325,7 +344,7 @@ final class Assistant
 
         // ---- Tout est valide : on agit --------------------------------------
         try {
-            $this->installer($pilote, $saisie, $motDePasseBase, $motDePasse);
+            $this->installer($pilote, $saisie, $motDePasseBase, $motDePasse, $saisie['import_catalogue'] === 'demo');
         } catch (ApiException $e) {
             // Message déjà rédigé pour un exploitant : on l'affiche tel quel.
             $detail = $e->getMessage();
@@ -351,8 +370,13 @@ final class Assistant
      *
      * @param array<string,string> $saisie
      */
-    private function installer(string $pilote, array $saisie, string $motDePasseBase, string $motDePasseProprietaire): never
-    {
+    private function installer(
+        string $pilote,
+        array $saisie,
+        string $motDePasseBase,
+        string $motDePasseProprietaire,
+        bool $importerCatalogue,
+    ): never {
         // ---- 1. Le dossier de données, au bon endroit ------------------------
         $prevu = Emplacement::deduire($this->racineApi, isset($this->serveur['DOCUMENT_ROOT'])
             ? (string) $this->serveur['DOCUMENT_ROOT']
@@ -451,10 +475,41 @@ final class Assistant
             throw $e;
         }
 
-        // ---- 6. La preuve : la base est-elle téléchargeable ? ----------------
+        // ---- 6. Import du catalogue de démonstration (optionnel, non bloquant) --
+        //
+        // L'import arrive APRÈS le témoin : même si le sous-processus échoue,
+        // l'installation est déclarée réussie. Le compte propriétaire et les
+        // tables sont l'essentiel ; le catalogue est un bonus.
+        //
+        // `ImportateurCatalogue` appelle `api/tools/importer-donnees-front.php`
+        // en sous-processus CLI, avec les mêmes variables d'environnement que
+        // ce processus parent. Il ne duplique aucune logique de l'outil.
+        /** @var array{ok:bool,produits:int,categories:int,marques:int,details:string,erreur:string|null}|null $resultImport */
+        $resultImport = null;
+        if ($importerCatalogue) {
+            $envImport = array_filter(
+                $valeurs,
+                static fn (string $k) => str_starts_with($k, 'DB_'),
+                ARRAY_FILTER_USE_KEY,
+            );
+            $importateur = new ImportateurCatalogue($this->racineApi, $envImport);
+            $resultImport = $importateur->importer();
+            $this->journal[] = $resultImport['ok']
+                ? sprintf(
+                    'Catalogue importé : %d produit(s), %d catégorie(s), %d marque(s).',
+                    $resultImport['produits'],
+                    $resultImport['categories'],
+                    $resultImport['marques'],
+                )
+                : 'Import du catalogue : échec (non bloquant) — ' . ($resultImport['erreur'] ?? '');
+        } else {
+            $this->journal[] = 'Import du catalogue : non demandé (boutique vide).';
+        }
+
+        // ---- 7. La preuve : la base est-elle téléchargeable ? ----------------
         $sonde = SondeHttp::eprouver($emplacement, $this->serveur);
 
-        $this->ecranResultat($emplacement, $prepare, $env, $sonde, $pilote);
+        $this->ecranResultat($emplacement, $prepare, $env, $sonde, $pilote, $importerCatalogue, $resultImport);
     }
 
     // =================================================================
@@ -464,6 +519,7 @@ final class Assistant
     /**
      * @param array{emplacement:Emplacement,backups:?string,replie:bool,raisonRepli:?string,protections:list<string>} $prepare
      * @param array{chemin:string,permissions:string,sauvegarde:?string} $env
+     * @param array{ok:bool,produits:int,categories:int,marques:int,details:string,erreur:string|null}|null $resultImport
      */
     private function ecranResultat(
         Emplacement $emplacement,
@@ -471,6 +527,8 @@ final class Assistant
         array $env,
         SondeHttp $sonde,
         string $pilote,
+        bool $importCatalogue = false,
+        ?array $resultImport = null,
     ): never {
         $jeton = $this->garde->emettreJeton();
 
@@ -529,6 +587,37 @@ final class Assistant
                 . 'données hors de <code>public_html</code>.</p>';
         }
         $corps .= '</div>';
+
+        // ---- Catalogue de démonstration ---------------------------------------
+        if ($importCatalogue) {
+            if ($resultImport !== null && $resultImport['ok']) {
+                $corps .= '<div class="encart ok"><strong>Catalogue importé avec succès ✅</strong>'
+                    . '<p>'
+                    . $resultImport['produits'] . ' produit(s), '
+                    . $resultImport['categories'] . ' catégorie(s), '
+                    . $resultImport['marques'] . ' marque(s) importés en base.'
+                    . '</p>'
+                    . '<p>Vous pouvez les modifier ou les supprimer depuis l\'administration. '
+                    . 'Pour ré-importer plus tard (idempotent) : '
+                    . '<code>php api/tools/importer-donnees-front.php</code></p>'
+                    . '</div>';
+            } else {
+                $erreur = $resultImport['erreur'] ?? 'Erreur inconnue.';
+                $corps .= '<div class="encart alerte"><strong>Import du catalogue : non abouti</strong>'
+                    . '<p>' . self::h($erreur) . '</p>'
+                    . '<p>Votre boutique est néanmoins installée et fonctionnelle. '
+                    . 'Vous pouvez importer le catalogue plus tard avec la commande :<br>'
+                    . '<code>php api/tools/importer-donnees-front.php</code></p>'
+                    . '</div>';
+            }
+        } else {
+            $corps .= '<div class="encart info"><strong>Boutique vide</strong>'
+                . '<p>Vous avez choisi de démarrer sans produits de démonstration. '
+                . 'Ajoutez vos propres produits depuis l\'administration, ou importez le catalogue '
+                . 'de démonstration plus tard avec :<br>'
+                . '<code>php api/tools/importer-donnees-front.php</code></p>'
+                . '</div>';
+        }
 
         // ---- Où sont les choses -----------------------------------------------
         $corps .= '<h3>Où sont vos données</h3><table class="constats"><tbody>'
