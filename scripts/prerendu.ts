@@ -161,6 +161,38 @@ const MESURER = argv.includes("--mesurer");
 const MARQUEUR = "prerendu-katech";
 
 /**
+ * Mode de données du `dist/` qu'on est en train de prérendre.
+ *
+ * On le lit dans le témoin écrit par `vite.config.ts`, PAS dans
+ * `process.env.VITE_API_MODE` : le `postbuild` est un processus distinct de
+ * celui de Vite, il n'hérite donc pas de la valeur que Vite a résolue. Se
+ * fier à l'environnement ici revenait à ne rien savoir — et c'est bien le
+ * genre de « presque juste » qui laisse passer un paquet muet.
+ */
+function lireModeDonnees(): "mock" | "http" | "inconnu" {
+  try {
+    const temoin = JSON.parse(readFileSync(join(RACINE, "mode-donnees.json"), "utf8")) as {
+      modeDonnees?: unknown;
+    };
+    if (temoin.modeDonnees === "mock" || temoin.modeDonnees === "http") return temoin.modeDonnees;
+  } catch {
+    // Témoin absent (dist/ antérieur au correctif) ou illisible.
+  }
+  return "inconnu";
+}
+
+/**
+ * Nombre de requêtes vers `/api/` réellement émises par le navigateur pendant
+ * le prérendu — la seule mesure qui prouve qu'un bundle parle à son serveur.
+ *
+ * Compter des occurrences de chaînes dans le bundle ne prouve rien : le mot
+ * « mock » comme le chemin « /api/v1 » y figurent dans les deux modes. Seul
+ * le trafic observé tranche. C'est exactement l'erreur de méthode qui avait
+ * fait déclarer sain un paquet totalement déconnecté.
+ */
+let appelsApiObserves = 0;
+
+/**
  * Titres et textes qui signent un rendu RATÉ. Une page qui en contient ne
  * doit pas être gelée dans le livrable : c'est le symptôme d'une donnée
  * absente (API muette au build), pas une page à indexer.
@@ -680,6 +712,10 @@ async function prerendre(
   await page.route("**/*", (voie) => {
     const url = voie.request().url();
     if (url.startsWith(origine) || url.startsWith("data:") || url.startsWith("blob:")) {
+      // `/api/v1/…` et non `/api/` : en developpement, Vite sert les modules
+      // sources sous `/src/api/…`, qu'un motif trop large compterait comme
+      // des appels reseau. Ici on ne veut que les vraies requetes d'API.
+      if (/\/api\/v\d+\//.test(new URL(url).pathname)) appelsApiObserves += 1;
       void voie.continue();
       return;
     }
@@ -781,7 +817,18 @@ async function principal(): Promise<void> {
   // sans API en face. Les pages statiques sortent, les fiches produit et les
   // articles non — et la seule trace, sans cet avertissement, serait 500
   // lignes de 503 en console. On le dit AVANT, en une phrase.
-  if (env.VITE_API_MODE === "http" && API_URL === "") {
+  const modeDonnees = lireModeDonnees();
+  stdout.write(`[prerendu] mode de données du dist/ : ${modeDonnees}.\n`);
+
+  if (modeDonnees === "mock") {
+    stdout.write(
+      "[prerendu] AVERTISSEMENT — ce dist/ est un paquet de DÉMONSTRATION : il n'appellera\n" +
+        "           aucune API. Les pages gelées ici figeront les données du localStorage.\n" +
+        "           Ne pas déployer sur un hébergement réel (« bun run build » pour le site).\n",
+    );
+  }
+
+  if (modeDonnees === "http" && API_URL === "") {
     stdout.write(
       "[prerendu] AVERTISSEMENT — build en VITE_API_MODE=http mais PRERENDU_API_URL est vide.\n" +
         "           Les pages qui dépendent de données (fiches produit, articles) ne pourront\n" +
@@ -871,6 +918,17 @@ async function principal(): Promise<void> {
     `[prerendu] ${ecrites.length}/${resultats.length} page(s) écrites, ` +
       `${median} caractère(s) de texte en moyenne (avant : ${texteAvant}).\n`,
   );
+
+  // Preuve de comportement, pas de contenu : le bundle a-t-il PARLÉ à l'API ?
+  stdout.write(`[prerendu] ${appelsApiObserves} appel(s) vers /api/ observé(s) au rendu.\n`);
+  if (modeDonnees === "http" && appelsApiObserves === 0) {
+    stdout.write(
+      "[prerendu] ATTENTION — dist/ s'annonce en mode « http » mais le navigateur n'a émis\n" +
+        "           AUCUN appel vers /api/. C'est la signature exacte de la panne du 10 août :\n" +
+        "           un site d'apparence normale, entièrement déconnecté de son serveur.\n" +
+        "           Vérifier src/api/config.ts et le témoin dist/mode-donnees.json.\n",
+    );
+  }
 
   if (recalees.length > 0) {
     // Une dégradation gracieuse silencieuse masque ses pannes (AGENTS.md §7).

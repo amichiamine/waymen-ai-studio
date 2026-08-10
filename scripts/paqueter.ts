@@ -235,6 +235,22 @@ function main() {
     );
   }
 
+  // 1 bis. Le paquet doit parler à une API.
+  //
+  //    `vite.config.ts` refuse déjà de CONSTRUIRE un dist/ de production en
+  //    mode « mock ». Reste une porte : `bun run paqueter` lancé seul sur un
+  //    dist/ de démonstration construit plus tôt (`bun run build:dev`), ou
+  //    hérité d'avant ce correctif. Le zip est ce que le commanditaire
+  //    téléverse — c'est le dernier endroit où l'on peut encore arrêter une
+  //    boutique muette.
+  //
+  //    On lit le témoin écrit par le build, jamais le bundle : chercher
+  //    « mock » dans du JavaScript minifié donne des faux positifs (le mot
+  //    apparaît dans les messages d'erreur du provider). C'est cette
+  //    confusion entre « occurrence d'une chaîne » et « comportement réel »
+  //    qui avait fait conclure, à tort, que le paquet était sain.
+  verifierModeDonnees();
+
   // 2. Vérification de sécurité : aucun .env réel dans dist/ avant de zipper
   //    (le build ne devrait pas en produire, mais on ne fait pas confiance
   //    au passé — le zip part par e-mail.)
@@ -336,6 +352,49 @@ function main() {
  * c'est aussi le document d'amorçage. On ne le retient donc que s'il porte le
  * marqueur écrit par `prerendu.ts`.
  */
+/**
+ * Refuse d'archiver un `dist/` qui n'appellera jamais l'API.
+ *
+ * Le témoin `dist/mode-donnees.json` est émis par `vite.config.ts` à chaque
+ * build. Son absence signifie un dist/ construit avant ce correctif : on
+ * refuse aussi, faute de pouvoir affirmer quoi que ce soit — un simple
+ * `bun run build` régénère le témoin.
+ */
+function verifierModeDonnees() {
+  const temoin = path.join(DIST, "mode-donnees.json");
+
+  if (!fs.existsSync(temoin)) {
+    abort(
+      "dist/mode-donnees.json est absent : ce dist/ a été construit avant que le " +
+        "mode de données ne soit tracé, on ne peut donc pas garantir qu'il appelle " +
+        "l'API. Relance « bun run build » pour reconstruire le paquet.",
+    );
+  }
+
+  let mode: unknown;
+  try {
+    mode = (JSON.parse(fs.readFileSync(temoin, "utf8")) as { modeDonnees?: unknown }).modeDonnees;
+  } catch {
+    abort("dist/mode-donnees.json est illisible. Relance « bun run build ».");
+  }
+
+  if (mode === "mock") {
+    abort(
+      "dist/ a été construit en mode « mock » : le site affichera un catalogue de " +
+        "démonstration sans jamais appeler /api/. Ce zip est destiné à un vrai " +
+        "hébergement — il n'est PAS produit.\n" +
+        "  Site réel        : bun run build\n" +
+        "  Démonstration    : bun run build:dev (dist/ seul, sans zip)",
+    );
+  }
+
+  if (mode !== "http") {
+    abort(`dist/mode-donnees.json annonce un mode inattendu (« ${String(mode)} »).`);
+  }
+
+  log('Mode de données du paquet : http — le site appellera "<base>api/v1". ✓');
+}
+
 function etatPrerendu(): { ecrites: number; attendues: number } {
   const sitemap = path.join(DIST, "sitemap.xml");
   if (!fs.existsSync(sitemap)) return { ecrites: 0, attendues: 0 };

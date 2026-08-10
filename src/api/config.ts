@@ -1,10 +1,9 @@
 /**
  * Configuration de la couche API.
  *
- * Le frontend fonctionne actuellement en mode "mock" (localStorage via admin-store).
- * Dès que le backend est déployé, il suffit de définir dans `.env` :
- *
- *   VITE_API_MODE=http
+ * Le mode du projet est `http` : le frontend appelle l'API PHP. `mock`
+ * (données dans le `localStorage`, aucun serveur) reste disponible pour le
+ * développement et les démonstrations, mais il faut le DEMANDER.
  *
  * Aucun composant n'a besoin d'être modifié : les hooks/services de `src/api/*`
  * basculent automatiquement.
@@ -19,7 +18,57 @@ export type ApiMode = "mock" | "http";
 
 const env = import.meta.env as Record<string, string | undefined>;
 
-export const API_MODE: ApiMode = env.VITE_API_MODE === "http" ? "http" : "mock";
+/**
+ * Valeur demandée, telle qu'elle a été injectée à la compilation.
+ *
+ * `vite.config.ts` la résout et la réinjecte systématiquement : en pratique
+ * elle n'est jamais vide dans un bundle construit par ce dépôt. La normalisation
+ * ci-dessous couvre les autres consommateurs du module (tests, outils) et rend
+ * la règle lisible ici même, là où on vient la chercher.
+ */
+const modeDemande = (env.VITE_API_MODE ?? "").trim();
+
+/**
+ * LE DÉFAUT EST `http`, ET C'EST LE CŒUR DE CE FICHIER.
+ *
+ * Cette ligne s'écrivait `env.VITE_API_MODE === "http" ? "http" : "mock"`.
+ * Tout ce qui n'était pas exactement `http` — au premier chef `undefined` —
+ * retombait sur `mock`. Comme Vite ne lit jamais `.env.example`, un
+ * `bun run build` sans `.env` produisait un bundle où le mode valait `"mock"`
+ * en dur. Le site mis en ligne affichait son catalogue, sans une erreur de
+ * console, et n'émettait PAS UN SEUL appel vers `/api/` : les données
+ * venaient du `localStorage`. Une panne totale, sans le moindre symptôme.
+ *
+ * Le sens du test est donc inversé : seul `mock`, écrit explicitement, donne
+ * `mock`. L'absence de configuration, comme une valeur mal orthographiée,
+ * donne `http` — c'est-à-dire un mode qui, s'il est mal choisi, ÉCHOUE
+ * BRUYAMMENT (erreurs réseau visibles) au lieu de mentir en silence.
+ *
+ * `vite.config.ts` refuse par ailleurs de construire un paquet de production
+ * en `mock` sans demande explicite : la présente valeur par défaut est le
+ * dernier filet, pas le seul.
+ */
+export const API_MODE: ApiMode = modeDemande === "mock" ? "mock" : "http";
+
+if (modeDemande !== "" && modeDemande !== "mock" && modeDemande !== "http") {
+  console.error(
+    `[ka-tech] VITE_API_MODE vaut « ${modeDemande} » : valeur inconnue, ignorée. ` +
+      `Seules « http » et « mock » sont admises. Mode retenu : « http ».`,
+  );
+}
+
+// Un paquet de production en mode « mock » est un paquet de démonstration :
+// il ne parlera à aucun serveur. On le dit dès le chargement, avant même
+// qu'un commerçant ne s'étonne de voir des commandes qui n'arrivent jamais.
+// `DataModeBadge` porte le même message dans le back-office, à l'écran.
+if (API_MODE === "mock" && import.meta.env.PROD) {
+  console.warn(
+    "[ka-tech] MODE DÉMONSTRATION (VITE_API_MODE=mock) : ce site n'appelle AUCUNE API. " +
+      "Le catalogue, les comptes et les commandes vivent dans le localStorage de ce " +
+      "navigateur et ne seront lus par personne d'autre. Reconstruire avec " +
+      "VITE_API_MODE=http (ou sans variable du tout) pour brancher la vraie boutique.",
+  );
+}
 
 /** Un chemin de base est toujours normalisé « /…/ », barre oblique finale comprise. */
 const terminerParBarre = (chemin: string): string => (chemin.endsWith("/") ? chemin : `${chemin}/`);
