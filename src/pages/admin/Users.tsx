@@ -10,6 +10,7 @@ import { Plus, Trash2, Pencil, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -105,11 +106,11 @@ export default function AdminUsers() {
       setErr({ email: t("admin.reglages.utilisateurs.validation_email_utilise") });
       return;
     }
-    if (!v.id && (!p.data.password || p.data.password.length < 6)) {
+    if (!v.id && (!p.data.password || p.data.password.length < 10)) {
       setErr({ password: t("admin.reglages.utilisateurs.validation_mdp_requis") });
       return;
     }
-    if (v.id && p.data.password && p.data.password.length < 6) {
+    if (v.id && p.data.password && p.data.password.length < 10) {
       setErr({ password: t("admin.reglages.utilisateurs.validation_mdp_court") });
       return;
     }
@@ -136,15 +137,15 @@ export default function AdminUsers() {
         };
         await update(v.id, updatePayload);
         // Changement de mot de passe via chemin dédié si renseigné.
-        if (p.data.password && p.data.password.length >= 6) {
-          await setPassword(p.data.email, p.data.password);
+        if (p.data.password && p.data.password.length >= 10) {
+          await setPassword(p.data.email, p.data.password, v.id);
         }
         toast.success(t("admin.reglages.utilisateurs.toast_mis_a_jour"));
       } else {
-        await create(payload);
+        const created = await create(payload);
         // setPassword après création — password ne transite pas dans le DTO.
         if (p.data.password) {
-          await setPassword(p.data.email, p.data.password);
+          await setPassword(p.data.email, p.data.password, created?.id ?? payload.id);
         }
         toast.success(t("admin.reglages.utilisateurs.toast_invite"));
       }
@@ -346,83 +347,121 @@ export default function AdminUsers() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {v.id
-                ? t("admin.reglages.utilisateurs.dialog_modifier_titre")
-                : t("admin.reglages.utilisateurs.dialog_inviter_titre")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label>{t("admin.reglages.utilisateurs.champ_nom")}</Label>
-              <Input value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} />
-              {err.name && <p className="mt-1 text-xs text-destructive">{err.name}</p>}
-            </div>
-            <div>
-              <Label>{t("admin.reglages.utilisateurs.champ_email")}</Label>
-              <Input
-                type="email"
-                value={v.email}
-                onChange={(e) => setV({ ...v, email: e.target.value })}
-              />
-              {err.email && <p className="mt-1 text-xs text-destructive">{err.email}</p>}
-            </div>
-            <div>
-              <Label>{t("admin.reglages.utilisateurs.champ_role")}</Label>
-              <Select
-                value={v.role}
-                onValueChange={(x) => setV({ ...v, role: x as AdminUserRole })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {/* Réutilisation de admin.socle.roles.* — ne pas redéclarer */}
-                  <SelectItem value="owner">{t("admin.socle.roles.owner")}</SelectItem>
-                  <SelectItem value="admin">{t("admin.socle.roles.admin")}</SelectItem>
-                  <SelectItem value="editor">{t("admin.socle.roles.editor")}</SelectItem>
-                  <SelectItem value="viewer">{t("admin.socle.roles.viewer")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center justify-between rounded-md border p-2">
-              <Label htmlFor="u-active" className="mb-0">
-                {t("admin.reglages.utilisateurs.champ_actif")}
-              </Label>
-              <Switch
-                id="u-active"
-                checked={v.active}
-                onCheckedChange={(x) => setV({ ...v, active: x })}
-              />
-            </div>
-            <div>
-              <Label>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void save();
+            }}
+            className="space-y-4"
+          >
+            <DialogHeader>
+              <DialogTitle>
                 {v.id
-                  ? t("admin.reglages.utilisateurs.champ_mdp_modifier")
-                  : t("admin.reglages.utilisateurs.champ_mdp")}
-              </Label>
-              <Input
-                type="password"
-                value={v.password ?? ""}
-                onChange={(e) => setV({ ...v, password: e.target.value })}
-                placeholder={
-                  v.id
-                    ? t("admin.reglages.utilisateurs.champ_mdp_placeholder_modifier")
-                    : t("admin.reglages.utilisateurs.champ_mdp_placeholder")
-                }
-              />
-              {err.password && <p className="mt-1 text-xs text-destructive">{err.password}</p>}
+                  ? t("admin.reglages.utilisateurs.dialog_modifier_titre")
+                  : t("admin.reglages.utilisateurs.dialog_inviter_titre")}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                {v.id
+                  ? t("admin.reglages.utilisateurs.dialog_modifier_desc", {
+                      defaultValue: "Modifier les informations et les accès du collaborateur.",
+                    })
+                  : t("admin.reglages.utilisateurs.dialog_inviter_desc", {
+                      defaultValue:
+                        "Renseigner les coordonnées et le rôle du nouveau collaborateur.",
+                    })}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="u-name">{t("admin.reglages.utilisateurs.champ_nom")}</Label>
+                <Input
+                  id="u-name"
+                  name="name"
+                  value={v.name}
+                  onChange={(e) => setV({ ...v, name: e.target.value })}
+                />
+                {err.name && <p className="mt-1 text-xs text-destructive">{err.name}</p>}
+              </div>
+              <div>
+                <Label htmlFor="u-email">{t("admin.reglages.utilisateurs.champ_email")}</Label>
+                <Input
+                  id="u-email"
+                  name="email"
+                  type="email"
+                  value={v.email}
+                  onChange={(e) => setV({ ...v, email: e.target.value })}
+                />
+                {err.email && <p className="mt-1 text-xs text-destructive">{err.email}</p>}
+              </div>
+              <div>
+                <Label>{t("admin.reglages.utilisateurs.champ_role")}</Label>
+                <Select
+                  value={v.role}
+                  onValueChange={(x) => setV({ ...v, role: x as AdminUserRole })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* Réutilisation de admin.socle.roles.* — ne pas redéclarer */}
+                    <SelectItem value="owner">{t("admin.socle.roles.owner")}</SelectItem>
+                    <SelectItem value="admin">{t("admin.socle.roles.admin")}</SelectItem>
+                    <SelectItem value="editor">{t("admin.socle.roles.editor")}</SelectItem>
+                    <SelectItem value="viewer">{t("admin.socle.roles.viewer")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <Label htmlFor="u-active" className="mb-0">
+                  {t("admin.reglages.utilisateurs.champ_actif")}
+                </Label>
+                <Switch
+                  id="u-active"
+                  checked={v.active}
+                  onCheckedChange={(x) => setV({ ...v, active: x })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="u-password">
+                  {v.id
+                    ? t("admin.reglages.utilisateurs.champ_mdp_modifier")
+                    : t("admin.reglages.utilisateurs.champ_mdp")}
+                </Label>
+                <Input
+                  id="u-password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={v.password ?? ""}
+                  onChange={(e) => setV({ ...v, password: e.target.value })}
+                  placeholder={
+                    v.id
+                      ? t("admin.reglages.utilisateurs.champ_mdp_placeholder_modifier")
+                      : t("admin.reglages.utilisateurs.champ_mdp_placeholder")
+                  }
+                />
+                {v.password && v.password.length > 0 && v.password.length < 10 && (
+                  <p className="mt-1 text-xs text-amber-500">
+                    {t("admin.reglages.utilisateurs.validation_mdp_court")} ({v.password.length}/10)
+                  </p>
+                )}
+                {err.password && <p className="mt-1 text-xs text-destructive">{err.password}</p>}
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-              {t("admin.socle.confirmation.annuler")}
-            </Button>
-            <Button onClick={save} disabled={saving}>
-              {t("admin.socle.commun.enregistrer")}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={saving}
+              >
+                {t("admin.socle.confirmation.annuler")}
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {t("admin.socle.commun.enregistrer")}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </AdminPageShell>

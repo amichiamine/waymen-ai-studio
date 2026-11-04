@@ -3,14 +3,18 @@ import { Helmet } from "react-helmet-async";
 import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useContactMessageMutations, useSiteSettings } from "@/data-provider";
-import { useI18n } from "@/lib/i18n";
+import { useContactMessageMutations, useSiteSettings, useSiteContent } from "@/data-provider";
+import { useI18n, useLocalize } from "@/lib/i18n";
+import { getIcon } from "@/lib/site-content";
 
 export default function Contact() {
   const [sending, setSending] = useState(false);
   const { data: s } = useSiteSettings();
+  const { data: siteContent } = useSiteContent();
   const { create: addContactMessage } = useContactMessageMutations();
   const { t } = useI18n();
+  const L = useLocalize();
+  const storeName = s.storeName && s.storeName.trim() !== "" ? s.storeName : "KA Tech";
 
   const contactSchema = z.object({
     name: z.string().trim().min(2, t("contact.form.name")).max(100),
@@ -53,13 +57,15 @@ export default function Contact() {
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
-        <title>{t("contact.page.title")}</title>
-        <meta name="description" content={t("contact.page.desc")} />
+        <title>{t("contact.page.title").replace("KA Tech", storeName)}</title>
+        <meta name="description" content={t("contact.page.desc").replace("KA Tech", storeName)} />
         <link rel="canonical" href={`${window.location.origin}/contact`} />
       </Helmet>
-      <header className="max-w-3xl mb-10">
+      <header className="max-w-3xl mb-10 text-start">
         <p className="text-sm font-medium text-primary mb-2">{t("contact.kicker")}</p>
-        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">{t("contact.title")}</h1>
+        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">
+          {t("contact.title").replace("KA Tech", storeName)}
+        </h1>
         <p className="mt-3 text-muted-foreground">{t("contact.sub")}</p>
       </header>
 
@@ -93,6 +99,33 @@ export default function Contact() {
             <ContactCard Icon={MapPin} title={t("contact.address")} value={s.address} />
           )}
           {s.hours && <ContactCard Icon={Clock} title={t("contact.hours")} value={s.hours} />}
+
+          {/* Réseaux sociaux configurés dans le site */}
+          {siteContent.footer.socials.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4 text-start">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                Nous suivre
+              </h3>
+              <div className="flex gap-2 flex-wrap">
+                {siteContent.footer.socials.map((soc) => {
+                  const Icon = getIcon(soc.icon);
+                  const label = L(soc.label) ?? "";
+                  return (
+                    <a
+                      key={soc.id}
+                      href={soc.href || "#"}
+                      aria-label={label}
+                      target={soc.href && soc.href.startsWith("http") ? "_blank" : undefined}
+                      rel="noreferrer"
+                      className="size-9 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/60 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10"
+                    >
+                      <Icon className="size-4" />
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </aside>
 
         <form

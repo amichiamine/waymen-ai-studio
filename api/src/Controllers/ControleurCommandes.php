@@ -43,6 +43,7 @@ use KaTech\Outbox;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
+use KaTech\Services\NotificationService;
 
 final class ControleurCommandes
 {
@@ -287,6 +288,44 @@ final class ControleurCommandes
         return array_map(static fn (array $l): string => (string) $l['id'], $lignes);
     }
 
+    /**
+     * GET /orders/track?id=...&phone=...
+     * Accès public sécurisé pour le suivi d'une commande (invité ou connecté).
+     * Vérifie la concordance stricte entre l'identifiant et le téléphone ou l'email.
+     */
+    public function suivre(Requete $r): Reponse
+    {
+        $id = trim((string) $r->query('id', ''));
+        $contact = trim((string) $r->query('phone', ''));
+        if ($contact === '') {
+            $contact = trim((string) $r->query('email', ''));
+        }
+
+        if ($id === '' || $contact === '') {
+            throw ApiException::requeteInvalide('L\'identifiant de commande et vos coordonnées sont requis pour le suivi.');
+        }
+
+        $ligne = $this->db->un('SELECT * FROM orders WHERE id = :id', [':id' => $id]);
+        if ($ligne === null) {
+            throw ApiException::introuvable("Aucune commande ne correspond à ces informations.");
+        }
+
+        $contactNettoye = preg_replace('/\D/', '', $contact) ?? '';
+        $telCommande    = preg_replace('/\D/', '', (string) ($ligne['phone'] ?? '')) ?? '';
+        $emailCommande  = strtolower(trim((string) ($ligne['customer_email'] ?? '')));
+
+        $telOk   = ($contactNettoye !== '' && $telCommande !== '' && str_ends_with($telCommande, substr($contactNettoye, -8)));
+        $emailOk = (strtolower($contact) === $emailCommande && $emailCommande !== '');
+
+        if (!$telOk && !$emailOk) {
+            throw ApiException::introuvable("Aucune commande ne correspond à ces informations.");
+        }
+
+        $articles = $this->lignesDe([$id]);
+
+        return Reponse::ok($this->enDto((array) $ligne, $articles));
+    }
+
     // =================================================================
     // Création — la transaction la plus importante du projet
     // =================================================================
@@ -513,6 +552,22 @@ final class ControleurCommandes
                 'items'  => count($lignesCommande),
             ]);
 
+            // Notification in-app pour le commerçant / back-office (cloche et popover)
+            NotificationService::emettre(
+                $this->db,
+                "Nouvelle commande #{$commandeId}",
+                sprintf(
+                    "Client : %s (%s) — Montant total : %s DZD (%d article%s)",
+                    $client['name'],
+                    $client['email'] ?: $client['phone'],
+                    number_format($total, 0, ',', ' '),
+                    count($lignesCommande),
+                    count($lignesCommande) > 1 ? 's' : ''
+                ),
+                'success',
+                "/admin/commandes/{$commandeId}"
+            );
+
             // Événement de rupture de stock : utile au commerçant pour réapprovisionner.
             // Émis pour chaque produit que le décompte a fait descendre à zéro (ou
             // dont le statut est désormais « out »).
@@ -531,6 +586,14 @@ final class ControleurCommandes
                         'commandeId' => $commandeId,
                         'at'        => $maintenant,
                     ]);
+
+                    NotificationService::emettre(
+                        $this->db,
+                        "Rupture de stock : {$ligne['libelle']}",
+                        "Le produit « {$ligne['libelle']} » (ID : {$ligne['produit']}) est désormais en rupture suite à la commande #{$commandeId}.",
+                        'warning',
+                        "/admin/inventaire"
+                    );
                 }
             }
 
@@ -789,12 +852,34 @@ final class ControleurCommandes
                 'note'   => $note,
             ]);
 
+            // Notification client : événement outbox pour envoi d'email
+            $payloadStatut = [
+                'commandeId'    => $id,
+                'nouveauStatut' => $statut,
+                'ancienStatut'  => (string) $ligne['status'],
+                'note'          => $note ?? '',
+                'clientNom'     => (string) ($ligne['customer_name'] ?? ''),
+                'clientEmail'   => (string) ($ligne['customer_email'] ?? ''),
+                'clientTel'     => (string) ($ligne['phone'] ?? ''),
+                'total'         => (int) ($ligne['total'] ?? 0),
+                'updatedAt'     => $maintenant,
+            ];
+            $this->outbox->deposer('order.status_updated', $payloadStatut);
+
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollback();
 
             throw $e;
         }
+
+        $appUrl = rtrim((string) Env::get('APP_URL', ''), '/');
+        $this->outbox->enregistrerVidageEnSortie(
+            static function (array $evt) use ($appUrl): ?string {
+                return self::emettreEvenement($evt, $appUrl);
+            },
+            Outbox::LIMITE_EN_SORTIE,
+        );
 
         $ligne = $this->db->un('SELECT * FROM orders WHERE id = :id', [':id' => $id]);
 
@@ -1494,6 +1579,9 @@ final class ControleurCommandes
             case 'order.created':
                 return self::emettreEmailCommande($payload);
 
+            case 'order.status_updated':
+                return self::emettreEmailStatutCommande($payload, $appUrl);
+
             case 'stock.rupture':
                 // La rupture de stock est une notification au commerçant.
                 // Elle passe par le même canal que la confirmation de commande
@@ -1563,6 +1651,34 @@ final class ControleurCommandes
             return null;
         } catch (\Throwable $e) {
             return 'Envoi email order.created : ' . $e->getMessage();
+        }
+    }
+
+    /**
+     * Émet un email au client informant du changement de statut de sa commande.
+     *
+     * @param array<string,mixed> $payload
+     * @return string|null null si succès, message d'erreur sinon
+     */
+    private static function emettreEmailStatutCommande(array $payload, string $appUrl): ?string
+    {
+        try {
+            $emailClient = (string) ($payload['clientEmail'] ?? '');
+            if ($emailClient !== '' && filter_var($emailClient, FILTER_VALIDATE_EMAIL)) {
+                $msg = \KaTech\Modeles\StatutCommandeCourriel::generer($payload, $appUrl);
+                Courriel::envoyer(
+                    $emailClient,
+                    (string) ($payload['clientNom'] ?? ''),
+                    $msg['sujet'],
+                    $msg['texte'],
+                    $msg['html'],
+                );
+            }
+
+            return null;
+        } catch (\Throwable $e) {
+            Db::journaliserStatique('[outbox] Échec envoi email statut commande : ' . $e->getMessage());
+            return 'Envoi email order.status_updated : ' . $e->getMessage();
         }
     }
 

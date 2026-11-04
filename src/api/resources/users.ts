@@ -69,24 +69,35 @@ export const usersApi = {
   /**
    * Changement de mot de passe — chemin dédié, séparé de `update`.
    *
-   * En mode http : non implémenté avant la phase 4 (authentification serveur).
-   * L'échec est explicite et renvoie un message orientant vers la phase 4 plutôt
-   * que de tomber silencieusement (AGENTS.md §7).
+   * En mode http : appelle `PATCH /admin/users/:id/password` avec `{ password }`.
    *
    * En mode mock : délègue à `setUserPassword` du store ; le mot de passe ne
    * sort jamais de ce chemin.
    */
-  async setPassword(email: string, password: string): Promise<void> {
+  async setPassword(emailOrId: string, password: string, explicitId?: string): Promise<void> {
     if (isHttpMode()) {
-      throw new Error(
-        "[usersApi.setPassword] Non disponible en mode http avant la phase 4. " +
-          "Le changement de mot de passe côté serveur sera câblé via " +
-          "endpoints.auth.changePassword lorsque le backend sera en place.",
-      );
+      let targetId = explicitId;
+      if (!targetId) {
+        if (!emailOrId.includes("@")) {
+          targetId = emailOrId;
+        } else {
+          const list = await http.get<Paginated<AdminUser>>(E.users.list(), { search: emailOrId });
+          const found = list.items.find((u) => u.email.toLowerCase() === emailOrId.toLowerCase());
+          if (!found) {
+            throw new Error(`[usersApi.setPassword] Utilisateur introuvable : ${emailOrId}`);
+          }
+          targetId = found.id;
+        }
+      }
+      await http.patch<void>(E.users.setPassword(targetId), { password });
+      return;
     }
+    const email = emailOrId.includes("@")
+      ? emailOrId
+      : (getAdminSnapshot().users.find((u) => u.id === emailOrId)?.email ?? emailOrId);
     const ok = setUserPassword(email, password);
     if (!ok) {
-      throw new Error(`[usersApi.setPassword] Utilisateur introuvable : ${email}`);
+      throw new Error(`[usersApi.setPassword] Utilisateur introuvable : ${emailOrId}`);
     }
   },
 };

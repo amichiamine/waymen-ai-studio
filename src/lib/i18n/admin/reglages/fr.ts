@@ -69,8 +69,8 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.utilisateurs.champ_mdp": "Mot de passe",
   "admin.reglages.utilisateurs.champ_mdp_modifier":
     "Nouveau mot de passe (laisser vide pour conserver)",
-  "admin.reglages.utilisateurs.champ_mdp_placeholder": "6 caractères minimum",
-  "admin.reglages.utilisateurs.champ_mdp_placeholder_modifier": "••••••",
+  "admin.reglages.utilisateurs.champ_mdp_placeholder": "10 caractères minimum",
+  "admin.reglages.utilisateurs.champ_mdp_placeholder_modifier": "••••••••••",
   "admin.reglages.utilisateurs.toast_invite": "Utilisateur invité",
   "admin.reglages.utilisateurs.toast_mis_a_jour": "Utilisateur mis à jour",
   "admin.reglages.utilisateurs.toast_supprime": "Utilisateur supprimé",
@@ -79,8 +79,8 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.utilisateurs.confirm_supprimer": "Supprimer {nom} ?",
   "admin.reglages.utilisateurs.validation_email_utilise": "Email déjà utilisé",
   "admin.reglages.utilisateurs.validation_mdp_requis":
-    "Mot de passe (6 caractères min.) requis pour un nouveau compte",
-  "admin.reglages.utilisateurs.validation_mdp_court": "6 caractères minimum",
+    "Mot de passe (10 caractères min.) requis pour un nouveau compte",
+  "admin.reglages.utilisateurs.validation_mdp_court": "10 caractères minimum",
   "admin.reglages.utilisateurs.garde_enregistrer": "Enregistrer l'utilisateur",
   "admin.reglages.utilisateurs.garde_supprimer": "Supprimer l'utilisateur",
 

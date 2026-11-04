@@ -339,7 +339,9 @@ function main() {
 
   log(``);
   log(`Pour déployer :`);
-  log(`  1. Dans hPanel → Gestionnaire de fichiers, déposer ${nomHorodate} (ou katech-site.zip) dans public_html.`);
+  log(
+    `  1. Dans hPanel → Gestionnaire de fichiers, déposer ${nomHorodate} (ou katech-site.zip) dans public_html.`,
+  );
   log(`  2. Extraire sur place (clic droit → Extraire).`);
   log(`  3. Ouvrir https://votre-domaine/api/install.php et suivre les trois écrans.`);
   log(`  4. Cliquer le bouton « Supprimer ce fichier » à la fin de l'assistant.`);

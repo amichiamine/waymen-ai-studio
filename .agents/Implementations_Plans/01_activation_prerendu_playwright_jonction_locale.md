@@ -1,10 +1,11 @@
 # PLAN D'IMPLÉMENTATION — PHASE 01
+
 ## Activation du Prérendu Playwright via Jonction Locale NTFS & Build de Production Complet
 
 **Directeur de Projet & Architecte Décideur :** ArchiSys3.0  
 **Tech Lead, Architecte & Consultant R&D :** AImi  
 **Mode d'Action :** Mode Plan  
-**Statut :** 🟢 Livré & Validé  
+**Statut :** 🟢 Livré & Validé
 
 ---
 
@@ -29,8 +30,9 @@ ArchiSys3.0 a formellement arbitré pour la **Solution 2 (Zéro-téléchargement
 ## 3. Découpage Opérationnel par Étapes
 
 ### Étape 1 : Création de la Jonction NTFS Locale dans ms-playwright
-- **Cible :** `C:\Users\Magistik\AppData\Local\ms-playwright\chromium_headless_shell-1234`  
-- **Source :** `C:\Users\Magistik\AppData\Local\ms-playwright\chromium_headless_shell-1223`  
+
+- **Cible :** `C:\Users\Magistik\AppData\Local\ms-playwright\chromium_headless_shell-1234`
+- **Source :** `C:\Users\Magistik\AppData\Local\ms-playwright\chromium_headless_shell-1223`
 - **Action complémentaire :** Lier également `chromium-1234` vers `chromium-1223` pour couvrir tout appel alternatif.
 - **Commande :**
   ```powershell
@@ -40,6 +42,7 @@ ArchiSys3.0 a formellement arbitré pour la **Solution 2 (Zéro-téléchargement
 - **Contrôle :** Vérification de l'existence du chemin d'accès `chrome-headless-shell.exe` sous le dossier `1234`.
 
 ### Étape 2 : Lancement de l'API Locale d'Hydratation
+
 - Démarrer l'API dev en arrière-plan :
   ```bash
   bun run dev:api
@@ -50,6 +53,7 @@ ArchiSys3.0 a formellement arbitré pour la **Solution 2 (Zéro-téléchargement
   ```
 
 ### Étape 3 : Exécution du Build Complet avec Prérendu Hydraté
+
 - Exécution de la commande de build avec passage de l'URL d'API de prérendu :
   ```bash
   powershell -Command "$env:PRERENDU_API_URL='http://127.0.0.1:8160'; $env:VITE_API_MODE='http'; bun run build"
@@ -57,11 +61,13 @@ ArchiSys3.0 a formellement arbitré pour la **Solution 2 (Zéro-téléchargement
 - Surveillance des étapes `generate-sitemap.ts`, `vite build`, `prerendu.ts` et `paqueter.ts`.
 
 ### Étape 4 : Inspection et Validation des Artefacts
+
 - Vérifier le log console de `prerendu.ts` : confirmer le statut `27/27 page(s) écrites`.
 - Vérifier la structure de `dist/` (présence des répertoires HTML statiques : `dist/about/index.html`, `dist/product/.../index.html`).
 - Vérifier la fraîcheur et la taille de l'archive [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip).
 
 ### Étape 5 : Traçabilité et Clôture
+
 - Mettre à jour [`.agents/tracabilites.md`](file:///c:/xampp/htdocs/ka-tech/.agents/tracabilites.md) avec l'état de la Phase 01 et les résultats de recette.
 - Restitution du rapport de livraison à ArchiSys3.0.
 
@@ -69,9 +75,9 @@ ArchiSys3.0 a formellement arbitré pour la **Solution 2 (Zéro-téléchargement
 
 ## 4. Matrice de Recette & Critères de Succès
 
-| Point de Contrôle | Condition de Succès | Méthode de Vérification |
-| :--- | :--- | :--- |
-| **Jonction NTFS** | Chemin valide et exécutable accessible | `Test-Path "$env:LOCALAPPDATA\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe"` = True |
-| **Lancement Playwright** | Lancement sans message d'erreur d'exécutable manquant | Disparition de l'avertissement `Executable doesn't exist` dans la console de build |
-| **Couverture Prérendu** | 27/27 pages générées avec du texte substantiel | Ligne de résumé `[prerendu] 27/27 page(s) écrites` dans le terminal |
-| **Archive Déployable** | `katech-site.zip` généré avec code de sortie 0 | Taille > 1,4 Mo, 247+ fichiers, timestamp rafraîchi |
+| Point de Contrôle        | Condition de Succès                                   | Méthode de Vérification                                                                                                                 |
+| :----------------------- | :---------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------- |
+| **Jonction NTFS**        | Chemin valide et exécutable accessible                | `Test-Path "$env:LOCALAPPDATA\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe"` = True |
+| **Lancement Playwright** | Lancement sans message d'erreur d'exécutable manquant | Disparition de l'avertissement `Executable doesn't exist` dans la console de build                                                      |
+| **Couverture Prérendu**  | 27/27 pages générées avec du texte substantiel        | Ligne de résumé `[prerendu] 27/27 page(s) écrites` dans le terminal                                                                     |
+| **Archive Déployable**   | `katech-site.zip` généré avec code de sortie 0        | Taille > 1,4 Mo, 247+ fichiers, timestamp rafraîchi                                                                                     |

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { ZodError } from "zod";
 import { toApiError } from "@/data-provider";
@@ -7,6 +7,15 @@ import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { emailSchema, passwordSchema } from "@/lib/auth-schemas";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -20,10 +29,18 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate(redirectTo, { replace: true });
   }, [user, loading, navigate, redirectTo]);
+
+  // Purge de sécurité du mot de passe au démontage du composant
+  useEffect(() => {
+    return () => {
+      setPassword("");
+    };
+  }, []);
 
   /**
    * Traduit une ZodError en message i18n précis.
@@ -84,6 +101,9 @@ export default function Auth() {
         return;
       }
 
+      // Purge immédiate de la mémoire locale dès le succès d'authentification
+      setPassword("");
+
       toast.success(t(mode === "signup" ? "auth.toast.created" : "auth.toast.welcome"));
       navigate(redirectTo, { replace: true });
     } catch (cause) {
@@ -95,15 +115,23 @@ export default function Auth() {
     }
   };
 
+  const isEmailValid = useMemo(() => {
+    const trimmed = email.trim().toLowerCase();
+    return trimmed.length > 0 && emailSchema.safeParse(trimmed).success;
+  }, [email]);
+
+  const isPasswordValid = useMemo(() => {
+    return password.length >= 10;
+  }, [password]);
+
+  const isNameValid = useMemo(() => {
+    return mode === "signin" || fullName.trim().length >= 2;
+  }, [mode, fullName]);
+
+  const isFormValid = isEmailValid && isPasswordValid && isNameValid;
+
   const handleForgotPassword = () => {
-    const normalizedEmail = email.trim().toLowerCase();
-    try {
-      emailSchema.parse(normalizedEmail);
-    } catch {
-      toast.error(t("auth.err.enterEmail"));
-      return;
-    }
-    toast.success(t("auth.forgot.toast"));
+    setForgotOpen(true);
   };
 
   return (
@@ -121,42 +149,71 @@ export default function Auth() {
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {mode === "signup" && (
+            <div>
+              <input
+                id="auth-name"
+                name="name"
+                autoComplete="name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder={t("auth.fullName")}
+                maxLength={100}
+                className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
+              />
+              {fullName.length > 0 && fullName.trim().length < 2 && (
+                <p className="mt-1 text-xs text-amber-500">2 caractères minimum</p>
+              )}
+            </div>
+          )}
+          <div>
             <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder={t("auth.fullName")}
-              maxLength={100}
+              id="auth-email"
+              name="email"
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("auth.email")}
+              required
               className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
             />
-          )}
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t("auth.email")}
-            required
-            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t("auth.password")}
-            required
-            minLength={10}
-            className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
-          />
+            {email.length > 0 && !isEmailValid && email.includes("@") && (
+              <p className="mt-1 text-xs text-destructive">{t("auth.err.email")}</p>
+            )}
+          </div>
+          <div>
+            <input
+              id="auth-password"
+              name="password"
+              type="password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t("auth.password")}
+              required
+              minLength={10}
+              className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
+            />
+            {password.length > 0 && password.length < 10 && (
+              <p className="mt-1 text-xs text-amber-500">
+                {t("auth.err.pw.tooShort")} ({password.length}/10)
+              </p>
+            )}
+          </div>
           <button
             type="submit"
-            disabled={busy}
-            className="w-full h-11 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition disabled:opacity-50"
+            disabled={busy || !isFormValid}
+            className="w-full h-11 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "..." : mode === "signin" ? t("auth.submit.in") : t("auth.submit.up")}
           </button>
         </form>
 
         <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+          onClick={() => {
+            setPassword("");
+            setMode(mode === "signin" ? "signup" : "signin");
+          }}
           className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground"
         >
           {mode === "signin" ? t("auth.toSignup") : t("auth.toSignin")}
@@ -179,6 +236,36 @@ export default function Auth() {
           {t("auth.back")}
         </Link>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("auth.forgot.dialog_title")}</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {t("auth.forgot.instructions")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2 text-sm">
+            <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2">
+              <p className="font-medium text-foreground">
+                {t("auth.email")} :{" "}
+                <span className="font-mono text-primary">{email.trim() || "—"}</span>
+              </p>
+              <p className="text-xs text-muted-foreground">{t("auth.forgot.admin_tip")}</p>
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setForgotOpen(false)}>
+              {t("admin.socle.confirmation.annuler")}
+            </Button>
+            <Button asChild>
+              <Link to="/contact" onClick={() => setForgotOpen(false)}>
+                {t("auth.forgot.contact_btn")}
+              </Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -76,11 +76,11 @@ final class Journal
     public static function consigner(Db $db, string $action, string $entity, array $detail = []): void
     {
         try {
-            // Résolution de l'acteur depuis la SESSION, jamais depuis un paramètre.
-            $utilisateur = Session::utilisateur();
+            // Résolution de l'acteur depuis la SESSION (ou 'cli' en mode ligne de commande).
+            $utilisateur = PHP_SAPI === 'cli' ? null : Session::utilisateur();
             $actor       = $utilisateur !== null
                 ? (string) ($utilisateur['email'] ?? $utilisateur['id'] ?? 'session')
-                : 'invité';
+                : (PHP_SAPI === 'cli' ? 'cli' : 'invité');
 
             // Filtrage des clés sensibles (S13).
             $detailFiltre = self::filtrerSensibles($detail);

@@ -2,7 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useBlogPostDetail } from "@/data-provider";
+import { useBlogPostDetail, useSiteSettings } from "@/data-provider";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
 
@@ -11,6 +11,8 @@ export default function BlogArticle() {
   // Le hook reste toujours monté : on passe `slug` au hook (peut être undefined
   // au premier rendu, le hook est alors inactif — §6 des pièges).
   const { data: post, loading, error } = useBlogPostDetail(slug);
+  const { data: siteSettings } = useSiteSettings();
+  const brand = siteSettings.storeName?.trim() || "Boutique";
   const { t, lang } = useI18n();
   const L = useLocalize();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
@@ -78,7 +80,7 @@ export default function BlogArticle() {
   return (
     <article className="container mx-auto max-w-3xl px-4 py-10">
       <Helmet>
-        <title>{`${title} — KA Tech`}</title>
+        <title>{`${title} — ${brand}`}</title>
         <meta name="description" content={excerpt} />
         <link rel="canonical" href={canonical} />
         <meta property="og:type" content="article" />

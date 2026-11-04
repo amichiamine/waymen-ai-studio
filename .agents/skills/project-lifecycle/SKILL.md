@@ -25,7 +25,7 @@ Lorsque le framework `.agents/` est déployé sur un projet vierge :
 2. **Cadrage de la Vision & Cristallisation Continue du Brainstorming :**  
    Proposer à **ArchiSys3.0** un échange structuré pour renseigner :
    - [`.agents/VISION_ET_PHILOSOPHIE.md`](file:///./VISION_ET_PHILOSOPHIE.md) (Ambition, Paradigmes, Piliers choisis, Lignes rouges).  
-   *Règle d'or : Chaque point validé au cours du brainstorming est immédiatement consigné dans le document par l'Agent IA.*
+     _Règle d'or : Chaque point validé au cours du brainstorming est immédiatement consigné dans le document par l'Agent IA._
 
 3. **Conception de l'Architecture Préliminaire (Agnosticisme Total) :**  
    Définir la topologie, la pile technique libre et la persistance dans :
@@ -43,15 +43,15 @@ Lorsque le framework `.agents/` est déployé sur un projet vierge :
 
 Lorsque le framework `.agents/` est introduit dans un projet déjà entamé :
 
-1. **Audit d'Inventaire en Mode Read-Only :**  
+1. **Audit d'Inventaire en Mode Read-Only :**
    - Analyser l'arborescence, les dépendances (ex: `package.json`, `composer.json`, `requirements.txt`, `go.mod`), et les points d'entrée du projet.
    - Identifier les suites de tests existantes et les scripts de build de production.
 
-2. **Rétro-Ingénierie Documentaire :**  
+2. **Rétro-Ingénierie Documentaire :**
    - Renseigner [`.agents/ARCHITECTURE_TECHNIQUE.md`](file:///./ARCHITECTURE_TECHNIQUE.md) avec la cartographie constatée.
    - Soumettre ce diagnostic pour validation formelle par ArchiSys3.0.
 
-3. **Ouverture du Journal de Traçabilité :**  
+3. **Ouverture du Journal de Traçabilité :**
    - Initialiser [`.agents/tracabilites.md`](file:///./tracabilites.md) avec une Phase 01 dédiée à la reprise en main, l'audit et la sécurisation du projet.
 
 ---
@@ -76,22 +76,30 @@ Pour chaque phase en Mode Implémentation :
 Le framework `.agents/` distingue rigoureusement deux catégories de compétences :
 
 ### A. Skills Universels Core (Permanents & Agnostiques)
+
 - 📁 **`skills/agent-core/`** : Rôles, modes opératoires (Read-Only, Diag, Plan, Implémentation), charte visuelle, analyse Pro/Cont et rigueur d'ingénierie.
 - 📁 **`skills/project-lifecycle/`** : Cycle de vie, bootstrap greenfield/brownfield, parité 1:1 et quality gates.
 
 ### B. Skills Hôtes Spécifiques (Propres au Projet en Cours)
+
 Lorsque le projet hôte dispose d'un outillage technique particulier (ex: bundler complexe, conteneurs Docker, commandes de migration de base de données, pipeline CI/CD spécifique), AImi doit proposer à **ArchiSys3.0** la création d'un skill dédié :
+
 - **Emplacement :** 📁 `.agents/skills/<stack>-<usage>/` (ex: `vite-react-build`, `django-migrations`, `docker-deploy`).
 - **Contenu Obligatoire de `SKILL.md` :**
+
   ```markdown
   ---
   name: <nom-du-skill>
   description: <Description concise de la compétence pour l'Agent IA>
   ---
+
   # Skill : [Intitulé de la Procédure]
+
   ## 1. Contexte & Dépendances
+
   ## 2. Commandes & Scripts Opératoires
+
   ## 3. Critères de Validation & Recette
   ```
-- **Règle d'Or :** Les skills hôtes ne doivent jamais altérer ou contredire les règles de gouvernance suprêmes de `AGENTS.md` et `agent-core`.
 
+- **Règle d'Or :** Les skills hôtes ne doivent jamais altérer ou contredire les règles de gouvernance suprêmes de `AGENTS.md` et `agent-core`.

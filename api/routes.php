@@ -94,9 +94,10 @@ $routeur->delete('/brands/:id', Garde::protege('delete', [$marques, 'supprimer']
 
 // ---------------------------------------------------------------- Commerce
 $commandes = new ControleurCommandes($db);
-// ATTENTION : /me/orders est déclarée AVANT /orders/:id, sinon « me » serait
-// capturé comme un identifiant de commande.
+// ATTENTION : /me/orders et /orders/track sont déclarées AVANT /orders/:id, sinon
+// « me » ou « track » seraient capturés comme un identifiant de commande.
 $routeur->get('/me/orders', Garde::protegeConnecte([$commandes, 'mesCommandes']));
+$routeur->get('/orders/track', [$commandes, 'suivre']);
 $routeur->get('/orders', Garde::protege('read', [$commandes, 'lister']));
 $routeur->post('/orders', [$commandes, 'creer']);
 // GET /orders/:id : `protegeConnecte` et NON `protege('read')`. La garde de rang
@@ -241,6 +242,7 @@ $routeur->post('/auth/refresh', [$auth, 'rafraichir']);
 $routeur->post('/auth/forgot-password', [$auth, 'motDePasseOublie']);
 $routeur->post('/auth/reset-password', [$auth, 'reinitialiserMotDePasse']);
 $routeur->post('/auth/change-password', [$auth, 'changerMotDePasse']);
+$routeur->patch('/auth/profile', Garde::protegeConnecte([$auth, 'mettreAJourProfil']));
 
 // --------------------------------------------------------- Notion / miroir
 // Toutes les routes /notion/* sauf le webhook sont reservees au proprietaire.

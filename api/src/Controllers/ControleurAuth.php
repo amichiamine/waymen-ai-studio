@@ -767,6 +767,63 @@ final class ControleurAuth
     }
 
     // ==================================================================
+    // PATCH /auth/profile
+    // ==================================================================
+
+    /**
+     * Mise à jour des informations personnelles (nom, téléphone) du compte connecté.
+     *
+     * La route est protégée par `Garde::protegeConnecte` dans `api/routes.php`.
+     * Les données sont mises à jour dans `users` et répercutées dans `customers`
+     * pour assurer la cohérence CRM. La session active est actualisée.
+     *
+     * → 200 { data: AuthSession }
+     */
+    public function mettreAJourProfil(Requete $r): Reponse
+    {
+        $utilisateur = Garde::exigerConnexion();
+        $id = (string) $utilisateur['id'];
+        $email = (string) $utilisateur['email'];
+
+        $nom = trim((string) $r->corps('name', ''));
+        if ($nom === '') {
+            throw ApiException::validation('Profil invalide.', [
+                'name' => ['Le nom est obligatoire.'],
+            ]);
+        }
+
+        $telephone = $r->corps('phone');
+        $telephone = $telephone === null || trim((string) $telephone) === '' ? null : trim((string) $telephone);
+
+        $maintenant = gmdate('c');
+
+        $this->db->transaction(function (Db $d) use ($id, $email, $nom, $telephone, $maintenant): void {
+            $d->run(
+                'UPDATE users SET name = :name, phone = :phone, updated_at = :maj WHERE id = :id',
+                [':name' => $nom, ':phone' => $telephone, ':maj' => $maintenant, ':id' => $id]
+            );
+
+            // Maintien de la cohérence avec la table customers pour le CRM
+            if ($email !== '') {
+                $d->run(
+                    'UPDATE customers SET name = :name, phone = :phone, updated_at = :maj WHERE LOWER(email) = :email',
+                    [':name' => $nom, ':phone' => $telephone ?? '', ':maj' => $maintenant, ':email' => mb_strtolower($email)]
+                );
+            }
+        });
+
+        // Actualisation des données dans la session courante
+        Session::actualiser(['name' => $nom, 'phone' => $telephone]);
+
+        $ligne = $this->utilisateurParId($id);
+        if ($ligne === null) {
+            throw new ApiException(500, 'INTERNAL_ERROR', 'Utilisateur introuvable après mise à jour du profil.');
+        }
+
+        return Reponse::ok($this->sessionDto($ligne));
+    }
+
+    // ==================================================================
     // Outillage interne
     // ==================================================================
 

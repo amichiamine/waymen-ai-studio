@@ -16,6 +16,17 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#0a0d12" />
+    <script>
+      (function () {
+        try {
+          var b = window.__SITE_SETTINGS_BOOTSTRAP__;
+          var n = (b && b.storeName) || localStorage.getItem("katech_site_settings_name");
+          if (n && n.trim()) {
+            document.title = n + " — La puissance tech entre vos mains";
+          }
+        } catch (e) {}
+      })();
+    </script>
     <title>KA Tech — La puissance tech entre vos mains</title>
     <meta
       name="description"

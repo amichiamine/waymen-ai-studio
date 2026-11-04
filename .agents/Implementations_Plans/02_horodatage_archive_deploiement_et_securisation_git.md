@@ -1,10 +1,11 @@
 # PLAN D'IMPLÉMENTATION — PHASE 02
+
 ## Horodatage Dynamique du Package Zip de Déploiement & Sécurisation Git
 
 **Directeur de Projet & Architecte Décideur :** ArchiSys3.0  
 **Tech Lead, Architecte & Consultant R&D :** AImi  
 **Mode d'Action :** Mode Plan  
-**Statut :** 🟢 Livré & Validé  
+**Statut :** 🟢 Livré & Validé
 
 ---
 
@@ -12,7 +13,7 @@
 
 Actuellement, l'outil d'assemblage du package de déploiement [scripts/paqueter.ts](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter.ts) génère un fichier à nom statique unique : `katech-site.zip`.  
 ArchiSys3.0 a demandé que l'archive générée soit automatiquement horodatée avec la date et l'heure au format :  
-`katech-site-JJMMYYYY-HHMM.zip` *(ex. : `katech-site-20102026-1310.zip`)* afin de permettre l'historisation des livrables sans écrasement mutuel.
+`katech-site-JJMMYYYY-HHMM.zip` _(ex. : `katech-site-20102026-1310.zip`)_ afin de permettre l'historisation des livrables sans écrasement mutuel.
 
 En outre, l'audit Tech Lead a relevé que [.gitignore](file:///c:/xampp/htdocs/ka-tech/.gitignore#L73) ne filtre que le nom strict `katech-site.zip`, ce qui exposerait les archives horodatées à un commit accidentel dans le dépôt Git.  
 L'Option A validée par ArchiSys3.0 retient une double production : génération du livrable horodaté ET mise à jour de l'alias `katech-site.zip` pour préserver 100% de la rétro-compatibilité avec les documentations existantes.
@@ -32,6 +33,7 @@ L'Option A validée par ArchiSys3.0 retient une double production : génération
 ## 3. Découpage Opérationnel par Étapes
 
 ### Étape 1 : Mise à jour de `.gitignore`
+
 - Modifier la ligne 73 de [.gitignore](file:///c:/xampp/htdocs/ka-tech/.gitignore) :
   ```diff
   -# Paquet de deploiement produit par scripts/paqueter.ts.
@@ -41,6 +43,7 @@ L'Option A validée par ArchiSys3.0 retient une double production : génération
   ```
 
 ### Étape 2 : Adaptation de `scripts/paqueter.ts`
+
 - Ajouter une fonction d'horodatage :
   ```typescript
   function obtenirNomArchiveHorodatee(): string {
@@ -61,6 +64,7 @@ L'Option A validée par ArchiSys3.0 retient une double production : génération
 - Adapter les messages de logs finaux pour indiquer les deux chemins disponibles.
 
 ### Étape 3 : Banc de Test & Validation d'Exécution
+
 - Exécuter la commande :
   ```bash
   bun run paqueter
@@ -71,6 +75,7 @@ L'Option A validée par ArchiSys3.0 retient une double production : génération
 - Vérifier `git status` pour attester qu'aucun fichier zip n'apparaît en `untracked`.
 
 ### Étape 4 : Traçabilité & Clôture
+
 - Mettre à jour [`.agents/tracabilites.md`](file:///c:/xampp/htdocs/ka-tech/.agents/tracabilites.md) avec l'enregistrement de la Phase 02.
 - Restitution du rapport de livraison à ArchiSys3.0.
 
@@ -78,9 +83,9 @@ L'Option A validée par ArchiSys3.0 retient une double production : génération
 
 ## 4. Matrice de Recette & Critères de Succès
 
-| Point de Contrôle | Condition de Succès | Méthode de Vérification |
-| :--- | :--- | :--- |
-| **Sécurisation Git** | Aucun zip n'est proposé au commit | `git status` reste propre sur les fichiers zip |
-| **Format du Nom** | Conforme au format `katech-site-JJMMYYYY-HHMM.zip` | Regex `/^katech-site-\d{8}-\d{4}\.zip$/` validée |
-| **Parité des Archives** | Les deux archives ont la même taille et contenu | Taille en octets identique entre `ZIP_HORODATE` et `ZIP_LATEST` |
-| **Code de Sortie** | `bun run paqueter` sort en code 0 | Code de sortie 0 confirmé dans la console |
+| Point de Contrôle       | Condition de Succès                                | Méthode de Vérification                                         |
+| :---------------------- | :------------------------------------------------- | :-------------------------------------------------------------- |
+| **Sécurisation Git**    | Aucun zip n'est proposé au commit                  | `git status` reste propre sur les fichiers zip                  |
+| **Format du Nom**       | Conforme au format `katech-site-JJMMYYYY-HHMM.zip` | Regex `/^katech-site-\d{8}-\d{4}\.zip$/` validée                |
+| **Parité des Archives** | Les deux archives ont la même taille et contenu    | Taille en octets identique entre `ZIP_HORODATE` et `ZIP_LATEST` |
+| **Code de Sortie**      | `bun run paqueter` sort en code 0                  | Code de sortie 0 confirmé dans la console                       |

@@ -55,4 +55,7 @@ export const authApi = {
     isHttpMode()
       ? http.post<void>(E.auth.changePassword(), { currentPassword, password })
       : Promise.resolve(),
+
+  updateProfile: (input: { name: string; phone?: string }): Promise<AuthSession> =>
+    isHttpMode() ? http.patch<AuthSession>(E.auth.profile(), input) : mockGuard(),
 };

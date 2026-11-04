@@ -251,6 +251,68 @@ if ($html === null || $remplacements !== 1) {
     exit;
 }
 
+// -----------------------------------------------------------------------
+// Bootstrapping White-Label & Éradication du FOUC (0 ms)
+//
+// Injection de `window.__SITE_SETTINGS_BOOTSTRAP__` depuis la base de données
+// pour que le navigateur et React disposent immédiatement des réglages réels
+// (nom du magasin, logo, etc.) sans attendre l'appel réseau GET /settings/site.
+// -----------------------------------------------------------------------
+$settingsBootstrap = null;
+try {
+    $bootstrapFichier = dirname(__DIR__) . '/api/src/bootstrap.php';
+    if (is_file($bootstrapFichier)) {
+        require_once $bootstrapFichier;
+        if (class_exists('\\KaTech\\Db')) {
+            $db = \KaTech\Db::instance();
+            $ligne = $db->un("SELECT payload FROM settings WHERE scope = 'site'");
+            if ($ligne !== null && !empty($ligne['payload'])) {
+                $payload = \KaTech\Db::dejson($ligne['payload'], null);
+                if (is_array($payload)) {
+                    $settingsBootstrap = $payload;
+                }
+            }
+        }
+    }
+} catch (\Throwable $e) {
+    // Repli de secours : scan direct katech-data en environnement de dev local
+    try {
+        $dossierDev = dirname(__DIR__) . '/katech-data';
+        if (is_dir($dossierDev)) {
+            $fichiers = glob($dossierDev . '/dev-*.sqlite');
+            if (!empty($fichiers)) {
+                usort($fichiers, fn($a, $b) => filemtime($b) <=> filemtime($a));
+                $pdo = new PDO('sqlite:' . $fichiers[0]);
+                $stmt = $pdo->query("SELECT payload FROM settings WHERE scope = 'site'");
+                $row = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
+                if ($row && !empty($row['payload'])) {
+                    $payload = json_decode($row['payload'], true);
+                    if (is_array($payload)) {
+                        $settingsBootstrap = $payload;
+                    }
+                }
+            }
+        }
+    } catch (\Throwable $e2) {
+        // Dégradation gracieuse absolue
+    }
+}
+
+if ($settingsBootstrap !== null) {
+    $jsonBootstrap = json_encode(
+        $settingsBootstrap,
+        JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+    );
+    if ($jsonBootstrap !== false) {
+        $injection = "\n    <script>window.__SITE_SETTINGS_BOOTSTRAP__ = " . $jsonBootstrap . ";</script>";
+        $html = (string) preg_replace('#<head(\s[^>]*)?>#i', '$0' . $injection, $html, 1);
+    }
+    if (!empty($settingsBootstrap['storeName']) && is_string($settingsBootstrap['storeName'])) {
+        $nomMagasin = htmlspecialchars($settingsBootstrap['storeName'], ENT_QUOTES, 'UTF-8');
+        $html = (string) preg_replace('#<title>.*?</title>#i', "<title>{$nomMagasin} — La puissance tech entre vos mains</title>", $html, 1);
+    }
+}
+
 header('Content-Type: text/html; charset=UTF-8');
 // Même règle que pour index.html : le document d'amorçage désigne les
 // empreintes du jour ; le mettre en cache rendrait tout déploiement invisible

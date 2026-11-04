@@ -9,16 +9,22 @@ import { WhyUs } from "@/components/WhyUs";
 import { BuilderTeaser } from "@/components/BuilderTeaser";
 import { Reviews } from "@/components/Reviews";
 import { ContactCTA } from "@/components/ContactCTA";
-import { useSiteContent } from "@/data-provider";
+import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 
 export default function Index() {
   const { data: siteContent } = useSiteContent();
+  const { data: siteSettings } = useSiteSettings();
+  const storeName = siteSettings.storeName?.trim() || "";
   const L = useLocalize();
   return (
     <>
       <Helmet>
-        <title>KA Tech — La puissance tech entre vos mains</title>
+        <title>
+          {storeName
+            ? `${storeName} — La puissance tech entre vos mains`
+            : "La puissance tech entre vos mains"}
+        </title>
         <meta
           name="description"
           content="Ordinateurs portables, ordinateurs de bureau, configurations sur mesure et smartphones avec garantie officielle et livraison partout en Algérie."

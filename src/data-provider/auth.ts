@@ -487,13 +487,17 @@ export const authProvider = {
    */
   async updateProfile(current: AuthUser, input: UpdateProfileInput): Promise<AuthUser> {
     if (isHttpData()) {
-      // Le contrat n'expose pas encore d'endpoint de profil : il arrive en
-      // phase 4 (même parti pris que `usersApi.setPassword`). Échec explicite
-      // plutôt qu'une réussite mensongère.
-      throw new Error(
-        "[authProvider.updateProfile] Non disponible en mode http avant la phase 4 : " +
-          "le contrat ne déclare pas encore d'endpoint de mise à jour du profil.",
-      );
+      const session = await authApi.updateProfile({
+        name: input.name,
+        phone: input.phone,
+      });
+      return {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name ?? input.name,
+        role: session.user.role,
+        phone: session.user.phone ?? input.phone,
+      };
     }
 
     const existing = findUserByEmail(current.email);

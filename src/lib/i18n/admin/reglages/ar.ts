@@ -69,8 +69,8 @@ const reglagesAr: Record<string, string> = {
   "admin.reglages.utilisateurs.champ_mdp": "كلمة المرور",
   "admin.reglages.utilisateurs.champ_mdp_modifier":
     "كلمة مرور جديدة (اتركها فارغة للإبقاء على الحالية)",
-  "admin.reglages.utilisateurs.champ_mdp_placeholder": "6 أحرف على الأقل",
-  "admin.reglages.utilisateurs.champ_mdp_placeholder_modifier": "••••••",
+  "admin.reglages.utilisateurs.champ_mdp_placeholder": "10 أحرف على الأقل",
+  "admin.reglages.utilisateurs.champ_mdp_placeholder_modifier": "••••••••••",
   "admin.reglages.utilisateurs.toast_invite": "تمت دعوة المستخدم",
   "admin.reglages.utilisateurs.toast_mis_a_jour": "تم تحديث المستخدم",
   "admin.reglages.utilisateurs.toast_supprime": "تم حذف المستخدم",
@@ -78,8 +78,8 @@ const reglagesAr: Record<string, string> = {
   "admin.reglages.utilisateurs.confirm_supprimer": "هل تريد حذف {nom}؟",
   "admin.reglages.utilisateurs.validation_email_utilise": "البريد الإلكتروني مستخدم مسبقاً",
   "admin.reglages.utilisateurs.validation_mdp_requis":
-    "كلمة مرور (6 أحرف على الأقل) مطلوبة لحساب جديد",
-  "admin.reglages.utilisateurs.validation_mdp_court": "6 أحرف على الأقل",
+    "كلمة مرور (10 أحرف على الأقل) مطلوبة لحساب جديد",
+  "admin.reglages.utilisateurs.validation_mdp_court": "10 أحرف على الأقل",
   "admin.reglages.utilisateurs.garde_enregistrer": "حفظ المستخدم",
   "admin.reglages.utilisateurs.garde_supprimer": "حذف المستخدم",
 

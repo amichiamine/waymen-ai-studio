@@ -493,148 +493,157 @@ export default function AdminDeveloppeur() {
           </Alert>
 
           {/* Formulaire de connexion à la base cible */}
-          <fieldset disabled={!estOwner} className="space-y-4">
-            <legend className="sr-only">{t("admin.systeme.developpeur.migration_legend")}</legend>
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+            <fieldset disabled={!estOwner} className="space-y-4">
+              <legend className="sr-only">{t("admin.systeme.developpeur.migration_legend")}</legend>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="migration-cible">
-                  {t("admin.systeme.developpeur.migration_label_cible")}
-                </Label>
-                <Select
-                  value={form.cible}
-                  onValueChange={(v) => setChamp("cible", v as FormMigration["cible"])}
-                >
-                  <SelectTrigger id="migration-cible">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* `mysql` et `postgresql` sont des noms de pilotes : valeurs techniques, pas traduites. */}
-                    <SelectItem value="mysql">MySQL</SelectItem>
-                    <SelectItem value="postgresql">PostgreSQL / Supabase</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="migration-cible">
+                    {t("admin.systeme.developpeur.migration_label_cible")}
+                  </Label>
+                  <Select
+                    value={form.cible}
+                    onValueChange={(v) => setChamp("cible", v as FormMigration["cible"])}
+                  >
+                    <SelectTrigger id="migration-cible">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* `mysql` et `postgresql` sont des noms de pilotes : valeurs techniques, pas traduites. */}
+                      <SelectItem value="mysql">MySQL</SelectItem>
+                      <SelectItem value="postgresql">PostgreSQL / Supabase</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="migration-utilisateur">
+                    {t("admin.systeme.developpeur.migration_label_utilisateur")}
+                  </Label>
+                  <Input
+                    id="migration-utilisateur"
+                    value={form.utilisateur}
+                    onChange={(e) => setChamp("utilisateur", e.target.value)}
+                    placeholder="root"
+                    autoComplete="username"
+                  />
+                </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="migration-utilisateur">
-                  {t("admin.systeme.developpeur.migration_label_utilisateur")}
+                <Label htmlFor="migration-dsn">
+                  {t("admin.systeme.developpeur.migration_label_dsn")}
                 </Label>
                 <Input
-                  id="migration-utilisateur"
-                  value={form.utilisateur}
-                  onChange={(e) => setChamp("utilisateur", e.target.value)}
-                  placeholder="root"
-                  autoComplete="username"
+                  id="migration-dsn"
+                  value={form.dsn}
+                  onChange={(e) => setChamp("dsn", e.target.value)}
+                  placeholder="mysql://hôte:3306/base_cible"
+                  autoComplete="off"
+                  spellCheck={false}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.systeme.developpeur.migration_dsn_exemple")}
+                </p>
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="migration-dsn">
-                {t("admin.systeme.developpeur.migration_label_dsn")}
-              </Label>
-              <Input
-                id="migration-dsn"
-                value={form.dsn}
-                onChange={(e) => setChamp("dsn", e.target.value)}
-                placeholder="mysql://hôte:3306/base_cible"
-                autoComplete="off"
-                spellCheck={false}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t("admin.systeme.developpeur.migration_dsn_exemple")}
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="migration-mdp">
-                {t("admin.systeme.developpeur.migration_label_mdp")}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="migration-mdp"
-                  type={motDePasseVisible ? "text" : "password"}
-                  value={form.motDePasse}
-                  onChange={(e) => setChamp("motDePasse", e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  className="pe-10"
-                />
-                <button
-                  type="button"
-                  aria-label={
-                    motDePasseVisible
-                      ? t("admin.systeme.developpeur.migration_aria_masquer_mdp")
-                      : t("admin.systeme.developpeur.migration_aria_afficher_mdp")
-                  }
-                  className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground hover:text-foreground"
-                  onClick={() => setMotDePasseVisible((v) => !v)}
-                  tabIndex={-1}
-                >
-                  {motDePasseVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+              <div className="space-y-1.5">
+                <Label htmlFor="migration-mdp">
+                  {t("admin.systeme.developpeur.migration_label_mdp")}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="migration-mdp"
+                    type={motDePasseVisible ? "text" : "password"}
+                    value={form.motDePasse}
+                    onChange={(e) => setChamp("motDePasse", e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="pe-10"
+                  />
+                  <button
+                    type="button"
+                    aria-label={
+                      motDePasseVisible
+                        ? t("admin.systeme.developpeur.migration_aria_masquer_mdp")
+                        : t("admin.systeme.developpeur.migration_aria_afficher_mdp")
+                    }
+                    className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground hover:text-foreground"
+                    onClick={() => setMotDePasseVisible((v) => !v)}
+                    tabIndex={-1}
+                  >
+                    {motDePasseVisible ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("admin.systeme.developpeur.migration_mdp_note")}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("admin.systeme.developpeur.migration_mdp_note")}
-              </p>
-            </div>
-          </fieldset>
+            </fieldset>
 
-          {/* Boutons simulation / exécution */}
-          <div className="flex flex-wrap gap-3">
-            {can("resetData") ? (
-              <Button
-                variant="outline"
-                onClick={lancerSimulation}
-                disabled={simulationCours || migrationCours || !formulaireValide()}
-              >
-                <FileSearch className="me-2 h-4 w-4" />
-                {simulationCours
-                  ? t("admin.systeme.developpeur.migration_simulation_cours")
-                  : t("admin.systeme.developpeur.migration_btn_simuler")}
-              </Button>
-            ) : (
-              <span title={denyReason("resetData")} className="inline-flex">
-                <Button variant="outline" disabled>
-                  <FileSearch className="me-2 h-4 w-4" />{" "}
-                  {t("admin.systeme.developpeur.migration_btn_simuler")}
-                </Button>
-              </span>
-            )}
-
-            {/* Le bouton Exécuter n'est déverrouillé qu'après une simulation réussie. */}
-            {can("resetData") ? (
-              <span
-                title={
-                  !rapportSimulation || !rapportSimulation.ok
-                    ? t("admin.systeme.developpeur.migration_tooltip_simuler_dabord")
-                    : undefined
-                }
-                className="inline-flex"
-              >
+            {/* Boutons simulation / exécution */}
+            <div className="flex flex-wrap gap-3">
+              {can("resetData") ? (
                 <Button
-                  variant="destructive"
-                  onClick={() => setDialogue({ type: "migration_exec", form })}
-                  disabled={
-                    migrationCours || simulationCours || !rapportSimulation || !rapportSimulation.ok
-                  }
+                  variant="outline"
+                  onClick={lancerSimulation}
+                  disabled={simulationCours || migrationCours || !formulaireValide()}
                 >
-                  <Play className="me-2 h-4 w-4" />
-                  {migrationCours
-                    ? t("admin.systeme.developpeur.migration_execution_cours")
-                    : t("admin.systeme.developpeur.migration_btn_executer")}
+                  <FileSearch className="me-2 h-4 w-4" />
+                  {simulationCours
+                    ? t("admin.systeme.developpeur.migration_simulation_cours")
+                    : t("admin.systeme.developpeur.migration_btn_simuler")}
                 </Button>
-              </span>
-            ) : (
-              <span title={denyReason("resetData")} className="inline-flex">
-                <Button variant="destructive" disabled>
-                  <Play className="me-2 h-4 w-4" />{" "}
-                  {t("admin.systeme.developpeur.migration_btn_executer")}
-                </Button>
-              </span>
-            )}
-          </div>
+              ) : (
+                <span title={denyReason("resetData")} className="inline-flex">
+                  <Button variant="outline" disabled>
+                    <FileSearch className="me-2 h-4 w-4" />{" "}
+                    {t("admin.systeme.developpeur.migration_btn_simuler")}
+                  </Button>
+                </span>
+              )}
+
+              {/* Le bouton Exécuter n'est déverrouillé qu'après une simulation réussie. */}
+              {can("resetData") ? (
+                <span
+                  title={
+                    !rapportSimulation || !rapportSimulation.ok
+                      ? t("admin.systeme.developpeur.migration_tooltip_simuler_dabord")
+                      : undefined
+                  }
+                  className="inline-flex"
+                >
+                  <Button
+                    variant="destructive"
+                    onClick={() => setDialogue({ type: "migration_exec", form })}
+                    disabled={
+                      migrationCours ||
+                      simulationCours ||
+                      !rapportSimulation ||
+                      !rapportSimulation.ok
+                    }
+                  >
+                    <Play className="me-2 h-4 w-4" />
+                    {migrationCours
+                      ? t("admin.systeme.developpeur.migration_execution_cours")
+                      : t("admin.systeme.developpeur.migration_btn_executer")}
+                  </Button>
+                </span>
+              ) : (
+                <span title={denyReason("resetData")} className="inline-flex">
+                  <Button variant="destructive" disabled>
+                    <Play className="me-2 h-4 w-4" />{" "}
+                    {t("admin.systeme.developpeur.migration_btn_executer")}
+                  </Button>
+                </span>
+              )}
+            </div>
+          </form>
 
           {/* Rapport de simulation / migration */}
           {rapportSimulation && <RapportMigration rapport={rapportSimulation} />}

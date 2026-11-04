@@ -186,6 +186,7 @@ export type SiteSettings = {
   currencyThousandSeparator: " " | "," | "." | "'" | "";
   languageSelectorEnabled: boolean;
   hideRatingWhenNoReviews: boolean;
+  logoUrl?: string;
 };
 
 // A single shipping rate: either specific wilaya code, or "*" for default.

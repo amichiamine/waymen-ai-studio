@@ -60,6 +60,18 @@ export const ordersApi = {
       `ordersApi.remove("${id}") en mode mock : deleteOrder() absent de admin-store. Opération non supportée en mock.`,
     );
   },
+
+  /**
+   * Suivi public d'une commande par identifiant et téléphone.
+   */
+  async track(id: string, phone: string): Promise<Order> {
+    if (isHttpMode()) {
+      return http.get<Order>(E.orders.track(), { id, phone });
+    }
+    const order = getAdminSnapshot().orders.find((o) => o.id === id);
+    if (!order) throw new Error("Commande introuvable.");
+    return order;
+  },
 };
 
 // Ré-export pour rappel : en mock, la création passe par le store.

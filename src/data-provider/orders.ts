@@ -108,6 +108,7 @@ export type OrderMutations = {
   create: (input: CreateOrderInput) => Promise<{ id: string }>;
   updateStatus: (id: string, status: OrderStatus, note?: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  track: (id: string, phone: string) => Promise<Order>;
 };
 
 /**
@@ -186,5 +187,10 @@ export function useOrderMutations(): OrderMutations {
     [],
   );
 
-  return useMemo(() => ({ create, updateStatus, remove }), [create, updateStatus, remove]);
+  const track = useCallback((id: string, phone: string) => ordersApi.track(id, phone), []);
+
+  return useMemo(
+    () => ({ create, updateStatus, remove, track }),
+    [create, updateStatus, remove, track],
+  );
 }

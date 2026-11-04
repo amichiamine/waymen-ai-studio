@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { formatDZD, categoryMeta, catalogProducts, type SpecKey } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
-import { useProductReviewList, useReviewMutations } from "@/data-provider";
+import { useProductReviewList, useReviewMutations, useSiteSettings } from "@/data-provider";
 
 import { ProductCard } from "@/components/ProductCard";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
@@ -41,14 +41,16 @@ const specKeyMap: Record<SpecKey, TKey> = {
 export default function Product() {
   const { id } = useParams();
   const products = useProducts();
+  const { data: siteSettings } = useSiteSettings();
+  const brand = siteSettings.storeName?.trim() || "Boutique";
   // La comparaison porte sur l'identifiant technique, qui n'est **pas**
   // localisé : la résolution d'un produit ne dépend jamais de la langue.
   const p = products.find((x) => x.id === id);
   const L = useLocalize();
   const localizedName = L(p?.name) ?? "";
   useEffect(() => {
-    document.title = p ? `${localizedName} — KA Tech` : "Produit introuvable — KA Tech";
-  }, [p, localizedName]);
+    document.title = p ? `${localizedName} — ${brand}` : `Produit introuvable — ${brand}`;
+  }, [p, localizedName, brand]);
   if (!p) {
     return (
       <div className="container mx-auto max-w-xl px-4 py-16 text-center">
@@ -66,6 +68,8 @@ import type { Product as ProductType } from "@/data/products";
 
 function ProductView({ p }: { p: ProductType }) {
   const products = useProducts();
+  const { data: siteSettings } = useSiteSettings();
+  const brand = siteSettings.storeName?.trim() || "Boutique";
 
   const cat = categoryMeta[p.category];
   const [tab, setTab] = useState("specs");
@@ -207,10 +211,10 @@ function ProductView({ p }: { p: ProductType }) {
   return (
     <div className="container-page py-8 lg:py-12">
       <Helmet>
-        <title>{`${name} — KA Tech`}</title>
+        <title>{`${name} — ${brand}`}</title>
         <meta
           name="description"
-          content={`${name} — ${specLine}. ${formatDZD(p.price)}. Garantie officielle KA Tech.`}
+          content={`${name} — ${specLine}. ${formatDZD(p.price)}. Garantie officielle ${brand}.`}
         />
         <link rel="canonical" href={absoluteUrl} />
         <meta property="og:type" content="product" />

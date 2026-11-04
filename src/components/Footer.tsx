@@ -1,18 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail } from "lucide-react";
+import { Mail, MapPin, Phone, Clock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "./Logo";
-import { useSiteContent, useSubscriberMutations } from "@/data-provider";
+import { useSiteContent, useSiteSettings, useSubscriberMutations } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import { useLocalize } from "@/lib/i18n";
 
 export function Footer() {
-  // loading inerte en mode mock. En http, data est le repli (seedSiteContent)
-  // jusqu'au premier aller-retour — le pied de page reste visible avec les
-  // valeurs par défaut. Dégradation gracieuse : un footer vide casserait
-  // toutes les pages.
   const { data: siteContent } = useSiteContent();
+  const { data: siteSettings } = useSiteSettings();
   const f = siteContent.footer;
   const L = useLocalize();
   const [email, setEmail] = useState("");
@@ -39,8 +36,63 @@ export function Footer() {
         <div className="md:col-span-2 space-y-4">
           <Logo className="h-10 text-foreground" />
           <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">{L(f.tagline)}</p>
+
+          {/* Coordonnées & Horaires du magasin issus de siteSettings */}
+          {(siteSettings.address ||
+            siteSettings.contactPhone ||
+            siteSettings.contactEmail ||
+            siteSettings.hours) && (
+            <div className="space-y-1.5 text-xs text-muted-foreground pt-2 border-t border-border/60 max-w-sm">
+              {siteSettings.address && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="size-3.5 shrink-0 mt-0.5 text-primary" />
+                  <span>{siteSettings.address}</span>
+                </div>
+              )}
+              {siteSettings.contactPhone && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Phone className="size-3.5 shrink-0 text-primary" />
+                  <a
+                    href={`tel:${siteSettings.contactPhone.replace(/\s+/g, "")}`}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    {siteSettings.contactPhone}
+                  </a>
+                  {siteSettings.whatsapp && (
+                    <a
+                      href={`https://wa.me/${siteSettings.whatsapp.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
+                    >
+                      <MessageCircle className="size-3" />
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
+              )}
+              {siteSettings.contactEmail && (
+                <div className="flex items-center gap-2">
+                  <Mail className="size-3.5 shrink-0 text-primary" />
+                  <a
+                    href={`mailto:${siteSettings.contactEmail}`}
+                    className="hover:text-foreground transition-colors truncate"
+                  >
+                    {siteSettings.contactEmail}
+                  </a>
+                </div>
+              )}
+              {siteSettings.hours && (
+                <div className="flex items-center gap-2 text-[11px]">
+                  <Clock className="size-3.5 shrink-0 text-primary" />
+                  <span>{siteSettings.hours}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {f.socials.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-1">
               {f.socials.map((s) => {
                 const Icon = getIcon(s.icon);
                 const label = L(s.label) ?? "";
@@ -51,7 +103,7 @@ export function Footer() {
                     aria-label={label}
                     target={s.href && s.href.startsWith("http") ? "_blank" : undefined}
                     rel="noreferrer"
-                    className="size-10 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/60 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10"
+                    className="size-9 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary/60 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10"
                   >
                     <Icon className="size-4" />
                   </a>
@@ -104,9 +156,21 @@ export function Footer() {
         ))}
       </div>
       <div className="border-t border-border">
-        <div className="container-page py-5 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-2">
-          <span>{L(f.copyright)}</span>
-          <span>{L(f.madeIn)}</span>
+        <div className="container-page py-5 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-4">
+          <span>
+            © {new Date().getFullYear()}{" "}
+            {siteSettings.storeName && siteSettings.storeName.trim() !== ""
+              ? siteSettings.storeName
+              : "KA Tech"}
+            . Tous droits réservés.
+          </span>
+          <div className="flex items-center gap-4">
+            <Link to="/track" className="hover:text-primary transition-colors font-medium">
+              Suivre ma commande
+            </Link>
+            <span>·</span>
+            <span>{L(f.madeIn)}</span>
+          </div>
         </div>
       </div>
     </footer>

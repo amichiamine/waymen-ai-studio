@@ -154,6 +154,35 @@ function interpolate(template: string, vars: TVars, lang: Lang): string {
   });
 }
 
+declare global {
+  interface Window {
+    __SITE_SETTINGS_BOOTSTRAP__?: {
+      storeName?: string;
+      logoUrl?: string;
+      [key: string]: unknown;
+    };
+  }
+}
+
+/**
+ * Récupère le nom du magasin courant depuis le bootstrap serveur ou le cache persistant,
+ * garantissant une interpolation white-label synchrone dès la première microseconde.
+ */
+export function getGlobalStoreName(): string {
+  if (typeof window !== "undefined") {
+    if (window.__SITE_SETTINGS_BOOTSTRAP__?.storeName) {
+      return window.__SITE_SETTINGS_BOOTSTRAP__.storeName;
+    }
+    try {
+      const saved = localStorage.getItem("katech_site_settings_name");
+      if (saved && saved.trim() !== "") return saved;
+    } catch {
+      // Ignorer l'indisponibilité du localStorage en environnement restreint
+    }
+  }
+  return "";
+}
+
 export type TKey = string;
 
 type Ctx = {
@@ -334,7 +363,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
           reportMissingKey(lang, k);
           value = fr[k] ?? k;
         }
-        return vars ? interpolate(value, vars, lang) : value;
+
+        const sn = getGlobalStoreName();
+        const effectiveVars: TVars = {
+          ...(sn ? { storeName: sn } : {}),
+          ...(vars ?? {}),
+        };
+        let result = interpolate(value, effectiveVars, lang);
+        if (sn && sn !== "KA Tech") {
+          result = result.replace(/\bKA Tech\b/g, sn);
+        }
+        return result;
       },
     };
   }, [lang, dir, dict, namespaceDicts, requestNamespace, readyNamespaces]);

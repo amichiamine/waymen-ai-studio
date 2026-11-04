@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,10 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, RotateCcw, AlertTriangle } from "lucide-react";
+import { Save, RotateCcw, AlertTriangle, Upload, Image as ImageIcon } from "lucide-react";
+import defaultLogoSrc from "@/assets/ka-tech-logo.webp";
 import {
   useSiteSettings,
   useSiteSettingsMutations,
+  useMediaAssetMutations,
   useTickerMessageList,
   useTickerMessageMutations,
   useMarqueeBrandList,
@@ -36,7 +38,7 @@ import {
   type BuilderStep,
 } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
-import { formatDZD } from "@/data/products";
+import { formatPriceRaw } from "@/lib/format-price";
 import { useI18n } from "@/lib/i18n";
 
 // Répartition des permissions — voir docs/PERMISSIONS.md §2 et §3.3 :
@@ -125,6 +127,32 @@ export default function AdminSettings() {
     }
   }
 
+  const { upload: uploadMedia } = useMediaAssetMutations();
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!guard("manageSettings", t("admin.reglages.parametres.garde_enregistrer"))) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Format d'image non valide (PNG, WebP, SVG ou JPEG requis).");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const asset = await uploadMedia(file);
+      set("logoUrl", asset.src);
+      toast.success("Logo téléversé avec succès !");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message || "Échec du téléversement du logo.");
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  }
+
   function set<K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) {
     setForm((f) => ({ ...f, [k]: v }));
   }
@@ -169,6 +197,72 @@ export default function AdminSettings() {
                   onChange={(e) => set("storeName", e.target.value)}
                   disabled={disabledSettings}
                 />
+              </div>
+
+              {/* Logo de la boutique */}
+              <div className="space-y-2 rounded-lg border border-border/80 bg-muted/20 p-3.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Logo de la boutique</Label>
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    {form.logoUrl ? "Logo personnalisé" : "Logo officiel par défaut"}
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                  {/* Aperçu en direct */}
+                  <div className="flex flex-col items-center justify-center p-2 rounded-md border border-border bg-card dark:bg-white/95 shrink-0 min-w-28 h-14 shadow-xs">
+                    <img
+                      src={
+                        form.logoUrl && form.logoUrl.trim() !== "" ? form.logoUrl : defaultLogoSrc
+                      }
+                      alt="Aperçu logo"
+                      className="max-h-10 max-w-24 object-contain"
+                    />
+                  </div>
+
+                  <div className="flex-1 w-full space-y-1.5">
+                    <div className="flex gap-2">
+                      <Input
+                        value={form.logoUrl ?? ""}
+                        onChange={(e) => set("logoUrl", e.target.value)}
+                        placeholder="URL de l'image (https://... ou téléversez)"
+                        disabled={disabledSettings || uploadingLogo}
+                        className="text-xs h-9"
+                      />
+                      <input
+                        type="file"
+                        ref={logoInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={disabledSettings || uploadingLogo}
+                        onClick={() => logoInputRef.current?.click()}
+                        className="gap-1.5 shrink-0 text-xs h-9"
+                      >
+                        <Upload className="size-3.5" />
+                        {uploadingLogo ? "Téléversement…" : "Téléverser"}
+                      </Button>
+                    </div>
+
+                    {form.logoUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={disabledSettings}
+                        onClick={() => set("logoUrl", "")}
+                        className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                      >
+                        Rétablir le logo officiel par défaut
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
               <div>
                 <Label>{t("admin.reglages.parametres.champ_email_contact")}</Label>
@@ -443,8 +537,9 @@ export default function AdminSettings() {
                 </div>
               </div>
               <div className="rounded-md border border-dashed p-3 text-sm">
-                {t("admin.reglages.parametres.devise_apercu")} <strong>{formatDZD(123456)}</strong>{" "}
-                · <strong>{formatDZD(7500)}</strong>
+                {t("admin.reglages.parametres.devise_apercu")}{" "}
+                <strong>{formatPriceRaw(123456, form)}</strong> ·{" "}
+                <strong>{formatPriceRaw(7500, form)}</strong>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t("admin.reglages.parametres.devise_apercu_aide")}
                 </p>

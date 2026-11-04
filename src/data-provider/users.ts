@@ -68,9 +68,8 @@ export type UserMutations = {
   /**
    * Change le mot de passe d'un compte. Chemin dédié, séparé de `update` pour
    * que `password` ne transite jamais dans une mise à jour générique.
-   * En mode http, échoue explicitement avant la phase 4.
    */
-  setPassword: (email: string, password: string) => Promise<void>;
+  setPassword: (email: string, password: string, id?: string) => Promise<void>;
 };
 
 /**
@@ -95,8 +94,8 @@ export function useUserMutations(): UserMutations {
   );
 
   const setPassword = useCallback(
-    (email: string, password: string) =>
-      runMutation(USERS_RESOURCE, "setPassword", () => usersApi.setPassword(email, password)),
+    (email: string, password: string, id?: string) =>
+      runMutation(USERS_RESOURCE, "setPassword", () => usersApi.setPassword(email, password, id)),
     [],
   );
 

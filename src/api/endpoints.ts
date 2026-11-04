@@ -12,6 +12,7 @@ export const endpoints = {
     forgotPassword: () => `/auth/forgot-password`,
     resetPassword: () => `/auth/reset-password`,
     changePassword: () => `/auth/change-password`,
+    profile: () => `/auth/profile`,
   },
 
   products: {
@@ -56,6 +57,7 @@ export const endpoints = {
     updateStatus: (id: string) => `/orders/${id}/status`,
     remove: (id: string) => `/orders/${id}`,
     mine: () => `/me/orders`,
+    track: () => `/orders/track`,
   },
 
   customers: {
@@ -129,6 +131,7 @@ export const endpoints = {
     create: () => `/admin/users`,
     update: (id: string) => `/admin/users/${id}`,
     remove: (id: string) => `/admin/users/${id}`,
+    setPassword: (id: string) => `/admin/users/${id}/password`,
   },
 
   analytics: {

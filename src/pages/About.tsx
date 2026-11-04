@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ShieldCheck, Truck, Headphones, Award, Star, Heart, AlertTriangle } from "lucide-react";
-import { useAboutValueList } from "@/data-provider";
+import { useAboutValueList, useSiteSettings } from "@/data-provider";
 import type { AboutValue } from "@/lib/admin-store";
 import { useI18n, useLocalize } from "@/lib/i18n";
 
@@ -16,30 +16,43 @@ const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
 
 export default function About() {
   const { data: aboutValues, loading, error } = useAboutValueList();
+  const { data: siteSettings } = useSiteSettings();
   const { t } = useI18n();
   const L = useLocalize();
+  const storeName =
+    siteSettings.storeName && siteSettings.storeName.trim() !== ""
+      ? siteSettings.storeName
+      : "KA Tech";
 
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
-        <title>{t("about.page.title")}</title>
-        <meta name="description" content={t("about.page.desc")} />
+        <title>{t("about.page.title").replace("KA Tech", storeName)}</title>
+        <meta name="description" content={t("about.page.desc").replace("KA Tech", storeName)} />
         <link rel="canonical" href={`${window.location.origin}/about`} />
       </Helmet>
-      <header className="max-w-3xl mb-12">
+      <header className="max-w-3xl mb-12 text-start">
         <p className="text-sm font-medium text-primary mb-2">{t("about.kicker")}</p>
-        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">{t("about.title")}</h1>
-        <p className="mt-4 text-lg text-muted-foreground">{t("about.intro")}</p>
+        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">
+          {t("about.title").replace("KA Tech", storeName)}
+        </h1>
+        <p className="mt-4 text-lg text-muted-foreground">
+          {t("about.intro").replace(/KA Tech/g, storeName)}
+        </p>
       </header>
 
-      <section className="grid gap-10 lg:grid-cols-2 mb-16">
+      <section className="grid gap-10 lg:grid-cols-2 mb-16 text-start">
         <div>
           <h2 className="text-2xl font-bold mb-3">{t("about.history.title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("about.history.body")}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            {t("about.history.body").replace(/KA Tech/g, storeName)}
+          </p>
         </div>
         <div>
           <h2 className="text-2xl font-bold mb-3">{t("about.mission.title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">{t("about.mission.body")}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            {t("about.mission.body").replace(/KA Tech/g, storeName)}
+          </p>
         </div>
       </section>
 

@@ -32,8 +32,9 @@ import { AlertTriangle, Tag, MapPin } from "lucide-react";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
 import type { Product } from "@/data/products";
+import { formatPriceRaw } from "@/lib/format-price";
 
-const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
+const fmt = (n: number) => formatPriceRaw(n);
 const COUPON_KEY = "ka-cart-coupon";
 
 /**

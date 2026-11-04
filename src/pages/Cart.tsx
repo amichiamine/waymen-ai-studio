@@ -13,8 +13,9 @@ import type { CouponCheckResult } from "@/api/types";
 import type { Product } from "@/data/products";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
+import { formatPriceRaw } from "@/lib/format-price";
 
-const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
+const fmt = (n: number) => formatPriceRaw(n);
 const COUPON_KEY = "ka-cart-coupon";
 
 /** Forme réduite d'un coupon validé — issu de `CouponCheckResult` (branche `valid: true`). */

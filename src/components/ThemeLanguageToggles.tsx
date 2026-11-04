@@ -1,6 +1,7 @@
 import { Sun, Moon, Monitor, Check } from "lucide-react";
 import { useTheme, type Theme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
+import { useSiteSettings } from "@/data-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,7 +64,13 @@ const langOptions: {
 ];
 
 export function LanguageToggle() {
+  const { data: siteSettings } = useSiteSettings();
   const { lang, setLang, t } = useI18n();
+
+  if (siteSettings.languageSelectorEnabled === false) {
+    return null;
+  }
+
   const current = langOptions.find((o) => o.value === lang) ?? langOptions[0];
   return (
     <DropdownMenu>

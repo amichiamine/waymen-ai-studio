@@ -8,6 +8,7 @@ import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { PromoBanner } from "@/components/PromoBanner";
 import { MaintenanceScreen } from "@/components/MaintenanceGate";
 import { PageTransition } from "@/components/PageTransition";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DataModeBadge } from "@/components/DataModeBadge";
@@ -42,6 +43,7 @@ const BlogArticle = lazy(() => import("@/pages/BlogArticle"));
 const CategoryIndex = lazy(() => import("@/pages/CategoryIndex"));
 const CategoryDetail = lazy(() => import("@/pages/CategoryDetail"));
 const Product = lazy(() => import("@/pages/Product"));
+const TrackOrder = lazy(() => import("@/pages/TrackOrder"));
 
 // Pages authentifiées
 const Account = lazy(() => import("@/pages/Account"));
@@ -182,6 +184,7 @@ export default function App() {
 
   return (
     <>
+      <ScrollToTop />
       {!isAdmin && <PromoBanner />}
       {!isAdmin && <Ticker />}
       {!isAdmin && <Header />}
@@ -204,6 +207,8 @@ export default function App() {
                 <Route path="/category" element={<CategoryIndex />} />
                 <Route path="/category/:slug" element={<CategoryDetail />} />
                 <Route path="/product/:id" element={<Product />} />
+                <Route path="/track" element={<TrackOrder />} />
+                <Route path="/suivi" element={<TrackOrder />} />
 
                 <Route element={<RequireAuth />}>
                   <Route path="/account" element={<Account />} />

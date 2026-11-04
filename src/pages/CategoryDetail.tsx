@@ -9,6 +9,7 @@ import { UseChips } from "@/components/UseChips";
 import { ChevronRight } from "lucide-react";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import { useSiteSettings } from "@/data-provider";
 
 const VALID: Category[] = ["laptops", "desktops", "builds", "phones"];
 
@@ -22,9 +23,11 @@ const SORTS: { id: string; key: TKey }[] = [
 export default function CategoryDetail() {
   const { slug } = useParams();
   const cat = slug as Category;
+  const { data: siteSettings } = useSiteSettings();
+  const brand = siteSettings.storeName?.trim() || "Boutique";
   useEffect(() => {
-    document.title = `KA Tech — ${slug ?? ""}`;
-  }, [slug]);
+    document.title = `${brand} — ${slug ?? ""}`;
+  }, [slug, brand]);
   if (!VALID.includes(cat)) {
     return (
       <div className="container mx-auto max-w-xl px-4 py-16 text-center">
@@ -87,10 +90,10 @@ function CategoryView({ cat }: { cat: Category }) {
   return (
     <div className="container-page py-8 lg:py-12">
       <Helmet>
-        <title>{`${label} — KA Tech`}</title>
+        <title>{`${label} — ${brand}`}</title>
         <meta
           name="description"
-          content={`${desc} ${list.length} produits disponibles chez KA Tech.`}
+          content={`${desc} ${list.length} produits disponibles chez ${brand}.`}
         />
         <link rel="canonical" href={`${window.location.origin}/category/${cat}`} />
         <meta property="og:url" content={`${window.location.origin}/category/${cat}`} />

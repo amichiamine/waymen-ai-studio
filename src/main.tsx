@@ -44,7 +44,13 @@ createRoot(document.getElementById("root")!).render(
                 À la racine, `CHEMIN_BASE` vaut « / » : le retirer donnerait
                 une chaîne vide, d'où le repli.
               */}
-              <BrowserRouter basename={CHEMIN_BASE.replace(/\/+$/, "") || "/"}>
+              <BrowserRouter
+                basename={CHEMIN_BASE.replace(/\/+$/, "") || "/"}
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true,
+                }}
+              >
                 <App />
               </BrowserRouter>
             </StoreProvider>

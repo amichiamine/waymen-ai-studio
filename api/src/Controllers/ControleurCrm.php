@@ -25,6 +25,7 @@ use KaTech\Journal;
 use KaTech\Pagination;
 use KaTech\Reponse;
 use KaTech\Requete;
+use KaTech\Services\NotificationService;
 
 final class ControleurCrm
 {
@@ -149,6 +150,14 @@ final class ControleurCrm
         });
 
         Journal::consigner($this->db, 'message_recu', 'crm_message', ['id' => $id, 'subject' => $subject]);
+
+        NotificationService::emettre(
+            $this->db,
+            "Nouveau message de {$name}",
+            sprintf("Sujet : %s — Email : %s", $subject, $email),
+            'info',
+            "/admin/messages"
+        );
 
         $ligne = $this->db->un('SELECT * FROM messages WHERE id = :id', [':id' => $id]);
 

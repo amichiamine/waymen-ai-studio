@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { useMyOrderList } from "@/data-provider";
 // Import de type uniquement : aucune fonction de `admin-store` n'est appelée
 // depuis cette page — les données passent par le fournisseur.
-import type { OrderStatus } from "@/lib/admin-store";
+import type { Order, OrderStatus } from "@/api/types";
 import { useAddresses, newAddressId, type UserAddress } from "@/lib/addresses";
 import { WILAYAS } from "@/data/wilayas";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LogOut, User, Package, MapPin, Plus, Trash2, Star } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  LogOut,
+  User,
+  Package,
+  MapPin,
+  Plus,
+  Trash2,
+  Star,
+  Truck,
+  ExternalLink,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
-
-const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
+import { useFormatPrice } from "@/lib/format-price";
 
 const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
@@ -43,11 +59,13 @@ export default function Account() {
   const { data: orders, loading, error } = useMyOrderList();
   const navigate = useNavigate();
   const { t, lang } = useI18n();
+  const formatPrice = useFormatPrice();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
   const [name, setName] = useState(user?.name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
   const { list: addresses, upsert, remove, setDefault } = useAddresses(user?.id);
   const [editing, setEditing] = useState<UserAddress | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const STATUS_LABEL: Record<OrderStatus, string> = {
     pending: t("order.status.pending"),
@@ -341,7 +359,11 @@ export default function Account() {
               ) : (
                 <div className="space-y-3">
                   {myOrders.map((o) => (
-                    <Card key={o.id}>
+                    <Card
+                      key={o.id}
+                      onClick={() => setSelectedOrder(o)}
+                      className="cursor-pointer transition-all duration-200 hover:border-primary/60 hover:shadow-md"
+                    >
                       <CardContent className="p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="text-start">
@@ -352,7 +374,7 @@ export default function Account() {
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold">{fmt(o.total)}</span>
+                            <span className="text-sm font-semibold">{formatPrice(o.total)}</span>
                             <Badge variant={STATUS_VARIANT[o.status]}>
                               {STATUS_LABEL[o.status]}
                             </Badge>
@@ -395,6 +417,126 @@ export default function Account() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Modale de Détail de Commande Client */}
+      {selectedOrder && (
+        <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+          <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader className="text-start">
+              <div className="flex items-center justify-between pe-6">
+                <DialogTitle className="text-lg font-mono">#{selectedOrder.id}</DialogTitle>
+                <Badge variant={STATUS_VARIANT[selectedOrder.status as OrderStatus]}>
+                  {STATUS_LABEL[selectedOrder.status as OrderStatus]}
+                </Badge>
+              </div>
+              <DialogDescription>
+                {new Date(selectedOrder.createdAt).toLocaleString(locale)}
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Note marchand si présente */}
+            {selectedOrder.note && (
+              <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-start text-xs text-amber-900 dark:text-amber-200">
+                <p className="font-semibold mb-0.5">Note de l'équipe :</p>
+                <p>{selectedOrder.note}</p>
+              </div>
+            )}
+
+            {/* Articles */}
+            <div className="space-y-2 border-t pt-3 text-start">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Articles commandés ({selectedOrder.items.length})
+              </h4>
+              <div className="divide-y divide-border/60">
+                {selectedOrder.items.map((item: Order["items"][number], idx: number) => (
+                  <div key={idx} className="flex items-center gap-3 py-2 text-start">
+                    {item.image ? (
+                      <ImageCatalogue
+                        src={item.image}
+                        alt={item.name}
+                        className="size-10 rounded object-contain border bg-muted/20 shrink-0"
+                      />
+                    ) : (
+                      <div className="size-10 rounded bg-muted flex items-center justify-center shrink-0">
+                        <Package className="size-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{item.name}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {item.qty} × {formatPrice(item.price)}
+                      </p>
+                    </div>
+                    <span className="text-xs font-semibold shrink-0">
+                      {formatPrice(item.price * item.qty)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Récapitulatif financier */}
+            <div className="border-t pt-3 space-y-1 text-xs text-muted-foreground text-start">
+              <div className="flex justify-between">
+                <span>{t("cart.subtotal")}</span>
+                <span className="font-medium text-foreground">
+                  {formatPrice(selectedOrder.subtotal)}
+                </span>
+              </div>
+              {selectedOrder.discount > 0 && (
+                <div className="flex justify-between text-primary">
+                  <span>
+                    Remise {selectedOrder.couponCode ? `(${selectedOrder.couponCode})` : ""}
+                  </span>
+                  <span className="font-medium">− {formatPrice(selectedOrder.discount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>{t("cart.shipping")}</span>
+                <span className="font-medium text-foreground">
+                  {selectedOrder.shipping === 0
+                    ? t("common.free")
+                    : formatPrice(selectedOrder.shipping)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm font-bold text-foreground border-t pt-1.5">
+                <span>{t("cart.total")}</span>
+                <span className="text-primary">{formatPrice(selectedOrder.total)}</span>
+              </div>
+            </div>
+
+            {/* Destination & Mode */}
+            <div className="border-t pt-3 text-start text-xs space-y-1">
+              <p className="font-semibold text-foreground flex items-center gap-1.5">
+                <MapPin className="size-3.5 text-primary" />
+                <span>
+                  Livraison :{" "}
+                  {selectedOrder.deliveryKind === "desk" ? "Au bureau / Relais" : "À domicile"}
+                </span>
+              </p>
+              <p className="text-muted-foreground">
+                {selectedOrder.address} — Wilaya {selectedOrder.wilaya}
+              </p>
+              <p className="text-muted-foreground">Téléphone : {selectedOrder.phone}</p>
+            </div>
+
+            {/* Actions */}
+            <div className="border-t pt-3 flex justify-between items-center">
+              <Link
+                to={`/track?id=${encodeURIComponent(selectedOrder.id)}&phone=${encodeURIComponent(selectedOrder.phone)}`}
+                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
+              >
+                <Truck className="size-3.5" />
+                <span>Suivre l'acheminement en direct</span>
+                <ExternalLink className="size-3" />
+              </Link>
+              <Button size="sm" variant="outline" onClick={() => setSelectedOrder(null)}>
+                Fermer
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
