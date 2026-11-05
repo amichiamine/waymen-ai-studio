@@ -969,6 +969,20 @@
   - Administration 100% localisée pour la gestion des médias, des thèmes et de la maintenance.
 - **Livrables :**
   - Plan interactif et miroir : 📄 [20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md)
-  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1959.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1959.zip)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-2004.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-2004.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+#### Sous-Phase 20.1 : Correctif Chirurgical Backend — Résolution Erreurs Intelephense ApiException::invalide()
+
+- **Date :** 05 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle écrite.
+- **Constat & Cause Racine :**
+  - Deux erreurs de sévérité 8 (`P1013` / `PHP0418`) détectées par Intelephense et le PHP Language Server dans [`ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) (lignes 452 et 634) : appel à la méthode non déclarée `ApiException::invalide()`.
+  - La méthode canonique dans [`ApiException.php`](file:///c:/xampp/htdocs/ka-tech/api/src/ApiException.php) est `requeteInvalide()`.
+- **Actions Réalisées :**
+  1. Correction des deux occurrences dans [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) pour appeler `ApiException::requeteInvalide(...)`.
+  2. Ajout d'un alias de résilience statique `public static function invalide(...)` dans [`api/src/ApiException.php`](file:///c:/xampp/htdocs/ka-tech/api/src/ApiException.php) redirigeant vers `requeteInvalide()`.
+  3. Vérification de la syntaxe PHP via `php -l` sur les deux fichiers : 0 erreur.
+  4. Recompilation et régénération du paquet de déploiement [`katech-site-05112026-2004.zip`](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-2004.zip) et de son alias [`katech-site.zip`](file:///c:/xampp/htdocs/ka-tech/katech-site.zip).
+- **Résultat :** 0 diagnostic d'erreur sur l'ensemble des fichiers PHP du projet.
 

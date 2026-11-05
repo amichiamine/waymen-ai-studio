@@ -449,7 +449,7 @@ final class ControleurMaintenance
         $target = (string) ($r->json['target'] ?? 'all');
 
         if (!in_array($action, ['clear', 'reset'], true)) {
-            throw ApiException::invalide("Action inconnue « {$action} ». Valeurs permises : 'clear', 'reset'.");
+            throw ApiException::requeteInvalide("Action inconnue « {$action} ». Valeurs permises : 'clear', 'reset'.");
         }
 
         $rapport = [
@@ -631,7 +631,7 @@ final class ControleurMaintenance
                 $d->run("UPDATE site_content SET payload = '{\"items\":[]}' WHERE section = 'home-reviews'");
                 break;
             default:
-                throw ApiException::invalide("Cible de vidage inconnue « {$target} ».");
+                throw ApiException::requeteInvalide("Cible de vidage inconnue « {$target} ».");
         }
     }
 

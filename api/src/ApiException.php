@@ -58,6 +58,12 @@ class ApiException extends RuntimeException
         return new self(400, 'BAD_REQUEST', $message);
     }
 
+    /** Alias court pour requeteInvalide. */
+    public static function invalide(string $message = 'Requête invalide.'): self
+    {
+        return self::requeteInvalide($message);
+    }
+
     public static function nonAuthentifie(string $message = 'Authentification requise.'): self
     {
         return new self(401, 'UNAUTHORIZED', $message);
