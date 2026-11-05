@@ -516,7 +516,8 @@ final class ControleurMaintenance
                 'builderSteps' => 'builder',
             ];
             $sec = $sectionMap[$cle] ?? $cle;
-            $d->run("UPDATE site_content SET payload = '[]' WHERE section = :s", [':s' => $sec]);
+            $payloadDefaut = $sec === 'home-reviews' ? '{"items":[]}' : '[]';
+            $d->run("UPDATE site_content SET payload = :p WHERE section = :s", [':p' => $payloadDefaut, ':s' => $sec]);
             $rapport['counts'][$cle] = 1;
         };
 
@@ -626,7 +627,8 @@ final class ControleurMaintenance
                 $viderTable('notifications');
                 $viderTable('media_assets');
                 $d->run("DELETE FROM users WHERE role != 'owner'");
-                $d->run("UPDATE site_content SET payload = '[]' WHERE section IN ('home-reviews', 'ticker', 'marquee', 'about', 'builder')");
+                $d->run("UPDATE site_content SET payload = '[]' WHERE section IN ('ticker', 'marquee', 'about', 'builder')");
+                $d->run("UPDATE site_content SET payload = '{\"items\":[]}' WHERE section = 'home-reviews'");
                 break;
             default:
                 throw ApiException::invalide("Cible de vidage inconnue « {$target} ».");

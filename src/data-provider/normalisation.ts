@@ -126,6 +126,12 @@ export function normaliserListe<T>(cle: string, brut: T[], defauts: readonly T[]
 export function extraireItems<T>(cle: string, reponse: { items: T[] }, defauts: readonly T[]): T[] {
   const valeur: unknown = reponse;
 
+  // Défense en profondeur : si le corps reçu est directement une liste, on l'accepte
+  // sans journaliser de warning de normalisation.
+  if (Array.isArray(valeur)) {
+    return valeur as T[];
+  }
+
   if (!estObjetSingleton(valeur)) {
     logResourceNormalisation(
       cle,

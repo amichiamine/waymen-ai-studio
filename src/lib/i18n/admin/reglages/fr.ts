@@ -213,6 +213,19 @@ const reglagesFr: Record<string, string> = {
     "WhatsApp : chiffres uniquement (avec l'indicatif pays, ex. 213555000000)",
   "admin.reglages.parametres.garde_enregistrer": "Enregistrer les paramètres",
   "admin.reglages.parametres.garde_reinitialiser": "Réinitialiser les paramètres",
+  "admin.reglages.parametres.toast_format_image_invalide":
+    "Format d'image non valide (PNG, WebP, SVG ou JPEG requis).",
+  "admin.reglages.parametres.toast_logo_succes": "Logo téléversé et appliqué avec succès !",
+  "admin.reglages.parametres.toast_logo_echec": "Échec du téléversement du logo.",
+  "admin.reglages.parametres.toast_format_favicon_invalide":
+    "Format de favicon non valide (.ico, .png, ou .svg requis).",
+  "admin.reglages.parametres.toast_favicon_succes": "Favicon téléversé et appliqué avec succès !",
+  "admin.reglages.parametres.toast_favicon_echec": "Échec du téléversement du favicon.",
+  "admin.reglages.parametres.toast_logo_defaut_retabli": "Logo officiel par défaut rétabli !",
+  "admin.reglages.parametres.toast_favicon_defaut_retabli": "Favicon officiel rétabli !",
+  "admin.reglages.parametres.toast_marque_existe": "La marque « {nom} » est déjà présente.",
+  "admin.reglages.parametres.toast_catalogue_demo_reinitialise":
+    "Catalogue démo réinitialisé à 0 article.",
   // Éditeurs JSON
   "admin.reglages.parametres.json_tickers_titre": "Bandeau défilant (messages)",
   "admin.reglages.parametres.json_tickers_description":

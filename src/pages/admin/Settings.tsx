@@ -166,7 +166,7 @@ export default function AdminSettings() {
     if (!file) return;
     if (!guard("manageSettings", t("admin.reglages.parametres.garde_enregistrer"))) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Format d'image non valide (PNG, WebP, SVG ou JPEG requis).");
+      toast.error(t("admin.reglages.parametres.toast_format_image_invalide"));
       return;
     }
     setUploadingLogo(true);
@@ -174,10 +174,10 @@ export default function AdminSettings() {
       const asset = await uploadMedia(file);
       set("logoUrl", asset.src);
       await updateSettings({ ...form, logoUrl: asset.src });
-      toast.success("Logo téléversé et appliqué avec succès !");
+      toast.success(t("admin.reglages.parametres.toast_logo_succes"));
     } catch (cause) {
       const err = toApiError(cause);
-      toast.error(err.message || "Échec du téléversement du logo.");
+      toast.error(err.message || t("admin.reglages.parametres.toast_logo_echec"));
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = "";
@@ -189,7 +189,7 @@ export default function AdminSettings() {
     if (!file) return;
     if (!guard("manageSettings", t("admin.reglages.parametres.garde_enregistrer"))) return;
     if (!file.type.startsWith("image/") && !file.name.endsWith(".ico")) {
-      toast.error("Format de favicon non valide (.ico, .png, ou .svg requis).");
+      toast.error(t("admin.reglages.parametres.toast_format_favicon_invalide"));
       return;
     }
     setUploadingFavicon(true);
@@ -197,10 +197,10 @@ export default function AdminSettings() {
       const asset = await uploadMedia(file);
       set("faviconUrl", asset.src);
       await updateSettings({ ...form, faviconUrl: asset.src });
-      toast.success("Favicon téléversé et appliqué avec succès !");
+      toast.success(t("admin.reglages.parametres.toast_favicon_succes"));
     } catch (cause) {
       const err = toApiError(cause);
-      toast.error(err.message || "Échec du téléversement du favicon.");
+      toast.error(err.message || t("admin.reglages.parametres.toast_favicon_echec"));
     } finally {
       setUploadingFavicon(false);
       if (faviconInputRef.current) faviconInputRef.current.value = "";
@@ -345,7 +345,7 @@ export default function AdminSettings() {
                           onClick={async () => {
                             set("logoUrl", "");
                             await updateSettings({ ...form, logoUrl: "" });
-                            toast.success("Logo officiel par défaut rétabli !");
+                            toast.success(t("admin.reglages.parametres.toast_logo_defaut_retabli"));
                           }}
                           className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
                         >
@@ -561,7 +561,9 @@ export default function AdminSettings() {
                           onClick={async () => {
                             set("faviconUrl", "");
                             await updateSettings({ ...form, faviconUrl: "" });
-                            toast.success("Favicon officiel rétabli !");
+                            toast.success(
+                              t("admin.reglages.parametres.toast_favicon_defaut_retabli"),
+                            );
                           }}
                           className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
                         >

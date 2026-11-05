@@ -209,6 +209,20 @@ const reglagesAr: Record<string, string> = {
     "واتساب: أرقام فقط (مع رمز البلد، مثال: 213555000000)",
   "admin.reglages.parametres.garde_enregistrer": "حفظ الإعدادات",
   "admin.reglages.parametres.garde_reinitialiser": "إعادة تعيين الإعدادات",
+  "admin.reglages.parametres.toast_format_image_invalide":
+    "صيغة صورة غير صالحة (PNG أو WebP أو SVG أو JPEG مطلوبة).",
+  "admin.reglages.parametres.toast_logo_succes": "تم رفع الشعار وتطبيقه بنجاح!",
+  "admin.reglages.parametres.toast_logo_echec": "فشل رفع الشعار.",
+  "admin.reglages.parametres.toast_format_favicon_invalide":
+    "صيغة أيقونة غير صالحة (.ico أو .png أو .svg مطلوبة).",
+  "admin.reglages.parametres.toast_favicon_succes": "تم رفع الأيقونة وتطبيقها بنجاح!",
+  "admin.reglages.parametres.toast_favicon_echec": "فشل رفع الأيقونة.",
+  "admin.reglages.parametres.toast_logo_defaut_retabli": "تمت استعادة الشعار الرسمي الافتراضي!",
+  "admin.reglages.parametres.toast_favicon_defaut_retabli":
+    "تمت استعادة الأيقونة الرسمية الافتراضية!",
+  "admin.reglages.parametres.toast_marque_existe": "العلامة التجارية « {nom} » موجودة بالفعل.",
+  "admin.reglages.parametres.toast_catalogue_demo_reinitialise":
+    "تمت إعادة تعيين الكتالوج التجريبي إلى 0 عنصر.",
   // محررو JSON
   "admin.reglages.parametres.json_tickers_titre": "الشريط المتحرك (الرسائل)",
   "admin.reglages.parametres.json_tickers_description": "قائمة رسائل الشريط في أعلى الصفحة.",

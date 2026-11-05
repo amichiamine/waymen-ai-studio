@@ -235,7 +235,7 @@ export function SetupWizard({
             }
           }
         }
-        toast.info("Catalogue démo réinitialisé à 0 article.");
+        toast.info(t("admin.reglages.parametres.toast_catalogue_demo_reinitialise"));
       }
 
       // 4. Application visuelle immédiate

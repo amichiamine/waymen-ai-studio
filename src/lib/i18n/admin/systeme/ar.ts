@@ -22,24 +22,24 @@ const systemeAr: Record<string, string> = {
   "admin.systeme.rapports.ventes_titre": "المبيعات",
   "admin.systeme.rapports.ventes_desc": "{count} طلب · {revenue}",
   "admin.systeme.rapports.clients_titre": "العملاء",
-  "admin.systeme.rapports.clients_desc_un": "عميل مسجَّل واحد",
+  "admin.systeme.rapports.clients_desc_un": "{n} عميل مسجَّل",
   "admin.systeme.rapports.clients_desc_autre": "عدد العملاء المسجَّلين: {n}",
   "admin.systeme.rapports.stock_titre": "المخزون",
-  "admin.systeme.rapports.stock_desc_un": "منتج واحد في الكتالوج",
+  "admin.systeme.rapports.stock_desc_un": "{n} منتج في الكتالوج",
   "admin.systeme.rapports.stock_desc_autre": "عدد المنتجات في الكتالوج: {n}",
   "admin.systeme.rapports.mouvements_titre": "حركات المخزون",
-  "admin.systeme.rapports.mouvements_desc_un": "حركة واحدة مُسجَّلة",
+  "admin.systeme.rapports.mouvements_desc_un": "{n} حركة مُسجَّلة",
   "admin.systeme.rapports.mouvements_desc_autre": "عدد الحركات المُسجَّلة: {n}",
   "admin.systeme.rapports.coupons_titre": "قسائم الخصم",
-  "admin.systeme.rapports.coupons_desc_un": "رمز ترويجي واحد",
+  "admin.systeme.rapports.coupons_desc_un": "{n} رمز ترويجي",
   "admin.systeme.rapports.coupons_desc_autre": "عدد الرموز الترويجية: {n}",
   "admin.systeme.rapports.avis_titre": "التقييمات",
-  "admin.systeme.rapports.avis_desc_un": "تقييم عميل واحد",
+  "admin.systeme.rapports.avis_desc_un": "{n} تقييم عميل",
   "admin.systeme.rapports.avis_desc_autre": "عدد تقييمات العملاء: {n}",
 
   // ── Subscribers ───────────────────────────────────────────────────────────
   "admin.systeme.newsletter.titre": "المشتركون في النشرة البريدية",
-  "admin.systeme.newsletter.description_un": "اشتراك واحد تم جمعه عبر الموقع.",
+  "admin.systeme.newsletter.description_un": "{n} اشتراك تم جمعه عبر الموقع.",
   "admin.systeme.newsletter.description_autre": "عدد الاشتراكات المجمَّعة عبر الموقع: {n}.",
   "admin.systeme.newsletter.exporter_csv": "تصدير إلى CSV",
   "admin.systeme.newsletter.col_email": "البريد الإلكتروني",
@@ -55,7 +55,7 @@ const systemeAr: Record<string, string> = {
 
   // ── Audit ─────────────────────────────────────────────────────────────────
   "admin.systeme.audit.titre": "سجل التدقيق",
-  "admin.systeme.audit.description_un": "حدث واحد مُسجَّل (500 كحد أقصى، متجدد).",
+  "admin.systeme.audit.description_un": "{n} حدث مُسجَّل (500 كحد أقصى، متجدد).",
   "admin.systeme.audit.description_autre": "عدد الأحداث المُسجَّلة: {n} (500 كحد أقصى، متجدد).",
   "admin.systeme.audit.placeholder_recherche": "البحث (الإجراء، الكيان، المنفِّذ)…",
   "admin.systeme.audit.filtre_tous": "الكل",
@@ -98,7 +98,7 @@ const systemeAr: Record<string, string> = {
   "admin.systeme.analytique.entonnoir_vide_desc":
     "يُبنى هذا التتبع من تغييرات حالة الطلبات. سيتعبأ منذ أول طلب مُسجَّل، ثم مع كل انتقال إلى مرحلة التحضير والشحن والتسليم.",
   "admin.systeme.analytique.entonnoir_voir_commandes": "فتح الطلبات",
-  "admin.systeme.analytique.entonnoir_annulees_un": "منها طلب واحد مُلغى، خارج مسار التوصيل.",
+  "admin.systeme.analytique.entonnoir_annulees_un": "منها {n} طلب مُلغى، خارج مسار التوصيل.",
   "admin.systeme.analytique.entonnoir_annulees_autre": "منها {n} طلبًا مُلغاةً، خارج مسار التوصيل.",
   "admin.systeme.analytique.entonnoir_recues": "الطلبات الواردة",
   "admin.systeme.analytique.entonnoir_preparation": "قيد التحضير",
@@ -110,7 +110,7 @@ const systemeAr: Record<string, string> = {
 
   // ── Messages ──────────────────────────────────────────────────────────────
   "admin.systeme.messages.titre": "رسائل التواصل",
-  "admin.systeme.messages.description_un": "رسالة واردة واحدة · {unread} غير مقروءة.",
+  "admin.systeme.messages.description_un": "{n} رسالة واردة · {unread} غير مقروءة.",
   "admin.systeme.messages.description_autre": "عدد الرسائل الواردة: {n} · {unread} غير مقروءة.",
   "admin.systeme.messages.col_statut": "الحالة",
   "admin.systeme.messages.col_expediteur": "المُرسِل",
@@ -136,7 +136,7 @@ const systemeAr: Record<string, string> = {
   // ── Notifications ─────────────────────────────────────────────────────────
   "admin.systeme.notifications.titre": "الإشعارات",
   "admin.systeme.notifications.description_un":
-    "إشعار واحد · {unread} غير مقروء. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
+    "{n} إشعار · {unread} غير مقروء. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
   "admin.systeme.notifications.description_autre":
     "عدد الإشعارات: {n} · {unread} غير مقروءة. تُنشأ تلقائيًا عند الأحداث الرئيسية (الطلبات، المخزون).",
   "admin.systeme.notifications.btn_tout_marquer_lu": "تحديد الكل كمقروء",
@@ -187,7 +187,7 @@ const systemeAr: Record<string, string> = {
   "admin.systeme.reset.btn_reinitialiser": "إعادة تعيين",
   "admin.systeme.reset.btn_vider": "مسح",
   "admin.systeme.reset.objet_unique": "كائن فردي",
-  "admin.systeme.reset.enregistrement_un": "سجل واحد",
+  "admin.systeme.reset.enregistrement_un": "{n} سجل",
   "admin.systeme.reset.enregistrement_autre": "عدد السجلات: {n}",
   "admin.systeme.reset.toast_reinitialise": "تمت إعادة تعيين {label}",
   "admin.systeme.reset.toast_reinitialises": "تمت إعادة تعيين {label}",
@@ -354,12 +354,12 @@ const systemeAr: Record<string, string> = {
   // لافتة القرار
   "admin.systeme.developpeur.decision_bloquee_titre": "الترحيل غير موصى به",
   "admin.systeme.developpeur.decision_bloquee_desc_un":
-    "تم اكتشاف خطأ حرج واحد. قد تُفقد البيانات أو تتلف. أصلح المشكلات قبل التنفيذ.",
+    "تم اكتشاف {n} خطأ حرج. قد تُفقد البيانات أو تتلف. أصلح المشكلات قبل التنفيذ.",
   "admin.systeme.developpeur.decision_bloquee_desc_autre":
     "تم اكتشاف {n} أخطاء حرجة. قد تُفقد البيانات أو تتلف. أصلح المشكلات قبل التنفيذ.",
   "admin.systeme.developpeur.decision_precaution_titre": "الترحيل ممكن مع الحذر",
   "admin.systeme.developpeur.decision_precaution_desc_un":
-    "تنبيه واحد مُشار إليه. لا خسارة مؤكدة للبيانات، لكن راجع التفاصيل قبل المتابعة.",
+    "تم تسجيل {n} تنبيه. لا خسارة مؤكدة للبيانات، لكن راجع التفاصيل قبل المتابعة.",
   "admin.systeme.developpeur.decision_precaution_desc_autre":
     "عدد التنبيهات المُشار إليها: {n}. لا خسارة مؤكدة للبيانات، لكن راجع التفاصيل قبل المتابعة.",
   "admin.systeme.developpeur.decision_ok_titre": "ترحيل بدون شذوذات",

@@ -36,6 +36,9 @@ export function CategoryCards({ max }: { max?: number } = {}) {
   const cfg = siteContent.categories;
   const L = useLocalize();
   const cats = typeof max === "number" ? categories.slice(0, max) : categories;
+  // Ne jamais afficher de titre de section au-dessus d'une grille vide.
+  if (cats.length === 0) return null;
+
   return (
     <section className="container-page py-16 lg:py-20">
       <Reveal variant="up">

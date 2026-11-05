@@ -207,6 +207,18 @@ const reglagesEn: Record<string, string> = {
     "WhatsApp: digits only (including country code, e.g. 213555000000)",
   "admin.reglages.parametres.garde_enregistrer": "Save settings",
   "admin.reglages.parametres.garde_reinitialiser": "Reset settings",
+  "admin.reglages.parametres.toast_format_image_invalide":
+    "Invalid image format (PNG, WebP, SVG, or JPEG required).",
+  "admin.reglages.parametres.toast_logo_succes": "Logo uploaded and applied successfully!",
+  "admin.reglages.parametres.toast_logo_echec": "Failed to upload logo.",
+  "admin.reglages.parametres.toast_format_favicon_invalide":
+    "Invalid favicon format (.ico, .png, or .svg required).",
+  "admin.reglages.parametres.toast_favicon_succes": "Favicon uploaded and applied successfully!",
+  "admin.reglages.parametres.toast_favicon_echec": "Failed to upload favicon.",
+  "admin.reglages.parametres.toast_logo_defaut_retabli": "Default official logo restored!",
+  "admin.reglages.parametres.toast_favicon_defaut_retabli": "Default official favicon restored!",
+  "admin.reglages.parametres.toast_marque_existe": "The brand « {nom} » is already present.",
+  "admin.reglages.parametres.toast_catalogue_demo_reinitialise": "Demo catalog reset to 0 items.",
   // JSON editors
   "admin.reglages.parametres.json_tickers_titre": "Ticker banner (messages)",
   "admin.reglages.parametres.json_tickers_description":

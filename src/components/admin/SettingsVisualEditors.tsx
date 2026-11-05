@@ -79,7 +79,7 @@ export function MarqueeBrandsVisualEditor({
     const trimmed = name.trim();
     if (!trimmed) return;
     if (brands.includes(trimmed)) {
-      toast.info(`La marque « ${trimmed} » est déjà présente.`);
+      toast.info(t("admin.reglages.parametres.toast_marque_existe", { nom: trimmed }));
       return;
     }
     const updated = [...brands, trimmed];
@@ -117,12 +117,12 @@ export function MarqueeBrandsVisualEditor({
       try {
         const parsed = JSON.parse(jsonText);
         if (!Array.isArray(parsed) || !parsed.every((x) => typeof x === "string")) {
-          toast.error("Structure JSON non conforme");
+          toast.error(t("admin.reglages.parametres.json_structure_invalide"));
           return;
         }
         payload = parsed;
       } catch {
-        toast.error("JSON invalide");
+        toast.error(t("admin.reglages.parametres.json_json_invalide"));
         return;
       }
     }
@@ -375,12 +375,12 @@ export function TickerMessagesVisualEditor({
           !Array.isArray(parsed) ||
           !parsed.every((x) => x && typeof x.id === "string" && typeof x.text === "string")
         ) {
-          toast.error("Structure JSON non conforme");
+          toast.error(t("admin.reglages.parametres.json_structure_invalide"));
           return;
         }
         payload = parsed;
       } catch {
-        toast.error("JSON invalide");
+        toast.error(t("admin.reglages.parametres.json_json_invalide"));
         return;
       }
     }
@@ -646,12 +646,12 @@ export function AboutValuesVisualEditor({
               ["shield", "truck", "headphones", "award", "star", "heart"].includes(x.icon),
           )
         ) {
-          toast.error("Structure JSON non conforme");
+          toast.error(t("admin.reglages.parametres.json_structure_invalide"));
           return;
         }
         payload = parsed;
       } catch {
-        toast.error("JSON invalide");
+        toast.error(t("admin.reglages.parametres.json_json_invalide"));
         return;
       }
     }

@@ -166,7 +166,7 @@ export default function Auth() {
                 className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
               />
               {fullName.length > 0 && fullName.trim().length < 2 && (
-                <p className="mt-1 text-xs text-amber-500">2 caractères minimum</p>
+                <p className="mt-1 text-xs text-amber-500">{t("auth.err.name.tooShort")}</p>
               )}
             </div>
           )}

@@ -880,7 +880,6 @@
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1916.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1916.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
 
-
 ---
 
 ### Phase 19 : Assainissement Ultime des Angles Noirs Vitrine, Accessibilité RTL & Universalité 100% Tout Commerce
@@ -926,3 +925,50 @@
   - Plan interactif et miroir : 📄 [19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1937.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1937.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+---
+
+### Phase 20 : Parachèvement Intégral : Contrat API home-reviews, Vitrine sur Base Vide, Parcours Clients et Toasts Admin 100% i18n
+
+- **Date :** 05 Novembre 2026
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation 20.
+- **Objectifs :**
+  1. Éradication chirurgicale du warning console récurrent `[data-provider] ressource « home-reviews » : réponse acceptée par le réseau mais inexploitable — réponse de type « tableau (0 entrée(s)) »` par alignement rigoureux du contrat API backend PHP ↔ frontend TypeScript.
+  2. Assainissement du comportement vitrine sur base de données purgée : masquage de `CategoryCards.tsx` quand la table des catégories est vide, éliminant tout titre de section orphelin.
+  3. Localisation 100% trilingue (FR, EN, AR) de l'Espace Mon Compte (`Account.tsx`) : 8 libellés et textes de détail de commande, notes marchandes, modes de livraison et actions traduits avec conformité RTL.
+  4. Localisation 100% trilingue du Suivi Public de Commande (`TrackOrder.tsx`) : avertissement d'annulation, badge message d'équipe, modes d'expédition (relais / domicile) et historique traduits.
+  5. Assainissement des toasts d'administration dans `Settings.tsx` (téléversement et réinitialisation de logos et favicons), `SettingsVisualEditors.tsx` (JSON et doublons de marques), `SetupWizard.tsx` (remise à zéro) et validation dans `Auth.tsx`.
+  6. Résolution des 12 avertissements de variables `{n}` manquantes dans le dictionnaire arabe (`src/lib/i18n/admin/systeme/ar.ts`).
+  7. Validation intégrale de la suite CI (`verifier-i18n`, `format`, `lint`, `tsc --noEmit`, `build`).
+- **Actions Réalisées :**
+  - **Étape 20.A (Contrat API & Résilience home-reviews) :**
+    - Modification de [`api/src/Controllers/ControleurContenu.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurContenu.php) : normalisation de `lireHomeReviews()` et `mettreAJourHomeReviews()` pour toujours renvoyer une enveloppe paginée conforme `{ items, total, page, perPage }`.
+    - Modification de [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) : réinitialisation de la section sous forme de JSON structuré `'{"items":[]}'`.
+    - Modification de [`src/data-provider/normalisation.ts`](file:///c:/xampp/htdocs/ka-tech/src/data-provider/normalisation.ts) : tolérance directe `if (Array.isArray(valeur)) return valeur;` dans `extraireItems()`.
+  - **Étape 20.B (Vitrine Épurée sur Base Vide) :**
+    - Modification de [`src/components/CategoryCards.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/CategoryCards.tsx) : ajout de la clause de garde `if (cats.length === 0) return null;`.
+  - **Étape 20.C (Localisation Espace Client) :**
+    - Modification de [`src/pages/Account.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Account.tsx) : branchement des clés `account.teamNote`, `account.orderedArticles`, `account.discount`, `account.delivery`, `account.deliveryDesk`, `account.deliveryHome`, `account.wilayaLabel`, `account.phoneLabel`, `account.trackLive`, `common.close`.
+  - **Étape 20.D (Localisation Suivi de Commande) :**
+    - Modification de [`src/pages/TrackOrder.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/TrackOrder.tsx) : branchement des clés `track.cancelledNotice`, `track.teamMessage`, `track.deliveryModeAndPlace`, `track.deliveryDesk`, `track.deliveryHome`, `track.paymentMode`, `track.historySteps`.
+  - **Étape 20.E (Toasts Admin, Auth & Dictionnaires) :**
+    - Modification de [`src/pages/Auth.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Auth.tsx) : `t("auth.err.name.tooShort")`.
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : 8 toasts d'upload et reset médias connectés au dictionnaire i18n.
+    - Modification de [`src/components/admin/SettingsVisualEditors.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/SettingsVisualEditors.tsx) et [`src/components/admin/SetupWizard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/SetupWizard.tsx) : toasts traduits.
+    - Ajout des nouvelles clés et correction des variables `{n}` dans [`src/lib/i18n/admin/systeme/ar.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/systeme/ar.ts), [`src/lib/i18n/fr.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/fr.ts), [`en.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/en.ts), [`ar.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/ar.ts), [`src/lib/i18n/admin/reglages/{fr,en,ar}.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages).
+  - **Étape 20.F (Vérification CI & Packaging) :**
+    - `bun run verifier-i18n` : Parité parfaite 1:1:1 validée (0 clé manquante, 0 anomalie de variable).
+    - `bun run format` : 100% propre sous Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build` : Compilation et packaging réussis.
+- **Résultats de Recette :**
+  - Console de l'accueil 100% propre : 0 warning sur `home-reviews`.
+  - Vitrine irréprochable sur base de données purgée ou neuve (pas de section orpheline).
+  - Parcours client (Compte, Suivi de colis, Inscription) entièrement traduits et conformes RTL en arabe.
+  - Administration 100% localisée pour la gestion des médias, des thèmes et de la maintenance.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1959.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1959.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+

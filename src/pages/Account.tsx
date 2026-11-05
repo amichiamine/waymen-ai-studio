@@ -437,7 +437,7 @@ export default function Account() {
             {/* Note marchand si présente */}
             {selectedOrder.note && (
               <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-start text-xs text-amber-900 dark:text-amber-200">
-                <p className="font-semibold mb-0.5">Note de l'équipe :</p>
+                <p className="font-semibold mb-0.5">{t("account.teamNote")}</p>
                 <p>{selectedOrder.note}</p>
               </div>
             )}
@@ -445,7 +445,7 @@ export default function Account() {
             {/* Articles */}
             <div className="space-y-2 border-t pt-3 text-start">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Articles commandés ({selectedOrder.items.length})
+                {t("account.orderedArticles", { count: selectedOrder.items.length })}
               </h4>
               <div className="divide-y divide-border/60">
                 {selectedOrder.items.map((item: Order["items"][number], idx: number) => (
@@ -486,7 +486,8 @@ export default function Account() {
               {selectedOrder.discount > 0 && (
                 <div className="flex justify-between text-primary">
                   <span>
-                    Remise {selectedOrder.couponCode ? `(${selectedOrder.couponCode})` : ""}
+                    {t("account.discount")}{" "}
+                    {selectedOrder.couponCode ? `(${selectedOrder.couponCode})` : ""}
                   </span>
                   <span className="font-medium">− {formatPrice(selectedOrder.discount)}</span>
                 </div>
@@ -510,14 +511,18 @@ export default function Account() {
               <p className="font-semibold text-foreground flex items-center gap-1.5">
                 <MapPin className="size-3.5 text-primary" />
                 <span>
-                  Livraison :{" "}
-                  {selectedOrder.deliveryKind === "desk" ? "Au bureau / Relais" : "À domicile"}
+                  {t("account.delivery")}{" "}
+                  {selectedOrder.deliveryKind === "desk"
+                    ? t("account.deliveryDesk")
+                    : t("account.deliveryHome")}
                 </span>
               </p>
               <p className="text-muted-foreground">
-                {selectedOrder.address} — Wilaya {selectedOrder.wilaya}
+                {selectedOrder.address} — {t("account.wilayaLabel")} {selectedOrder.wilaya}
               </p>
-              <p className="text-muted-foreground">Téléphone : {selectedOrder.phone}</p>
+              <p className="text-muted-foreground">
+                {t("account.phoneLabel")} {selectedOrder.phone}
+              </p>
             </div>
 
             {/* Actions */}
@@ -527,11 +532,11 @@ export default function Account() {
                 className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
               >
                 <Truck className="size-3.5" />
-                <span>Suivre l'acheminement en direct</span>
+                <span>{t("account.trackLive")}</span>
                 <ExternalLink className="size-3" />
               </Link>
               <Button size="sm" variant="outline" onClick={() => setSelectedOrder(null)}>
-                Fermer
+                {t("common.close")}
               </Button>
             </div>
           </DialogContent>

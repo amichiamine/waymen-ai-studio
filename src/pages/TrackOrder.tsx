@@ -191,10 +191,7 @@ export default function TrackOrder() {
                   <AlertCircle className="size-6 shrink-0" />
                   <div>
                     <p className="font-semibold">{t("order.status.cancelled")}</p>
-                    <p className="text-xs opacity-90 mt-0.5">
-                      Cette commande a été annulée. Contactez notre support si vous avez des
-                      questions.
-                    </p>
+                    <p className="text-xs opacity-90 mt-0.5">{t("track.cancelledNotice")}</p>
                   </div>
                 </div>
               ) : (
@@ -239,7 +236,7 @@ export default function TrackOrder() {
               {order.note && (
                 <div className="mt-6 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-start text-sm text-amber-900 dark:text-amber-200">
                   <p className="font-semibold flex items-center gap-1.5 mb-1 text-xs uppercase tracking-wider">
-                    <ShieldCheck className="size-4" /> Message de l'équipe
+                    <ShieldCheck className="size-4" /> {t("track.teamMessage")}
                   </p>
                   <p className="leading-relaxed">{order.note}</p>
                 </div>
@@ -294,7 +291,9 @@ export default function TrackOrder() {
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between text-primary">
-                      <span>Remise {order.couponCode ? `(${order.couponCode})` : ""}</span>
+                      <span>
+                        {t("account.discount")} {order.couponCode ? `(${order.couponCode})` : ""}
+                      </span>
                       <span className="font-medium">− {formatPrice(order.discount)}</span>
                     </div>
                   )}
@@ -331,21 +330,21 @@ export default function TrackOrder() {
 
                 <div className="space-y-1.5">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-                    Mode & Lieu de livraison
+                    {t("track.deliveryModeAndPlace")}
                   </span>
                   <p className="font-medium">
                     {order.deliveryKind === "desk"
-                      ? "Livraison au bureau / Point relais"
-                      : "Livraison à domicile"}
+                      ? t("track.deliveryDesk")
+                      : t("track.deliveryHome")}
                   </p>
                   <p className="text-muted-foreground text-xs leading-relaxed">
-                    {order.address} · Wilaya {order.wilaya}
+                    {order.address} · {t("account.wilayaLabel")} {order.wilaya}
                   </p>
                 </div>
 
                 <div className="space-y-1.5 border-t pt-3">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-                    Mode de paiement
+                    {t("track.paymentMode")}
                   </span>
                   <p className="text-xs flex items-center gap-1.5 text-muted-foreground">
                     <CreditCard className="size-3.5" />
@@ -357,7 +356,7 @@ export default function TrackOrder() {
                 {order.statusHistory && order.statusHistory.length > 0 && (
                   <div className="border-t pt-3 space-y-2">
                     <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-                      Historique des étapes
+                      {t("track.historySteps")}
                     </span>
                     <div className="space-y-1.5">
                       {order.statusHistory.map((ev, i) => (

@@ -161,7 +161,7 @@ final class ControleurContenu
 
     /**
      * GET /content/home-reviews
-     * → { data: payload_de_la_section_home-reviews }
+     * → { data: { items: HomeReview[], total: int, page: int, perPage: int } }
      */
     public function lireHomeReviews(Requete $r): Reponse
     {
@@ -170,14 +170,22 @@ final class ControleurContenu
         );
 
         $payload = $ligne !== null ? Db::dejson($ligne['payload'], []) : [];
+        $items = isset($payload['items']) && is_array($payload['items'])
+            ? $payload['items']
+            : (is_array($payload) && array_is_list($payload) ? $payload : []);
 
-        return Reponse::ok($payload);
+        return Reponse::ok([
+            'items'   => $items,
+            'total'   => count($items),
+            'page'    => 1,
+            'perPage' => max(1, count($items)),
+        ]);
     }
 
     /**
      * PATCH /content/home-reviews
      * Corps : payload partiel de la section home-reviews.
-     * → 200 { data: payload_mis_à_jour }
+     * → 200 { data: { items: HomeReview[], total: int, page: int, perPage: int } }
      *
      * Fusion profonde : les clés non fournies (et les variantes linguistiques
      * non envoyées) sont préservées.
@@ -217,7 +225,17 @@ final class ControleurContenu
             "SELECT payload FROM site_content WHERE section = 'home-reviews'",
         );
 
-        return Reponse::ok(Db::dejson($ligne['payload'] ?? null, []));
+        $payload = $ligne !== null ? Db::dejson($ligne['payload'], []) : [];
+        $items = isset($payload['items']) && is_array($payload['items'])
+            ? $payload['items']
+            : (is_array($payload) && array_is_list($payload) ? $payload : []);
+
+        return Reponse::ok([
+            'items'   => $items,
+            'total'   => count($items),
+            'page'    => 1,
+            'perPage' => max(1, count($items)),
+        ]);
     }
 
     // =====================================================================
