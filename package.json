@@ -18,6 +18,7 @@
     "postbuild": "tsx scripts/prerendu.ts && tsx scripts/paqueter.ts",
     "prerendu": "tsx scripts/prerendu.ts",
     "paqueter": "tsx scripts/paqueter.ts",
+    "paqueter:data": "tsx scripts/paqueter-data.ts",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "construire-guide": "tsx scripts/construire-guide.ts",

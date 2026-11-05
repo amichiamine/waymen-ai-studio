@@ -986,3 +986,20 @@
   4. Recompilation et régénération du paquet de déploiement [`katech-site-05112026-2004.zip`](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-2004.zip) et de son alias [`katech-site.zip`](file:///c:/xampp/htdocs/ka-tech/katech-site.zip).
 - **Résultat :** 0 diagnostic d'erreur sur l'ensemble des fichiers PHP du projet.
 
+#### Sous-Phase 20.2 : Outillage Déploiement — Script Dédié bun run paqueter:data
+
+- **Date :** 05 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle écrite de l'Option 2 (script dédié).
+- **Objectif :**
+  - Permettre d'empaqueter isolément le répertoire sensible `katech-data/` (base SQLite et fichiers système hors racine web) sans impacter le package de distribution `dist/` (`katech-site.zip`).
+- **Actions Réalisées :**
+  1. Création du script [`scripts/paqueter-data.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter-data.ts) :
+     - Compression récursive via le moteur standard Python 3 `zipfile`.
+     - Préservation des fichiers système et cachés (`.htaccess`, `index.html`, `dev-*.sqlite`).
+     - Exclusion préventive des fichiers temporaires de verrouillage SQLite (`.sqlite-wal`, `.sqlite-shm`).
+     - Génération de l'archive horodatée `katech-data-JJMMYYYY-HHMM.zip` et réplication automatique sur l'alias miroir `katech-data.zip`.
+  2. Ajout de la commande dans [`package.json`](file:///c:/xampp/htdocs/ka-tech/package.json) : `"paqueter:data": "tsx scripts/paqueter-data.ts"`.
+  3. Mise à jour de [`.gitignore`](file:///c:/xampp/htdocs/ka-tech/.gitignore) : ajout de `katech-data*.zip`.
+  4. Test d'exécution réel : `bun run paqueter:data` ➔ succès immédiat (archive horodatée et alias créés).
+- **Résultat :** La commande `bun run paqueter:data` est opérationnelle et produit un zip isolé de 36 Ko prêt à être déposé hors racine web.
+

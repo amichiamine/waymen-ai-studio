@@ -72,3 +72,4 @@ backups/
 # Paquet de deploiement produit par scripts/paqueter.ts.
 # Artefact binaire, regenerable a la demande, ne doit pas polluer le depot.
 katech-site*.zip
+katech-data*.zip
