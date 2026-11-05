@@ -578,16 +578,21 @@ export default function AdminSettings() {
                 <CardTitle>{t("admin.reglages.parametres.carte_options_titre")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>{t("admin.reglages.parametres.opt_notifications_email")}</Label>
-                  {/* Niveau 3 — infobulle sur le Switch quand désactivé. */}
-                  <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
-                    <Switch
-                      checked={form.emailNotifications}
-                      onCheckedChange={(v) => set("emailNotifications", v)}
-                      disabled={disabledSettings}
-                    />
-                  </span>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label>{t("admin.reglages.parametres.opt_notifications_email")}</Label>
+                    {/* Niveau 3 — infobulle sur le Switch quand désactivé. */}
+                    <span title={disabledSettings ? denyReason("manageSettings") : undefined}>
+                      <Switch
+                        checked={form.emailNotifications}
+                        onCheckedChange={(v) => set("emailNotifications", v)}
+                        disabled={disabledSettings}
+                      />
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("admin.reglages.parametres.opt_notifications_email_desc")}
+                  </p>
                 </div>
                 <div className="flex items-center justify-between">
                   <Label>{t("admin.reglages.parametres.opt_selecteur_langue")}</Label>

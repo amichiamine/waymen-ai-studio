@@ -164,6 +164,8 @@ const reglagesEn: Record<string, string> = {
   "admin.reglages.parametres.opt_configurateur_aide":
     "Disable this module for a general or services store without PC parts.",
   "admin.reglages.parametres.opt_notifications_email": "Email notifications",
+  "admin.reglages.parametres.opt_notifications_email_desc":
+    "Alert the store owner by email on every new order (requires SMTP configured).",
   "admin.reglages.parametres.opt_selecteur_langue": "Language selector (FR / AR / EN)",
   "admin.reglages.parametres.opt_masquer_note": "Hide product rating when no reviews",
   "admin.reglages.parametres.seuil_stock_faible": "Low stock threshold (≤)",

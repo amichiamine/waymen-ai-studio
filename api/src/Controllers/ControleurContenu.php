@@ -243,6 +243,22 @@ final class ControleurContenu
         $result = $this->mettreAJourReglage('site', $r->corps);
         Journal::consigner($this->db, 'reglages_mis_a_jour', 'settings', ['scope' => 'site']);
 
+        // Si les seuils de stock ont été modifiés, recalculer en masse le statut 'stock' de tous les produits
+        if (array_key_exists('lowStockThreshold', $r->corps) || array_key_exists('outOfStockThreshold', $r->corps)) {
+            $payload = is_array($result) ? $result : (array) $result;
+            $seuilRupture = (int) ($payload['outOfStockThreshold'] ?? 0);
+            $seuilBas = (int) ($payload['lowStockThreshold'] ?? 5);
+
+            $this->db->run(
+                'UPDATE products SET stock = CASE '
+                . 'WHEN stock_qty <= :seuilRupture THEN \'out\' '
+                . 'WHEN stock_qty <= :seuilBas THEN \'low\' '
+                . 'ELSE \'in\' END '
+                . 'WHERE stock_qty IS NOT NULL',
+                [':seuilRupture' => $seuilRupture, ':seuilBas' => $seuilBas]
+            );
+        }
+
         return Reponse::ok($result);
     }
 

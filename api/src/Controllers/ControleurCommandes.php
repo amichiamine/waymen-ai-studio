@@ -1636,7 +1636,19 @@ final class ControleurCommandes
             }
 
             // ---- Notification au commerçant --------------------------------
-            $emailCommerçant = (string) Env::get('NOTIFY_OWNER_EMAIL', '');
+            $db = Db::instance();
+            $reglagesBruts = $db->valeur('SELECT payload FROM settings WHERE scope = :scope', [':scope' => 'site']);
+            $reglages = Db::dejson($reglagesBruts, []);
+            $notifierCommercant = true;
+            if (is_array($reglages) && array_key_exists('emailNotifications', $reglages)) {
+                $notifierCommercant = (bool) $reglages['emailNotifications'];
+            }
+
+            if ($notifierCommercant) {
+                $emailCommerçant = (string) Env::get('NOTIFY_OWNER_EMAIL', '');
+                if ($emailCommerçant === '' && is_array($reglages) && !empty($reglages['contactEmail'])) {
+                    $emailCommerçant = (string) $reglages['contactEmail'];
+                }
             if ($emailCommerçant !== '' && filter_var($emailCommerçant, FILTER_VALIDATE_EMAIL)) {
                 $msg = NouvelleCommande::generer($payload);
                 Courriel::envoyer(
@@ -1647,8 +1659,13 @@ final class ControleurCommandes
                     $msg['html'],
                 );
             }
+        } else {
+            Db::journaliserStatique(
+                '[courriel] Notification commerçant ignorée (emailNotifications désactivé dans settings.site).'
+            );
+        }
 
-            return null;
+        return null;
         } catch (\Throwable $e) {
             return 'Envoi email order.created : ' . $e->getMessage();
         }

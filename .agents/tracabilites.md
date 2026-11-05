@@ -566,7 +566,6 @@
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1315.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1315.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
 
-
 ---
 
 ## Phase 13 : Unification du Setup Wizard (Installation & Onboarding), Résolution du Mode Maintenance & Contrôleurs Visuels Backstore
@@ -613,7 +612,6 @@
   - Plan d'implémentation miroir : 📄 [13_plan_unification_wizard_maintenance_et_editeurs_visuels.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/13_plan_unification_wizard_maintenance_et_editeurs_visuels.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1353.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1353.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
-
 
 ---
 
@@ -662,4 +660,46 @@
 - **Livrables :**
   - Plan d'implémentation miroir : 📄 [14_plan_page_maintenance_enrichie_et_wizard_universel.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/14_plan_page_maintenance_enrichie_et_wizard_universel.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1424.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1424.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+---
+
+## Phase 15 : Synchronisation Atomique du Statut de Stock, Recalcul en Masse des Seuils & Raccordement Effectif des Notifications E-mail
+
+- **Date :** 05/11/2026
+- **Contexte & Constat Initial :**
+  1. Lors du réassort d'un produit en rupture depuis `/admin/inventory`, `stock_qty` était incrémenté mais la colonne `stock` restait figée sur `'out'`. Les produits réapprovisionnés demeuraient masqués par le filtre vitrine "En stock uniquement" et affichés en rupture.
+  2. Inversement, l'abaissement manuel du stock à 0 laissait `stock` à `'in'`, provoquant des rejets bloquants 409 à la caisse pour les acheteurs.
+  3. L'ajustement des seuils de stock faible / rupture dans `/admin/settings` n'alignait pas rétroactivement les produits existants.
+  4. Le switch "Notifications e-mail" dans `/admin/settings` était ignoré par l'Outbox : les e-mails marchands partaient sans vérifier l'état du commutateur de l'interface.
+- **Décisions d'ArchiSys3.0 :**
+  Validation intégrale du Plan d'Implémentation Phase 15 (consigné dans `15_plan_synchronisation_stock_et_raccordement_notifications.md`) :
+  1. Synchronisation atomique bi-colonne du stock (`stock_qty` + statut catégoriel `stock`) dans `ControleurStock.php::ajuster()` et `ControleurProduits.php::mettreAJourStock()`.
+  2. Cohérence automatique du statut de stock dans `ControleurProduits.php::donneesValides()` lors de la création ou modification complète d'un produit.
+  3. Recalcul SQL en masse du statut de tous les produits existants dès modification des seuils dans `ControleurContenu.php::mettreAJourReglagesSite()`.
+  4. Raccordement effectif du réglage `siteSettings.emailNotifications` dans `ControleurCommandes.php::emettreEmailCommande()` avec journalisation explicite et fallback sur `contactEmail`.
+  5. Ajout d'une description contextuelle d'aide sous le commutateur e-mail dans `src/pages/admin/Settings.tsx` avec parité linguistique trilingue (FR, EN, AR).
+- **Actions Réalisées :**
+  - **Étape 1 (Atomicité du Stock Backend) :**
+    - Modification de [`api/src/Controllers/ControleurStock.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurStock.php) : lecture des seuils dynamiques `settings.site` et mise à jour atomique `UPDATE products SET stock_qty = stock_qty + :delta1, stock = CASE ...`.
+    - Modification de [`api/src/Controllers/ControleurProduits.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurProduits.php) : synchronisation atomique dans `mettreAJourStock()` et alignement automatique dans `donneesValides()`.
+  - **Étape 2 (Recalcul Rétroactif en Masse) :**
+    - Modification de [`api/src/Controllers/ControleurContenu.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurContenu.php) : déclenchement immédiat de la requête de recalibrage de la table `products` dès que `lowStockThreshold` ou `outOfStockThreshold` est modifié.
+  - **Étape 3 (Contrôle Effectif des E-mails & UI) :**
+    - Modification de [`api/src/Controllers/ControleurCommandes.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurCommandes.php) : lecture de `emailNotifications` depuis `settings.site` avant émission au gérant.
+    - Ajout des clés `admin.reglages.parametres.opt_notifications_email_desc` dans [`src/lib/i18n/admin/reglages/fr.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages/fr.ts), [`en.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages/en.ts) et [`ar.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages/ar.ts).
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : ajout du texte d'aide contextuel sous le toggle.
+  - **Étape 4 (Validation Qualité, Intégrité & Packaging) :**
+    - Suppression du doublon de route résiduel dans [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx).
+    - `bun run format` : Prettier appliqué à 100%.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur de typage TypeScript.
+    - `bun run build` : compilation Vite et packaging de production réussis.
+- **Résultats de Recette :**
+  - Réassort ou ajustement de stock : le statut textuel `stock` (`in`, `low`, `out`) reflète immédiatement la réalité numérique en base et sur la vitrine.
+  - Filtre vitrine « En stock uniquement » : 100% fiable, plus aucun produit fantôme.
+  - Commutateur de notifications e-mail : autorité absolue du bouton de l'administration sur l'Outbox serveur.
+- **Livrables :**
+  - Plan d'implémentation miroir : 📄 [15_plan_synchronisation_stock_et_raccordement_notifications.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/15_plan_synchronisation_stock_et_raccordement_notifications.md)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1740.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1740.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)

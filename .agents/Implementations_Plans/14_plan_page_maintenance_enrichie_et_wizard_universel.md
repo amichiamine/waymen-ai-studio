@@ -3,7 +3,7 @@
 **Directeur de Projet & Architecte Décideur :** ArchiSys3.0  
 **Tech Lead, Architecte & R&D :** AImi  
 **Date :** 05 Novembre 2026  
-**Statut :** Proposé — En attente de validation par ArchiSys3.0  
+**Statut :** Proposé — En attente de validation par ArchiSys3.0
 
 ---
 
@@ -31,9 +31,9 @@ Lors des tests en conditions réelles sur l'environnement de déploiement distan
    - Mettre à jour [`src/pages/Auth.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Auth.tsx) : pour tout compte de rang `owner` ou `admin`, la redirection par défaut post-authentification est automatiquement dirigée vers `/admin` et jamais vers `/account`.
 2. **Livrable 2 — Vitrine de Maintenance VIP Personnalisable (Backstage ➔ Vitrine) :**
    - Extension de `SiteSettings` avec :
-     * `maintenanceTitle?: string` : Titre d'accroche personnalisé.
-     * `maintenanceEstimatedReturn?: string` : Date/heure estimée de retour.
-     * `maintenanceShowWhatsApp?: boolean` : Affichage du bouton vert d'assistance WhatsApp.
+     - `maintenanceTitle?: string` : Titre d'accroche personnalisé.
+     - `maintenanceEstimatedReturn?: string` : Date/heure estimée de retour.
+     - `maintenanceShowWhatsApp?: boolean` : Affichage du bouton vert d'assistance WhatsApp.
    - Backstage ([`Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx)) : enrichissement de la carte "Mode Maintenance" avec contrôleurs visuels dédiés.
    - Vitrine ([`MaintenanceGate.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/MaintenanceGate.tsx)) : design premium responsive avec badge de date, bouton WhatsApp pulsant et liens de contact.
 3. **Livrable 3 — Déclenchement Universel du Wizard par URL :**
@@ -73,18 +73,17 @@ Lors des tests en conditions réelles sur l'environnement de déploiement distan
 
 ## 4. Matrice de Recette & Conditions de Validation
 
-| Id | Critère de Recette | Résultat Attendu |
-| :--- | :--- | :--- |
-| **REC-14.1** | Bouton Maintenance ➔ Admin | Le clic sur « Espace administrateur » depuis la page de maintenance ouvre directement la mire de connexion et redirige vers `/admin` (0 boucle). |
-| **REC-14.2** | Connexion Admin intelligente | Un administrateur qui se connecte sur `/auth` atterrit sur `/admin` par défaut et non sur `/account`. |
-| **REC-14.3** | Titre & Message Maintenance | Le titre personnalisé et la date de retour estimée saisis dans `/admin/settings` s'affichent fidèlement sur l'écran public de maintenance. |
-| **REC-14.4** | Bouton WhatsApp Maintenance | Si activé, un bouton vert WhatsApp ouvre la discussion avec le numéro du magasin. |
-| **REC-14.5** | Déclenchement Wizard par URL | Ouvrir `/admin?wizard=1` dans le navigateur affiche instantanément le Setup Wizard à l'écran. |
-| **REC-14.6** | Pipeline de Certification | `bun run verifier-i18n`, `bunx tsc --noEmit`, `bun run lint`, `bun run build` à 100 % vert. |
+| Id           | Critère de Recette           | Résultat Attendu                                                                                                                                 |
+| :----------- | :--------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **REC-14.1** | Bouton Maintenance ➔ Admin   | Le clic sur « Espace administrateur » depuis la page de maintenance ouvre directement la mire de connexion et redirige vers `/admin` (0 boucle). |
+| **REC-14.2** | Connexion Admin intelligente | Un administrateur qui se connecte sur `/auth` atterrit sur `/admin` par défaut et non sur `/account`.                                            |
+| **REC-14.3** | Titre & Message Maintenance  | Le titre personnalisé et la date de retour estimée saisis dans `/admin/settings` s'affichent fidèlement sur l'écran public de maintenance.       |
+| **REC-14.4** | Bouton WhatsApp Maintenance  | Si activé, un bouton vert WhatsApp ouvre la discussion avec le numéro du magasin.                                                                |
+| **REC-14.5** | Déclenchement Wizard par URL | Ouvrir `/admin?wizard=1` dans le navigateur affiche instantanément le Setup Wizard à l'écran.                                                    |
+| **REC-14.6** | Pipeline de Certification    | `bun run verifier-i18n`, `bunx tsc --noEmit`, `bun run lint`, `bun run build` à 100 % vert.                                                      |
 
 ---
 
 ## 5. Règle d'Engagement
 
 Conformément à la gouvernance, aucun code source ne sera modifié avant la validation formelle et explicite de ce plan directeur par ArchiSys3.0.
-

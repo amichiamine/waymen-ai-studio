@@ -166,6 +166,8 @@ const reglagesAr: Record<string, string> = {
   "admin.reglages.parametres.opt_configurateur_aide":
     "عطّل هذه الوحدة للمتاجر العامة أو متاجر الخدمات دون قطع غيار.",
   "admin.reglages.parametres.opt_notifications_email": "إشعارات البريد الإلكتروني",
+  "admin.reglages.parametres.opt_notifications_email_desc":
+    "تنبيه التاجر عبر البريد الإلكتروني عند كل طلب جديد (يتطلب تهيئة SMTP).",
   "admin.reglages.parametres.opt_selecteur_langue": "منتقي اللغة (FR / AR / EN)",
   "admin.reglages.parametres.opt_masquer_note": "إخفاء تقييم المنتج عند غياب المراجعات",
   "admin.reglages.parametres.seuil_stock_faible": "حد «المخزون المنخفض» (≤)",

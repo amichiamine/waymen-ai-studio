@@ -3,7 +3,7 @@
 **Directeur de Projet & Architecte Décideur :** ArchiSys3.0  
 **Tech Lead, Architecte & R&D :** AImi  
 **Date :** 05 Novembre 2026  
-**Statut :** Proposé — En attente de validation par ArchiSys3.0  
+**Statut :** Proposé — En attente de validation par ArchiSys3.0
 
 ---
 
@@ -34,7 +34,7 @@ Lors de la recette d'exploitation post-Phases 10-12, deux axes majeurs d'amélio
    - **Contrôleur Visuel Marques du Carrousel :** Gestionnaire de chips/pastilles visuel avec champ d'ajout direct (ex: tapez le nom, Entrée/Ajouter, pastille avec croix de suppression).
    - **Contrôleur Visuel Valeurs À Propos :** Liste de cartes visuelles éditables (Titre, Description, Icône Lucide).
    - **Contrôleur Visuel Étapes Configurateur :** Interface modulaire accordéon par étape.
-   - *(Bouton bascule « Vue Visuelle / Vue JSON expert » conservé pour les techniciens).*
+   - _(Bouton bascule « Vue Visuelle / Vue JSON expert » conservé pour les techniciens)._
 3. **Livrable 3 — Grand Wizard Unifié & Intégration Premier Déploiement :**
    - Raccordement du Setup Wizard dès l'installation : détection automatique de l'état d'installation et guidage pas-à-pas.
    - Raccourci d'accès direct et permanent au Wizard dans la barre latérale du Backstore (menu d'administration principal) en plus du bandeau dans `/admin/settings`.
@@ -73,18 +73,17 @@ Lors de la recette d'exploitation post-Phases 10-12, deux axes majeurs d'amélio
 
 ## 4. Matrice de Recette & Conditions de Validation
 
-| Id | Critère de Validation | Résultat Attendu |
-| :--- | :--- | :--- |
+| Id           | Critère de Validation            | Résultat Attendu                                                                                                                         |
+| :----------- | :------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
 | **REC-13.1** | Mode Maintenance activé en Admin | Dès l'activation dans `/admin/settings`, un visiteur sur `/` (navigation privée) voit instantanément le grand écran `MaintenanceScreen`. |
-| **REC-13.2** | Accès Administrateur préservé | L'administrateur connecté conserve l'accès direct à `/admin` et `/auth` même si la maintenance est active. |
-| **REC-13.3** | Édition des Marques sans JSON | L'administrateur ajoute et supprime des marques du carrousel sous forme de tags visuels sans jamais taper de crochets ni de guillemets. |
-| **REC-13.4** | Édition des Tickers sans JSON | L'administrateur gère ses messages défilants via une liste interactive avec champ texte et bouton de suppression. |
-| **REC-13.5** | Accès Permanent au Wizard | Le Wizard est accessible en 1 clic depuis le menu latéral de l'administration et reconfigurable à tout moment. |
-| **REC-13.6** | Pipeline de Certification | `bun run verifier-i18n`, `bunx tsc --noEmit`, `bun run lint`, `bun run build` à 100 % vert. |
+| **REC-13.2** | Accès Administrateur préservé    | L'administrateur connecté conserve l'accès direct à `/admin` et `/auth` même si la maintenance est active.                               |
+| **REC-13.3** | Édition des Marques sans JSON    | L'administrateur ajoute et supprime des marques du carrousel sous forme de tags visuels sans jamais taper de crochets ni de guillemets.  |
+| **REC-13.4** | Édition des Tickers sans JSON    | L'administrateur gère ses messages défilants via une liste interactive avec champ texte et bouton de suppression.                        |
+| **REC-13.5** | Accès Permanent au Wizard        | Le Wizard est accessible en 1 clic depuis le menu latéral de l'administration et reconfigurable à tout moment.                           |
+| **REC-13.6** | Pipeline de Certification        | `bun run verifier-i18n`, `bunx tsc --noEmit`, `bun run lint`, `bun run build` à 100 % vert.                                              |
 
 ---
 
 ## 5. Règle d'Engagement
 
 Conformément à la gouvernance, **aucun code source ne sera modifié avant la validation formelle et explicite de ce plan directeur par ArchiSys3.0**.
-

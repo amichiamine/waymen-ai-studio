@@ -169,6 +169,8 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.parametres.opt_configurateur_aide":
     "Désactivez ce module pour une boutique généraliste ou de services.",
   "admin.reglages.parametres.opt_notifications_email": "Notifications e-mail",
+  "admin.reglages.parametres.opt_notifications_email_desc":
+    "Alerte le commerçant par e-mail lors de chaque nouvelle commande (nécessite SMTP configuré).",
   "admin.reglages.parametres.opt_selecteur_langue": "Sélecteur de langue (FR / AR / EN)",
   "admin.reglages.parametres.opt_masquer_note": "Masquer la note produit sans avis",
   "admin.reglages.parametres.seuil_stock_faible": "Seuil « stock faible » (≤)",

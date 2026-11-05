@@ -130,6 +130,12 @@ final class ControleurStock
         $nomBrut  = Db::dejson($produit['name'], '');
         $nomEmpreinte = is_array($nomBrut) ? (string) ($nomBrut['fr'] ?? $nomBrut['en'] ?? reset($nomBrut)) : (string) $nomBrut;
 
+        // Lecture des seuils de stock dynamiques depuis settings.site
+        $reglagesBruts = $this->db->valeur('SELECT payload FROM settings WHERE scope = :scope', [':scope' => 'site']);
+        $reglagesSite = Db::dejson($reglagesBruts, []);
+        $seuilRupture = (int) ($reglagesSite['outOfStockThreshold'] ?? 0);
+        $seuilBas = (int) ($reglagesSite['lowStockThreshold'] ?? 5);
+
         $maintenant = gmdate('c');
         $mouvementId = bin2hex(random_bytes(16));
 
@@ -140,14 +146,24 @@ final class ControleurStock
             // d'un même paramètre nommé dans une requête préparée.
             $affectes = $this->db->run(
                 'UPDATE products
-                 SET stock_qty = stock_qty + :delta,
+                 SET stock_qty = stock_qty + :delta1,
+                     stock = CASE
+                         WHEN (stock_qty + :delta2) <= :seuilRupture THEN 'out'
+                         WHEN (stock_qty + :delta3) <= :seuilBas THEN 'low'
+                         ELSE 'in'
+                     END,
                      updated_at = :updatedAt
                  WHERE id = :id
                    AND (stock_qty IS NOT NULL)
-                   AND stock_qty + :delta2 >= 0',
+                   AND stock_qty + :delta4 >= 0',
                 [
-                    ':delta'     => $delta,
-                    ':delta2'    => $delta,
+                    ':delta1'       => $delta,
+                    ':delta2'       => $delta,
+                    ':delta3'       => $delta,
+                    ':delta4'       => $delta,
+                    ':seuilRupture' => $seuilRupture,
+                    ':seuilBas'     => $seuilBas,
+
                     ':id'        => $productId,
                     ':updatedAt' => $maintenant,
                 ],

@@ -267,6 +267,12 @@ final class ControleurProduits
         // Vérification préalable d'existence — pour distinguer « introuvable »
         // de « stock insuffisant » au retour de l'UPDATE conditionnel.
         $existant = $this->db->un('SELECT id, stock_qty FROM products WHERE id = :id', [':id' => $id]);
+
+        // Lecture des seuils dynamiques de stock depuis settings.site
+        $reglagesBruts = $this->db->valeur('SELECT payload FROM settings WHERE scope = :scope', [':scope' => 'site']);
+        $reglagesSite = Db::dejson($reglagesBruts, []);
+        $seuilRupture = (int) ($reglagesSite['outOfStockThreshold'] ?? 0);
+        $seuilBas = (int) ($reglagesSite['lowStockThreshold'] ?? 5);
         if ($existant === null) {
             throw ApiException::introuvable("Aucun produit ne porte l'identifiant « {$id} ».");
         }
@@ -275,13 +281,26 @@ final class ControleurProduits
         // :delta1 et :delta2 ont la même valeur mais des noms distincts
         // (obligation MySQL avec ATTR_EMULATE_PREPARES=false).
         $n = 0;
-        $this->db->transaction(function (Db $d) use ($id, $delta, &$n): void {
+        $this->db->transaction(function (Db $d) use ($id, $delta, $seuilRupture, $seuilBas, &$n): void {
             $n = $d->run(
                 'UPDATE products
-                    SET stock_qty = stock_qty + :delta1
+                    SET stock_qty = stock_qty + :delta1,
+                        stock = CASE
+                            WHEN (stock_qty + :delta2) <= :seuilRupture THEN 'out'
+                            WHEN (stock_qty + :delta3) <= :seuilBas THEN 'low'
+                            ELSE 'in'
+                        END
                   WHERE id = :id
-                    AND stock_qty + :delta2 >= 0',
-                [':id' => $id, ':delta1' => $delta, ':delta2' => $delta],
+                    AND stock_qty + :delta4 >= 0',
+                [
+                    ':id'           => $id,
+                    ':delta1'       => $delta,
+                    ':delta2'       => $delta,
+                    ':delta3'       => $delta,
+                    ':delta4'       => $delta,
+                    ':seuilRupture' => $seuilRupture,
+                    ':seuilBas'     => $seuilBas,
+                ],
             )->rowCount();
         });
 
@@ -488,6 +507,20 @@ final class ControleurProduits
         $image     = (string) $r->corps('image', $existant['image'] ?? '');
         $stockQty  = $r->corps('stockQty') !== null ? (int) $r->corps('stockQty') : ($existant['stock_qty'] ?? null);
         $oldPrice  = $r->corps('oldPrice') !== null ? (int) $r->corps('oldPrice') : ($existant['old_price'] ?? null);
+
+        // Cohérence automatique du statut de stock avec stockQty :
+        if ($stockQty !== null) {
+            $reglagesBruts = $this->db->valeur('SELECT payload FROM settings WHERE scope = :scope', [':scope' => 'site']);
+            $reglagesSite = Db::dejson($reglagesBruts, []);
+            $seuilRupture = (int) ($reglagesSite['outOfStockThreshold'] ?? 0);
+            $seuilBas = (int) ($reglagesSite['lowStockThreshold'] ?? 5);
+
+            if ($stockQty <= $seuilRupture) {
+                $stock = 'out';
+            } elseif ($r->corps('stock') === null) {
+                $stock = $stockQty <= $seuilBas ? 'low' : 'in';
+            }
+        }
 
         $bestSeller = $r->corps('bestSeller') !== null
             ? ($r->corps('bestSeller') ? 1 : 0)
