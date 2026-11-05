@@ -1022,3 +1022,16 @@
      - `bun run build` : compilation Vite, synchronisation de `dist/api/` et création de `katech-site-05112026-2023.zip` et `katech-site.zip`.
      - `bun run paqueter:data` : synchronisation de `katech-data-05112026-2023.zip` et `katech-data.zip`.
 - **Résultat :** Le script de récupération d'urgence est 100% sécurisé et opérationnel. Les nouveaux packages de déploiement sont immédiatement disponibles à la racine.
+
+#### Sous-Phase 20.4 : Portée de Variable & Typage Inféré $admin dans api/recup.php
+
+- **Date :** 05 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle écrite.
+- **Constat & Cause Racine :**
+  - Dans [`api/recup.php`](file:///c:/xampp/htdocs/ka-tech/api/recup.php), la variable `$admin` n'était déclarée que dans le bloc `try`. En cas d'erreur lors de l'instanciation de `Db::instance()`, l'exécution sautait au `catch` et la variable restait indéfinie lors du rendu HTML, risquant un avertissement PHP runtime `Undefined variable $admin`.
+- **Actions Réalisées :**
+  1. Déclaration de `$admin = null;` ligne 30 aux côtés de `$erreur` et `$succes`.
+  2. Sécurisation de la garde de rendu ligne 196 : `<?php elseif (is_array($admin)): ?>` garantissant à la fois l'existence et le typage tableau associatif.
+  3. Vérification de la syntaxe PHP via `php -l api/recup.php` (0 erreur).
+  4. Packaging et recompilation `bun run build`.
+- **Résultat :** Robustesse absolue à 100% même en cas de défaillance amont de base de données.

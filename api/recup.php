@@ -27,6 +27,7 @@ header('X-Frame-Options: DENY');
 $message = null;
 $erreur = null;
 $succes = false;
+$admin = null;
 
 try {
     $db = Db::instance();
@@ -192,7 +193,7 @@ $suggereMdp = 'Admin-' . bin2hex(random_bytes(3)) . '!2026';
                     <button type="submit" class="btn btn-danger">Supprimer ce fichier <code>recup.php</code> du serveur</button>
                 </form>
             </div>
-        <?php elseif ($admin !== null): ?>
+        <?php elseif (is_array($admin)): ?>
             <form method="post" action="">
                 <input type="hidden" name="action" value="reinitialiser">
                 <div class="field">
