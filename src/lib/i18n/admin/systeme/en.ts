@@ -391,6 +391,12 @@ const systemeEn: Record<string, string> = {
   "admin.systeme.developpeur.import_catalogue_toast_ok":
     "{produits} product(s), {categories} category/ies, {marques} brand(s) imported.",
   "admin.systeme.developpeur.import_catalogue_toast_echec": "Import failed: {message}",
+
+  // Section 5 — Display & Developer Tools
+  "admin.systeme.developpeur.affichage_titre": "Display & Developer Tools",
+  "admin.systeme.developpeur.affichage_badge_label": "Show data mode badge (HTTP/Mock)",
+  "admin.systeme.developpeur.affichage_badge_desc":
+    "Floating badge displaying data access mode (http or mock), API URL, and potential network fallbacks. Clicking the badge opens the environment inspector.",
 };
 
 export default systemeEn;

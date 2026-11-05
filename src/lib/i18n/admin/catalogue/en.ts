@@ -51,9 +51,22 @@ const catalogueEn: Record<string, string> = {
   "admin.catalogue.produit_form.label_nom": "Name",
   "admin.catalogue.produit_form.label_nom_en": "Name (EN)",
   "admin.catalogue.produit_form.label_nom_ar": "الاسم (AR)",
-  "admin.catalogue.produit_form.label_specs": "Specs line (summary)",
-  "admin.catalogue.produit_form.label_specs_en": "Specs line (EN)",
-  "admin.catalogue.produit_form.label_specs_ar": "سطر المواصفات (AR)",
+  "admin.catalogue.produit_form.label_specs": "Tagline & key highlights (summary)",
+  "admin.catalogue.produit_form.label_specs_en": "Tagline & key highlights (EN)",
+  "admin.catalogue.produit_form.label_specs_ar": "النقاط البارزة والموجز (AR)",
+  "admin.catalogue.produit_form.placeholder_specs_physique":
+    "e.g. 100% Organic cotton · Regular fit · Handcrafted",
+  "admin.catalogue.produit_form.placeholder_specs_service":
+    "e.g. 1h Session · Support included · In-person or Remote",
+  "admin.catalogue.produit_form.specs_it_titre":
+    "Technical computing specifications (CPU, RAM, GPU, Screen, OS)",
+  "admin.catalogue.produit_form.specs_it_aide":
+    "Optional. Useful for computer hardware or consumer electronics.",
+  "admin.catalogue.produit_form.specs_it_replier": "Collapse",
+  "admin.catalogue.produit_form.specs_it_deplier": "Expand",
+  "admin.catalogue.produit_form.custom_specs_titre": "Custom specifications & attributes",
+  "admin.catalogue.produit_form.custom_specs_desc":
+    "Add any custom attribute tailored to your business: Size, Color, Material, Weight, Volume, Duration, etc.",
   "admin.catalogue.produit_form.traductions_facultatives":
     "Optional translations. A product without a translation remains valid.",
   "admin.catalogue.produit_form.section_prix_stock": "Price & stock",

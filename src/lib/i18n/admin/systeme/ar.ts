@@ -386,6 +386,12 @@ const systemeAr: Record<string, string> = {
   "admin.systeme.developpeur.import_catalogue_toast_ok":
     "تم استيراد {produits} منتج و{categories} فئة و{marques} علامة تجارية.",
   "admin.systeme.developpeur.import_catalogue_toast_echec": "فشل الاستيراد: {message}",
+
+  // Section 5 — العرض وأدوات التطوير
+  "admin.systeme.developpeur.affichage_titre": "العرض وأدوات التطوير",
+  "admin.systeme.developpeur.affichage_badge_label": "إظهار شارة وضع البيانات (HTTP/Mock)",
+  "admin.systeme.developpeur.affichage_badge_desc":
+    "شارة عائمة توضح وضع الوصول إلى البيانات (http أو mock)، ورابط واجهة API وأي حالات تعطل شبكة. يؤدي النقر على الشارة إلى فتح فاحص البيئة.",
 };
 
 export default systemeAr;

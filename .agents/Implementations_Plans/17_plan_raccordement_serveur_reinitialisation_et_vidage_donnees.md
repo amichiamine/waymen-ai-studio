@@ -1,12 +1,12 @@
 # PLAN D'IMPLÉMENTATION — PHASE 17
 
-## Raccordement Serveur de la Réinitialisation et du Vidage des Données (`/admin/reset`)
+## Raccordement Serveur du Vidage/Reset (`/admin/reset`), Pastille Interactive & Formulaire Produit Universel
 
 **Projet :** KA Tech Hub  
 **Date :** 05/11/2026  
 **Auteur :** AImi (Tech Lead, Architecte & Consultant R&D)  
 **Destinataire :** ArchiSys3.0 (Directeur de Projet & Architecte Décideur)  
-**Statut :** Soumis à validation
+**Statut :** Soumis à validation (Consolidé avec Sous-Phase 17.1)
 
 ---
 
@@ -14,82 +14,88 @@
 
 1. **Raccordement Serveur Effectif de `/admin/reset` :**  
    Permettre à la page backstage `/admin/reset` d'agir réellement sur la base de données SQL serveur (SQLite/MySQL/PostgreSQL) en mode HTTP, au lieu de se cantonner au store local `localStorage` (`admin-store.tsx`).
-2. **Création de la Route Sécurisée `POST /api/v1/maintenance/reset` :**
-   - Protégée strictement par la garde de niveau 2 réservée exclusivement au rôle `owner` (`Garde::protege('resetData')`).
-   - Prise en charge des actions granulaires par table/ressource (`clear` ou `reset` par ligne) et des actions globales (« Tout vider » / « Tout réinitialiser »).
-3. **Garde-fous de Sécurité & Intégrité Système :**
-   - **Protection vitale du propriétaire :** Ne jamais supprimer l'administrateur propriétaire connecté lors d'un vidage des utilisateurs (`users`).
-   - **Préservation des structures vitales :** Lors du vidage des réglages (`siteSettings`, `shippingSettings`), réinitialiser sur des charges utiles par défaut sûres pour éviter toute erreur 500 ultérieure.
-   - **Intégrité relationnelle :** Gestion propre des clés étrangères et dépendances en cascade (`order_items` avec `orders`, `stock_movements` avec `products`, etc.).
-   - **Réinitialisation usine (« Reset ») :** Réinjection propre des données d'origine depuis `api/tools/donnees-front.json` via `ImporteurDonneesFront`.
-4. **Réactivité Front & Invalidation de Cache TanStack Query :**  
-   Dès qu'une suppression ou réinitialisation serveur réussit, invalider automatiquement les requêtes TanStack Query pour que les compteurs et tableaux de bord reflètent instantanément l'état réel de la base sans rechargement manuel.
+2. **Correction du Bug SQL `site_content` (Éradication du 500 `no such column: key`) :**  
+   Remplacer le ciblage de la colonne inexistante `key` par `section` dans `ControleurMaintenance.php::executerVidage()` et aligner le mapping des sections réelles (`home-reviews`, `ticker`, `marquee`, `about`, `builder`).
+3. **Pastille HTTP Interactive & Commutateur Développeur :**
+   - Rendre la pastille `DataModeBadge` en bas à droite interactive (curseur pointeur, clic ouvrant une fenêtre d'inspection détaillée du mode réseau, de l'URL de base et des erreurs).
+   - Ajouter dans l'écran Développeur (`/admin/developer`) un commutateur (Switch) permettant d'afficher ou masquer cette pastille à volonté avec persistance locale (`katech_show_data_badge`).
+4. **Universalisation Complète du Formulaire Produit (`ProductForm.tsx`) :**
+   - Remplacer le libellé « Ligne de specs » par « Accroche & points clés (résumé) » avec placeholders universels adaptés (ex: vêtements, cosmétiques, services, tech).
+   - Reclasser la grille matérielle informatique (`CPU`, `RAM`, `Stockage`, `GPU`, `Écran`, `OS`) dans un bloc accordéon contextuel replié/déroulable (« Spécifications informatiques avancées »), visible prioritairement sur le matériel tech (`laptops`, `desktops`, `builds`, `phones`).
+   - Mettre en avant l'éditeur de caractéristiques libres multilingues (Attribut / Valeur) pour tous les autres types de produits physiques et prestations de services.
 
 ---
 
 ### 2. Étapes Chirurgicales d'Implémentation
 
-#### Étape 1 : Création de la méthode Backend `ControleurMaintenance::reinitialiser()`
+#### Sous-Phase 17.1
+
+##### Étape 17.1.A : Correction SQL dans `ControleurMaintenance.php`
 
 - **Fichier :** `api/src/Controllers/ControleurMaintenance.php`
 - **Actions :**
-  - Implémenter la méthode publique `reinitialiser(Requete $r): Reponse` :
-    - Exige la permission `owner` (`Garde::exiger('owner')`).
-    - Valide le corps JSON : `{ action: 'clear' | 'reset', target: string }`.
-    - Exécute le traitement dans une transaction SQL sécurisée (`$this->db->transaction(...)`).
-    - **Algorithme d'effacement (`clear`) :**
-      - Pour une table standard (`products`, `categories`, `brands`, `coupons`, `customers`, etc.) : `DELETE FROM <table>`.
-      - Pour `orders` : suppression conjointe d'`order_items` puis `orders`.
-      - Pour `users` : `DELETE FROM users WHERE role != 'owner'` (garde-fou absolu).
-      - Pour les listes contenues dans `site_content` (`homeReviews`, `tickerMessages`, `marqueeBrands`, `aboutValues`, `builderSteps`) : `UPDATE site_content SET payload = '[]' WHERE key = :key`.
-      - Pour `siteSettings` et `shippingSettings` : réinitialisation sur `{}` minimal valide.
-      - Pour `all` : vidage de l'ensemble des tables métier tout en préservant le propriétaire et les paramètres de base.
-    - **Algorithme de réinitialisation usine (`reset`) :**
-      - Si `target === 'all'` ou catalogue : réinjection des données d'origine via `ImporteurDonneesFront`.
-      - Si commandes/avis/messages : vidage propre.
-    - Consignation de l'action dans `audit_logs` (`Journal::consigner`).
-    - Retourne un rapport JSON clair avec les nombres de lignes affectées : `{ ok: true, message: "...", counts: { ... } }`.
+  - Dans `executerVidage()` :
+    - Remplacer `UPDATE site_content SET payload = '[]' WHERE key = :k` par `WHERE section = :section`.
+    - Aligner le mapping :
+      - `homeReviews` ➔ `home-reviews`
+      - `tickerMessages` ➔ `ticker`
+      - `marqueeBrands` ➔ `marquee`
+      - `aboutValues` ➔ `about`
+      - `builderSteps` ➔ `builder`
+      - Pour le cas `all` : `UPDATE site_content SET payload = '[]' WHERE section IN ('home-reviews', 'ticker', 'marquee', 'about', 'builder')`.
 
-#### Étape 2 : Câblage de la Route API dans `api/routes.php`
+##### Étape 17.1.B : Pastille HTTP Interactive (`DataModeBadge.tsx`)
 
-- **Fichier :** `api/routes.php`
-- **Action :**  
-  Enregistrer la nouvelle route d'écriture sous la garde `resetData` :
-  ```php
-  $routeur->post('/maintenance/reset', Garde::protege('resetData', [$maintenance, 'reinitialiser']));
-  ```
+- **Fichier :** `src/components/DataModeBadge.tsx`
+- **Actions :**
+  - Remplacer `pointerEvents: "none"` par une gestion cliquable avec `cursor: pointer`.
+  - Conditionner le rendu à la préférence `katech_show_data_badge` (active par défaut en développement, masquable).
+  - Au clic : ouverture d'une boîte de dialogue modale (`Dialog`) affichant :
+    - Mode de données (`http` ou `mock`).
+    - URL de base API (`http://localhost:8080/api/v1`).
+    - État d'accessibilité du serveur.
+    - Journal des anomalies / échecs de requêtes récentes (`getResourceFailures()`) avec code d'erreur HTTP et URL.
 
-#### Étape 3 : Couche Client Data Provider & Intégration dans `Reset.tsx`
+##### Étape 17.1.C : Commutateur Afficher / Masquer dans l'Onglet Développeur
 
 - **Fichiers :**
-  - `src/data-provider/maintenance.ts`
-  - `src/pages/admin/Reset.tsx`
+  - `src/pages/admin/Developpeur.tsx`
+  - `src/lib/i18n/admin/systeme/fr.ts`, `en.ts`, `ar.ts`
 - **Actions :**
-  - Dans `src/data-provider/maintenance.ts` : ajouter la fonction exportée `reinitialiserServeur(action: "clear" | "reset", target: string)`.
-  - Dans `src/pages/admin/Reset.tsx` :
-    - Dans la fonction `exec()` :
-      - Si mode HTTP (`isHttpData()`) : appeler `reinitialiserServeur(pending.kind, pending.key)`.
-      - Répercuter également le changement sur `admin-store` pour maintenir la parité du cache local.
-      - Invoquer `queryClient.invalidateQueries()` pour recharger immédiatement les compteurs et listes (`products`, `categories`, `orders`, etc.).
-      - Notifier l'utilisateur via `toast.success()`.
-    - Gestion des erreurs serveur via `toApiError` et `toast.error()`.
+  - Ajouter une carte « Affichage & Environnement » dans `Developpeur.tsx` avec un `Switch` :
+    « Afficher la pastille de mode de données (HTTP/Mock) ».
+  - Synchroniser avec `localStorage.getItem('katech_show_data_badge')` et déclencher un événement `window.dispatchEvent(new CustomEvent('katech-toggle-data-badge'))`.
+  - Ajouter les clés de traduction trilingues dans `systeme/{fr,en,ar}.ts`.
+
+##### Étape 17.1.D : Universalisation du Formulaire Produit (`ProductForm.tsx`)
+
+- **Fichiers :**
+  - `src/pages/admin/ProductForm.tsx`
+  - `src/lib/i18n/admin/catalogue/fr.ts`, `en.ts`, `ar.ts`
+- **Actions :**
+  - Remplacer l'intitulé « Ligne de specs (résumé) » par « Accroche & points clés (résumé) » avec placeholder dynamique selon le type de produit.
+  - Rendre la validation de ce résumé souple (optionnel si non renseigné ou court).
+  - Encadrer `SpecsGrid` dans un composant dépliant (`Collapsible` / Accordéon) intitulé « Spécifications informatiques avancées (CPU, RAM, GPU...) » :
+    - Déplié par défaut si la catégorie est `laptops`, `desktops`, `builds` ou `phones`.
+    - Replié par défaut pour toute autre catégorie (mode, maison, services, etc.) afin de ne pas encombrer l'écran.
+  - Positionner l'éditeur de caractéristiques personnalisées `CustomSpecsEditor` en tête de liste pour tous les produits et services.
 
 ---
 
 ### 3. Matrice de Recette & Validation
 
-| Test / Scénario                                   | Procédure                                                                    | Critère de Succès                                                                                    |
-| :------------------------------------------------ | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
-| **Sécurité Rôle**                                 | Appel POST `/api/v1/maintenance/reset` sans authentification ou rôle < owner | HTTP 401 / 403 Forbidden                                                                             |
-| **Vidage Ciblé Produit**                          | Clic sur "Vider" pour la ligne Produits dans `/admin/reset`                  | Table `products` vidée en base SQLite, compteur à 0, vitrine affiche 0 produit                       |
-| **Protection Owner**                              | Clic sur "Vider" pour la ligne Utilisateurs                                  | Seuls les comptes non-owner sont supprimés, session admin intacte                                    |
-| **Vidage Global ("Tout vider")**                  | Clic sur "Tout vider"                                                        | Toutes les données transactionnelles et catalogue passent à 0, site reste sain (0 erreur 500)        |
-| **Réinitialisation Usine ("Tout réinitialiser")** | Clic sur "Tout réinitialiser"                                                | Rechargement automatique des produits et catégories depuis `donnees-front.json`, compteurs restaurés |
-| **Qualité & CI**                                  | `php -l` + `bun run lint && bunx tsc --noEmit && bun run build`              | 0 erreur, compilation et packaging conformes                                                         |
+| Test / Scénario               | Procédure                                                                     | Critère de Succès                                                                   |
+| :---------------------------- | :---------------------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| **Vidage `all` sans erreur**  | Clic sur "Tout vider" dans `/admin/reset`                                     | Requête POST `/maintenance/reset` répond en 200 OK, 0 erreur SQL, tables vidées     |
+| **Inspection Pastille HTTP**  | Clic sur la pastille bleue `http` en bas à droite                             | Ouverture de la modale avec mode actif, URL API et historique des erreurs           |
+| **Bascule dans Développeur**  | Désactivation du switch dans `/admin/developer`                               | Disparition instantanée de la pastille                                              |
+| **Création Produit Non-Tech** | Ouvrir `/admin/products/new`, choisir catégorie non informatique              | Grille CPU/RAM repliée, champ d'accroche universel, ajout libre de caractéristiques |
+| **Création Produit Tech**     | Ouvrir `/admin/products/new`, choisir `laptops`                               | Grille CPU/RAM directement accessible                                               |
+| **Vérification CI & Build**   | `bun run verifier-i18n && bun run lint && bunx tsc --noEmit && bun run build` | 0 erreur, compilation et packaging réussis                                          |
 
 ---
 
 ### 4. Traçabilité & Packaging
 
-- Mise à jour du journal officiel `.agents/tracabilites.md` (Phase 17).
-- Re-packaging des archives prêtes au déploiement (`katech-site.zip`).
+- Mise à jour du journal `.agents/tracabilites.md` sous la section **Sous-Phase 17.1**.
+- Re-packaging de la nouvelle archive `katech-site.zip`.

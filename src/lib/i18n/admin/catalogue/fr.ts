@@ -52,9 +52,22 @@ const catalogueFr: Record<string, string> = {
   "admin.catalogue.produit_form.label_nom": "Nom",
   "admin.catalogue.produit_form.label_nom_en": "Nom (EN)",
   "admin.catalogue.produit_form.label_nom_ar": "الاسم (AR)",
-  "admin.catalogue.produit_form.label_specs": "Ligne de specs (résumé)",
-  "admin.catalogue.produit_form.label_specs_en": "Ligne de specs (EN)",
-  "admin.catalogue.produit_form.label_specs_ar": "سطر المواصفات (AR)",
+  "admin.catalogue.produit_form.label_specs": "Accroche & points clés (résumé)",
+  "admin.catalogue.produit_form.label_specs_en": "Accroche & points clés (EN)",
+  "admin.catalogue.produit_form.label_specs_ar": "النقاط البارزة والموجز (AR)",
+  "admin.catalogue.produit_form.placeholder_specs_physique":
+    "ex: 100% Coton bio · Coupe standard · Finition artisanale",
+  "admin.catalogue.produit_form.placeholder_specs_service":
+    "ex: Session 1h · Support inclus · Présentiel ou Visio",
+  "admin.catalogue.produit_form.specs_it_titre":
+    "Spécifications techniques informatiques (CPU, RAM, GPU, Écran, OS)",
+  "admin.catalogue.produit_form.specs_it_aide":
+    "Optionnel. Remplissez ces champs pour du matériel informatique ou électronique.",
+  "admin.catalogue.produit_form.specs_it_replier": "Replier",
+  "admin.catalogue.produit_form.specs_it_deplier": "Déplier",
+  "admin.catalogue.produit_form.custom_specs_titre": "Caractéristiques & attributs libres",
+  "admin.catalogue.produit_form.custom_specs_desc":
+    "Ajoutez n'importe quel attribut propre à votre domaine : Taille, Couleur, Matière, Poids, Volume, Durée, etc.",
   "admin.catalogue.produit_form.traductions_facultatives":
     "Traductions facultatives. Un produit sans traduction reste valide.",
   "admin.catalogue.produit_form.section_prix_stock": "Prix & stock",

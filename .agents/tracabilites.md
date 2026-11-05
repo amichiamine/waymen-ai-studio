@@ -744,7 +744,6 @@
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1805.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1805.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
 
-
 ---
 
 ## Phase 17 : Raccordement Serveur de la Réinitialisation et du Vidage des Données (`/admin/reset`)
@@ -782,4 +781,52 @@
 - **Livrables :**
   - Plan d'implémentation miroir : 📄 [17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1819.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1819.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+---
+
+### Sous-Phase 17.1 : Correction SQL du Vidage `site_content`, Inspecteur Réseau Pastille HTTP & Universalisation du Formulaire Produit
+
+- **Date :** 05/11/2026
+- **Contexte & Constat Initial :**
+  1. Lors du déclenchement de la réinitialisation ou vidage complet via `/admin/reset`, le serveur renvoyait une erreur HTTP 500 : `SQLSTATE[HY000]: General error: 1 no such column: key`. Dans la table `site_content`, la clé primaire est nommée `section` et non `key`.
+  2. La pastille flottante bleue HTTP en bas à droite était non cliquable (`pointerEvents: "none"`), empêchant l'exploitant de consulter le détail du mode et des éventuels échecs réseau. ArchiSys3.0 a demandé de rendre cette pastille inspectable et d'ajouter une option dans l'onglet « Développeur » pour afficher/masquer cette pastille.
+  3. Dans l'écran de création de produit ([`ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx)), des libellés et placeholders ultra-spécifiques au matériel informatique subsistaient (« Ligne de specs (résumé) », « Intel i7 · 16GB · 1TB SSD », grille figée CPU, RAM, Stockage, GPU, Écran, OS imposée pour tout type d'article), en contradiction avec la vocation universelle de la boutique (tous produits et services).
+- **Décisions d'ArchiSys3.0 :**
+  Validation intégrale du plan d'intervention Sous-Phase 17.1 (artéfact miroir `17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md`) :
+  1. Correction chirurgicale SQL dans `ControleurMaintenance.php` : substitution de `key` par `section` et mapping exact des sections (`home-reviews`, `ticker`, `marquee`, `about`, `builder`).
+  2. Rendre la pastille `DataModeBadge.tsx` interactive avec dialogue modal d'inspection en direct (mode actif, URL API, journal des échecs réseau `getResourceFailures()`, vidage du journal, masquage).
+  3. Ajout dans [`Developpeur.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Developpeur.tsx) d'une carte « Affichage & Outils de développement » avec un interrupteur Switch pour activer/désactiver la pastille en temps réel (synchronisé via `localStorage` et CustomEvent).
+  4. Universalisation du formulaire produit [`ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx) :
+     - Renommage en « Accroche & points clés (résumé) » avec placeholders dynamiques universels (physique vs service).
+     - Rendre `specLine` facultatif (repli gracieux sur le nom du produit si omis).
+     - Grille matérielle IT (CPU, RAM, GPU, Écran, OS) repliée par défaut sous accordéon `Collapsible` pour les produits généralistes ou services, et dépliée automatiquement pour les catégories informatiques.
+     - Valorisation de `CustomSpecsEditor` (Attributs & caractéristiques libres : Taille, Couleur, Matière, Poids, Durée...).
+  5. Complétude trilingue FR / EN / AR sur toutes les nouvelles clés.
+- **Actions Réalisées :**
+  - **Étape 17.1.A (Correctif SQL Backend) :**
+    - Modification de [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) : correction des clauses `UPDATE site_content SET payload = '[]' WHERE section = :s`.
+    - Test réel via API REST : `POST /api/v1/maintenance/reset` avec `action=reset&target=all` renvoie **HTTP 200 OK** avec succès total.
+  - **Étape 17.1.B (Interactivité DataModeBadge) :**
+    - Modification de [`src/components/DataModeBadge.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/DataModeBadge.tsx) : `pointerEvents: "auto"`, curseur pointeur, ouverture de `Dialog` avec inspection du mode, de l'URL API et tableau des erreurs réseau `getResourceFailures()`.
+  - **Étape 17.1.C (Option Affichage dans Developpeur.tsx & i18n) :**
+    - Modification de [`src/pages/admin/Developpeur.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Developpeur.tsx) : carte avec Switch réactif basculant la pastille.
+    - Ajout des traductions trilingues dans `src/lib/i18n/admin/systeme/{fr,en,ar}.ts`.
+  - **Étape 17.1.D (Universalisation du Formulaire Produit) :**
+    - Modification de [`src/pages/admin/ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx) : schéma Zod relaxé pour `specLine`, placeholders universels, grille IT repliable avec badge contextuel, éditeur d'attributs personnalisés valorisé.
+    - Ajout des traductions trilingues dans `src/lib/i18n/admin/catalogue/{fr,en,ar}.ts`.
+  - **Étape 17.1.E (Vérification Qualité & Packaging) :**
+    - `bun run verifier-i18n` : 100% cohérent (0 erreur).
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build` : compilation Vite, prérendu et empaquetage d'archive réussis.
+- **Résultats de Recette :**
+  - Réinitialisation et vidage serveur 100% opérationnels en production (plus aucune erreur 500 SQL).
+  - Pastille cliquable avec diagnostic immédiat des pannes et replis réseau.
+  - Option d'affichage/masquage de la pastille opérationnelle en direct dans l'onglet Développeur.
+  - Formulaire d'ajout/édition de produit 100% universel et adapté à n'importe quel domaine commercial (vêtements, beauté, alimentaire, services, artisanat, électronique).
+- **Livrables :**
+  - Plan d'implémentation miroir mis à jour : 📄 [17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1853.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1853.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)

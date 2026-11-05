@@ -407,6 +407,13 @@ const systemeFr: Record<string, string> = {
   "admin.systeme.developpeur.import_catalogue_toast_ok":
     "{produits} produit(s), {categories} catégorie(s), {marques} marque(s) importés.",
   "admin.systeme.developpeur.import_catalogue_toast_echec": "Import échoué : {message}",
+
+  // Section 5 — Affichage & Outils de développement
+  "admin.systeme.developpeur.affichage_titre": "Affichage & Outils de développement",
+  "admin.systeme.developpeur.affichage_badge_label":
+    "Afficher la pastille de mode de données (HTTP/Mock)",
+  "admin.systeme.developpeur.affichage_badge_desc":
+    "Pastille flottante indiquant le mode d'accès aux données (http ou mock), l'URL d'API et les éventuels replis réseau. Cliquer sur la pastille ouvre l'inspecteur d'environnement.",
 };
 
 export default systemeFr;

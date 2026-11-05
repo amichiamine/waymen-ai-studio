@@ -50,9 +50,21 @@ const catalogueAr: Record<string, string> = {
   "admin.catalogue.produit_form.label_nom": "الاسم",
   "admin.catalogue.produit_form.label_nom_en": "الاسم (EN)",
   "admin.catalogue.produit_form.label_nom_ar": "الاسم (AR)",
-  "admin.catalogue.produit_form.label_specs": "سطر المواصفات (ملخص)",
-  "admin.catalogue.produit_form.label_specs_en": "سطر المواصفات (EN)",
-  "admin.catalogue.produit_form.label_specs_ar": "سطر المواصفات (AR)",
+  "admin.catalogue.produit_form.label_specs": "النقاط البارزة والموجز",
+  "admin.catalogue.produit_form.label_specs_en": "النقاط البارزة والموجز (EN)",
+  "admin.catalogue.produit_form.label_specs_ar": "النقاط البارزة والموجز (AR)",
+  "admin.catalogue.produit_form.placeholder_specs_physique":
+    "مثال: قطن عضوي 100% · قصة قياسية · صناعة حرفية",
+  "admin.catalogue.produit_form.placeholder_specs_service":
+    "مثال: جلسة لمدة ساعة · دعم فني مشمول · حضوري أو عن بعد",
+  "admin.catalogue.produit_form.specs_it_titre":
+    "المواصفات التقنية الحاسوبية (المعالج، الذاكرة، الشاشة، نظام التشغيل)",
+  "admin.catalogue.produit_form.specs_it_aide": "اختياري. مفيد لعتاد الحاسوب والإلكترونيات.",
+  "admin.catalogue.produit_form.specs_it_replier": "طي",
+  "admin.catalogue.produit_form.specs_it_deplier": "توسيع",
+  "admin.catalogue.produit_form.custom_specs_titre": "المواصفات والخصائص المخصصة",
+  "admin.catalogue.produit_form.custom_specs_desc":
+    "أضف أي خاصية مناسبة لنشاطك: المقاس، اللون، الخامة، الوزن، الحجم، المدة، إلخ.",
   "admin.catalogue.produit_form.traductions_facultatives":
     "الترجمات اختيارية. يظل المنتج صالحًا بدون ترجمة.",
   "admin.catalogue.produit_form.section_prix_stock": "السعر والمخزون",

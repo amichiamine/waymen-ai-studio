@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, ArrowLeft, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Trash2, ArrowLeft, Plus, Cpu, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import {
   useProductList,
   useProductDetail,
@@ -177,9 +179,9 @@ const schema = z
     brand: z.string().trim().min(1, "Marque requise").max(60),
     category: z.string().trim().min(1, "Catégorie requise"),
     productType: z.enum(["physical", "service"]).default("physical"),
-    specLine: localizedStringSchema.refine((v) => v.fr.length >= 3, {
+    specLine: localizedStringSchema.refine((v) => !v.fr || v.fr.trim().length >= 2, {
       path: ["fr"],
-      message: "Ligne de specs requise (min 3 caractères)",
+      message: "Accroche trop courte (min 2 caractères si renseignée)",
     }),
     price: z.coerce
       .number({ message: "Prix requis" })
@@ -225,6 +227,20 @@ const schema = z
   });
 
 type FormValues = z.infer<typeof schema>;
+
+// ---------------------------------------------------------------------------
+// Constantes & Catégories matérielles IT
+// ---------------------------------------------------------------------------
+
+const IT_HARDWARE_CATEGORIES = new Set([
+  "laptops",
+  "desktops",
+  "builds",
+  "phones",
+  "hardware",
+  "informatique",
+  "pc",
+]);
 
 // ---------------------------------------------------------------------------
 // Valeurs initiales
@@ -334,6 +350,16 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const isItHardware =
+    IT_HARDWARE_CATEGORIES.has((v.category || "").toLowerCase()) && v.productType !== "service";
+  const [showItSpecs, setShowItSpecs] = useState(isItHardware);
+
+  useEffect(() => {
+    if (isItHardware) {
+      setShowItSpecs(true);
+    }
+  }, [isItHardware]);
 
   useEffect(() => {
     if (mode === "edit" && id) {
@@ -468,7 +494,9 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       category: data.category as Category,
       productType: data.productType,
       use: existing?.use ?? [],
-      specLine: mapToLocalized(data.specLine) ?? data.specLine.fr,
+      specLine: data.specLine?.fr?.trim()
+        ? (mapToLocalized(data.specLine) ?? data.specLine.fr)
+        : (mapToLocalized(data.name) ?? data.name.fr),
       specs: specsMap,
       price: data.price,
       oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
@@ -677,7 +705,11 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                       onChange={(e) =>
                         updateField("specLine", { ...v.specLine, fr: e.target.value })
                       }
-                      placeholder="Intel i7 · 16GB · 1TB SSD"
+                      placeholder={
+                        v.productType === "service"
+                          ? t("admin.catalogue.produit_form.placeholder_specs_service")
+                          : t("admin.catalogue.produit_form.placeholder_specs_physique")
+                      }
                     />
                     {errors["specLine.fr"] && (
                       <p className="mt-1 text-xs text-destructive">{errors["specLine.fr"]}</p>
@@ -686,20 +718,61 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                       <p className="mt-1 text-xs text-destructive">{errors.specLine}</p>
                     )}
                   </div>
-                  <SpecsGrid
-                    values={{
-                      cpu: v.cpu,
-                      ram: v.ram,
-                      storage: v.storage,
-                      gpu: v.gpu,
-                      screen: v.screen,
-                      os: v.os,
-                    }}
-                    lang="fr"
-                    onChange={(k, map) =>
-                      updateField(k as keyof FormValues, map as FormValues[typeof k])
-                    }
-                  />
+                  <Collapsible
+                    open={showItSpecs}
+                    onOpenChange={setShowItSpecs}
+                    className="space-y-3 rounded-lg border p-3.5 bg-muted/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Cpu className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs font-semibold">
+                            {t("admin.catalogue.produit_form.specs_it_titre")}
+                          </span>
+                          {!isItHardware && (
+                            <Badge variant="outline" className="text-[10px] py-0 font-normal">
+                              Optionnel
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {t("admin.catalogue.produit_form.specs_it_aide")}
+                        </p>
+                      </div>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs">
+                          {showItSpecs ? (
+                            <>
+                              <ChevronUp className="me-1 h-3.5 w-3.5" />
+                              {t("admin.catalogue.produit_form.specs_it_replier")}
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="me-1 h-3.5 w-3.5" />
+                              {t("admin.catalogue.produit_form.specs_it_deplier")}
+                            </>
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <CollapsibleContent className="pt-3 border-t">
+                      <SpecsGrid
+                        values={{
+                          cpu: v.cpu,
+                          ram: v.ram,
+                          storage: v.storage,
+                          gpu: v.gpu,
+                          screen: v.screen,
+                          os: v.os,
+                        }}
+                        lang="fr"
+                        onChange={(k, map) =>
+                          updateField(k as keyof FormValues, map as FormValues[typeof k])
+                        }
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
                   <CustomSpecsEditor
                     specs={customSpecs}
                     lang="fr"
@@ -730,22 +803,68 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                       onChange={(e) =>
                         updateField("specLine", { ...v.specLine, en: e.target.value })
                       }
+                      placeholder={
+                        v.productType === "service"
+                          ? t("admin.catalogue.produit_form.placeholder_specs_service")
+                          : t("admin.catalogue.produit_form.placeholder_specs_physique")
+                      }
                     />
                   </div>
-                  <SpecsGrid
-                    values={{
-                      cpu: v.cpu,
-                      ram: v.ram,
-                      storage: v.storage,
-                      gpu: v.gpu,
-                      screen: v.screen,
-                      os: v.os,
-                    }}
-                    lang="en"
-                    onChange={(k, map) =>
-                      updateField(k as keyof FormValues, map as FormValues[typeof k])
-                    }
-                  />
+                  <Collapsible
+                    open={showItSpecs}
+                    onOpenChange={setShowItSpecs}
+                    className="space-y-3 rounded-lg border p-3.5 bg-muted/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Cpu className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs font-semibold">
+                            {t("admin.catalogue.produit_form.specs_it_titre")}
+                          </span>
+                          {!isItHardware && (
+                            <Badge variant="outline" className="text-[10px] py-0 font-normal">
+                              Optionnel
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {t("admin.catalogue.produit_form.specs_it_aide")}
+                        </p>
+                      </div>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs">
+                          {showItSpecs ? (
+                            <>
+                              <ChevronUp className="me-1 h-3.5 w-3.5" />
+                              {t("admin.catalogue.produit_form.specs_it_replier")}
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="me-1 h-3.5 w-3.5" />
+                              {t("admin.catalogue.produit_form.specs_it_deplier")}
+                            </>
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <CollapsibleContent className="pt-3 border-t">
+                      <SpecsGrid
+                        values={{
+                          cpu: v.cpu,
+                          ram: v.ram,
+                          storage: v.storage,
+                          gpu: v.gpu,
+                          screen: v.screen,
+                          os: v.os,
+                        }}
+                        lang="en"
+                        onChange={(k, map) =>
+                          updateField(k as keyof FormValues, map as FormValues[typeof k])
+                        }
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
                   <CustomSpecsEditor
                     specs={customSpecs}
                     lang="en"
@@ -782,22 +901,68 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                       onChange={(e) =>
                         updateField("specLine", { ...v.specLine, ar: e.target.value })
                       }
+                      placeholder={
+                        v.productType === "service"
+                          ? t("admin.catalogue.produit_form.placeholder_specs_service")
+                          : t("admin.catalogue.produit_form.placeholder_specs_physique")
+                      }
                     />
                   </div>
-                  <SpecsGrid
-                    values={{
-                      cpu: v.cpu,
-                      ram: v.ram,
-                      storage: v.storage,
-                      gpu: v.gpu,
-                      screen: v.screen,
-                      os: v.os,
-                    }}
-                    lang="ar"
-                    onChange={(k, map) =>
-                      updateField(k as keyof FormValues, map as FormValues[typeof k])
-                    }
-                  />
+                  <Collapsible
+                    open={showItSpecs}
+                    onOpenChange={setShowItSpecs}
+                    className="space-y-3 rounded-lg border p-3.5 bg-muted/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Cpu className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-xs font-semibold">
+                            {t("admin.catalogue.produit_form.specs_it_titre")}
+                          </span>
+                          {!isItHardware && (
+                            <Badge variant="outline" className="text-[10px] py-0 font-normal">
+                              Optionnel
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {t("admin.catalogue.produit_form.specs_it_aide")}
+                        </p>
+                      </div>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs">
+                          {showItSpecs ? (
+                            <>
+                              <ChevronUp className="me-1 h-3.5 w-3.5" />
+                              {t("admin.catalogue.produit_form.specs_it_replier")}
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="me-1 h-3.5 w-3.5" />
+                              {t("admin.catalogue.produit_form.specs_it_deplier")}
+                            </>
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <CollapsibleContent className="pt-3 border-t">
+                      <SpecsGrid
+                        values={{
+                          cpu: v.cpu,
+                          ram: v.ram,
+                          storage: v.storage,
+                          gpu: v.gpu,
+                          screen: v.screen,
+                          os: v.os,
+                        }}
+                        lang="ar"
+                        onChange={(k, map) =>
+                          updateField(k as keyof FormValues, map as FormValues[typeof k])
+                        }
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
                   <CustomSpecsEditor
                     specs={customSpecs}
                     lang="ar"
@@ -1059,16 +1224,24 @@ function CustomSpecsEditor({
 
   return (
     <div className="space-y-3 pt-4 border-t border-border">
-      <div className="flex items-center justify-between">
-        <Label className="text-sm font-semibold">
-          {t("admin.catalogue.produit_form.label_attributs_personnalises")}
-        </Label>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <Label className="text-sm font-semibold">
+              {t("admin.catalogue.produit_form.custom_specs_titre")}
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t("admin.catalogue.produit_form.custom_specs_desc")}
+          </p>
+        </div>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onAdd}
-          className="h-8 gap-1 text-xs"
+          className="h-8 gap-1 text-xs shrink-0"
         >
           <Plus className="size-3.5" />
           <span>{t("admin.catalogue.produit_form.btn_ajouter_attribut")}</span>

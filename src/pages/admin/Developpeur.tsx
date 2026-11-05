@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -32,6 +33,7 @@ import {
   Info,
   OctagonX,
   PackageOpen,
+  Monitor,
 } from "lucide-react";
 import { usePermissions } from "@/lib/admin-auth";
 import { useI18n } from "@/lib/i18n";
@@ -46,6 +48,7 @@ import {
   type DetailAnomalie,
 } from "@/data-provider/maintenance";
 import { toApiError } from "@/data-provider/errors";
+import { KATECH_SHOW_DATA_BADGE_KEY, KATECH_TOGGLE_BADGE_EVENT } from "@/components/DataModeBadge";
 
 // ── Types locaux ──────────────────────────────────────────────────────────────
 
@@ -110,6 +113,37 @@ export default function AdminDeveloppeur() {
 
   // Le dialogue de confirmation (sauvegarde ou migration réelle).
   const [dialogue, setDialogue] = useState<DialogAttente | null>(null);
+
+  // ── Affichage & Dev Tools ────────────────────────────────────────────────
+  const [badgeVisible, setBadgeVisible] = useState(() => {
+    try {
+      return localStorage.getItem(KATECH_SHOW_DATA_BADGE_KEY) !== "false";
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    const handler = () => {
+      try {
+        setBadgeVisible(localStorage.getItem(KATECH_SHOW_DATA_BADGE_KEY) !== "false");
+      } catch {
+        setBadgeVisible(true);
+      }
+    };
+    window.addEventListener(KATECH_TOGGLE_BADGE_EVENT, handler);
+    return () => window.removeEventListener(KATECH_TOGGLE_BADGE_EVENT, handler);
+  }, []);
+
+  function toggleBadge(actif: boolean) {
+    setBadgeVisible(actif);
+    try {
+      localStorage.setItem(KATECH_SHOW_DATA_BADGE_KEY, actif ? "true" : "false");
+      window.dispatchEvent(new CustomEvent(KATECH_TOGGLE_BADGE_EVENT));
+    } catch {
+      // Ignoré si indisponible
+    }
+  }
 
   // ── Handlers ────────────────────────────────────────────────────────────
 
@@ -403,6 +437,33 @@ export default function AdminDeveloppeur() {
               </table>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* ── Section : Affichage & Outils de développement ────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Monitor className="h-4 w-4" /> {t("admin.systeme.developpeur.affichage_titre")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border p-4 bg-card">
+            <div className="space-y-0.5">
+              <Label htmlFor="toggle-data-badge" className="text-sm font-semibold cursor-pointer">
+                {t("admin.systeme.developpeur.affichage_badge_label")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("admin.systeme.developpeur.affichage_badge_desc")}
+              </p>
+            </div>
+            <Switch
+              id="toggle-data-badge"
+              checked={badgeVisible}
+              onCheckedChange={toggleBadge}
+              aria-label={t("admin.systeme.developpeur.affichage_badge_label")}
+            />
+          </div>
         </CardContent>
       </Card>
 
