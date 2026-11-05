@@ -16,7 +16,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2, RotateCcw, Save, AlertTriangle } from "lucide-react";
-import { useSiteContent, useSiteContentMutations, toApiError } from "@/data-provider";
+import {
+  useSiteContent,
+  useSiteContentMutations,
+  useCategoryList,
+  toApiError,
+} from "@/data-provider";
 import type { SiteContent } from "@/lib/site-content";
 import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
@@ -786,7 +791,16 @@ function FeaturedTabsForm({
   t: TFn;
 }) {
   const v = value;
-  const cats: Category[] = ["laptops", "desktops", "builds", "phones"];
+  const { data: categoryList } = useCategoryList();
+  const availableCats =
+    categoryList && categoryList.length > 0
+      ? categoryList.map((c) => ({ slug: c.slug, label: c.label }))
+      : [
+          { slug: "laptops", label: "Laptops" },
+          { slug: "desktops", label: "Desktops" },
+          { slug: "builds", label: "Builds" },
+          { slug: "phones", label: "Phones" },
+        ];
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
@@ -815,7 +829,11 @@ function FeaturedTabsForm({
               ...v,
               tabs: [
                 ...v.tabs,
-                { id: `t_${Date.now()}`, categorySlug: "laptops", label: "Nouveau" },
+                {
+                  id: `t_${Date.now()}`,
+                  categorySlug: (availableCats[0]?.slug ?? "laptops") as Category,
+                  label: "Nouveau",
+                },
               ],
             })
           }
@@ -842,9 +860,9 @@ function FeaturedTabsForm({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {cats.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
+                {availableCats.map((c) => (
+                  <SelectItem key={c.slug} value={c.slug}>
+                    {c.label} ({c.slug})
                   </SelectItem>
                 ))}
               </SelectContent>

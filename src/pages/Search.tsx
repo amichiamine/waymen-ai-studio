@@ -15,9 +15,11 @@ const haystack = (v: Localized<string> | undefined): string =>
 import { ProductCard } from "@/components/ProductCard";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import { useFormatPrice } from "@/lib/format-price";
 
 export default function Search() {
   const { t, lang } = useI18n();
+  const formatPrice = useFormatPrice();
   const { data: categoryList } = useCategoryList();
   const { data: siteSettings } = useSiteSettings();
   const storeName = siteSettings.storeName?.trim() || "Boutique";
@@ -69,6 +71,12 @@ export default function Search() {
   // /builder vivent dans la même liste (elles doivent rester résolubles par le
   // panier) mais ne sont ni indexables ni affichables ici.
   const products = useMemo(() => catalogProducts(allProducts), [allProducts]);
+  const maxCatalogPrice = useMemo(() => {
+    if (products.length === 0) return 500_000;
+    const max = Math.max(...products.map((p) => p.price));
+    return Math.ceil(max / 1000) * 1000 || 50_000;
+  }, [products]);
+
   const brands = useMemo(
     () => Array.from(new Set(products.map((p) => p.brand))).sort(),
     [products],
@@ -174,15 +182,15 @@ export default function Search() {
               <h3 className="text-sm font-semibold mb-3">{t("search.priceMax")}</h3>
               <input
                 type="range"
-                min={20000}
-                max={500000}
-                step={5000}
-                value={maxPrice}
+                min={0}
+                max={maxCatalogPrice}
+                step={Math.max(100, Math.round(maxCatalogPrice / 100))}
+                value={Math.min(maxPrice, maxCatalogPrice)}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full accent-primary"
               />
               <div className="text-xs text-muted-foreground mt-2">
-                {t("search.upTo").replace("{v}", new Intl.NumberFormat(nfLocale).format(maxPrice))}
+                {t("search.upTo").replace("{v}", formatPrice(maxPrice))}
               </div>
             </div>
             <div>
@@ -217,7 +225,7 @@ export default function Search() {
                 onClick={() => {
                   setCat("");
                   setBrand([]);
-                  setMaxPrice(500_000);
+                  setMaxPrice(maxCatalogPrice);
                   setInStock(false);
                   setSort("relevance");
                 }}

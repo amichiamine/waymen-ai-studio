@@ -52,13 +52,13 @@ export function ProductCard({ p }: { p: Product }) {
           loading="lazy"
           className="size-full object-contain p-4 transition-transform duration-500 ease-out group-hover:scale-110"
         />
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+        <div className="absolute top-3 start-3 flex flex-col gap-1.5">
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-background/80 backdrop-blur border border-border text-muted-foreground">
             {p.brand}
           </span>
           {p.productType === "service" && (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground shadow-sm">
-              Service
+              {t("pd.badgeService")}
             </span>
           )}
           {discount > 0 && (
@@ -73,7 +73,7 @@ export function ProductCard({ p }: { p: Product }) {
             e.preventDefault();
             toggleFavorite(p.id);
           }}
-          className={`absolute top-3 right-3 size-9 inline-flex items-center justify-center rounded-full bg-background/80 backdrop-blur border border-border transition-all duration-200 hover:scale-110 active:scale-95 md:opacity-0 md:group-hover:opacity-100 ${liked ? "!opacity-100 text-destructive border-destructive/40" : "text-muted-foreground hover:text-foreground"}`}
+          className={`absolute top-3 end-3 size-9 inline-flex items-center justify-center rounded-full bg-background/80 backdrop-blur border border-border transition-all duration-200 hover:scale-110 active:scale-95 md:opacity-0 md:group-hover:opacity-100 ${liked ? "!opacity-100 text-destructive border-destructive/40" : "text-muted-foreground hover:text-foreground"}`}
         >
           <Heart
             className={`size-4 transition-transform ${liked ? "fill-current scale-110" : ""}`}
@@ -91,7 +91,12 @@ export function ProductCard({ p }: { p: Product }) {
           <div
             className="flex items-center gap-1"
             aria-label={
-              stats.count ? `${stats.average.toFixed(1)} sur 5 (${stats.count} avis)` : "Aucun avis"
+              stats.count
+                ? t("pd.ratingAria", {
+                    avg: stats.average.toFixed(1),
+                    count: String(stats.count),
+                  })
+                : t("pd.noReviewsAria")
             }
           >
             {[1, 2, 3, 4, 5].map((n) => {

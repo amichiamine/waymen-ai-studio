@@ -160,6 +160,7 @@ export type SiteContent = {
     secondaryCta: Cta;
     kpis: { id: string; icon: IconName; value: LS; label: LS }[];
     showImage: boolean;
+    imageSrc?: string;
   };
   categories: { title: LS; subtitle: LS; browseLabel: LS };
   useChips: { title: LS };
@@ -274,9 +275,9 @@ export function seedSiteContent(): SiteContent {
     },
     footer: {
       tagline: {
-        fr: "Boutique en ligne spécialisée dans la vente d'ordinateurs, de téléphones et d'accessoires — livraison dans toute l'Algérie avec garantie officielle.",
-        en: "Online store specialized in computers, phones and accessories — delivery across Algeria with official warranty.",
-        ar: "متجر إلكتروني متخصص في بيع الحواسيب والهواتف والملحقات — توصيل لكل أنحاء الجزائر مع ضمان رسمي.",
+        fr: "Boutique en ligne officielle — sélection de produits de qualité, service client dédié et livraison fiable dans toute l'Algérie.",
+        en: "Official online store — curated quality products, dedicated customer service, and reliable delivery across Algeria.",
+        ar: "المتجر الإلكتروني الرسمي — تشكيلة من المنتجات عالية الجودة، خدمة عملاء متميزة وتوصيل موثوق لجميع أنحاء الجزائر.",
       },
       copyright: {
         fr: "© 2026 {storeName} — Tous droits réservés",

@@ -81,7 +81,7 @@ function ProductView({ p }: { p: ProductType }) {
   const catMeta = getCategoryMeta(p.category, dynamicCat);
   const hasSpecs = Boolean(p.specs && Object.keys(p.specs).length > 0);
   const [tab, setTab] = useState("desc");
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const L = useLocalize();
   const catLabel = catMeta.labelKey ? t(catMeta.labelKey) : catMeta.labelText || p.category;
   const isService = p.productType === "service";
@@ -140,7 +140,7 @@ function ProductView({ p }: { p: ProductType }) {
       return;
     }
     await toggleFavorite(p.id);
-    toast.success(liked ? "Retiré des favoris" : "Ajouté aux favoris");
+    toast.success(liked ? t("pd.favRemoved") : t("pd.favAdded"));
   };
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +149,7 @@ function ProductView({ p }: { p: ProductType }) {
       return;
     }
     if (!comment.trim()) {
-      toast.error("Écrivez un commentaire");
+      toast.error(t("pd.commentRequired"));
       return;
     }
     try {
@@ -159,14 +159,14 @@ function ProductView({ p }: { p: ProductType }) {
         productName: name,
         customerName: user.name ?? user.email ?? "Client",
         rating,
-        title: reviewTitle.trim() || "Avis client",
+        title: reviewTitle.trim() || t("pd.defaultReviewTitle"),
         body: comment.trim(),
       });
       setComment("");
       setReviewTitle("");
       setRating(5);
       setSubmitted(true);
-      toast.success("Merci ! Votre avis sera publié après modération.");
+      toast.success(t("pd.reviewSuccess"));
     } catch (cause) {
       const msg = cause instanceof Error ? cause.message : "Erreur lors de l'envoi";
       toast.error(msg);
@@ -326,7 +326,7 @@ function ProductView({ p }: { p: ProductType }) {
               className={`inline-flex items-center gap-2 h-12 px-6 rounded-md border transition-colors ${liked ? "border-destructive/60 text-destructive" : "border-border hover:border-primary/60"}`}
             >
               <Heart className={`size-4 ${liked ? "fill-current" : ""}`} />{" "}
-              {liked ? "Dans les favoris" : t("pc.fav")}
+              {liked ? t("pd.inFavorites") : t("pc.fav")}
             </button>
           </div>
 
@@ -335,10 +335,10 @@ function ProductView({ p }: { p: ProductType }) {
               <Shield className="size-5 text-primary shrink-0" />
               <div className="text-xs">
                 <div className="font-semibold text-sm">
-                  {isService ? "Garantie & Support" : t("pd.warranty")}
+                  {isService ? t("pd.serviceWarranty") : t("pd.warranty")}
                 </div>
                 <div className="text-muted-foreground">
-                  {isService ? "Accompagnement et suivi d'expert" : t("pd.warranty.sub")}
+                  {isService ? t("pd.serviceWarrantySub") : t("pd.warranty.sub")}
                 </div>
               </div>
             </div>
@@ -346,10 +346,10 @@ function ProductView({ p }: { p: ProductType }) {
               <Truck className="size-5 text-primary shrink-0" />
               <div className="text-xs">
                 <div className="font-semibold text-sm">
-                  {isService ? "Prestation sur mesure" : t("pd.delivery")}
+                  {isService ? t("pd.serviceDelivery") : t("pd.delivery")}
                 </div>
                 <div className="text-muted-foreground">
-                  {isService ? "Exécution en atelier ou à distance" : t("pd.delivery.sub")}
+                  {isService ? t("pd.serviceDeliverySub") : t("pd.delivery.sub")}
                 </div>
               </div>
             </div>
@@ -421,7 +421,7 @@ function ProductView({ p }: { p: ProductType }) {
                           <div className="flex-1 h-1.5 rounded bg-muted overflow-hidden">
                             <div className="h-full bg-warning" style={{ width: `${pct}%` }} />
                           </div>
-                          <span className="w-6 text-right text-muted-foreground">{c}</span>
+                          <span className="w-6 text-end text-muted-foreground">{c}</span>
                         </div>
                       );
                     })}
@@ -448,7 +448,9 @@ function ProductView({ p }: { p: ProductType }) {
                     {r.title && <p className="text-sm font-medium">{r.title}</p>}
                     <p className="text-sm text-muted-foreground">{r.body}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      {new Date(r.createdAt).toLocaleDateString("fr-FR")}
+                      {new Intl.DateTimeFormat(
+                        lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR",
+                      ).format(new Date(r.createdAt))}
                     </p>
                   </li>
                 ))}
@@ -458,19 +460,15 @@ function ProductView({ p }: { p: ProductType }) {
                   onSubmit={submitReview}
                   className="rounded-xl border border-border bg-card p-5 space-y-3"
                 >
-                  <h3 className="font-semibold text-sm">Ajouter votre avis</h3>
-                  {submitted && (
-                    <p className="text-xs text-primary">
-                      Votre précédent avis est en attente de modération.
-                    </p>
-                  )}
+                  <h3 className="font-semibold text-sm">{t("pd.addRev")}</h3>
+                  {submitted && <p className="text-xs text-primary">{t("pd.reviewPending")}</p>}
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <button
                         key={n}
                         type="button"
                         onClick={() => setRating(n)}
-                        aria-label={`${n} étoiles`}
+                        aria-label={t("pd.starsLabel", { n: String(n) })}
                       >
                         <Star
                           className={`size-6 transition ${n <= rating ? "fill-warning text-warning" : "text-muted-foreground/40"}`}
@@ -482,7 +480,7 @@ function ProductView({ p }: { p: ProductType }) {
                     value={reviewTitle}
                     onChange={(e) => setReviewTitle(e.target.value)}
                     maxLength={80}
-                    placeholder="Titre de votre avis (optionnel)"
+                    placeholder={t("pd.reviewTitlePlaceholder")}
                     className="w-full h-10 rounded-md bg-background border border-border focus:border-primary outline-none px-3 text-sm"
                   />
                   <textarea
@@ -490,14 +488,14 @@ function ProductView({ p }: { p: ProductType }) {
                     onChange={(e) => setComment(e.target.value)}
                     maxLength={500}
                     rows={3}
-                    placeholder="Partagez votre avis sur ce produit..."
+                    placeholder={t("pd.reviewBodyPlaceholder")}
                     className="w-full rounded-md bg-background border border-border focus:border-primary outline-none p-3 text-sm"
                   />
                   <button
                     type="submit"
                     className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90"
                   >
-                    Envoyer l'avis
+                    {t("pd.reviewSubmit")}
                   </button>
                 </form>
               ) : (
@@ -505,7 +503,7 @@ function ProductView({ p }: { p: ProductType }) {
                   to="/auth"
                   className="inline-flex h-10 px-5 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold"
                 >
-                  Connectez-vous pour ajouter un avis
+                  {t("pd.reviewLogin")}
                 </Link>
               )}
             </div>

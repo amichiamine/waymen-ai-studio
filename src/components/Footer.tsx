@@ -3,15 +3,22 @@ import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, Clock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "./Logo";
-import { useSiteContent, useSiteSettings, useSubscriberMutations } from "@/data-provider";
+import {
+  useSiteContent,
+  useSiteSettings,
+  useSubscriberMutations,
+  useCategoryList,
+} from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
-import { useLocalize } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 
 export function Footer() {
   const { data: siteContent } = useSiteContent();
   const { data: siteSettings } = useSiteSettings();
+  const { data: categories } = useCategoryList();
   const f = siteContent.footer;
   const L = useLocalize();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const { subscribe } = useSubscriberMutations();
@@ -21,10 +28,10 @@ export function Footer() {
     setBusy(true);
     try {
       await subscribe(email, "footer");
-      toast.success("Merci pour votre inscription !");
+      toast.success(t("footer.newsletter.success"));
       setEmail("");
     } catch {
-      toast.error("Inscription impossible");
+      toast.error(t("footer.newsletter.error"));
     } finally {
       setBusy(false);
     }
@@ -113,7 +120,7 @@ export function Footer() {
           )}
           <form onSubmit={handleSubscribe} className="pt-3 max-w-sm">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider block mb-2">
-              Newsletter
+              {t("footer.newsletter.title")}
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -123,7 +130,7 @@ export function Footer() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
+                  placeholder={t("footer.newsletter.placeholder")}
                   className="w-full h-10 ps-9 pe-3 rounded-md bg-background border border-border text-sm focus:outline-none focus:border-primary/60"
                 />
               </div>
@@ -132,15 +139,22 @@ export function Footer() {
                 disabled={busy}
                 className="h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50"
               >
-                {busy ? "..." : "S'inscrire"}
+                {busy ? "..." : t("footer.newsletter.subscribe")}
               </button>
             </div>
           </form>
         </div>
         {f.columns.map((col) => {
-          const links = col.links.filter(
-            (l) => l.href !== "/builder" || siteSettings.builderEnabled !== false,
-          );
+          const links =
+            col.id === "fc_cats" && categories.length > 0
+              ? categories.slice(0, 6).map((c) => ({
+                  id: `fl_dyn_${c.slug}`,
+                  label: c.label,
+                  href: `/category/${c.slug}`,
+                }))
+              : col.links.filter(
+                  (l) => l.href !== "/builder" || siteSettings.builderEnabled !== false,
+                );
           return (
             <div key={col.id}>
               <h3 className="text-sm font-semibold text-foreground mb-4">{L(col.title)}</h3>
@@ -163,15 +177,14 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="container-page py-5 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-4">
           <span>
-            © {new Date().getFullYear()}{" "}
-            {siteSettings.storeName && siteSettings.storeName.trim() !== ""
-              ? siteSettings.storeName
-              : "KA Tech"}
-            . Tous droits réservés.
+            {(L(f.copyright) ?? "").replace(
+              /\{storeName\}/g,
+              siteSettings.storeName?.trim() || "Boutique",
+            )}
           </span>
           <div className="flex items-center gap-4">
             <Link to="/track" className="hover:text-primary transition-colors font-medium">
-              Suivre ma commande
+              {t("track.title")}
             </Link>
             <span>·</span>
             <span>{L(f.madeIn)}</span>

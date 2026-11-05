@@ -10,6 +10,7 @@ import { ChevronRight } from "lucide-react";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { useCategoryList, useSiteSettings } from "@/data-provider";
+import { useFormatPrice } from "@/lib/format-price";
 import type { AdminCategory } from "@/api/types";
 
 const BUILTIN_CATEGORIES = ["laptops", "desktops", "builds", "phones"];
@@ -25,6 +26,7 @@ export default function CategoryDetail() {
   const { slug } = useParams();
   const { data: categories } = useCategoryList();
   const { data: siteSettings } = useSiteSettings();
+  const { t } = useI18n();
   const brand = siteSettings.storeName?.trim() || "Boutique";
 
   const currentCat = categories.find((c) => c.slug === slug);
@@ -37,9 +39,9 @@ export default function CategoryDetail() {
   if (!isValid || !slug) {
     return (
       <div className="container mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">Catégorie introuvable</h1>
+        <h1 className="text-2xl font-bold">{t("cp.notFound")}</h1>
         <Link to="/category" className="mt-4 inline-block text-primary hover:underline">
-          Voir toutes les catégories
+          {t("cp.seeAllCategories")}
         </Link>
       </div>
     );
@@ -50,23 +52,36 @@ export default function CategoryDetail() {
 function CategoryView({ cat, dynamicCat }: { cat: Category; dynamicCat?: AdminCategory }) {
   const meta = getCategoryMeta(cat, dynamicCat);
   const { t } = useI18n();
-
-  const [brand, setBrand] = useState<string[]>([]);
-  const [use, setUse] = useState<string | null>(null);
-  const [maxPrice, setMaxPrice] = useState(500_000);
-  const [sort, setSort] = useState("popular");
-  const PAGE = 12;
-  const [visible, setVisible] = useState(PAGE);
+  const formatPrice = useFormatPrice();
 
   const products = useProducts();
-  // `catalogProducts` écarte les configurations composées dans /builder : elles
-  // sont stockées dans la même liste que le catalogue pour rester résolubles au
-  // panier, mais n'ont rien à faire dans la catégorie « builds » de la boutique.
   const all = useMemo(
     () => catalogProducts(products).filter((p) => p.category === cat),
     [products, cat],
   );
+
+  const maxCatalogPrice = useMemo(() => {
+    if (all.length === 0) return 100_000;
+    const max = Math.max(...all.map((p) => p.price));
+    return Math.ceil(max / 1000) * 1000 || 50_000;
+  }, [all]);
+
+  const [brand, setBrand] = useState<string[]>([]);
+  const [use, setUse] = useState<string | null>(null);
+  const [maxPrice, setMaxPrice] = useState(maxCatalogPrice);
+  const [sort, setSort] = useState("popular");
+  const PAGE = 12;
+  const [visible, setVisible] = useState(PAGE);
+
+  useEffect(() => {
+    setMaxPrice(maxCatalogPrice);
+  }, [maxCatalogPrice]);
+
   const brands = useMemo(() => Array.from(new Set(all.map((p) => p.brand))), [all]);
+  const hasUseTags = useMemo(
+    () => all.some((p) => Array.isArray(p.use) && p.use.length > 0),
+    [all],
+  );
 
   const list = useMemo(() => {
     let r = all.filter((p) => p.price <= maxPrice);
@@ -126,15 +141,15 @@ function CategoryView({ cat, dynamicCat }: { cat: Category; dynamicCat?: AdminCa
               <h3 className="text-sm font-semibold mb-3">{t("cp.maxPrice")}</h3>
               <input
                 type="range"
-                min={20000}
-                max={500000}
-                step={5000}
-                value={maxPrice}
+                min={0}
+                max={maxCatalogPrice}
+                step={Math.max(100, Math.round(maxCatalogPrice / 100))}
+                value={Math.min(maxPrice, maxCatalogPrice)}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full accent-primary"
               />
               <div className="text-xs text-muted-foreground mt-2">
-                {t("cp.upTo")} {new Intl.NumberFormat("fr-FR").format(maxPrice)} DA
+                {t("cp.upTo")} {formatPrice(maxPrice)}
               </div>
             </div>
             <div>
@@ -155,10 +170,12 @@ function CategoryView({ cat, dynamicCat }: { cat: Category; dynamicCat?: AdminCa
                 ))}
               </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold mb-3">{t("cp.use")}</h3>
-              <UseChips value={use} onChange={setUse} />
-            </div>
+            {hasUseTags && (
+              <div>
+                <h3 className="text-sm font-semibold mb-3">{t("cp.use")}</h3>
+                <UseChips value={use} onChange={setUse} />
+              </div>
+            )}
           </div>
         </aside>
 

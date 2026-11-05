@@ -831,7 +831,6 @@
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1853.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1853.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
 
-
 ---
 
 ### Phase 18 : Grand Audit d'Assurance Qualité, Éradication des Angles Morts Vitrine & Consolidation Intégrale de la Persistance Serveur
@@ -879,4 +878,51 @@
 - **Livrables :**
   - Plan interactif et miroir : 📄 [18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1916.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1916.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+
+---
+
+### Phase 19 : Assainissement Ultime des Angles Noirs Vitrine, Accessibilité RTL & Universalité 100% Tout Commerce
+
+- **Date :** 05 Novembre 2026
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation 19.
+- **Objectifs :**
+  1. Éradication complète des 7 angles noirs découverts lors du diagnostic d'assurance qualité :
+     - Internationalisation 100% trilingue (FR, EN, AR) de la fiche produit [`Product.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Product.tsx) : statut favori, réassurances de services, formulaire complet d'avis client, date localisée dynamique (`Intl.DateTimeFormat`), correction de l'alignement RTL (`text-end`).
+     - Carte produit [`ProductCard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/ProductCard.tsx) : conversion en classes logiques `start-3`/`end-3`, badge Service traduit et `aria-label` de notation localisé.
+     - Pages Catégorie [`CategoryDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryDetail.tsx) et Recherche [`Search.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Search.tsx) : état introuvable traduit, curseurs de prix dynamiques sur mesure (0 DA jusqu'au prix maximum réel du catalogue) éliminant la rigidité 20k-500k DA, affichage de prix via `useFormatPrice()`, conditionnement de `<UseChips />`.
+     - Pied de page [`Footer.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Footer.tsx) : formulaire Newsletter traduit (titre, placeholder, bouton, notifications toast), colonne des catégories dynamisée depuis `useCategoryList()`, copyright et lien de suivi de commande localisés.
+     - Neutralisation des mentions informatiques du seed par défaut dans [`site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) et support d'une image Hero personnalisée (`imageSrc`) dans [`Hero.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Hero.tsx).
+     - Déverrouillage du Back-Office [`Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : ouverture du sélecteur d'onglets de l'accueil à toutes les catégories dynamiques réelles du magasin.
+  2. Respect absolu de la parité trilingue sans clé orpheline ni texte brut résiduel.
+  3. Vérification intégrale du pipeline CI (`lint`, `tsc --noEmit`, `build`).
+- **Actions Réalisées :**
+  - **Étape 19.A (Fiche Produit & Carte Produit) :**
+    - Modification de [`src/pages/Product.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Product.tsx) : remplacement des chaînes françaises brutes par des clés `pd.*` traduites, date formatée selon la locale active, correction de `text-right` en `text-end`.
+    - Modification de [`src/components/ProductCard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/ProductCard.tsx) : `left-3` -> `start-3`, `right-3` -> `end-3`, badge Service et `aria-label` traduits.
+  - **Étape 19.B (Filtres de Prix Dynamiques & Catégories) :**
+    - Modification de [`src/pages/CategoryDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryDetail.tsx) : `t("cp.notFound")`, `t("cp.seeAllCategories")`, calcul dynamique de `maxCatalogPrice`, curseur de 0 DA au max réel, affichage via `formatPrice()`, `<UseChips />` masqué si aucun tag.
+    - Modification de [`src/pages/Search.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Search.tsx) : échelle dynamique similaire de 0 DA au prix max réel du catalogue.
+  - **Étape 19.C (Pied de page, Hero & Seed) :**
+    - Modification de [`src/components/Footer.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Footer.tsx) : formulaire Newsletter traduit, colonne des catégories synchronisée sur `useCategoryList()`, lien `/track` traduit via `t("track.title")`, copyright localisé.
+    - Modification de [`src/components/Hero.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Hero.tsx) & [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) : champ `imageSrc` optionnel, neutralisation de la tagline par défaut.
+  - **Étape 19.D (Déverrouillage Back-Office) :**
+    - Modification de [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : `FeaturedTabsForm` connecté à `useCategoryList()`.
+  - **Étape 19.E (Dictionnaires, CI & Packaging) :**
+    - Ajout des 22 nouvelles clés i18n dans [`src/lib/i18n/fr.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/fr.ts), [`en.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/en.ts) et [`ar.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/ar.ts).
+    - `bun run verifier-i18n` : 100% de parité trilingue validée (0 clé manquante).
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build` : compilation Vite, prérendu et empaquetage réussis.
+- **Résultats de Recette :**
+  - Fiche produit 100% traduite en FR, EN et AR, avec formulaire d'avis, réassurances et dates localisées.
+  - Conformité RTL irréprochable (plus aucune classe `text-right` ni `left-3`/`right-3` sur les cartes).
+  - Les filtres de prix s'adaptent automatiquement à toute gamme de prix (500 DA, 2 000 DA ou 2 000 000 DA).
+  - Le pied de page est synchronisé dynamiquement avec le catalogue et traduit.
+  - L'administrateur peut composer librement ses onglets d'accueil avec n'importe quelle catégorie.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1937.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1937.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
