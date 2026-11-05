@@ -1,8 +1,8 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { catalogProducts, categoryMeta, type Category } from "@/data/products";
-import { useProductList } from "@/data-provider";
+import { catalogProducts, getCategoryMeta, type Category } from "@/data/products";
+import { useCategoryList, useProductList } from "@/data-provider";
 import { useI18n, type Localized } from "@/lib/i18n";
 
 /** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
@@ -16,10 +16,9 @@ import { ProductCard } from "@/components/ProductCard";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 
-const CATS: Category[] = ["laptops", "desktops", "builds", "phones"];
-
 export default function Search() {
   const { t, lang } = useI18n();
+  const { data: categoryList } = useCategoryList();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
   const term = q.trim().toLowerCase();
@@ -144,17 +143,21 @@ export default function Search() {
                   />{" "}
                   {t("search.all")}
                 </label>
-                {CATS.map((c) => (
-                  <label key={c} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={cat === c}
-                      onChange={() => setCat(c)}
-                      className="size-4 accent-primary"
-                    />
-                    {t(categoryMeta[c].labelKey)}
-                  </label>
-                ))}
+                {categoryList.map((c) => {
+                  const meta = getCategoryMeta(c.slug, c);
+                  const catLabel = meta.labelKey ? t(meta.labelKey) : meta.labelText || c.slug;
+                  return (
+                    <label key={c.slug} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={cat === c.slug}
+                        onChange={() => setCat(c.slug as Category)}
+                        className="size-4 accent-primary"
+                      />
+                      {catLabel}
+                    </label>
+                  );
+                })}
               </div>
             </div>
             <div>

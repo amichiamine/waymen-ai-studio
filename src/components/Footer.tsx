@@ -137,23 +137,28 @@ export function Footer() {
             </div>
           </form>
         </div>
-        {f.columns.map((col) => (
-          <div key={col.id}>
-            <h3 className="text-sm font-semibold text-foreground mb-4">{L(col.title)}</h3>
-            <ul className="space-y-2.5 text-sm">
-              {col.links.map((l) => (
-                <li key={l.id}>
-                  <Link
-                    to={l.href || "/"}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {L(l.label)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {f.columns.map((col) => {
+          const links = col.links.filter(
+            (l) => l.href !== "/builder" || siteSettings.builderEnabled !== false,
+          );
+          return (
+            <div key={col.id}>
+              <h3 className="text-sm font-semibold text-foreground mb-4">{L(col.title)}</h3>
+              <ul className="space-y-2.5 text-sm">
+                {links.map((l) => (
+                  <li key={l.id}>
+                    <Link
+                      to={l.href || "/"}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {L(l.label)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
       <div className="border-t border-border">
         <div className="container-page py-5 text-xs text-muted-foreground flex flex-wrap items-center justify-between gap-4">

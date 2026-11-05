@@ -2006,8 +2006,9 @@
     "currencySymbol": "DA",
     "currencyPosition": "suffix",
     "currencyThousandSeparator": " ",
-    "languageSelectorEnabled": false,
-    "hideRatingWhenNoReviews": true
+    "languageSelectorEnabled": true,
+    "hideRatingWhenNoReviews": true,
+    "onboardingCompleted": false
   },
   "shippingSettings": {
     "freeShippingThreshold": 150000,

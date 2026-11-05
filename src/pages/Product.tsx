@@ -1,9 +1,14 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { formatDZD, categoryMeta, catalogProducts, type SpecKey } from "@/data/products";
+import { formatDZD, getCategoryMeta, catalogProducts, type SpecKey } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
-import { useProductReviewList, useReviewMutations, useSiteSettings } from "@/data-provider";
+import {
+  useCategoryList,
+  useProductReviewList,
+  useReviewMutations,
+  useSiteSettings,
+} from "@/data-provider";
 
 import { ProductCard } from "@/components/ProductCard";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
@@ -69,12 +74,16 @@ import type { Product as ProductType } from "@/data/products";
 function ProductView({ p }: { p: ProductType }) {
   const products = useProducts();
   const { data: siteSettings } = useSiteSettings();
+  const { data: categoryList } = useCategoryList();
   const brand = siteSettings.storeName?.trim() || "Boutique";
 
-  const cat = categoryMeta[p.category];
+  const dynamicCat = categoryList.find((c) => c.slug === p.category);
+  const catMeta = getCategoryMeta(p.category, dynamicCat);
   const [tab, setTab] = useState("specs");
   const { t } = useI18n();
   const L = useLocalize();
+  const catLabel = catMeta.labelKey ? t(catMeta.labelKey) : catMeta.labelText || p.category;
+  const isService = p.productType === "service";
   const { user } = useAuth();
   const { addToCart, toggleFavorite, isFavorite } = useStore();
   const navigate = useNavigate();
@@ -97,7 +106,7 @@ function ProductView({ p }: { p: ProductType }) {
     { id: "specs", key: "pd.tab.specs" },
     { id: "desc", key: "pd.tab.desc" },
     { id: "rev", key: "pd.tab.rev" },
-    { id: "ship", key: "pd.tab.ship" },
+    ...(!isService ? [{ id: "ship", key: "pd.tab.ship" as TKey }] : []),
   ];
 
   // Lecture des avis via le provider : useProductReviewList filtre déjà sur
@@ -183,7 +192,7 @@ function ProductView({ p }: { p: ProductType }) {
     "@type": "Product",
     name,
     brand: { "@type": "Brand", name: p.brand },
-    category: t(cat.labelKey),
+    category: catLabel,
     // schema.org est lu par un moteur, hors du contexte de la page : la balise
     // `<base>` ne s'y applique pas. C'est le seul consommateur qui exige une URL
     // ABSOLUE — d'où `urlMediaAbsolue` et non la résolution ordinaire.
@@ -229,7 +238,7 @@ function ProductView({ p }: { p: ProductType }) {
         </Link>
         <ChevronRight className="size-3" />
         <Link to={`/category/${p.category}`} className="hover:text-foreground">
-          {t(cat.labelKey)}
+          {catLabel}
         </Link>
         <ChevronRight className="size-3" />
         <span className="text-foreground line-clamp-1">{name}</span>
@@ -256,6 +265,11 @@ function ProductView({ p }: { p: ProductType }) {
             <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-card border border-border">
               {p.brand}
             </span>
+            {isService && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                Prestation de service
+              </span>
+            )}
             {discount > 0 && (
               <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-destructive text-destructive-foreground">
                 -{discount}%
@@ -319,15 +333,23 @@ function ProductView({ p }: { p: ProductType }) {
             <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card">
               <Shield className="size-5 text-primary shrink-0" />
               <div className="text-xs">
-                <div className="font-semibold text-sm">{t("pd.warranty")}</div>
-                <div className="text-muted-foreground">{t("pd.warranty.sub")}</div>
+                <div className="font-semibold text-sm">
+                  {isService ? "Garantie & Support" : t("pd.warranty")}
+                </div>
+                <div className="text-muted-foreground">
+                  {isService ? "Accompagnement et suivi d'expert" : t("pd.warranty.sub")}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card">
               <Truck className="size-5 text-primary shrink-0" />
               <div className="text-xs">
-                <div className="font-semibold text-sm">{t("pd.delivery")}</div>
-                <div className="text-muted-foreground">{t("pd.delivery.sub")}</div>
+                <div className="font-semibold text-sm">
+                  {isService ? "Prestation sur mesure" : t("pd.delivery")}
+                </div>
+                <div className="text-muted-foreground">
+                  {isService ? "Exécution en atelier ou à distance" : t("pd.delivery.sub")}
+                </div>
               </div>
             </div>
           </div>
@@ -349,17 +371,15 @@ function ProductView({ p }: { p: ProductType }) {
         <div className="py-8">
           {tab === "specs" && (
             <dl className="grid sm:grid-cols-2 gap-px bg-border rounded-xl overflow-hidden border border-border">
-              {/*
-                Les clés de `specs` restent techniques : elles sont traduites
-                par le dictionnaire (`t(specKeyMap[k])`), pas par `L`. Seules
-                les valeurs sont des `Localized<string>`.
-              */}
-              {Object.entries(p.specs).map(([k, v]) => (
-                <div key={k} className="bg-card flex justify-between gap-4 px-5 py-3.5">
-                  <dt className="text-sm text-muted-foreground">{t(specKeyMap[k as SpecKey])}</dt>
-                  <dd className="text-sm font-medium text-foreground text-end">{L(v)}</dd>
-                </div>
-              ))}
+              {p.specs &&
+                Object.entries(p.specs).map(([k, v]) => (
+                  <div key={k} className="bg-card flex justify-between gap-4 px-5 py-3.5">
+                    <dt className="text-sm text-muted-foreground capitalize">
+                      {k in specKeyMap ? t(specKeyMap[k as SpecKey]) : k}
+                    </dt>
+                    <dd className="text-sm font-medium text-foreground text-end">{L(v)}</dd>
+                  </div>
+                ))}
             </dl>
           )}
           {tab === "desc" && (

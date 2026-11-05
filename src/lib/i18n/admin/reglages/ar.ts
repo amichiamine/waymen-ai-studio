@@ -144,6 +144,27 @@ const reglagesAr: Record<string, string> = {
   "admin.reglages.parametres.champ_horaires": "أوقات العمل",
   "admin.reglages.parametres.champ_horaires_placeholder": "الأحد – الخميس، 9ص – 7م",
   "admin.reglages.parametres.carte_options_titre": "الخيارات",
+  "admin.reglages.parametres.carte_theme_titre": "الهوية البصرية والسمة",
+  "admin.reglages.parametres.theme_defaut": "سمة العرض الافتراضية",
+  "admin.reglages.parametres.theme_defaut_aide":
+    "السمة المطبقة فوراً على الزوار الجدد قبل أي تفضيل شخصي.",
+  "admin.reglages.parametres.theme_sombre": "الوضع الداكن (مستحسن)",
+  "admin.reglages.parametres.theme_clair": "الوضع الفاتح",
+  "admin.reglages.parametres.theme_systeme": "تلقائي (حسب نظام الجهاز)",
+  "admin.reglages.parametres.couleur_primaire": "لون التمييز الرئيسي",
+  "admin.reglages.parametres.couleur_primaire_aide":
+    "تخصيص الأزرار والشارات والتوهجات والحدود في كامل الموقع.",
+  "admin.reglages.parametres.couleur_reinitialiser": "اللون الافتراضي",
+  "admin.reglages.parametres.favicon_titre": "أيقونة الموقع (Favicon)",
+  "admin.reglages.parametres.favicon_aide":
+    "الأيقونة المعروضة في تبويب المتصفح (.ico, .png, .svg).",
+  "admin.reglages.parametres.favicon_officiel": "الأيقونة الرسمية الافتراضية",
+  "admin.reglages.parametres.favicon_personnalise": "أيقونة مخصصة",
+  "admin.reglages.parametres.favicon_reinitialiser": "استعادة الأيقونة الرسمية الافتراضية",
+  "admin.reglages.parametres.carte_modules_titre": "تفعيل الوحدات",
+  "admin.reglages.parametres.opt_configurateur": "تفعيل مجمّع الحواسيب المخصص",
+  "admin.reglages.parametres.opt_configurateur_aide":
+    "عطّل هذه الوحدة للمتاجر العامة أو متاجر الخدمات دون قطع غيار.",
   "admin.reglages.parametres.opt_notifications_email": "إشعارات البريد الإلكتروني",
   "admin.reglages.parametres.opt_selecteur_langue": "منتقي اللغة (FR / AR / EN)",
   "admin.reglages.parametres.opt_masquer_note": "إخفاء تقييم المنتج عند غياب المراجعات",

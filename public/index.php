@@ -311,6 +311,24 @@ if ($settingsBootstrap !== null) {
         $nomMagasin = htmlspecialchars($settingsBootstrap['storeName'], ENT_QUOTES, 'UTF-8');
         $html = (string) preg_replace('#<title>.*?</title>#i', "<title>{$nomMagasin} — La puissance tech entre vos mains</title>", $html, 1);
     }
+    if (!empty($settingsBootstrap['defaultTheme']) && is_string($settingsBootstrap['defaultTheme'])) {
+        $themeDefaut = $settingsBootstrap['defaultTheme'];
+        if ($themeDefaut === 'light') {
+            $html = (string) preg_replace('#<html(\s+[^>]*)?class="dark"\s+style="color-scheme:\s*dark"#i', '<html$1class="light" style="color-scheme: light"', $html, 1);
+        }
+    }
+    if (!empty($settingsBootstrap['faviconUrl']) && is_string($settingsBootstrap['faviconUrl'])) {
+        $faviconHref = htmlspecialchars($settingsBootstrap['faviconUrl'], ENT_QUOTES, 'UTF-8');
+        if (!str_starts_with($faviconHref, 'http://') && !str_starts_with($faviconHref, 'https://') && !str_starts_with($faviconHref, '/')) {
+            $faviconHref = rtrim($base, '/') . '/' . ltrim($faviconHref, '/');
+        }
+        $html = (string) preg_replace('#<link\s+rel="icon"\s+href="/favicon\.ico"[^>]*>#i', '<link rel="icon" href="' . $faviconHref . '" />', $html, 1);
+    }
+    if (!empty($settingsBootstrap['primaryColor']) && is_string($settingsBootstrap['primaryColor'])) {
+        $couleurPrimaire = htmlspecialchars($settingsBootstrap['primaryColor'], ENT_QUOTES, 'UTF-8');
+        $stylePrimaire = "\n    <style id=\"katech-primary-color\">:root, .light, .dark { --primary: {$couleurPrimaire}; --ring: {$couleurPrimaire}; --primary-glow: {$couleurPrimaire}; }</style>";
+        $html = (string) preg_replace('#</head>#i', $stylePrimaire . "\n</head>", $html, 1);
+    }
 }
 
 header('Content-Type: text/html; charset=UTF-8');

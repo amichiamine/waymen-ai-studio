@@ -1,13 +1,15 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Cpu } from "lucide-react";
 import banner from "@/assets/builder-banner.webp";
-import { useSiteContent } from "@/data-provider";
+import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
 export function BuilderTeaser() {
   const { data: siteContent } = useSiteContent();
+  const { data: siteSettings } = useSiteSettings();
+  const storeName = siteSettings.storeName?.trim() || "Boutique";
   const b = siteContent.builderTeaser;
   const L = useLocalize();
   return (
@@ -16,7 +18,7 @@ export function BuilderTeaser() {
         <div className="group relative overflow-hidden rounded-2xl border border-border transition-all duration-500 hover:border-primary/50">
           <img
             src={banner}
-            alt="KA Tech build"
+            alt={storeName}
             width={1280}
             height={600}
             loading="lazy"

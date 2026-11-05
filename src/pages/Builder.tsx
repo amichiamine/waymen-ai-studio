@@ -16,7 +16,9 @@ import {
   ShoppingCart,
   AlertTriangle,
   AlertCircle,
+  Wrench,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatDZD } from "@/data/products";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -341,6 +343,23 @@ export default function Builder() {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (siteSettingsData.builderEnabled === false) {
+    return (
+      <div className="container-page py-20 text-center max-w-lg mx-auto">
+        <div className="size-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 text-muted-foreground">
+          <Wrench className="size-8" />
+        </div>
+        <h1 className="text-2xl font-bold mb-2">Configurateur indisponible</h1>
+        <p className="text-muted-foreground mb-6 text-sm">
+          Le configurateur sur mesure n'est pas activé sur cette boutique.
+        </p>
+        <Button onClick={() => navigate("/")} className="gap-2">
+          Retour à l'accueil
+        </Button>
+      </div>
+    );
   }
 
   return (

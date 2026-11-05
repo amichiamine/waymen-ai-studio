@@ -10,6 +10,7 @@ import { normaliserSingleton } from "./normalisation";
 import { runMutation, useResource } from "./use-resource";
 import { writeCache } from "./cache";
 import type { ResourceState } from "./types";
+import { resoudreUrlMedia } from "@/components/media-url";
 
 /** Clé de cache de la ressource singleton. */
 export const SITE_SETTINGS_RESOURCE = "site-settings";
@@ -19,6 +20,10 @@ declare global {
     __SITE_SETTINGS_BOOTSTRAP__?: {
       storeName?: string;
       logoUrl?: string;
+      defaultTheme?: "dark" | "light" | "system";
+      primaryColor?: string;
+      faviconUrl?: string;
+      builderEnabled?: boolean;
       [key: string]: unknown;
     };
   }
@@ -40,6 +45,9 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   hours: "",
   maintenance: false,
   maintenanceMessage: "",
+  maintenanceTitle: "",
+  maintenanceEstimatedReturn: "",
+  maintenanceShowWhatsApp: false,
   emailNotifications: false,
   showPromoBanner: false,
   promoBannerText: "",
@@ -50,10 +58,47 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   currencySymbol: "DA",
   currencyPosition: "suffix",
   currencyThousandSeparator: " ",
-  languageSelectorEnabled: false,
+  languageSelectorEnabled: true,
   hideRatingWhenNoReviews: true,
   logoUrl: "",
+  defaultTheme: "dark",
+  primaryColor: "",
+  faviconUrl: "",
+  builderEnabled: true,
+  onboardingCompleted: true,
 };
+
+/**
+ * Applique immédiatement le style et favicon dynamiques dans le DOM.
+ */
+export function appliquerBrandingDynamique(settings: Partial<SiteSettings>): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+
+  // 1. Couleur primaire
+  if (settings.primaryColor && settings.primaryColor.trim()) {
+    root.style.setProperty("--primary", settings.primaryColor);
+    root.style.setProperty("--ring", settings.primaryColor);
+    root.style.setProperty("--primary-glow", settings.primaryColor);
+  } else if (settings.primaryColor === "") {
+    root.style.removeProperty("--primary");
+    root.style.removeProperty("--ring");
+    root.style.removeProperty("--primary-glow");
+  }
+
+  // 2. Favicon
+  if (settings.faviconUrl !== undefined) {
+    const faviconUrl = settings.faviconUrl.trim();
+    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (link) {
+      if (faviconUrl) {
+        link.href = resoudreUrlMedia(faviconUrl);
+      } else {
+        link.href = "/favicon.ico";
+      }
+    }
+  }
+}
 
 /**
  * Récupère les réglages initiaux de façon synchrone au Tick 0ms :
@@ -89,6 +134,7 @@ if (typeof window !== "undefined") {
   if (initial && initial.storeName) {
     writeCache(SITE_SETTINGS_RESOURCE, initial);
   }
+  appliquerBrandingDynamique(initial);
 }
 
 function persistSettingsLocally(patch: Partial<SiteSettings>): void {
@@ -124,7 +170,8 @@ export function useSiteSettings(): ResourceState<SiteSettings> {
     normaliser: (brut) => normaliserSingleton(SITE_SETTINGS_RESOURCE, DEFAULT_SITE_SETTINGS, brut),
   });
 
-  // Synchronise en continu le formateur universel de prix de la vitrine
+  // Synchronise en continu le formateur universel de prix de la vitrine,
+  // applique le branding dynamique (couleur primaire, favicon),
   // et met à jour le cache persistant localStorage pour le prochain rechargement à 0ms
   useEffect(() => {
     if (resource.data) {
@@ -134,6 +181,8 @@ export function useSiteSettings(): ResourceState<SiteSettings> {
         thousandSeparator: (resource.data.currencyThousandSeparator ||
           "") as CurrencyConfig["thousandSeparator"],
       });
+
+      appliquerBrandingDynamique(resource.data);
 
       if (typeof window !== "undefined") {
         try {

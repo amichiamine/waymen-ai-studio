@@ -20,9 +20,49 @@
       (function () {
         try {
           var b = window.__SITE_SETTINGS_BOOTSTRAP__;
-          var n = (b && b.storeName) || localStorage.getItem("katech_site_settings_name");
+          var savedSettings = null;
+          try {
+            var raw = localStorage.getItem("katech_site_settings");
+            if (raw) savedSettings = JSON.parse(raw);
+          } catch (e) {}
+          var s = b || savedSettings || {};
+
+          // 1. Nom du magasin
+          var n = s.storeName || localStorage.getItem("katech_site_settings_name");
           if (n && n.trim()) {
             document.title = n + " — La puissance tech entre vos mains";
+          }
+
+          // 2. Thème par défaut / préférence utilisateur (0 ms, zéro FOUC)
+          var userTheme = localStorage.getItem("ka-theme");
+          var themeToApply = userTheme || s.defaultTheme || "dark";
+          var isLight =
+            themeToApply === "light" ||
+            (themeToApply === "system" &&
+              window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: light)").matches);
+          var root = document.documentElement;
+          root.classList.toggle("light", isLight);
+          root.classList.toggle("dark", !isLight);
+          root.style.colorScheme = isLight ? "light" : "dark";
+
+          // 3. Couleur primaire d'accentuation
+          if (s.primaryColor && s.primaryColor.trim()) {
+            root.style.setProperty("--primary", s.primaryColor);
+            root.style.setProperty("--ring", s.primaryColor);
+            root.style.setProperty("--primary-glow", s.primaryColor);
+          }
+
+          // 4. Favicon dynamique
+          if (s.faviconUrl && s.faviconUrl.trim()) {
+            var link = document.querySelector('link[rel="icon"]');
+            if (link) {
+              var fUrl = s.faviconUrl.trim();
+              if (!fUrl.startsWith("http") && !fUrl.startsWith("/")) {
+                fUrl = "/" + fUrl;
+              }
+              link.href = fUrl;
+            }
           }
         } catch (e) {}
       })();

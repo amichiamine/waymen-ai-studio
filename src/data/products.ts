@@ -13,7 +13,9 @@ import iphone from "@/assets/p-iphone.webp";
 import xiaomi from "@/assets/p-xiaomi.webp";
 import redmi from "@/assets/p-redmi.webp";
 
-export type Category = "laptops" | "desktops" | "builds" | "phones";
+export type BuiltinCategory = "laptops" | "desktops" | "builds" | "phones";
+export type Category = BuiltinCategory | (string & {});
+export type ProductType = "physical" | "service";
 export type UseTag = "gaming" | "work" | "study" | "edit" | "home";
 export type SpecKey =
   | "cpu"
@@ -63,10 +65,10 @@ export type Product = {
   use: UseTag[];
   specLine: Localized<string>;
   /**
-   * Les **clés** restent techniques (`SpecKey`, traduites par `t()` via le
-   * dictionnaire), seules les **valeurs** sont localisées.
+   * Clés techniques ou attributs personnalisés (Taille, Couleur, Matière, etc.),
+   * les valeurs étant localisées.
    */
-  specs: Partial<Record<SpecKey, Localized<string>>>;
+  specs: Partial<Record<SpecKey | string, Localized<string>>>;
   price: number;
   oldPrice?: number;
   stock: "in" | "low" | "out";
@@ -74,6 +76,8 @@ export type Product = {
   image: string;
   bestSeller?: boolean;
   sale?: boolean;
+  /** Nature de l'article : produit physique livré ou prestation de service immatérielle */
+  productType?: ProductType;
   /**
    * Configuration assemblée par un visiteur dans /builder, matérialisée en
    * `Product` uniquement pour que le panier et le paiement puissent la
@@ -455,9 +459,9 @@ export const formatDZD = (n: number) => {
 };
 
 export const categoryMeta: Record<
-  Category,
+  BuiltinCategory,
   {
-    slug: Category;
+    slug: BuiltinCategory;
     labelKey: "nav.laptops" | "nav.desktops" | "nav.builds" | "nav.phones";
     descKey: "cat.laptops.desc" | "cat.desktops.desc" | "cat.builds.desc" | "cat.phones.desc";
   }
@@ -467,3 +471,35 @@ export const categoryMeta: Record<
   builds: { slug: "builds", labelKey: "nav.builds", descKey: "cat.builds.desc" },
   phones: { slug: "phones", labelKey: "nav.phones", descKey: "cat.phones.desc" },
 };
+
+export type CategoryMetaInfo = {
+  slug: string;
+  labelKey?: string;
+  labelText?: string;
+  descKey?: string;
+  descText?: string;
+};
+
+/**
+ * Récupère les métadonnées d'une catégorie qu'elle soit native ou dynamique.
+ */
+export function getCategoryMeta(
+  slug: string,
+  dynamicCategory?: { slug: string; label: string; description?: string },
+): CategoryMetaInfo {
+  if (slug in categoryMeta) {
+    const b = categoryMeta[slug as BuiltinCategory];
+    return {
+      slug: b.slug,
+      labelKey: b.labelKey,
+      descKey: b.descKey,
+      labelText: dynamicCategory?.label,
+      descText: dynamicCategory?.description,
+    };
+  }
+  return {
+    slug,
+    labelText: dynamicCategory?.label ?? slug,
+    descText: dynamicCategory?.description ?? "",
+  };
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import defaultLogoSrc from "@/assets/ka-tech-logo.webp";
 import { useSiteSettings } from "@/data-provider";
+import { resoudreUrlMedia } from "./media-url";
 
 export function Logo({ className = "h-9" }: { className?: string }) {
   const { data: s } = useSiteSettings();
@@ -11,8 +12,9 @@ export function Logo({ className = "h-9" }: { className?: string }) {
     setLoadError(false);
   }, [s.logoUrl]);
 
-  const hasCustomLogo = Boolean(s.logoUrl && s.logoUrl.trim() !== "" && !loadError);
-  const logoSrc = hasCustomLogo ? s.logoUrl! : defaultLogoSrc;
+  const customSrc = s.logoUrl && s.logoUrl.trim() !== "" ? resoudreUrlMedia(s.logoUrl) : "";
+  const hasCustomLogo = Boolean(customSrc && !loadError);
+  const logoSrc = hasCustomLogo ? customSrc : defaultLogoSrc;
   const storeName = s.storeName && s.storeName.trim() !== "" ? s.storeName : "KA Tech";
   const altText = `${storeName} — La tech entre vos mains`;
 

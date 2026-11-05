@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { catalogProducts, categoryMeta, type Category } from "@/data/products";
+import { catalogProducts, getCategoryMeta, type Category } from "@/data/products";
 import { useProducts } from "@/lib/useProducts";
 
 import { ProductCard } from "@/components/ProductCard";
@@ -9,9 +9,10 @@ import { UseChips } from "@/components/UseChips";
 import { ChevronRight } from "lucide-react";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
-import { useSiteSettings } from "@/data-provider";
+import { useCategoryList, useSiteSettings } from "@/data-provider";
+import type { AdminCategory } from "@/api/types";
 
-const VALID: Category[] = ["laptops", "desktops", "builds", "phones"];
+const BUILTIN_CATEGORIES = ["laptops", "desktops", "builds", "phones"];
 
 const SORTS: { id: string; key: TKey }[] = [
   { id: "popular", key: "cp.sort.popular" },
@@ -22,13 +23,18 @@ const SORTS: { id: string; key: TKey }[] = [
 
 export default function CategoryDetail() {
   const { slug } = useParams();
-  const cat = slug as Category;
+  const { data: categories } = useCategoryList();
   const { data: siteSettings } = useSiteSettings();
   const brand = siteSettings.storeName?.trim() || "Boutique";
+
+  const currentCat = categories.find((c) => c.slug === slug);
+  const isValid = Boolean(currentCat || (slug && BUILTIN_CATEGORIES.includes(slug)));
+
   useEffect(() => {
     document.title = `${brand} — ${slug ?? ""}`;
   }, [slug, brand]);
-  if (!VALID.includes(cat)) {
+
+  if (!isValid || !slug) {
     return (
       <div className="container mx-auto max-w-xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold">Catégorie introuvable</h1>
@@ -38,11 +44,11 @@ export default function CategoryDetail() {
       </div>
     );
   }
-  return <CategoryView cat={cat} />;
+  return <CategoryView cat={slug as Category} dynamicCat={currentCat} />;
 }
 
-function CategoryView({ cat }: { cat: Category }) {
-  const meta = categoryMeta[cat];
+function CategoryView({ cat, dynamicCat }: { cat: Category; dynamicCat?: AdminCategory }) {
+  const meta = getCategoryMeta(cat, dynamicCat);
   const { t } = useI18n();
 
   const [brand, setBrand] = useState<string[]>([]);
@@ -84,8 +90,8 @@ function CategoryView({ cat }: { cat: Category }) {
     onLoadMore: () => setVisible((v) => v + PAGE),
   });
 
-  const label = t(meta.labelKey);
-  const desc = t(meta.descKey);
+  const label = meta.labelKey ? t(meta.labelKey) : meta.labelText || cat;
+  const desc = meta.descKey ? t(meta.descKey) : meta.descText || "";
 
   return (
     <div className="container-page py-8 lg:py-12">

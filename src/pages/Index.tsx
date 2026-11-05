@@ -34,7 +34,7 @@ export default function Index() {
       </Helmet>
       <Hero />
       <FlashSale />
-      <CategoryCards />
+      <CategoryCards max={4} />
       <section className="container-page pb-4">
         <h2 className="text-2xl sm:text-3xl font-bold mb-4">{L(siteContent.useChips.title)}</h2>
         <UseChips />
@@ -42,7 +42,7 @@ export default function Index() {
       <BestSellers />
       <BrandsMarquee />
       <WhyUs />
-      <BuilderTeaser />
+      {siteSettings.builderEnabled !== false && <BuilderTeaser />}
       <Reviews />
       <ContactCTA />
     </>

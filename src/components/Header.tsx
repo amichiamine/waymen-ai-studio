@@ -22,7 +22,7 @@ import { ThemeToggle, LanguageToggle } from "./ThemeLanguageToggles";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { useAdminRoles } from "@/lib/admin-auth";
-import { useSiteContent } from "@/data-provider";
+import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import {
   DropdownMenu,
@@ -46,6 +46,7 @@ export function Header() {
   // jusqu'au premier aller-retour — l'en-tête reste visible avec les valeurs
   // par défaut. Dégradation gracieuse : un header vide casserait toutes les pages.
   const { data: siteContent } = useSiteContent();
+  const { data: siteSettings } = useSiteSettings();
   const H = siteContent.header;
   const navigate = useNavigate();
 
@@ -145,13 +146,15 @@ export function Header() {
         )}
 
         <div className="flex items-center gap-0.5 md:gap-1 ms-auto lg:ms-0">
-          <Link
-            to={H.builderCta.href}
-            className="hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 shadow-[var(--shadow-glow)] transition-all active:scale-95"
-          >
-            <Wrench className="size-4" />
-            <span>{L(H.builderCta.label)}</span>
-          </Link>
+          {siteSettings.builderEnabled !== false && (
+            <Link
+              to={H.builderCta.href}
+              className="hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 shadow-[var(--shadow-glow)] transition-all active:scale-95"
+            >
+              <Wrench className="size-4" />
+              <span>{L(H.builderCta.label)}</span>
+            </Link>
+          )}
           <LanguageToggle />
           <ThemeToggle />
           <Link

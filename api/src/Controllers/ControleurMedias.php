@@ -171,7 +171,7 @@ final class ControleurMedias
 
         /* ---- 6. Dossier de destination ---- */
         $dossierUploads = rtrim(
-            (string) Env::get('UPLOAD_DIR', dirname(__DIR__, 3) . '/public_html/uploads'),
+            (string) Env::get('UPLOAD_DIR', dirname(__DIR__, 3) . '/uploads'),
             '/'
         );
 
@@ -305,7 +305,7 @@ final class ControleurMedias
     {
         $baseUrl     = $this->baseUrlUploads();
         $dossierUploads = rtrim(
-            (string) Env::get('UPLOAD_DIR', dirname(__DIR__, 3) . '/public_html/uploads'),
+            (string) Env::get('UPLOAD_DIR', dirname(__DIR__, 3) . '/uploads'),
             '/'
         );
 

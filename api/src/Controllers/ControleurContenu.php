@@ -367,9 +367,20 @@ final class ControleurContenu
                 && is_array($base[$cle])
                 && is_array($valeurDessus)
             ) {
-                // Fusion récursive : les tableaux imbriqués (y compris localisés)
-                // sont fusionnés clé par clé plutôt qu'écrasés.
-                $base[$cle] = $this->fusionnerPayload($base[$cle], $valeurDessus);
+                // Si la valeur entrante est une liste ordonnée/indexée (ex: items de ticker,
+                // marques, options de configurateur, avis), elle doit remplacer intégralement
+                // la liste précédente pour permettre la suppression et le réordonnancement.
+                $estListe = function_exists('array_is_list')
+                    ? array_is_list($valeurDessus)
+                    : (array_keys($valeurDessus) === range(0, count($valeurDessus) - 1));
+
+                if ($estListe) {
+                    $base[$cle] = $valeurDessus;
+                } else {
+                    // Fusion récursive : les tableaux associatifs (y compris localisés {fr, en, ar})
+                    // sont fusionnés clé par clé plutôt qu'écrasés.
+                    $base[$cle] = $this->fusionnerPayload($base[$cle], $valeurDessus);
+                }
             } else {
                 $base[$cle] = $valeurDessus;
             }

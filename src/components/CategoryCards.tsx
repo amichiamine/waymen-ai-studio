@@ -1,11 +1,18 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Laptop, Monitor, Cpu, Smartphone, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Laptop,
+  Monitor,
+  Cpu,
+  Smartphone,
+  LayoutGrid,
+  type LucideIcon,
+} from "lucide-react";
 import laptopsImg from "@/assets/cat-laptops.webp";
 import desktopsImg from "@/assets/cat-desktops.webp";
 import buildsImg from "@/assets/cat-builds.webp";
 import phonesImg from "@/assets/cat-phones.webp";
 import { useCategoryList, useSiteContent } from "@/data-provider";
-import type { Category } from "@/data/products";
 import { Reveal } from "@/components/Reveal";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { useLocalize } from "@/lib/i18n";
@@ -23,14 +30,12 @@ const DEFAULT_ICON: Record<string, LucideIcon> = {
   phones: Smartphone,
 };
 
-export function CategoryCards() {
+export function CategoryCards({ max }: { max?: number } = {}) {
   const { data: categories } = useCategoryList();
   const { data: siteContent } = useSiteContent();
   const cfg = siteContent.categories;
   const L = useLocalize();
-  const cats = categories.filter((c) =>
-    (["laptops", "desktops", "builds", "phones"] as Category[]).includes(c.slug as Category),
-  );
+  const cats = typeof max === "number" ? categories.slice(0, max) : categories;
   return (
     <section className="container-page py-16 lg:py-20">
       <Reveal variant="up">
@@ -38,8 +43,8 @@ export function CategoryCards() {
       </Reveal>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mt-10">
         {cats.map((c, i) => {
-          const Icon = DEFAULT_ICON[c.slug] ?? Laptop;
-          const img = c.cover || DEFAULT_IMG[c.slug];
+          const Icon = DEFAULT_ICON[c.slug] ?? LayoutGrid;
+          const img = c.cover || DEFAULT_IMG[c.slug] || DEFAULT_IMG.laptops;
           return (
             <Reveal key={c.slug} variant="up" delay={i * 90}>
               <Link

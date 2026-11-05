@@ -2,6 +2,8 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
+import { existsSync, createReadStream, statSync } from "node:fs";
+import { resolve, extname, basename } from "node:path";
 
 /**
  * Port de développement.
@@ -249,6 +251,47 @@ function temoinModeDonnees(choix: ChoixMode): Plugin {
   };
 }
 
+/**
+ * Sert les médias téléversés du dossier `uploads/` en développement Vite.
+ * En production ou sous Apache, le serveur HTTP sert directement `uploads/`.
+ * Ce middleware connect permet à Vite (`bun run dev`) de répondre 200 OK
+ * sur `/uploads/*` avec le bon Content-Type d'image.
+ */
+function servirUploadsDev(): Plugin {
+  const dossierUploads = resolve(process.cwd(), "uploads");
+  const MIMES: Record<string, string> = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml",
+    ".gif": "image/gif",
+    ".avif": "image/avif",
+  };
+
+  return {
+    name: "katech-servir-uploads-dev",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const urlSansQuery = (req.url ?? "").split("?")[0];
+        if (!urlSansQuery.startsWith("/uploads/")) {
+          return next();
+        }
+        const nomFichier = basename(urlSansQuery);
+        const cheminFichier = resolve(dossierUploads, nomFichier);
+        if (existsSync(cheminFichier) && statSync(cheminFichier).isFile()) {
+          const ext = extname(cheminFichier).toLowerCase();
+          res.setHeader("Content-Type", MIMES[ext] ?? "application/octet-stream");
+          createReadStream(cheminFichier).pipe(res);
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig(({ command, mode: modeVite }) => {
   const envFichiers = loadEnv(modeVite, process.cwd(), "VITE_");
   const choix = resoudreModeDonnees(modeVite, envFichiers);
@@ -300,7 +343,13 @@ export default defineConfig(({ command, mode: modeVite }) => {
     // exactement ce sur quoi `src/api/config.ts` s'appuie pour choisir sa
     // methode de deduction.
     base: "./",
-    plugins: [react(), tsconfigPaths(), tailwindcss(), temoinModeDonnees(choix)],
+    plugins: [
+      react(),
+      tsconfigPaths(),
+      tailwindcss(),
+      temoinModeDonnees(choix),
+      servirUploadsDev(),
+    ],
     server: {
       host: "::",
       port: DEV_PORT,

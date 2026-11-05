@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Flame } from "lucide-react";
 import heroImg from "@/assets/hero-laptop.webp";
-import { useSiteContent } from "@/data-provider";
+import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { getIcon, type IconName } from "@/lib/site-content";
 import { useLocalize, type Localized } from "@/lib/i18n";
 
 export function Hero() {
   const { data: siteContent } = useSiteContent();
+  const { data: siteSettings } = useSiteSettings();
+  const storeName = siteSettings.storeName?.trim() || "Boutique";
   const h = siteContent.hero;
   const L = useLocalize();
   return (
@@ -97,7 +99,7 @@ export function Hero() {
             <div className="relative w-full h-full overflow-hidden rounded-2xl border border-border shadow-2xl shadow-[var(--shadow-card)]">
               <img
                 src={heroImg}
-                alt="KA Tech"
+                alt={storeName}
                 width={1600}
                 height={900}
                 className="w-full h-full object-cover animate-hero-zoom"

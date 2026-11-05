@@ -644,7 +644,8 @@ final class Assistant
             . '<button type="submit" class="bouton">Supprimer le fichier d\'installation</button>'
             . '</form></div>'
             . '<p>Ensuite, connectez-vous à votre administration avec l\'adresse e-mail et le mot de '
-            . 'passe que vous venez de choisir.</p>';
+            . 'passe que vous venez de choisir.</p>'
+            . '<p style="margin-top:16px;"><a class="bouton" href="../admin">Accéder à l\'administration & Assistant &rarr;</a></p>';
 
         $this->rendre('Installation terminée', $corps, 200);
     }
@@ -677,7 +678,8 @@ final class Assistant
                 . '<div class="encart ok"><p>Le fichier <code>api/install.php</code> a été supprimé, '
                 . 'et sa disparition est vérifiée : cette adresse ne répond plus.</p></div>'
                 . '<p>Votre boutique est prête. Connectez-vous à votre administration avec l\'adresse '
-                . 'e-mail et le mot de passe choisis pendant l\'installation.</p>',
+                . 'e-mail et le mot de passe choisis pendant l\'installation pour finaliser la configuration :</p>'
+                . '<p style="margin-top:16px;"><a class="bouton" href="../admin">Accéder à l\'administration &rarr;</a></p>',
                 200,
             );
         }
@@ -719,7 +721,8 @@ final class Assistant
             . '</form></div>'
             . '<p class="aide">Réinstaller volontairement (cela suppose une base vide) : supprimez le '
             . 'fichier <code>api/installed.lock</code> depuis le gestionnaire de fichiers de votre '
-            . 'hébergeur.</p>',
+            . 'hébergeur.</p>'
+            . '<p style="margin-top:16px;"><a class="bouton" href="../admin">Accéder à l\'administration &rarr;</a></p>',
             403,
         );
     }

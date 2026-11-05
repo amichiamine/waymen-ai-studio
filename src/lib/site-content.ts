@@ -279,9 +279,9 @@ export function seedSiteContent(): SiteContent {
         ar: "متجر إلكتروني متخصص في بيع الحواسيب والهواتف والملحقات — توصيل لكل أنحاء الجزائر مع ضمان رسمي.",
       },
       copyright: {
-        fr: "© 2026 KA Tech — Tous droits réservés",
-        en: "© 2026 KA Tech — All rights reserved",
-        ar: "© 2026 KA Tech — جميع الحقوق محفوظة",
+        fr: "© 2026 {storeName} — Tous droits réservés",
+        en: "© 2026 {storeName} — All rights reserved",
+        ar: "© 2026 {storeName} — جميع الحقوق محفوظة",
       },
       madeIn: {
         fr: "Fait avec passion en Algérie",
@@ -494,11 +494,11 @@ export function seedSiteContent(): SiteContent {
       },
     },
     whyUs: {
-      kicker: { fr: "Pourquoi KA Tech", en: "Why KA Tech", ar: "لماذا KA Tech" },
+      kicker: { fr: "Pourquoi nous choisir", en: "Why choose us", ar: "لماذا تختارنا" },
       title1: {
-        fr: "Parce que la tech mérite",
-        en: "Because tech deserves",
-        ar: "لأن التكنولوجيا تستحق",
+        fr: "Parce que vos projets méritent",
+        en: "Because your projects deserve",
+        ar: "لأن مشاريعكم تستحق",
       },
       title2: { fr: "un partenaire de confiance", en: "a trusted partner", ar: "شريكًا موثوقًا" },
       subtitle: {

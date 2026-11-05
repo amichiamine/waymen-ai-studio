@@ -174,6 +174,9 @@ export type SiteSettings = {
   hours: string;
   maintenance: boolean;
   maintenanceMessage: string;
+  maintenanceTitle?: string;
+  maintenanceEstimatedReturn?: string;
+  maintenanceShowWhatsApp?: boolean;
   emailNotifications: boolean;
   showPromoBanner: boolean;
   promoBannerText: string;
@@ -187,6 +190,11 @@ export type SiteSettings = {
   languageSelectorEnabled: boolean;
   hideRatingWhenNoReviews: boolean;
   logoUrl?: string;
+  defaultTheme?: "dark" | "light" | "system";
+  primaryColor?: string;
+  faviconUrl?: string;
+  builderEnabled?: boolean;
+  onboardingCompleted?: boolean;
 };
 
 // A single shipping rate: either specific wilaya code, or "*" for default.
@@ -1064,6 +1072,9 @@ function seedSiteSettings(): SiteSettings {
     hours: "Dimanche → Jeudi, 9h – 19h",
     maintenance: false,
     maintenanceMessage: "Nous revenons très vite ! Le site est en cours de mise à jour.",
+    maintenanceTitle: "",
+    maintenanceEstimatedReturn: "",
+    maintenanceShowWhatsApp: true,
     emailNotifications: true,
     showPromoBanner: true,
     promoBannerText: "Livraison offerte dès 60 000 DA — jusqu'à dimanche.",
@@ -1074,8 +1085,13 @@ function seedSiteSettings(): SiteSettings {
     currencySymbol: "DA",
     currencyPosition: "suffix",
     currencyThousandSeparator: " ",
-    languageSelectorEnabled: false,
+    languageSelectorEnabled: true,
     hideRatingWhenNoReviews: true,
+    defaultTheme: "dark",
+    primaryColor: "",
+    faviconUrl: "",
+    builderEnabled: true,
+    onboardingCompleted: true,
   };
 }
 
@@ -1089,6 +1105,9 @@ function emptySiteSettings(): SiteSettings {
     hours: "",
     maintenance: false,
     maintenanceMessage: "",
+    maintenanceTitle: "",
+    maintenanceEstimatedReturn: "",
+    maintenanceShowWhatsApp: false,
     emailNotifications: false,
     showPromoBanner: false,
     promoBannerText: "",
@@ -1099,8 +1118,13 @@ function emptySiteSettings(): SiteSettings {
     currencySymbol: "DA",
     currencyPosition: "suffix",
     currencyThousandSeparator: " ",
-    languageSelectorEnabled: false,
+    languageSelectorEnabled: true,
     hideRatingWhenNoReviews: true,
+    defaultTheme: "dark",
+    primaryColor: "",
+    faviconUrl: "",
+    builderEnabled: true,
+    onboardingCompleted: false,
   };
 }
 

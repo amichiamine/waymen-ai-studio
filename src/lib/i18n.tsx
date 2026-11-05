@@ -159,6 +159,10 @@ declare global {
     __SITE_SETTINGS_BOOTSTRAP__?: {
       storeName?: string;
       logoUrl?: string;
+      defaultTheme?: "dark" | "light" | "system";
+      primaryColor?: string;
+      faviconUrl?: string;
+      builderEnabled?: boolean;
       [key: string]: unknown;
     };
   }

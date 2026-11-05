@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, ArrowLeft } from "lucide-react";
+import { Trash2, ArrowLeft, Plus } from "lucide-react";
 import {
   useProductList,
   useProductDetail,
@@ -28,7 +28,7 @@ import {
   useMediaAssetList,
   toApiError,
 } from "@/data-provider";
-import type { Product, Category } from "@/data/products";
+import type { Product, Category, ProductType } from "@/data/products";
 import { usePermissions } from "@/lib/admin-auth";
 import type { Localized } from "@/lib/i18n";
 import { useLocalize, useI18n } from "@/lib/i18n";
@@ -175,9 +175,8 @@ const schema = z
       message: "Nom requis (min 2 caractères)",
     }),
     brand: z.string().trim().min(1, "Marque requise").max(60),
-    category: z.enum(["laptops", "desktops", "builds", "phones"], {
-      message: "Catégorie invalide",
-    }),
+    category: z.string().trim().min(1, "Catégorie requise"),
+    productType: z.enum(["physical", "service"]).default("physical"),
     specLine: localizedStringSchema.refine((v) => v.fr.length >= 3, {
       path: ["fr"],
       message: "Ligne de specs requise (min 3 caractères)",
@@ -241,6 +240,7 @@ function emptyForm(): FormValues {
     name: emptyLocalized(),
     brand: "",
     category: "laptops",
+    productType: "physical",
     specLine: emptyLocalized(),
     price: 0,
     oldPrice: "" as unknown as number,
@@ -269,6 +269,7 @@ function toForm(p: Product): FormValues {
     name: toMap(p.name),
     brand: p.brand,
     category: p.category,
+    productType: p.productType ?? "physical",
     specLine: toMap(p.specLine),
     price: p.price,
     oldPrice: (p.oldPrice ?? "") as number,
@@ -301,6 +302,12 @@ function mapToLocalized(
   return fromMap({ fr: map.fr, en: map.en ?? "", ar: map.ar ?? "" });
 }
 
+export type CustomSpecItem = {
+  id: string;
+  key: string;
+  val: Record<LangCode, string>;
+};
+
 // ---------------------------------------------------------------------------
 // Composant principal
 // ---------------------------------------------------------------------------
@@ -322,6 +329,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   const { data: existing } = useProductDetail(mode === "edit" ? id : undefined);
 
   const [v, setV] = useState<FormValues>(existing ? toForm(existing) : emptyForm());
+  const [customSpecs, setCustomSpecs] = useState<CustomSpecItem[]>([]);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -330,15 +338,60 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   useEffect(() => {
     if (mode === "edit" && id) {
       const p = products.find((x) => x.id === id);
-      if (p) setV(toForm(p));
+      if (p) {
+        setV(toForm(p));
+        if (p.specs) {
+          const standardKeys = new Set(["cpu", "ram", "storage", "gpu", "screen", "os"]);
+          const loaded: CustomSpecItem[] = [];
+          for (const [key, val] of Object.entries(p.specs)) {
+            if (!standardKeys.has(key) && val) {
+              loaded.push({ id: crypto.randomUUID(), key, val: toMap(val) });
+            }
+          }
+          setCustomSpecs(loaded);
+        }
+      }
+    } else if (existing?.specs) {
+      const standardKeys = new Set(["cpu", "ram", "storage", "gpu", "screen", "os"]);
+      const loaded: CustomSpecItem[] = [];
+      for (const [key, val] of Object.entries(existing.specs)) {
+        if (!standardKeys.has(key) && val) {
+          loaded.push({ id: crypto.randomUUID(), key, val: toMap(val) });
+        }
+      }
+      setCustomSpecs(loaded);
     }
-  }, [id, mode, products]);
+  }, [id, mode, products, existing]);
 
   const brandOptions = useMemo(() => brands.map((b) => b.name).sort(), [brands]);
 
   function updateField<K extends keyof FormValues>(k: K, val: FormValues[K]) {
     setV((prev) => ({ ...prev, [k]: val }));
     setErrors((e) => ({ ...e, [k]: undefined }));
+  }
+
+  function addCustomSpec() {
+    setCustomSpecs((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), key: "", val: { fr: "", en: "", ar: "" } },
+    ]);
+  }
+
+  function updateCustomSpec(id: string, field: "key" | "val", text: string, lang?: LangCode) {
+    setCustomSpecs((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        if (field === "key") return { ...item, key: text };
+        if (lang) {
+          return { ...item, val: { ...item.val, [lang]: text } };
+        }
+        return item;
+      }),
+    );
+  }
+
+  function removeCustomSpec(id: string) {
+    setCustomSpecs((prev) => prev.filter((item) => item.id !== id));
   }
 
   // Niveau 2 — la vérification vit DANS l'action, pas seulement dans le rendu.
@@ -380,21 +433,43 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       return;
     }
 
+    const specsMap: Record<string, Localized<string>> = {};
+    const cpuLoc = mapToLocalized(data.cpu);
+    if (cpuLoc) specsMap.cpu = cpuLoc;
+    const ramLoc = mapToLocalized(data.ram);
+    if (ramLoc) specsMap.ram = ramLoc;
+    const storageLoc = mapToLocalized(data.storage);
+    if (storageLoc) specsMap.storage = storageLoc;
+    const gpuLoc = mapToLocalized(data.gpu);
+    if (gpuLoc) specsMap.gpu = gpuLoc;
+    const screenLoc = mapToLocalized(data.screen);
+    if (screenLoc) specsMap.screen = screenLoc;
+    const osLoc = mapToLocalized(data.os);
+    if (osLoc) specsMap.os = osLoc;
+
+    if (existing?.specs) {
+      for (const [key, val] of Object.entries(existing.specs)) {
+        if (!(key in specsMap) && val) {
+          specsMap[key] = val;
+        }
+      }
+    }
+    for (const cs of customSpecs) {
+      const k = cs.key.trim();
+      if (k && (cs.val.fr?.trim() || cs.val.en?.trim() || cs.val.ar?.trim())) {
+        specsMap[k] = mapToLocalized(cs.val) ?? cs.val.fr;
+      }
+    }
+
     const product: Product = {
       id: data.id,
       name: mapToLocalized(data.name) ?? data.name.fr,
       brand: data.brand,
       category: data.category as Category,
+      productType: data.productType,
       use: existing?.use ?? [],
       specLine: mapToLocalized(data.specLine) ?? data.specLine.fr,
-      specs: {
-        cpu: mapToLocalized(data.cpu),
-        ram: mapToLocalized(data.ram),
-        storage: mapToLocalized(data.storage),
-        gpu: mapToLocalized(data.gpu),
-        screen: mapToLocalized(data.screen),
-        os: mapToLocalized(data.os),
-      },
+      specs: specsMap,
       price: data.price,
       oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
       stock: data.stock,
@@ -545,6 +620,25 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>{t("admin.catalogue.produit_form.label_type_article")}</Label>
+                  <Select
+                    value={v.productType ?? "physical"}
+                    onValueChange={(x: ProductType) => updateField("productType", x)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="physical">
+                        {t("admin.catalogue.produit_form.type_physique")}
+                      </SelectItem>
+                      <SelectItem value="service">
+                        {t("admin.catalogue.produit_form.type_service")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Onglets de traduction FR / EN / AR */}
@@ -606,6 +700,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                       updateField(k as keyof FormValues, map as FormValues[typeof k])
                     }
                   />
+                  <CustomSpecsEditor
+                    specs={customSpecs}
+                    lang="fr"
+                    onChange={(id, field, text) => updateCustomSpec(id, field, text, "fr")}
+                    onAdd={addCustomSpec}
+                    onRemove={removeCustomSpec}
+                  />
                 </TabsContent>
 
                 {/* Onglet EN — facultatif */}
@@ -644,6 +745,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     onChange={(k, map) =>
                       updateField(k as keyof FormValues, map as FormValues[typeof k])
                     }
+                  />
+                  <CustomSpecsEditor
+                    specs={customSpecs}
+                    lang="en"
+                    onChange={(id, field, text) => updateCustomSpec(id, field, text, "en")}
+                    onAdd={addCustomSpec}
+                    onRemove={removeCustomSpec}
                   />
                 </TabsContent>
 
@@ -689,6 +797,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     onChange={(k, map) =>
                       updateField(k as keyof FormValues, map as FormValues[typeof k])
                     }
+                  />
+                  <CustomSpecsEditor
+                    specs={customSpecs}
+                    lang="ar"
+                    onChange={(id, field, text) => updateCustomSpec(id, field, text, "ar")}
+                    onAdd={addCustomSpec}
+                    onRemove={removeCustomSpec}
                   />
                 </TabsContent>
               </Tabs>
@@ -738,6 +853,12 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     {t("admin.catalogue.produit_form.hint_quantite")}
                   </p>
                 </div>
+                {v.productType === "service" && (
+                  <div className="rounded-md border border-primary/30 bg-primary/5 p-2 text-xs text-muted-foreground">
+                    💡 {t("admin.catalogue.produit_form.type_service")} : prestation ou produit
+                    dématérialisé (livraison physique non applicable).
+                  </div>
+                )}
                 <div>
                   <Label>{t("admin.catalogue.produit_form.label_etat_stock")}</Label>
                   <Select
@@ -915,6 +1036,81 @@ function SpecsGrid({
       {field("GPU", "gpu")}
       {field("Écran", "screen")}
       {field("OS", "os")}
+    </div>
+  );
+}
+
+function CustomSpecsEditor({
+  specs,
+  lang,
+  onChange,
+  onAdd,
+  onRemove,
+}: {
+  specs: CustomSpecItem[];
+  lang: LangCode;
+  onChange: (id: string, field: "key" | "val", text: string) => void;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+}) {
+  const { t } = useI18n();
+  const isAr = lang === "ar";
+  const dir = isAr ? "rtl" : "ltr";
+
+  return (
+    <div className="space-y-3 pt-4 border-t border-border">
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-semibold">
+          {t("admin.catalogue.produit_form.label_attributs_personnalises")}
+        </Label>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onAdd}
+          className="h-8 gap-1 text-xs"
+        >
+          <Plus className="size-3.5" />
+          <span>{t("admin.catalogue.produit_form.btn_ajouter_attribut")}</span>
+        </Button>
+      </div>
+
+      {specs.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic">
+          Aucune caractéristique personnalisée ajoutée (ex: Taille, Couleur, Matière, Poids,
+          Garantie, Durée...).
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {specs.map((item) => (
+            <div key={item.id} className="flex items-center gap-2">
+              <Input
+                placeholder={t("admin.catalogue.produit_form.attribut_nom")}
+                value={item.key}
+                onChange={(e) => onChange(item.id, "key", e.target.value)}
+                className="w-1/3 text-xs"
+              />
+              <Input
+                placeholder={t("admin.catalogue.produit_form.attribut_valeur")}
+                dir={dir}
+                value={item.val[lang] ?? ""}
+                onChange={(e) => onChange(item.id, "val", e.target.value)}
+                className={cn("flex-1 text-xs", isAr && "text-end")}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onRemove(item.id)}
+                className="size-8 text-muted-foreground hover:text-destructive shrink-0"
+                title={t("admin.catalogue.produit_form.btn_supprimer_attribut")}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

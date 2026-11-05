@@ -14,7 +14,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-import { useAdminState } from "@/lib/admin-store";
+import { useSiteSettings } from "@/data-provider";
 import { useAdminRoles } from "@/lib/admin-auth";
 import { useI18n } from "@/lib/i18n";
 import { Link } from "react-router-dom";
@@ -126,11 +126,13 @@ function RequireAuth() {
 
 function AdminLayout() {
   const { isAdmin, loading, user } = useAdminRoles();
+  const { data: siteSettings } = useSiteSettings();
   const location = useLocation();
   const { t } = useI18n();
+  const storeName = siteSettings.storeName?.trim() || "Boutique";
   useEffect(() => {
-    document.title = "Admin — KA Tech";
-  }, []);
+    document.title = `Admin — ${storeName}`;
+  }, [storeName]);
 
   if (loading) {
     return <RouteLoader className="min-h-screen" />;
@@ -170,7 +172,7 @@ export default function App() {
   const pathname = useLocation().pathname;
   const isAdmin = pathname.startsWith("/admin");
   const isAuthRoute = pathname === "/auth" || pathname === "/reset-password";
-  const { siteSettings } = useAdminState();
+  const { data: siteSettings } = useSiteSettings();
 
   // Maintenance gate: full-screen for public visitors; admins & auth routes stay accessible.
   if (siteSettings.maintenance && !isAdmin && !isAuthRoute) {
@@ -252,6 +254,11 @@ export default function App() {
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="reviews" element={<AdminReviews />} />
                   <Route path="settings" element={<AdminSettings />} />
+                  <Route
+                    path="wizard"
+                    element={<Navigate to="/admin/settings?wizard=1" replace />}
+                  />
+                  <Route path="wizard" element={<Navigate to="/admin/settings?wizard=1" replace />} />
                   <Route path="content" element={<AdminContent />} />
                   <Route path="messages" element={<AdminMessages />} />
                   <Route path="subscribers" element={<AdminSubscribers />} />

@@ -56,6 +56,11 @@ export function ProductCard({ p }: { p: Product }) {
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-background/80 backdrop-blur border border-border text-muted-foreground">
             {p.brand}
           </span>
+          {p.productType === "service" && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground shadow-sm">
+              Service
+            </span>
+          )}
           {discount > 0 && (
             <span className="inline-flex items-center justify-center min-w-[44px] px-2.5 py-1 rounded-full text-[11px] font-bold bg-destructive text-destructive-foreground shadow-md transition-transform group-hover:scale-110">
               -{discount}%

@@ -39,6 +39,16 @@ const catalogueFr: Record<string, string> = {
   "admin.catalogue.produit_form.label_id": "ID (slug unique)",
   "admin.catalogue.produit_form.label_marque": "Marque",
   "admin.catalogue.produit_form.label_categorie": "Catégorie",
+  "admin.catalogue.produit_form.label_type_article": "Type d'article",
+  "admin.catalogue.produit_form.type_physique": "Produit physique (avec livraison)",
+  "admin.catalogue.produit_form.type_service": "Prestation de service (sans livraison)",
+  "admin.catalogue.produit_form.label_attributs_personnalises":
+    "Attributs & caractéristiques personnalisés",
+  "admin.catalogue.produit_form.btn_ajouter_attribut": "+ Ajouter une caractéristique",
+  "admin.catalogue.produit_form.attribut_nom":
+    "Nom de la caractéristique (ex: Taille, Couleur, Matière)",
+  "admin.catalogue.produit_form.attribut_valeur": "Valeur",
+  "admin.catalogue.produit_form.btn_supprimer_attribut": "Supprimer",
   "admin.catalogue.produit_form.label_nom": "Nom",
   "admin.catalogue.produit_form.label_nom_en": "Nom (EN)",
   "admin.catalogue.produit_form.label_nom_ar": "الاسم (AR)",

@@ -22,8 +22,9 @@ export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useI18n();
-  const redirectTo =
-    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || "/account";
+  const stateFrom = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+  const isStaff = user?.role === "admin" || user?.role === "owner" || user?.role === "editor";
+  const redirectTo = stateFrom || (isStaff ? "/admin" : "/account");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,8 +33,12 @@ export default function Auth() {
   const [forgotOpen, setForgotOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate(redirectTo, { replace: true });
-  }, [user, loading, navigate, redirectTo]);
+    if (!loading && user) {
+      const staff = user.role === "admin" || user.role === "owner" || user.role === "editor";
+      const dest = stateFrom || (staff ? "/admin" : "/account");
+      navigate(dest, { replace: true });
+    }
+  }, [user, loading, navigate, stateFrom]);
 
   // Purge de sécurité du mot de passe au démontage du composant
   useEffect(() => {

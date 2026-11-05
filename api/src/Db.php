@@ -72,21 +72,17 @@ final class Db
         if ($pilote === self::PILOTE_SQLITE) {
             $chemin = (string) Env::get('DB_SQLITE_PATH', '');
             if ($chemin === '' || !is_file($chemin)) {
-                $varPath = dirname(__DIR__) . '/var/katech.sqlite';
-                if (is_file($varPath)) {
-                    $chemin = $varPath;
-                } else {
-                    $dossierDev = dirname(__DIR__, 2) . '/katech-data';
-                    $trouve = null;
-                    if (is_dir($dossierDev)) {
-                        $fichiers = glob($dossierDev . '/dev-*.sqlite');
-                        if (!empty($fichiers)) {
-                            usort($fichiers, fn($a, $b) => filemtime($b) <=> filemtime($a));
-                            $trouve = $fichiers[0];
-                        }
+                $dossierDev = dirname(__DIR__, 2) . '/katech-data';
+                $trouve = null;
+                if (is_dir($dossierDev)) {
+                    $fichiers = glob($dossierDev . '/dev-*.sqlite');
+                    if (!empty($fichiers)) {
+                        usort($fichiers, fn($a, $b) => filemtime($b) <=> filemtime($a));
+                        $trouve = $fichiers[0];
                     }
-                    $chemin = $trouve ?? $varPath;
                 }
+                $varPath = dirname(__DIR__) . '/var/katech.sqlite';
+                $chemin = $trouve ?? (is_file($varPath) ? $varPath : ($trouve ?? $varPath));
             }
 
             return new self(self::PILOTE_SQLITE, ['path' => $chemin]);

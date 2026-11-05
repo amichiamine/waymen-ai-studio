@@ -1,6 +1,8 @@
-import { Suspense, type ReactNode } from "react";
-import { Outlet } from "react-router-dom";
+import { Suspense, useState, useEffect, type ReactNode } from "react";
+import { Outlet, useSearchParams } from "react-router-dom";
 import { useI18n, useNamespace } from "@/lib/i18n";
+import { useSiteSettings } from "@/data-provider";
+import { SetupWizard } from "@/components/admin/SetupWizard";
 import {
   AdminSidebar,
   AdminMobileNav,
@@ -12,7 +14,7 @@ import {
 
 /**
  * Cadre visuel du back-office : barre latérale, navigation mobile, fil d'Ariane,
- * sélecteur de rôle et cloche de notifications.
+ * sélecteur de rôle, cloche de notifications et assistant de configuration (Setup Wizard).
  *
  * Ce module est volontairement isolé de `App.tsx` et chargé paresseusement :
  * il tire `ui/sidebar` et plusieurs primitives Radix (select, dropdown-menu,
@@ -31,6 +33,27 @@ import {
 export default function AdminShell({ pageFallback }: { pageFallback: ReactNode }) {
   const { t } = useI18n();
   const { ready } = useNamespace("admin");
+  const { data: siteSettings } = useSiteSettings();
+  const [searchParams] = useSearchParams();
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  useEffect(() => {
+    if (siteSettings && siteSettings.onboardingCompleted === false) {
+      setWizardOpen(true);
+    }
+  }, [siteSettings]);
+
+  useEffect(() => {
+    if (searchParams.get("wizard") === "1" || searchParams.get("setup") === "1") {
+      setWizardOpen(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handler = () => setWizardOpen(true);
+    window.addEventListener("open-setup-wizard", handler);
+    return () => window.removeEventListener("open-setup-wizard", handler);
+  }, []);
 
   // Tant que le dictionnaire admin n'est pas là, on n'affiche RIEN du
   // back-office : même raisonnement que `dictionaryReady` dans le provider, un
@@ -69,6 +92,7 @@ export default function AdminShell({ pageFallback }: { pageFallback: ReactNode }
           </Suspense>
         </main>
       </div>
+      <SetupWizard open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
   );
 }

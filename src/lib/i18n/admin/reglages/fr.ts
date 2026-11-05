@@ -147,6 +147,27 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.parametres.champ_horaires": "Horaires",
   "admin.reglages.parametres.champ_horaires_placeholder": "Dim → Jeu, 9h – 19h",
   "admin.reglages.parametres.carte_options_titre": "Options",
+  "admin.reglages.parametres.carte_theme_titre": "Identité visuelle & thème",
+  "admin.reglages.parametres.theme_defaut": "Thème d'affichage par défaut",
+  "admin.reglages.parametres.theme_defaut_aide":
+    "Thème appliqué immédiatement aux nouveaux visiteurs avant toute préférence personnelle.",
+  "admin.reglages.parametres.theme_sombre": "Mode sombre (Recommandé)",
+  "admin.reglages.parametres.theme_clair": "Mode clair",
+  "admin.reglages.parametres.theme_systeme": "Automatique (selon le système)",
+  "admin.reglages.parametres.couleur_primaire": "Couleur d'accentuation principale",
+  "admin.reglages.parametres.couleur_primaire_aide":
+    "Personnalise les boutons, badges, lueurs et contours sur tout le site.",
+  "admin.reglages.parametres.couleur_reinitialiser": "Couleur par défaut",
+  "admin.reglages.parametres.favicon_titre": "Favicon du site",
+  "admin.reglages.parametres.favicon_aide":
+    "Icône affichée dans l'onglet du navigateur (.ico, .png, .svg).",
+  "admin.reglages.parametres.favicon_officiel": "Favicon officiel par défaut",
+  "admin.reglages.parametres.favicon_personnalise": "Favicon personnalisé",
+  "admin.reglages.parametres.favicon_reinitialiser": "Rétablir le favicon officiel par défaut",
+  "admin.reglages.parametres.carte_modules_titre": "Activation des modules",
+  "admin.reglages.parametres.opt_configurateur": "Activer le configurateur PC sur mesure",
+  "admin.reglages.parametres.opt_configurateur_aide":
+    "Désactivez ce module pour une boutique généraliste ou de services.",
   "admin.reglages.parametres.opt_notifications_email": "Notifications e-mail",
   "admin.reglages.parametres.opt_selecteur_langue": "Sélecteur de langue (FR / AR / EN)",
   "admin.reglages.parametres.opt_masquer_note": "Masquer la note produit sans avis",
