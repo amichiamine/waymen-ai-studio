@@ -732,6 +732,7 @@ final class ControleurMaintenance
             return $resolu;
         }
 
+        $estWindows = PHP_OS_FAMILY === 'Windows' || DIRECTORY_SEPARATOR === '\\';
         $candidats = [];
 
         $configure = trim((string) (\KaTech\Env::get('PHP_CLI_BINARY', '') ?? ''));
@@ -741,13 +742,34 @@ final class ControleurMaintenance
         if (PHP_SAPI === 'cli' && PHP_BINARY !== '') {
             $candidats[] = PHP_BINARY;
         }
+        if ($ini = php_ini_loaded_file()) {
+            $candidats[] = dirname($ini) . DIRECTORY_SEPARATOR . ($estWindows ? 'php.exe' : 'php');
+        }
+        if ($ext = (string) ini_get('extension_dir')) {
+            $candidats[] = dirname($ext) . DIRECTORY_SEPARATOR . ($estWindows ? 'php.exe' : 'php');
+        }
+        if (PHP_BINARY !== '') {
+            $candidats[] = dirname(PHP_BINARY) . DIRECTORY_SEPARATOR . ($estWindows ? 'php.exe' : 'php');
+        }
         if (PHP_BINDIR !== '') {
             $candidats[] = PHP_BINDIR . '/php';
+            if ($estWindows) {
+                $candidats[] = PHP_BINDIR . '/php.exe';
+                $candidats[] = PHP_BINDIR . '\\php.exe';
+            }
         }
-        foreach (['php', 'php8', 'php8.4', 'php8.3', 'php8.2', 'php-cli'] as $nom) {
+        if ($estWindows) {
+            $candidats[] = 'C:/xampp/php/php.exe';
+            $candidats[] = 'C:\\xampp\\php\\php.exe';
+        }
+        $noms = ['php', 'php8', 'php8.4', 'php8.3', 'php8.2', 'php-cli'];
+        if ($estWindows) {
+            $noms = array_merge(['php.exe', 'php8.exe', 'php8.4.exe', 'php8.3.exe', 'php8.2.exe', 'php-cli.exe'], $noms);
+        }
+        foreach ($noms as $nom) {
             foreach (explode(PATH_SEPARATOR, (string) getenv('PATH')) as $dossier) {
                 if ($dossier !== '') {
-                    $candidats[] = rtrim($dossier, '/') . '/' . $nom;
+                    $candidats[] = rtrim($dossier, '/\\') . DIRECTORY_SEPARATOR . $nom;
                 }
             }
         }
@@ -799,7 +821,7 @@ final class ControleurMaintenance
         fclose($tuyaux[2]);
         proc_close($processus);
 
-        return $sortie === 'cli';
+        return $sortie === 'cli' || str_ends_with($sortie, 'cli');
     }
 
     /**

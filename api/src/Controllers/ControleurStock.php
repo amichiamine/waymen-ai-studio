@@ -148,9 +148,9 @@ final class ControleurStock
                 'UPDATE products
                  SET stock_qty = stock_qty + :delta1,
                      stock = CASE
-                         WHEN (stock_qty + :delta2) <= :seuilRupture THEN 'out'
-                         WHEN (stock_qty + :delta3) <= :seuilBas THEN 'low'
-                         ELSE 'in'
+                         WHEN (stock_qty + :delta2) <= :seuilRupture THEN \'out\'
+                         WHEN (stock_qty + :delta3) <= :seuilBas THEN \'low\'
+                         ELSE \'in\'
                      END,
                      updated_at = :updatedAt
                  WHERE id = :id

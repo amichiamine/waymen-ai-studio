@@ -703,3 +703,44 @@
   - Plan d'implémentation miroir : 📄 [15_plan_synchronisation_stock_et_raccordement_notifications.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/15_plan_synchronisation_stock_et_raccordement_notifications.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1740.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1740.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+
+---
+
+## Phase 16 : Résolution de la ParseError PHP (Crash 500 Cascade), Support Windows CLI (Backup 503) & Complétude i18n
+
+- **Date :** 05/11/2026
+- **Contexte & Constat Initial :**
+  1. Panne 500 généralisée sur 100% des endpoints de l'API (`/auth/me`, `/notifications`, `/content`, `/products`, etc.) constatée suite aux tests en local : causée par une `ParseError` PHP dans `ControleurProduits.php` et `ControleurStock.php` due à des apostrophes non échappées dans une requête SQL multiligne, bloquant l'inclusion de `routes.php`.
+  2. La route de téléchargement de sauvegarde `GET /api/v1/maintenance/backup` échouait avec un code 503 : `binairePhpCli()` dans `ControleurMaintenance.php` ne cherchait pas l'extension `.exe` sous Windows et rejetait les avertissements de démarrage PHP sur stdout.
+  3. Des avertissements de clés manquantes polluaient la console (`wizard_bouton_lancer`, `json_btn_reinitialiser`, et `admin.socle.confirmation.annuler` sur la route publique `/auth`).
+- **Décisions d'ArchiSys3.0 :**
+  Validation intégrale du Plan d'Implémentation Phase 16 (consigné dans `16_plan_resolution_parse_error_backup_cli_et_i18n.md`) :
+  1. Échappement rigoureux des littéraux SQL `'out'`, `'low'`, `'in'` dans les contrôleurs PHP avec contrôle `php -l`.
+  2. Prise en charge native de Windows dans la détection du binaire PHP CLI (`php.exe`, chemins XAMPP/WAMP et tolérance aux warnings de démarrage via `str_ends_with($sortie, 'cli')`).
+  3. Intégration des clés i18n manquantes dans les dictionnaires `reglages` (FR, EN, AR) et correction de la route publique `/auth` pour utiliser `common.cancel`.
+- **Actions Réalisées :**
+  - **Étape 1 (Correction Syntaxique PHP) :**
+    - Modification de [`api/src/Controllers/ControleurProduits.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurProduits.php) : échappement des apostrophes dans la requête atomique de mise à jour du stock.
+    - Modification de [`api/src/Controllers/ControleurStock.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurStock.php) : échappement des apostrophes dans la clause `stock = CASE ...`.
+    - Vérification récursive : 100% des fichiers PHP du projet validés avec `php -l` (0 ParseError).
+  - **Étape 2 (Support Windows CLI dans le Contrôleur Maintenance) :**
+    - Modification de [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) : ajout des extensions `.exe`, scan des dossiers d'installation XAMPP, et assouplissement de la sonde `estBinaireCli` pour tolérer les warnings d'extension au démarrage.
+    - Test réel d'exécution de sauvegarde : binaire résolu (`C:\xampp\php\php.exe`), archive produite et vérifiée sans encombre.
+  - **Étape 3 (i18n & Page d'Authentification) :**
+    - Ajout des clés `wizard_bouton_lancer` et `json_btn_reinitialiser` dans [`src/lib/i18n/admin/reglages/fr.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages/fr.ts), [`en.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages/en.ts) et [`ar.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages/ar.ts).
+    - Modification de [`src/pages/Auth.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Auth.tsx) : utilisation de `t("common.cancel")` évitant le recours au namespace différé `admin`.
+    - `bun run verifier-i18n` : cohérence et parité trilingue absolues validées.
+  - **Étape 4 (Validation Qualité & Packaging) :**
+    - `bun run format` : code formaté selon Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur de typage TypeScript.
+    - `bun run build` : compilation Vite, prérendu et empaquetage d'archive réussis.
+- **Résultats de Recette :**
+  - Fin du crash 500 : toutes les routes API répondent en 200 OK (`/content`, `/products`, `/auth/me`).
+  - Sauvegarde opérationnelle sous Windows : bouton « Télécharger la sauvegarde » 100% fonctionnel.
+  - Console navigateur nettoyée : 0 clé i18n manquante sur l'administration et la vitrine.
+- **Livrables :**
+  - Plan d'implémentation miroir : 📄 [16_plan_resolution_parse_error_backup_cli_et_i18n.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/16_plan_resolution_parse_error_backup_cli_et_i18n.md)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1805.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1805.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)

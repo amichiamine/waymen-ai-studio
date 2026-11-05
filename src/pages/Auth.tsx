@@ -261,7 +261,7 @@ export default function Auth() {
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setForgotOpen(false)}>
-              {t("admin.socle.confirmation.annuler")}
+              {t("common.cancel")}
             </Button>
             <Button asChild>
               <Link to="/contact" onClick={() => setForgotOpen(false)}>
