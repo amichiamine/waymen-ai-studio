@@ -1,10 +1,10 @@
-# Plan 20 — Parachèvement Intégral : Contrat API home-reviews, Vitrine sur Base Vide, Parcours Clients et Toasts Admin 100% i18n
+# Plan 20 — Parachèvement Intégral : Contrat API home-reviews, Vitrine sur Base Vide, Parcours Clients, Toasts Admin 100% i18n & Sécurisation Script d'Urgence (Sous-Phase 20.3)
 
 **Projet :** KA Tech (`amichiamine/ka-tech`)  
 **Branche :** `main`  
 **Directeur de Projet & Architecte Décideur :** ArchiSys3.0  
 **Tech Lead, Architecte & Consultant R&D :** AImi  
-**Mode :** 📋 Plan d'Implémentation (`mode plan`)  
+**Mode :** ⚡ Implémentation (`mode execution`)  
 **Date :** 5 Novembre 2026
 
 ---
@@ -12,16 +12,17 @@
 ## 1. Contexte & Problématique
 
 Suite aux réussites des Phases 18 et 19 sur la vitrine principale, deux questions majeures ont émergé lors de l'audit en lecture seule :
-
 1. **Warning Console Récurrent sur `home-reviews` :**
    ```
    log.ts:86 [data-provider] ressource « home-reviews » : réponse acceptée par le réseau mais inexploitable — réponse de type « tableau (0 entrée(s)) » là où le contrat annonce un objet paginé { items, total, page, perPage }.
    ```
-   _Cause :_ Asymétrie de contrat entre le contrôleur backend PHP `ControleurContenu::lireHomeReviews` (qui renvoie `{"data":[]}`) et le composant de normalisation frontend `extraireItems` (qui attend `{ items: [...] }`). De plus, `ControleurMaintenance.php` purgeait la section sous forme de chaîne `'[]'`.
+   *Cause :* Asymétrie de contrat entre le contrôleur backend PHP `ControleurContenu::lireHomeReviews` (qui renvoie `{"data":[]}`) et le composant de normalisation frontend `extraireItems` (qui attend `{ items: [...] }`). De plus, `ControleurMaintenance.php` purgeait la section sous forme de chaîne `'[]'`.
 2. **Contenus résiduels et sections orphelines sur base de données purgée :**
-   _Cause :_ `CategoryCards.tsx` n'avait pas de condition de garde `if (cats.length === 0) return null;` et affichait son titre au-dessus d'une grille vide. De plus, le parachute de secours (`FALLBACK_SITE_CONTENT`) injecte légitimement les textes éditoriaux par défaut de la boutique pour éviter l'écran blanc.
+   *Cause :* `CategoryCards.tsx` n'avait pas de condition de garde `if (cats.length === 0) return null;` et affichait son titre au-dessus d'une grille vide. De plus, le parachute de secours (`FALLBACK_SITE_CONTENT`) injecte légitimement les textes éditoriaux par défaut de la boutique pour éviter l'écran blanc.
 3. **Angles noirs multilingues résiduels :**
    Présence de chaînes codées en dur en français dans l'Espace Mon Compte (`Account.tsx`), le Suivi Public de Commande (`TrackOrder.tsx`), l'inscription (`Auth.tsx`), et les retours d'upload médias dans l'administration (`Settings.tsx`, `SettingsVisualEditors.tsx`).
+4. **Erreur Système sur Script d'Urgence `api/recup.php` (Sous-Phase 20.3) :**
+   Lors de la soumission de réinitialisation de mot de passe, l'appel `$db->executer(...)` échouait avec `Call to undefined method KaTech\Db::executer()`.
 
 ---
 
@@ -36,104 +37,57 @@ Suite aux réussites des Phases 18 et 19 sur la vitrine principale, deux questio
   - `Auth.tsx` (règle de validation du nom complet).
 - [x] **Toasts d'administration 100% localisés** : upload médias logo/favicon et retours JSON.
 - [x] **Parité 1:1:1 stricte vérifiée** par `bun run verifier-i18n` sur FR, EN, AR.
-- [x] **CI inviolable au vert** : `bun run lint && bunx tsc --noEmit && bun run build`.
+- [x] **Sous-Phase 20.1** : Correction des diagnostics Intelephense sur `ControleurMaintenance.php`.
+- [x] **Sous-Phase 20.2** : Script dédié `bun run paqueter:data` pour archiver `katech-data` séparément.
+- [ ] **Sous-Phase 20.3** : Sécurisation de `api/recup.php` avec `$db->run(...)` et ajout de l'alias de tolérance `Db::executer` dans `KaTech\Db`.
+- [ ] **Régénération des packages de distribution** : `katech-site.zip` et `katech-data.zip` synchronisés.
+- [ ] **CI inviolable au vert** : `bun run lint && bunx tsc --noEmit && bun run build`.
 
 ---
 
 ## 3. Découpage Chirurgical des Étapes
 
-### Étape 20.A : Résolution Contrat API & Résilience `home-reviews`
+### Étape 20.A : Résolution Contrat API & Résilience `home-reviews` (Livrée ✅)
+### Étape 20.B : Vitrine Épurée sur Base Vide (Livrée ✅)
+### Étape 20.C : Localisation Intégrale Espace Client (`Account.tsx`) (Livrée ✅)
+### Étape 20.D : Localisation Intégrale Suivi Public (`TrackOrder.tsx`) (Livrée ✅)
+### Étape 20.E : Assainissement Toasts Admin, Auth & Dictionnaire Arabe (Livrée ✅)
+### Sous-Phase 20.1 : Correction Diagnostics Intelephense / PHP Language Server (Livrée ✅)
+### Sous-Phase 20.2 : Outillage Packaging Séparé `katech-data` (Livrée ✅)
 
-1. **Backend PHP (`api/src/Controllers/ControleurContenu.php`) :**
-   - Dans `lireHomeReviews()`, normaliser la réponse pour toujours encapsuler la liste dans un objet paginé conforme :
+### Sous-Phase 20.3 : Sécurisation Script d'Urgence `recup.php` & Compatibilité `KaTech\Db`
+1. **Édition de [`api/recup.php`](file:///c:/xampp/htdocs/ka-tech/api/recup.php) :**
+   - Remplacement de `$db->executer(...)` par `$db->run(...)` à la ligne 68.
+2. **Édition de [`api/src/Db.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Db.php) :**
+   - Ajout de l'alias explicite :
      ```php
-     $items = isset($payload['items']) && is_array($payload['items']) ? $payload['items'] : (is_array($payload) && array_is_list($payload) ? $payload : []);
-     return Reponse::ok([
-         'items'   => $items,
-         'total'   => count($items),
-         'page'    => 1,
-         'perPage' => max(1, count($items)),
-     ]);
+     /**
+      * Alias de compatibilité francophone pour `run()`.
+      *
+      * @param array<string|int,mixed> $params
+      */
+     public function executer(string $sql, array $params = []): PDOStatement
+     {
+         return $this->run($sql, $params);
+     }
      ```
-2. **Backend PHP (`api/src/Controllers/ControleurMaintenance.php`) :**
-   - Ajuster la réinitialisation de `home-reviews` pour écrire `'{"items":[]}'` plutôt que `'[]'`.
-3. **Frontend (`src/data-provider/normalisation.ts`) :**
-   - Dans `extraireItems()`, ajouter une tolérance directe : si `Array.isArray(valeur)`, retourner directement `valeur as T[]` sans déclencher de log d'avertissement.
-
-### Étape 20.B : Vitrine Épurée sur Base Vide
-
-1. **Composant `src/components/CategoryCards.tsx` :**
-   - Ajouter la clause de garde `if (cats.length === 0) return null;` avant le rendu de la section, garantissant qu'aucun titre orphelin n'est affiché quand aucune catégorie n'est enregistrée en base.
-2. **Composant `src/components/BuilderTeaser.tsx` :**
-   - Vérifier si des produits sont présents avant de proposer le configurateur si le mode universel est actif.
-
-### Étape 20.C : Localisation Intégrale Espace Client (`Account.tsx`)
-
-1. **Clés i18n à créer dans `src/lib/i18n/fr.ts`, `en.ts`, `ar.ts` :**
-   - `account.teamNote` : `"Note de l'équipe :"` / `"Team note:"` / `"ملاحظة الفريق:"`
-   - `account.orderedArticles` : `"Articles commandés ({count})"` / `"Ordered items ({count})"` / `"المنتجات المطلوبة ({count})"`
-   - `account.discount` : `"Remise"` / `"Discount"` / `"خصم"`
-   - `account.delivery` : `"Livraison :"` / `"Delivery:"` / `"التوصيل:"`
-   - `account.deliveryDesk` : `"Au bureau / Relais"` / `"Office / Relay point"` / `"المكتب / نقطة استلام"`
-   - `account.deliveryHome` : `"À domicile"` / `"Home delivery"` / `"إلى المنزل"`
-   - `account.wilayaLabel` : `"Wilaya"` / `"Wilaya"` / `"ولاية"`
-   - `account.phoneLabel` : `"Téléphone :"` / `"Phone:"` / `"الهاتف:"`
-   - `account.trackLive` : `"Suivre l'acheminement en direct"` / `"Track shipment live"` / `"تتبع الشحنة مباشرة"`
-   - `common.close` : `"Fermer"` / `"Close"` / `"إغلاق"`
-2. **Raccordement dans [`src/pages/Account.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Account.tsx) :**
-   - Remplacement de l'ensemble des 8 chaînes en dur par les appels `t()`.
-
-### Étape 20.D : Localisation Intégrale Suivi Public (`TrackOrder.tsx`)
-
-1. **Clés i18n à créer dans `src/lib/i18n/fr.ts`, `en.ts`, `ar.ts` :**
-   - `track.cancelledNotice` : `"Cette commande a été annulée. Contactez notre support si vous avez des questions."` / `"This order has been cancelled. Please contact support if you have any questions."` / `"تم إلغاء هذا الطلب. يرجى الاتصال بالدعم إذا كانت لديك أي أسئلة."`
-   - `track.teamMessage` : `"Message de l'équipe"` / `"Team message"` / `"رسالة الفريق"`
-   - `track.deliveryModeAndPlace` : `"Mode & Lieu de livraison"` / `"Delivery method & location"` / `"طريقة ومكان التوصيل"`
-   - `track.deliveryDesk` : `"Livraison au bureau / Point relais"` / `"Office / Relay point delivery"` / `"توصيل إلى المكتب / نقطة استلام"`
-   - `track.deliveryHome` : `"Livraison à domicile"` / `"Home delivery"` / `"توصيل إلى المنزل"`
-   - `track.paymentMode` : `"Mode de paiement"` / `"Payment method"` / `"طريقة الدفع"`
-   - `track.historySteps` : `"Historique des étapes"` / `"Status history"` / `"سجل المراحل"`
-2. **Raccordement dans [`src/pages/TrackOrder.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/TrackOrder.tsx) :**
-   - Remplacement des 7 chaînes en dur par `t()`.
-
-### Étape 20.E : Assainissement Toasts Admin, Auth & Dictionnaire Arabe
-
-1. **Validation Inscription (`src/pages/Auth.tsx`) :**
-   - Créer `auth.err.name.tooShort` (`"2 caractères minimum"` / `"2 characters minimum"` / `"حرفان على الأقل"`) et l'injecter ligne 169.
-2. **Toasts Upload Médias (`src/pages/admin/Settings.tsx`) :**
-   - Créer les clés i18n dans `src/lib/i18n/admin/reglages/{fr,en,ar}.ts` :
-     - `admin.reglages.parametres.toast_format_image_invalide`
-     - `admin.reglages.parametres.toast_logo_succes`
-     - `admin.reglages.parametres.toast_logo_echec`
-     - `admin.reglages.parametres.toast_format_favicon_invalide`
-     - `admin.reglages.parametres.toast_favicon_succes`
-     - `admin.reglages.parametres.toast_favicon_echec`
-     - `admin.reglages.parametres.toast_logo_defaut_retabli`
-     - `admin.reglages.parametres.toast_favicon_defaut_retabli`
-   - Raccorder `Settings.tsx`.
-3. **Toasts Visual Editors & Wizard :**
-   - Brancher `SettingsVisualEditors.tsx` et `SetupWizard.tsx` sur `t()`.
-4. **Correction Variables Arabe (`src/lib/i18n/admin/systeme/ar.ts`) :**
-   - Réintégrer la variable `{n}` dans les 10 clés de rapport système signalées par le linter.
-
-### Étape 20.F : Vérification, Build & Traçabilité
-
-1. `bun run verifier-i18n` : Vérification stricte de la parité à 100%.
-2. `bun run format` : Formatage Prettier intégral.
-3. `bun run lint && bunx tsc --noEmit && bun run build` : Compilation TypeScript & Vite irréprochable.
-4. Packaging distribution statique zip.
-5. Mise à jour de `tracabilites.md` et commit git versionné.
+3. **Validation Syntaxe PHP :**
+   - `php -l api/recup.php`
+   - `php -l api/src/Db.php`
+4. **Recompilation & Packaging :**
+   - `bun run build` (met à jour `dist/api/` et génère `katech-site-*.zip`).
+   - `bun run paqueter:data` (garantit les zips `katech-data` à jour).
+5. **Traçabilité & Git :**
+   - Journalisation dans `.agents/tracabilites.md`.
+   - Commit git et push origin main.
 
 ---
 
 ## 4. Matrice de Recette & Validation
 
-| Test / Scénario                                    | Résultat Attendu                                                                                                     |
-| :------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
-| **Rechargement Accueil (Console)**                 | 0 warning `[data-provider] ressource « home-reviews »`.                                                              |
-| **Accueil avec Base Purgée**                       | Pas de titre orphelin « Explorez nos univers » si 0 catégorie. Bandeau commerçant visible si admin connecté.         |
-| **Espace Client (`/account`) en Anglais et Arabe** | Détail de commande, badges, adresses et notes 100% traduits dans la langue choisie. Alignement RTL parfait en arabe. |
-| **Suivi de Colis (`/track`)**                      | Toutes les étapes, modes de livraison et avertissements traduits en FR, EN, AR.                                      |
-| **Inscription (`/auth`)**                          | Message d'erreur de nom traduit en EN et AR.                                                                         |
-| **Téléversement Logo / Favicon en Admin**          | Toasts de succès et d'erreur traduits via le dictionnaire de réglages.                                               |
-| **Vérification CI Globale**                        | `verifier-i18n` = 0 clé manquante, `tsc --noEmit` = 0 erreur, `build` = succès.                                      |
+| Test / Scénario | Résultat Attendu |
+| :--- | :--- |
+| **Lint PHP `recup.php` & `Db.php`** | `No syntax errors detected`. |
+| **Exécution `recup.php` en POST** | Met à jour le mot de passe sans lever `Call to undefined method Db::executer()`. |
+| **Génération Package `katech-site.zip`** | Inclut `api/recup.php` corrigé et `api/src/Db.php` avec l'alias. |
+| **Vérification CI Globale** | `tsc --noEmit` = 0 erreur, `build` = succès. |

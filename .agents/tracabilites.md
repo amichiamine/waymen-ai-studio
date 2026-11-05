@@ -1003,3 +1003,22 @@
   4. Test d'exécution réel : `bun run paqueter:data` ➔ succès immédiat (archive horodatée et alias créés).
 - **Résultat :** La commande `bun run paqueter:data` est opérationnelle et produit un zip isolé de 36 Ko prêt à être déposé hors racine web.
 
+
+#### Sous-Phase 20.3 : Sécurisation Script d'Urgence recup.php & Tolérance KaTech\Db::executer()
+
+- **Date :** 05 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle écrite de l'Option B (double verrouillage).
+- **Constat & Cause Racine :**
+  - Lors de la soumission de réinitialisation de mot de passe administrateur sur `https://waymen.stacgate.com/api/recup.php`, l'exécution levait une erreur système : `Call to undefined method KaTech\Db::executer()`.
+  - Cause : la méthode canonique d'exécution dans la classe `KaTech\Db` est `run(string $sql, array $params = []): PDOStatement`. Le script d'urgence appelait `$db->executer(...)` qui n'était pas défini.
+- **Actions Réalisées :**
+  1. Modification de [`api/recup.php`](file:///c:/xampp/htdocs/ka-tech/api/recup.php) : remplacement de `$db->executer(...)` par `$db->run(...)` à la ligne 68.
+  2. Modification de [`api/src/Db.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Db.php) : ajout de la méthode alias francophone `public function executer(string $sql, array $params = []): PDOStatement { return $this->run($sql, $params); }`.
+  3. Vérification syntaxique PHP : `php -l api/recup.php` et `php -l api/src/Db.php` (0 erreur).
+  4. Validation CI & Packaging :
+     - `bun run verifier-i18n` : parité parfaite FR/EN/AR.
+     - `bun run lint` : 0 erreur ESLint.
+     - `bunx tsc --noEmit` : 0 erreur TypeScript.
+     - `bun run build` : compilation Vite, synchronisation de `dist/api/` et création de `katech-site-05112026-2023.zip` et `katech-site.zip`.
+     - `bun run paqueter:data` : synchronisation de `katech-data-05112026-2023.zip` et `katech-data.zip`.
+- **Résultat :** Le script de récupération d'urgence est 100% sécurisé et opérationnel. Les nouveaux packages de déploiement sont immédiatement disponibles à la racine.

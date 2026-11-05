@@ -65,7 +65,7 @@ try {
                     $hash = MotDePasse::hacher($nouveauMdp);
                     $now = gmdate('c');
 
-                    $db->executer(
+                    $db->run(
                         "UPDATE users SET password_hash = :hash, updated_at = :now WHERE id = :id",
                         [
                             ':hash' => $hash,

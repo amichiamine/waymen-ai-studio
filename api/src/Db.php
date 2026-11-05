@@ -389,6 +389,16 @@ final class Db
     }
 
     /**
+     * Alias de compatibilité francophone pour `run()`.
+     *
+     * @param array<string|int,mixed> $params
+     */
+    public function executer(string $sql, array $params = []): PDOStatement
+    {
+        return $this->run($sql, $params);
+    }
+
+    /**
      * PDO refuse les booléens et les tableaux en paramètre lorsque l'émulation
      * est désactivée. On normalise ici, une fois, plutôt que sur 70 routes.
      *
