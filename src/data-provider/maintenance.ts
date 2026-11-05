@@ -351,3 +351,26 @@ export function useImportCatalogue(): ImportCatalogueMutations {
 
   return { importerCatalogue };
 }
+
+export type ResultatReinitialisationServeur = {
+  ok: boolean;
+  message: string;
+  action: "clear" | "reset";
+  target: string;
+  counts?: Record<string, number>;
+};
+
+/**
+ * Exécute une réinitialisation ou un vidage réel sur la base de données serveur.
+ */
+export async function reinitialiserServeur(
+  action: "clear" | "reset",
+  target: string,
+): Promise<ResultatReinitialisationServeur> {
+  if (!isHttpData()) {
+    return { ok: true, message: `Mock ${action} sur ${target}`, action, target };
+  }
+  return runMutation(MAINTENANCE_RESOURCE, "reset", async () => {
+    return http.post<ResultatReinitialisationServeur>("/maintenance/reset", { action, target });
+  });
+}

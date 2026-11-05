@@ -435,6 +435,221 @@ final class ControleurMaintenance
         ]);
     }
 
+    /**
+     * POST /maintenance/reset
+     *
+     * Corps attendu :
+     *   { action: 'clear' | 'reset', target: string }
+     */
+    public function reinitialiser(Requete $r): Reponse
+    {
+        Garde::exiger('owner');
+
+        $action = (string) ($r->json['action'] ?? 'clear');
+        $target = (string) ($r->json['target'] ?? 'all');
+
+        if (!in_array($action, ['clear', 'reset'], true)) {
+            throw ApiException::invalide("Action inconnue « {$action} ». Valeurs permises : 'clear', 'reset'.");
+        }
+
+        $rapport = [
+            'action' => $action,
+            'target' => $target,
+            'counts' => [],
+        ];
+
+        $cheminJson = dirname(__DIR__, 2) . '/tools/donnees-front.json';
+
+        $this->db->transaction(function (Db $d) use ($action, $target, $cheminJson, &$rapport): void {
+            if ($d->estSqlite()) {
+                $d->run('PRAGMA foreign_keys = OFF');
+            } elseif ($d->estMysql()) {
+                $d->run('SET FOREIGN_KEY_CHECKS = 0');
+            }
+
+            try {
+                if ($action === 'clear') {
+                    $this->executerVidage($d, $target, $rapport);
+                } else {
+                    $this->executerReinitialisation($d, $target, $cheminJson, $rapport);
+                }
+            } finally {
+                if ($d->estSqlite()) {
+                    $d->run('PRAGMA foreign_keys = ON');
+                } elseif ($d->estMysql()) {
+                    $d->run('SET FOREIGN_KEY_CHECKS = 1');
+                }
+            }
+        });
+
+        if (class_exists('KaTech\\Journal')) {
+            \KaTech\Journal::consigner($this->db, 'reinitialisation_maintenance', 'systeme', [
+                'action' => $action,
+                'target' => $target,
+                'counts' => $rapport['counts'],
+            ]);
+        }
+
+        return Reponse::ok([
+            'ok'      => true,
+            'message' => "Opération {$action} exécutée avec succès sur {$target}.",
+            'action'  => $action,
+            'target'  => $target,
+            'counts'  => $rapport['counts'],
+        ]);
+    }
+
+    private function executerVidage(Db $d, string $target, array &$rapport): void
+    {
+        $viderTable = function (string $table) use ($d, &$rapport): void {
+            $cnt = (int) $d->valeur("SELECT COUNT(*) FROM `{$table}`");
+            $d->run("DELETE FROM `{$table}`");
+            $rapport['counts'][$table] = $cnt;
+        };
+
+        $viderSectionContenu = function (string $cle) use ($d, &$rapport): void {
+            $d->run("UPDATE site_content SET payload = '[]' WHERE key = :k", [':k' => $cle]);
+            $rapport['counts'][$cle] = 1;
+        };
+
+        switch ($target) {
+            case 'products':
+                $viderTable('stock_movements');
+                $viderTable('products');
+                break;
+            case 'categories':
+                $viderTable('categories');
+                break;
+            case 'brands':
+                $viderTable('brands');
+                break;
+            case 'orders':
+                $viderTable('order_items');
+                $viderTable('orders');
+                break;
+            case 'customers':
+                $viderTable('customers');
+                break;
+            case 'coupons':
+                $viderTable('coupons');
+                break;
+            case 'reviews':
+                $viderTable('reviews');
+                break;
+            case 'users':
+                $cnt = (int) $d->valeur("SELECT COUNT(*) FROM users WHERE role != 'owner'");
+                $d->run("DELETE FROM users WHERE role != 'owner'");
+                $rapport['counts']['users'] = $cnt;
+                break;
+            case 'blogPosts':
+                $viderTable('blog_posts');
+                break;
+            case 'homeReviews':
+                $viderSectionContenu('homeReviews');
+                break;
+            case 'tickerMessages':
+                $viderSectionContenu('tickerMessages');
+                break;
+            case 'marqueeBrands':
+                $viderSectionContenu('marqueeBrands');
+                break;
+            case 'aboutValues':
+                $viderSectionContenu('aboutValues');
+                break;
+            case 'builderSteps':
+                $viderSectionContenu('builderSteps');
+                break;
+            case 'shippingRates':
+                $viderTable('shipping_rates');
+                break;
+            case 'paymentMethods':
+                $viderTable('payment_methods');
+                break;
+            case 'stockMovements':
+                $viderTable('stock_movements');
+                break;
+            case 'mediaAssets':
+                $viderTable('media_assets');
+                break;
+            case 'notifications':
+                $viderTable('notifications');
+                break;
+            case 'auditLogs':
+                $viderTable('audit_logs');
+                break;
+            case 'messages':
+                $viderTable('messages');
+                break;
+            case 'subscribers':
+                $viderTable('subscribers');
+                break;
+            case 'siteSettings':
+                $defauts = json_encode([
+                    'storeName' => 'KA Tech',
+                    'currency' => 'DZD',
+                    'maintenance' => false,
+                    'onboardingCompleted' => true,
+                ], JSON_UNESCAPED_UNICODE);
+                $d->run("UPDATE settings SET payload = :p WHERE scope = 'site'", [':p' => $defauts]);
+                $rapport['counts']['siteSettings'] = 1;
+                break;
+            case 'shippingSettings':
+                $defauts = json_encode([
+                    'homeDeliveryEnabled' => true,
+                    'deskDeliveryEnabled' => true,
+                    'freeShippingThreshold' => null,
+                ], JSON_UNESCAPED_UNICODE);
+                $d->run("UPDATE settings SET payload = :p WHERE scope = 'shipping'", [':p' => $defauts]);
+                $rapport['counts']['shippingSettings'] = 1;
+                break;
+            case 'all':
+                $viderTable('order_items');
+                $viderTable('orders');
+                $viderTable('customers');
+                $viderTable('coupons');
+                $viderTable('reviews');
+                $viderTable('stock_movements');
+                $viderTable('products');
+                $viderTable('categories');
+                $viderTable('brands');
+                $viderTable('blog_posts');
+                $viderTable('messages');
+                $viderTable('subscribers');
+                $viderTable('notifications');
+                $viderTable('media_assets');
+                $d->run("DELETE FROM users WHERE role != 'owner'");
+                $d->run("UPDATE site_content SET payload = '[]' WHERE key IN ('homeReviews', 'tickerMessages', 'marqueeBrands', 'aboutValues', 'builderSteps')");
+                break;
+            default:
+                throw ApiException::invalide("Cible de vidage inconnue « {$target} ».");
+        }
+    }
+
+    private function executerReinitialisation(Db $d, string $target, string $cheminJson, array &$rapport): void
+    {
+        if (!is_file($cheminJson)) {
+            throw new ApiException(503, 'IMPORT_ERROR', "Le fichier d'origine {$cheminJson} est introuvable.");
+        }
+
+        $importeur = new ImporteurDonneesFront($cheminJson, $d);
+
+        if ($target === 'all') {
+            $this->executerVidage($d, 'all', $rapport);
+            $res = $importeur->importer();
+            $rapport['counts']['catalogue_reinitialise'] = ($res['produits'] ?? 0) + ($res['categories'] ?? 0) + ($res['marques'] ?? 0);
+            return;
+        }
+
+        if (in_array($target, ['products', 'categories', 'brands', 'blogPosts', 'shippingRates', 'paymentMethods'], true)) {
+            $this->executerVidage($d, $target, $rapport);
+            $res = $importeur->importer();
+            $rapport['counts']['reinitialise'] = true;
+            return;
+        }
+
+        $this->executerVidage($d, $target, $rapport);
+    }
+
     // =========================================================================
     // Délégation à api/tools/sauvegarder.php
     // =========================================================================

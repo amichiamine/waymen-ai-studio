@@ -30,6 +30,8 @@ import {
   useContactMessageList,
   useSubscriberList,
   toApiError,
+  reinitialiserServeur,
+  invalidateAll,
 } from "@/data-provider";
 import {
   resetData,
@@ -249,19 +251,25 @@ export default function AdminReset() {
     setSaving(true);
     try {
       if (pending.kind === "reset") {
+        await reinitialiserServeur("reset", pending.key);
         resetData(pending.key);
+        invalidateAll();
         if (pending.key === "all") {
           toast.success(t("admin.systeme.reset.toast_reinitialises", { label: pending.label }));
         } else {
           toast.success(t("admin.systeme.reset.toast_reinitialise", { label: pending.label }));
         }
       } else if (pending.kind === "clear") {
+        await reinitialiserServeur("clear", pending.key);
         clearData(pending.key);
+        invalidateAll();
         toast.success(t("admin.systeme.reset.toast_vide", { label: pending.label }));
       } else if (pending.kind === "clearAll") {
+        await reinitialiserServeur("clear", "all");
         [...ARRAY_KEYS, "siteSettings" as const, "shippingSettings" as const].forEach((k) =>
           clearData(k),
         );
+        invalidateAll();
         toast.success(t("admin.systeme.reset.toast_tout_vide"));
       } else if (pending.kind === "import") {
         const res = importState(pending.json);

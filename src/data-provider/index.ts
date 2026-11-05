@@ -152,6 +152,7 @@ export {
   useEtatBase,
   useSauvegarde,
   useMigrationMutations,
+  reinitialiserServeur,
 } from "./maintenance";
 export type {
   EtatBase,
@@ -160,6 +161,7 @@ export type {
   MigrationResult,
   MigrationResultTable,
   MigrationMutations,
+  ResultatReinitialisationServeur,
 } from "./maintenance";
 
 // Authentification — vague 2.5.

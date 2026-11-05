@@ -229,6 +229,7 @@ $routeur->post('/maintenance/migrate', Garde::protege('resetData', [$maintenance
 // Import du catalogue de démonstration depuis le back-office (sans SSH).
 // Appelle ImporteurDonneesFront directement — aucune dépendance à proc_open.
 $routeur->post('/maintenance/import-catalogue', Garde::protege('resetData', [$maintenance, 'importerCatalogue']));
+$routeur->post('/maintenance/reset', Garde::protege('resetData', [$maintenance, 'reinitialiser']));
 
 // ------------------------------------------------------ Authentification
 // Les 8 routes du contrat sont SANS garde : elles gerent elles-memes leur

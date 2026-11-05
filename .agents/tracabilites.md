@@ -704,7 +704,6 @@
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1740.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1740.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
 
-
 ---
 
 ## Phase 16 : Résolution de la ParseError PHP (Crash 500 Cascade), Support Windows CLI (Backup 503) & Complétude i18n
@@ -743,4 +742,44 @@
 - **Livrables :**
   - Plan d'implémentation miroir : 📄 [16_plan_resolution_parse_error_backup_cli_et_i18n.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/16_plan_resolution_parse_error_backup_cli_et_i18n.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1805.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1805.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+
+---
+
+## Phase 17 : Raccordement Serveur de la Réinitialisation et du Vidage des Données (`/admin/reset`)
+
+- **Date :** 05/11/2026
+- **Contexte & Constat Initial :**
+  1. La page `/admin/reset` n'agissait que sur le stockage local `localStorage` via `admin-store.tsx` (héritage du prototype mock). En mode HTTP (production avec base SQLite/MySQL), les actions « Vider », « Réinitialiser » ou « Tout vider » n'exécutaient aucune requête API vers le serveur : les données réelles restaient intactes et la réinitialisation semblait inopérante.
+  2. Nécessité d'une route serveur sécurisée sous le contrôle absolu de l'administrateur propriétaire (`owner`), capable d'effacer ou réinjecter proprement les données de catalogue et de transactions sans jamais supprimer l'administrateur connecté.
+- **Décisions d'ArchiSys3.0 :**
+  Validation intégrale du Plan d'Implémentation Phase 17 (consigné dans `17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md`) :
+  1. Création de la méthode serveur `ControleurMaintenance::reinitialiser()` protégée par le rôle `owner` (`Garde::protege('resetData')`).
+  2. Prise en charge des actions granulaires par table/ressource (`clear` ou `reset` par ligne) et des actions globales (« Tout vider » / « Tout réinitialiser »).
+  3. Intégration de garde-fous stricts : exclusion inviolable du compte propriétaire (`role != 'owner'`), conservation de réglages minimaux sains, et gestion des contraintes d'intégrité relationnelle.
+  4. Raccordement client dans `src/data-provider/maintenance.ts` et `src/pages/admin/Reset.tsx`, avec purge et révision immédiate du cache de requêtes via `invalidateAll()`.
+- **Actions Réalisées :**
+  - **Étape 1 (Méthode Backend `reinitialiser`) :**
+    - Modification de [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) : implémentation de `reinitialiser()`, `executerVidage()` et `executerReinitialisation()`.
+    - Gestion sécurisée des clés étrangères (SQLite PRAGMA / MySQL FOREIGN_KEY_CHECKS).
+    - Réinjection usine depuis `donnees-front.json` via `ImporteurDonneesFront` lors des réinitialisations de catalogue.
+  - **Étape 2 (Déclaration de la Route API) :**
+    - Modification de [`api/routes.php`](file:///c:/xampp/htdocs/ka-tech/api/routes.php) : enregistrement de `POST /api/v1/maintenance/reset` sous la garde `resetData`.
+  - **Étape 3 (Couche Client Data Provider & Reset.tsx) :**
+    - Modification de [`src/data-provider/maintenance.ts`](file:///c:/xampp/htdocs/ka-tech/src/data-provider/maintenance.ts) et [`src/data-provider/index.ts`](file:///c:/xampp/htdocs/ka-tech/src/data-provider/index.ts) : export de `reinitialiserServeur()`.
+    - Modification de [`src/pages/admin/Reset.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Reset.tsx) : raccordement de `exec()` à l'API serveur en mode HTTP et appel systématique à `invalidateAll()` pour recalculer instantanément les compteurs et listes.
+  - **Étape 4 (Validation Qualité & Packaging) :**
+    - `bun run format` : Prettier validé sur 100% des fichiers.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build` : compilation Vite, prérendu et empaquetage d'archive réussis.
+- **Résultats de Recette :**
+  - Vidage ciblé et global 100% fonctionnel sur le serveur réel : les tables SQL sont réellement purgées.
+  - Réinitialisation usine fonctionnelle : réinjection immédiate des produits, marques et catégories de base depuis `donnees-front.json`.
+  - Protection absolue : le compte administrateur propriétaire reste connecté et intact.
+  - Réactivité instantanée de l'interface : les compteurs du tableau se mettent à jour à l'écran dès confirmation de l'action.
+- **Livrables :**
+  - Plan d'implémentation miroir : 📄 [17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1819.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1819.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
