@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Gamepad2, Briefcase, GraduationCap, Film, Home } from "lucide-react";
 import { useI18n, type TKey } from "@/lib/i18n";
 
@@ -17,6 +18,16 @@ export function UseChips({
   onChange?: (v: string | null) => void;
 }) {
   const { t } = useI18n();
+  const navigate = useNavigate();
+
+  const handleClick = (id: string) => {
+    if (onChange) {
+      onChange(value === id ? null : id);
+    } else {
+      navigate(`/search?use=${id}`);
+    }
+  };
+
   return (
     <div className="flex flex-wrap gap-2">
       {uses.map((u) => {
@@ -24,7 +35,8 @@ export function UseChips({
         return (
           <button
             key={u.id}
-            onClick={() => onChange?.(active ? null : u.id)}
+            type="button"
+            onClick={() => handleClick(u.id)}
             className={`inline-flex items-center gap-2 h-10 px-4 rounded-full border text-sm transition-all ${active ? "border-primary bg-primary/15 text-primary" : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40"}`}
           >
             <u.Icon className="size-4" />

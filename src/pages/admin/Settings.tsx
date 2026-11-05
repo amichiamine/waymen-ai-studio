@@ -37,8 +37,11 @@ import {
   useAboutValueMutations,
   useBuilderStepList,
   useBuilderStepMutations,
+  invalidateAll,
   toApiError,
 } from "@/data-provider";
+import { isHttpMode } from "@/api";
+import { reinitialiserServeur } from "@/data-provider/maintenance";
 import {
   resetData,
   type SiteSettings,
@@ -129,8 +132,10 @@ export default function AdminSettings() {
     if (!guard("manageSettings", t("admin.reglages.parametres.garde_reinitialiser"))) return;
     setSaving(true);
     try {
-      // Le provider ne propose pas de reset vers les valeurs seed ; on passe
-      // par la primitive du store (migration douce — DATA-PROVIDER.md §4).
+      if (isHttpMode()) {
+        await reinitialiserServeur("reset", "siteSettings");
+        invalidateAll();
+      }
       resetData("siteSettings");
       toast.success(t("admin.reglages.parametres.toast_reinitialise"));
     } catch (cause) {
@@ -906,7 +911,12 @@ export default function AdminSettings() {
           await setTickers(v);
         }}
         onReset={async () => {
+          if (isHttpMode()) {
+            await reinitialiserServeur("reset", "tickerMessages");
+            invalidateAll();
+          }
           resetData("tickerMessages");
+          toast.success(t("admin.reglages.parametres.toast_reinitialise"));
         }}
         can={can}
         guard={guard}
@@ -924,7 +934,12 @@ export default function AdminSettings() {
           await setMarquee(v);
         }}
         onReset={async () => {
+          if (isHttpMode()) {
+            await reinitialiserServeur("reset", "marqueeBrands");
+            invalidateAll();
+          }
           resetData("marqueeBrands");
+          toast.success(t("admin.reglages.parametres.toast_reinitialise"));
         }}
         can={can}
         guard={guard}
@@ -942,7 +957,12 @@ export default function AdminSettings() {
           await setAbout(v);
         }}
         onReset={async () => {
+          if (isHttpMode()) {
+            await reinitialiserServeur("reset", "aboutValues");
+            invalidateAll();
+          }
           resetData("aboutValues");
+          toast.success(t("admin.reglages.parametres.toast_reinitialise"));
         }}
         can={can}
         guard={guard}
@@ -960,7 +980,12 @@ export default function AdminSettings() {
           await replaceBuilder(v);
         }}
         onReset={async () => {
+          if (isHttpMode()) {
+            await reinitialiserServeur("reset", "builderSteps");
+            invalidateAll();
+          }
           resetData("builderSteps");
+          toast.success(t("admin.reglages.parametres.toast_reinitialise"));
         }}
         validate={(v) =>
           Array.isArray(v) &&

@@ -44,14 +44,14 @@ export function CategoryCards({ max }: { max?: number } = {}) {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mt-10">
         {cats.map((c, i) => {
           const Icon = DEFAULT_ICON[c.slug] ?? LayoutGrid;
-          const img = c.cover || DEFAULT_IMG[c.slug] || DEFAULT_IMG.laptops;
+          const img = c.cover || DEFAULT_IMG[c.slug];
           return (
             <Reveal key={c.slug} variant="up" delay={i * 90}>
               <Link
                 to={`/category/${c.slug}`}
                 className="group relative overflow-hidden rounded-xl border border-border bg-card aspect-[4/5] flex flex-col justify-end p-6 transition-all duration-500 hover:border-primary/60 hover:-translate-y-1.5 hover:shadow-[var(--shadow-glow)]"
               >
-                {img && (
+                {img ? (
                   <ImageCatalogue
                     src={img}
                     alt={c.label}
@@ -60,6 +60,10 @@ export function CategoryCards({ max }: { max?: number } = {}) {
                     loading="lazy"
                     className="absolute inset-0 size-full object-cover opacity-90 transition-all duration-700 group-hover:opacity-100 group-hover:scale-110"
                   />
+                ) : (
+                  <div className="absolute inset-0 size-full bg-gradient-to-br from-card via-muted/40 to-primary/10 flex items-center justify-center">
+                    <Icon className="size-20 text-muted-foreground/20 group-hover:text-primary/30 transition-colors" />
+                  </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-card/95 via-card/40 to-transparent transition-opacity duration-500 group-hover:from-card/80" />
                 <div className="relative space-y-2">

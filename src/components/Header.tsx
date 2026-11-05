@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Heart,
   ShoppingCart,
@@ -22,7 +22,7 @@ import { ThemeToggle, LanguageToggle } from "./ThemeLanguageToggles";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { useAdminRoles } from "@/lib/admin-auth";
-import { useSiteContent, useSiteSettings } from "@/data-provider";
+import { useSiteContent, useSiteSettings, useCategoryList } from "@/data-provider";
 import { getIcon } from "@/lib/site-content";
 import {
   DropdownMenu,
@@ -48,7 +48,21 @@ export function Header() {
   const { data: siteContent } = useSiteContent();
   const { data: siteSettings } = useSiteSettings();
   const H = siteContent.header;
+  const { data: categories } = useCategoryList();
   const navigate = useNavigate();
+
+  const categoryMenuItems = useMemo(() => {
+    if (categories && categories.length > 0) {
+      return categories.map((c) => ({
+        id: c.slug,
+        label: c.label,
+        href: `/category/${c.slug}`,
+        icon: "tag" as const,
+        accent: false,
+      }));
+    }
+    return H.categoryMenu.items;
+  }, [categories, H.categoryMenu.items]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -81,7 +95,7 @@ export function Header() {
               <DropdownMenuLabel className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                 {L(H.categoryMenu.title)}
               </DropdownMenuLabel>
-              {H.categoryMenu.items.map((n) => {
+              {categoryMenuItems.map((n) => {
                 const Icon = getIcon(n.icon);
                 return (
                   <DropdownMenuItem
@@ -252,7 +266,7 @@ export function Header() {
                 <div className="px-4 pt-2 pb-1 text-xs font-semibold uppercase text-muted-foreground">
                   {L(H.categoryMenu.label)}
                 </div>
-                {H.categoryMenu.items.map((n) => {
+                {categoryMenuItems.map((n) => {
                   const Icon = getIcon(n.icon);
                   return (
                     <Link

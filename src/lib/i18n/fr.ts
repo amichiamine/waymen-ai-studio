@@ -158,7 +158,7 @@ const fr: Record<string, string> = {
   "pd.tab.rev": "Avis",
   "pd.tab.ship": "Livraison & garantie",
   "pd.desc":
-    "Produit authentique sous garantie officielle KA Tech, conçu pour offrir hautes performances et expérience fluide.",
+    "Produit sélectionné avec soin par {storeName}, conçu pour vous apporter entière satisfaction et qualité irréprochable.",
   "pd.noRev": "Aucun avis pour l'instant. Soyez le premier à donner votre avis.",
   "pd.shipText":
     "Livraison dans toutes les wilayas d'Algérie. Garantie de 12 mois sur les pièces neuves couvrant les défauts de fabrication. Paiement à la livraison disponible.",

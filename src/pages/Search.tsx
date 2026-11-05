@@ -2,7 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { catalogProducts, getCategoryMeta, type Category } from "@/data/products";
-import { useCategoryList, useProductList } from "@/data-provider";
+import { useCategoryList, useProductList, useSiteSettings } from "@/data-provider";
 import { useI18n, type Localized } from "@/lib/i18n";
 
 /** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
@@ -19,9 +19,12 @@ import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 export default function Search() {
   const { t, lang } = useI18n();
   const { data: categoryList } = useCategoryList();
+  const { data: siteSettings } = useSiteSettings();
+  const storeName = siteSettings.storeName?.trim() || "Boutique";
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
   const term = q.trim().toLowerCase();
+  const useFilter = searchParams.get("use") ?? "";
 
   const [cat, setCat] = useState<Category | "">((searchParams.get("cat") as Category) ?? "");
   const [brand, setBrand] = useState<string[]>(
@@ -43,11 +46,12 @@ export default function Search() {
     if (q) p.set("q", q);
     if (cat) p.set("cat", cat);
     if (brand.length) p.set("brands", brand.join(","));
+    if (useFilter) p.set("use", useFilter);
     if (maxPrice !== 500_000) p.set("max", String(maxPrice));
     if (sort !== "relevance") p.set("sort", sort);
     if (inStock) p.set("stock", "1");
     setSearchParams(p, { replace: true });
-  }, [q, cat, brand, maxPrice, sort, inStock, setSearchParams]);
+  }, [q, cat, brand, useFilter, maxPrice, sort, inStock, setSearchParams]);
 
   // Lecture via le fournisseur de données : cette page est le pilote de la
   // migration des 62 fichiers UI (cf. docs/DATA-PROVIDER.md). Les trois états
@@ -74,6 +78,7 @@ export default function Search() {
     let r = products.filter((p) => {
       if (cat && p.category !== cat) return false;
       if (brand.length && !brand.includes(p.brand)) return false;
+      if (useFilter && (!Array.isArray(p.use) || !p.use.some((u) => u === useFilter))) return false;
       if (p.price > maxPrice) return false;
       if (inStock && p.stock === "out") return false;
       if (!term) return true;
@@ -88,13 +93,13 @@ export default function Search() {
     else if (sort === "high") r = [...r].sort((a, b) => b.price - a.price);
     else if (sort === "new") r = [...r].sort((a, b) => Number(!!b.sale) - Number(!!a.sale));
     return r;
-  }, [products, term, cat, brand, maxPrice, inStock, sort]);
+  }, [products, term, cat, brand, useFilter, maxPrice, inStock, sort]);
 
   const PAGE = 12;
   const [visible, setVisible] = useState(PAGE);
   useEffect(() => {
     setVisible(PAGE);
-  }, [q, cat, brand, maxPrice, sort, inStock]);
+  }, [q, cat, brand, useFilter, maxPrice, sort, inStock]);
   const shown = results.slice(0, visible);
   const hasMore = visible < results.length;
   const sentinelRef = useInfiniteScroll<HTMLDivElement>({
@@ -106,11 +111,16 @@ export default function Search() {
   });
 
   const suggestions = useMemo(() => products.filter((p) => p.bestSeller).slice(0, 4), [products]);
-  const active = cat || brand.length || maxPrice !== 500_000 || inStock || sort !== "relevance";
+  const active =
+    cat || brand.length || useFilter || maxPrice !== 500_000 || inStock || sort !== "relevance";
 
   const nfLocale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
-  const pageTitle = q ? t("search.page.titleQ").replace("{q}", q) : t("search.page.title");
-  const pageDesc = t("search.page.desc").replace("{n}", String(products.length));
+  const pageTitle = (
+    q ? t("search.page.titleQ").replace("{q}", q) : t("search.page.title")
+  ).replace("KA Tech", storeName);
+  const pageDesc = t("search.page.desc")
+    .replace("{n}", String(products.length))
+    .replace(/KA Tech/g, storeName);
 
   return (
     <section className="container-page py-12">

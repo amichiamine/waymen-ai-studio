@@ -830,3 +830,53 @@
   - Plan d'implémentation miroir mis à jour : 📄 [17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md)
   - Nouvelle archive horodatée : 📦 [katech-site-05112026-1853.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1853.zip)
   - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+
+
+---
+
+### Phase 18 : Grand Audit d'Assurance Qualité, Éradication des Angles Morts Vitrine & Consolidation Intégrale de la Persistance Serveur
+
+- **Date :** 05 Novembre 2026
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation 18.
+- **Objectifs :**
+  1. Éradication de tous les angles morts et noirs constatés sur la vitrine publique :
+     - Dynamisation intégrale du menu déroulant des catégories du Header [`Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) (desktop et mobile) via `useCategoryList()`.
+     - Élimination du fallback rigide "laptops" dans les cartes de catégories [`CategoryCards.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/CategoryCards.tsx) (fond dégradé moderne avec filigrane universel).
+     - Dynamisation des onglets de sélection en page d'accueil [`FeaturedTabs.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/FeaturedTabs.tsx) (plus de filtre figé sur "laptops").
+     - Raccordement interactif des chips d'usage [`UseChips.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/UseChips.tsx) vers `/search?use=...` et conditionnement d'affichage à la présence effective de tags d'usage dans le catalogue.
+     - Universalisation de la fiche produit [`Product.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Product.tsx) : onglet Description sélectionné par défaut (au lieu de Specs IT), conditionnement de l'onglet Specs à l'existence de caractéristiques, dynamisation de la marque/boutique dans la description et valorisation de `specLine` sous forme de points forts.
+     - Dynamisation des titres et métadonnées SEO dans [`Index.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Index.tsx), [`CategoryIndex.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryIndex.tsx) et [`Search.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Search.tsx) avec le nom réel de la boutique (`storeName`).
+  2. Consolidation de la persistance serveur hermétique :
+     - Élimination des appels directs `resetData()` résiduels dans l'administration ([`Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : paramètres généraux, tickers, marques, valeurs, configurateur).
+     - Appel systématique à `reinitialiserServeur("reset", ...)` suivi de `invalidateAll()` en mode HTTP pour réinitialiser la base de données serveur SQLite/MySQL/PostgreSQL.
+     - Prise en charge serveur dans [`ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) du rechargement de seed data pour `siteSettings`, `shippingSettings`, `tickerMessages`, `marqueeBrands`, `aboutValues`, `builderSteps` et `homeReviews`.
+  3. Parité linguistique trilingue (FR, EN, AR) et conformité stricte aux standards de build.
+- **Actions Réalisées :**
+  - **Étape 18.A (Dynamisation Header, Cartes & Onglets) :**
+    - [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) : `categoryMenuItems` branché sur `useCategoryList()`.
+    - [`src/components/CategoryCards.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/CategoryCards.tsx) : suppression de l'image de portable par défaut ; affichage d'un dégradé moderne avec icône thématique filigranée si aucune image n'est téléversée.
+    - [`src/components/FeaturedTabs.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/FeaturedTabs.tsx) : onglets générés dynamiquement depuis les catégories réelles du store.
+  - **Étape 18.B (Chips d'usage, Fiche Produit & Métadonnées SEO) :**
+    - [`src/components/UseChips.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/UseChips.tsx) : navigation active au clic vers `/search?use=${id}`.
+    - [`src/pages/Index.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Index.tsx) : section d'usage affichée uniquement si des produits ont des tags d'usage ; titre et description de page dynamisés avec `storeName`.
+    - [`src/pages/Product.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Product.tsx) : onglet "desc" actif par défaut, affichage de points forts universels (`specLine`), onglet "specs" masqué si vide.
+    - [`src/pages/CategoryIndex.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryIndex.tsx) & [`src/pages/Search.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Search.tsx) : filtrage par usage actif et dynamisation SEO.
+    - [`src/lib/i18n/{fr,en,ar}.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/) : mise à jour de `pd.desc` pour injecter `{storeName}`.
+  - **Étape 18.C (Persistance Serveur Hermétique dans Settings & Maintenance) :**
+    - [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : raccordement de toutes les réinitialisations partielles (`siteSettings`, `tickerMessages`, `marqueeBrands`, `aboutValues`, `builderSteps`) à `reinitialiserServeur("reset", target)` + `invalidateAll()`.
+    - [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) : réimportation des données initiales depuis le seed JSON pour toutes les cibles de contenu et paramètres.
+  - **Étape 18.D (Audit Qualité, Parité i18n & Lint) :**
+    - `bun run verifier-i18n` : 100% de parité FR / EN / AR validée sans clés manquantes.
+    - `bun run format` : 100% du code formaté avec Prettier.
+  - **Étape 18.E (Validation CI Intégrale & Packaging) :**
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build` : compilation Vite, prérendu et création du paquet de déploiement réussis.
+- **Résultats de Recette :**
+  - La vitrine publique s'adapte immédiatement et dynamiquement à n'importe quel contenu de catalogue sans aucune mention IT ou "laptops" en dur.
+  - Toutes les réinitialisations administrateur réinitialisent réellement la base de données serveur HTTP sans dépendre du cache localStorage du navigateur.
+  - La boutique fonctionne comme un système e-commerce 100% universel prêt pour tout type de commerce.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md)
+  - Nouvelle archive horodatée : 📦 [katech-site-05112026-1916.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-05112026-1916.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)

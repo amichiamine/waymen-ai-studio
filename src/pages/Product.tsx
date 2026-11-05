@@ -79,7 +79,8 @@ function ProductView({ p }: { p: ProductType }) {
 
   const dynamicCat = categoryList.find((c) => c.slug === p.category);
   const catMeta = getCategoryMeta(p.category, dynamicCat);
-  const [tab, setTab] = useState("specs");
+  const hasSpecs = Boolean(p.specs && Object.keys(p.specs).length > 0);
+  const [tab, setTab] = useState("desc");
   const { t } = useI18n();
   const L = useLocalize();
   const catLabel = catMeta.labelKey ? t(catMeta.labelKey) : catMeta.labelText || p.category;
@@ -103,8 +104,8 @@ function ProductView({ p }: { p: ProductType }) {
   const name = L(p.name) ?? "";
   const specLine = L(p.specLine) ?? "";
   const tabs: { id: string; key: TKey }[] = [
-    { id: "specs", key: "pd.tab.specs" },
     { id: "desc", key: "pd.tab.desc" },
+    ...(hasSpecs ? [{ id: "specs", key: "pd.tab.specs" as TKey }] : []),
     { id: "rev", key: "pd.tab.rev" },
     ...(!isService ? [{ id: "ship", key: "pd.tab.ship" as TKey }] : []),
   ];
@@ -383,9 +384,16 @@ function ProductView({ p }: { p: ProductType }) {
             </dl>
           )}
           {tab === "desc" && (
-            <p className="text-muted-foreground leading-relaxed max-w-3xl">
-              {name} — {t("pd.desc")}
-            </p>
+            <div className="space-y-4 max-w-3xl">
+              {specLine && specLine !== name && (
+                <div className="rounded-lg border bg-muted/30 p-3.5 text-sm font-medium">
+                  {specLine}
+                </div>
+              )}
+              <p className="text-muted-foreground leading-relaxed">
+                {name} — {t("pd.desc", { storeName: brand })}
+              </p>
+            </div>
           )}
           {tab === "rev" && (
             <div className="max-w-3xl space-y-6">

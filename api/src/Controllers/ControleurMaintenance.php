@@ -648,7 +648,21 @@ final class ControleurMaintenance
             return;
         }
 
-        if (in_array($target, ['products', 'categories', 'brands', 'blogPosts', 'shippingRates', 'paymentMethods'], true)) {
+        if (in_array($target, [
+            'products',
+            'categories',
+            'brands',
+            'blogPosts',
+            'shippingRates',
+            'paymentMethods',
+            'siteSettings',
+            'shippingSettings',
+            'tickerMessages',
+            'marqueeBrands',
+            'aboutValues',
+            'builderSteps',
+            'homeReviews',
+        ], true)) {
             $this->executerVidage($d, $target, $rapport);
             $res = $importeur->importer();
             $rapport['counts']['reinitialise'] = true;

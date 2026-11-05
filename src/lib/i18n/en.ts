@@ -156,7 +156,7 @@ const en: Record<string, string> = {
   "pd.tab.rev": "Reviews",
   "pd.tab.ship": "Shipping & warranty",
   "pd.desc":
-    "Authentic product under KA Tech official warranty, designed for high performance and a smooth experience.",
+    "Authentic product carefully selected by {storeName}, designed to deliver high quality and full satisfaction.",
   "pd.noRev": "No reviews yet. Be the first to leave one.",
   "pd.shipText":
     "Delivery to all wilayas of Algeria. 12-month warranty on new parts covering manufacturing defects. Cash on delivery available.",
