@@ -18,6 +18,7 @@ import {
   toApiError,
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import { useI18n } from "@/lib/i18n";
 
 const schema = z.object({
@@ -35,6 +36,7 @@ const schema = z.object({
     .optional()
     .or(z.literal("")),
   country: z.string().trim().max(60, "Nom de pays trop long").optional().or(z.literal("")),
+  logo: z.string().trim().max(2048).optional().or(z.literal("")),
 });
 type V = z.infer<typeof schema>;
 
@@ -58,8 +60,9 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
           name: existing.name,
           description: existing.description ?? "",
           country: existing.country ?? "",
+          logo: existing.logo ?? "",
         }
-      : { id: "", name: "", description: "", country: "" },
+      : { id: "", name: "", description: "", country: "", logo: "" },
   );
   const [err, setErr] = useState<Partial<Record<keyof V, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -75,6 +78,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
           name: b.name,
           description: b.description ?? "",
           country: b.country ?? "",
+          logo: b.logo ?? "",
         });
     }
   }, [id, mode, brands]);
@@ -238,6 +242,15 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
               <Label>{t("admin.catalogue.marque_form.label_pays")}</Label>
               <Input value={v.country ?? ""} onChange={(e) => update("country", e.target.value)} />
               {err.country && <p className="mt-1 text-xs text-destructive">{err.country}</p>}
+            </div>
+            <div>
+              <MediaPickerField
+                label="Logo officiel de la marque (optionnel)"
+                description="Sélectionnez un logo depuis la médiathèque ou téléversez un nouveau visuel."
+                value={v.logo ?? ""}
+                disabled={!can(formPerm)}
+                onChange={(url) => update("logo", url)}
+              />
             </div>
             <div>
               <Label>{t("admin.catalogue.marque_form.label_description")}</Label>

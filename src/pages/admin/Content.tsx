@@ -1313,12 +1313,7 @@ function FeaturedTabsForm({
   const availableCats =
     categoryList && categoryList.length > 0
       ? categoryList.map((c) => ({ slug: c.slug, label: c.label }))
-      : [
-          { slug: "laptops", label: "Laptops" },
-          { slug: "desktops", label: "Desktops" },
-          { slug: "builds", label: "Builds" },
-          { slug: "phones", label: "Phones" },
-        ];
+      : [];
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2">
@@ -1341,7 +1336,7 @@ function FeaturedTabsForm({
           type="button"
           size="sm"
           variant="outline"
-          disabled={readOnly}
+          disabled={readOnly || availableCats.length === 0}
           onClick={() =>
             onChange({
               ...v,
@@ -1349,7 +1344,7 @@ function FeaturedTabsForm({
                 ...v.tabs,
                 {
                   id: `t_${Date.now()}`,
-                  categorySlug: (availableCats[0]?.slug ?? "laptops") as Category,
+                  categorySlug: (availableCats[0]?.slug ?? "") as Category,
                   label: "Nouveau",
                 },
               ],

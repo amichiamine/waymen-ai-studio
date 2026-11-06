@@ -358,7 +358,12 @@ export default function AdminDeveloppeur() {
               <p className="text-xs text-muted-foreground">
                 {t("admin.systeme.developpeur.etat_base")}
               </p>
-              <p className="mt-1 truncate font-semibold">{etat.database}</p>
+              <p className="mt-1 font-semibold">{etat.database}</p>
+              {etat.path && (
+                <p className="mt-0.5 text-[11px] font-mono text-muted-foreground break-all">
+                  Emplacement : {etat.path}
+                </p>
+              )}
             </div>
             <div className="rounded-md border bg-muted/30 p-3">
               <p className="text-xs text-muted-foreground">

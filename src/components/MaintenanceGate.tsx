@@ -5,6 +5,8 @@ import { useI18n } from "@/lib/i18n";
 import { Logo } from "./Logo";
 import { Badge } from "@/components/ui/badge";
 
+import type { SiteSettings } from "@/lib/admin-store";
+
 /**
  * Full-page maintenance screen shown when siteSettings.maintenance is true.
  * The App gate skips this for /admin/* and /auth so operators can still work.
@@ -16,16 +18,27 @@ import { Badge } from "@/components/ui/badge";
  *  - Coordonnées de contact complètes
  *  - Bouton d'accès administrateur pointant directement vers /admin (0 boucle)
  */
-export function MaintenanceScreen() {
-  const { data: s, loading } = useSiteSettings();
+export function MaintenanceScreen({
+  previewSettings,
+}: {
+  previewSettings?: Partial<SiteSettings>;
+} = {}) {
+  const { data: sLive, loading } = useSiteSettings();
   const { t } = useI18n();
 
-  if (loading) return null;
+  if (loading && !previewSettings) return null;
+  const s = previewSettings ? ({ ...sLive, ...previewSettings } as SiteSettings) : sLive;
 
   const rawWhatsApp = (s.whatsapp || s.contactPhone || "").replace(/\D/g, "");
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <div
+      className={
+        previewSettings
+          ? "min-h-[460px] py-8 bg-background flex items-center justify-center px-4 relative overflow-hidden"
+          : "min-h-screen bg-background flex items-center justify-center px-4 py-12 relative overflow-hidden"
+      }
+    >
       {/* Halo d'ambiance d'arrière-plan */}
       <div className="absolute inset-0 bg-radial from-primary/10 via-transparent to-transparent pointer-events-none" />
 

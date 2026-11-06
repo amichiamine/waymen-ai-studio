@@ -42,6 +42,7 @@ export type TableStat = {
 export type EtatBase = {
   driver: string;
   database: string;
+  path?: string | null;
   size: string;
   tables: TableStat[];
   outboxPending: number;

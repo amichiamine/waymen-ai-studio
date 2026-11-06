@@ -273,7 +273,7 @@ DirectoryIndex index.php index.html
   # Content-Security-Policy-Report-Only. La politique n'est alors plus
   # appliquée, mais les violations restent visibles dans la console du
   # navigateur. On corrige, puis on remet le nom d'origine.
-  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; media-src 'self'; worker-src 'self' blob:; manifest-src 'self'; frame-src 'none'"
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; media-src 'self'; worker-src 'self' blob:; manifest-src 'self'; frame-src 'none'"
 
   # HSTS — à n'activer QU'APRÈS avoir confirmé que HTTPS fonctionne sur
   # le domaine ET tous ses sous-domaines. Une fois envoyé, le navigateur

@@ -1163,3 +1163,44 @@
   - Plan interactif et miroir : 📄 [23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md)
   - Archive application horodatée : 📦 [katech-site-06112026-1444.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1444.zip) (conservée en parallèle de 1401)
   - Archive données horodatée : 📦 [katech-data-06112026-1444.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1444.zip) (conservée en parallèle de 1401)
+
+## Phase 24 : Consolidation Réglages, Logos Marques, Sauvegarde BD, Sécurité CSP & Aperçu Live du Mode Maintenance VIP
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 24 pour (1) corriger l'erreur HTTP 503 lors du téléchargement de sauvegarde de base de données liée à `proc_close()` en environnement Linux, (2) résoudre les blocages de scripts inline Content Security Policy (CSP), (3) assouplir la validation Zod d'upload d'images pour accepter les chemins relatifs `uploads/` et `assets/`, (4) ajouter le support complet des logos de marques (base SQLite, API backend, formulaires et carrousel vitrine), (5) brancher `FeaturedTabs` sur l'accueil et supprimer les fausses catégories mockées, (6) restructurer l'écran « Paramètres » en 6 onglets thématiques avec aperçu interactif modal du mode maintenance, et (7) afficher le chemin physique absolu de la base SQLite dans l'onglet Développeur.
+- **Actions Réalisées :**
+  - **Étape 24.A (Résolution Définitive du Téléchargement de Sauvegarde BD) :**
+    - Modification de [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) : fiabilisation de `executerOutil()`. En environnement PHP/Linux, l'appel à `proc_get_status()` avant `proc_close()` provoquait le retour de `-1` par `proc_close()`, déclenchant à tort une exception HTTP 503. Le code inspecte désormais prioritairement `$etat['exitcode']` et vérifie la présence de `TERMINÉ avec succès` dans le flux de sortie pour garantir le téléchargement immédiat du fichier `.sqlite`.
+  - **Étape 24.B (Autorisation CSP des Scripts Inline d'Amorçage) :**
+    - Modification de [`public/.htaccess`](file:///c:/xampp/htdocs/ka-tech/public/.htaccess) : ajout de `'unsafe-inline'` à la directive `script-src` du Content-Security-Policy pour autoriser l'exécution sans alerte console des scripts inline anti-FOUC de `index.html` et de bootstrapping dynamique `window.__SITE_SETTINGS_BOOTSTRAP__` de `index.php`.
+  - **Étape 24.C (Assouplissement Zod Validation Upload Médias) :**
+    - Modification de [`src/pages/admin/CategoryForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/CategoryForm.tsx) : mise à jour du schéma Zod `optionalUrl` pour autoriser les chemins relatifs issus du téléversement (`uploads/...`, `assets/...`) évitant le message bloquant « URL invalide (http(s):// ou / attendu) ».
+  - **Étape 24.D (Gestion Intégrale des Logos de Marques) :**
+    - Backend : ajout de la colonne `logo TEXT` dans la table `brands` SQLite avec auto-migration dynamique, prise en charge de `logo` dans les requêtes de création, modification et DTO de [`api/src/Controllers/ControleurMarques.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMarques.php).
+    - Frontend Backstage : intégration du champ `logo?: string` dans `AdminBrand` ([`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx)), remplacement de la saisie manuelle par `<MediaPickerField>` dans [`src/pages/admin/BrandForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/BrandForm.tsx) et affichage du logo dans [`src/pages/admin/BrandDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/BrandDetail.tsx).
+    - Vitrine : [`src/components/BrandsMarquee.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BrandsMarquee.tsx) affiche le logo image de la marque s'il est renseigné, retombe élégamment sur le nom stylisé si absent, et charge les marques du catalogue si la liste personnalisée est vide.
+  - **Étape 24.E (Intégration FeaturedTabs & Nettoyage des Données Fantômes) :**
+    - [`src/pages/Index.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Index.tsx) : inclusion du composant `<FeaturedTabs />` sur l'accueil entre les Meilleures Ventes et les Marques.
+    - [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : suppression des catégories mockées en dur (Laptops, Gaming, Audio) dans `FeaturedTabsForm`, branché désormais exclusivement sur les catégories réelles du store/API.
+  - **Étape 24.F (Refonte Ergonomique de l'Écran « Paramètres » & Aperçu Live du Mode Maintenance VIP) :**
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : restructuration des 8 cartes plates en **6 Onglets Thématiques** :
+      1. **Boutique (`general`)** : Identité, Nom d'enseigne, Logo (upload, médiathèque, rétablissement officiel), Coordonnées, WhatsApp, Horaires.
+      2. **Identité & Thème (`appearance`)** : Thème clair/sombre/système, Couleur primaire avec nuancier et presets, Favicon de la boutique et Bandeau promotionnel.
+      3. **Mode Maintenance VIP (`maintenance`)** : Statut visuel direct (fermé/ouvert), interrupteur principal, titre, message explicatif, date/heure estimée de retour, switch WhatsApp, et **Bouton « Aperçu Live (Modal) »** ouvrant un modal plein écran avec simulation en temps réel des valeurs en cours de saisie via `<MaintenanceScreen previewSettings={form} />`.
+      4. **Devise & Tarifs (`finance`)** : Symbole monétaire, position, séparateur de milliers et aperçu dynamique en temps réel en DZD.
+      5. **Configurateur PC (`builder`)** : Interrupteur d'activation et `BuilderStepsVisualEditor` intégré.
+      6. **Options & Stocks (`options`)** : Notifications emails, sélecteur multilingue vitrine, masquage des notes sans avis, et seuils d'alertes de stock.
+    - Barre d'action permanente (Réinitialiser / Enregistrer) conservée en pied d'écran pour tous les onglets.
+  - **Étape 24.G (Transparence de l'Emplacement Physique de la Base SQLite) :**
+    - [`api/src/Controllers/ControleurMaintenance.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMaintenance.php) : exposition de `'path' => $this->db->cheminSqlite()` dans le diagnostic d'état.
+    - [`src/pages/admin/Developpeur.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Developpeur.tsx) : affichage explicite du chemin physique de la base de données SQLite sur le serveur (ex: `/home/uXXXXXXX/domains/.../katech-data/katech.sqlite`) pour éliminer tout angle noir.
+- **Validation CI & Tests :**
+  - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte.
+  - `bunx tsc --noEmit` : 0 erreur TypeScript.
+  - `bun run lint` : 0 erreur ESLint.
+  - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-1518.zip` et `katech-data-06112026-1518.zip`).
+  - Règle de conservation cumulative respectée : les archives antérieures (`1401`, `1444`, `1518`) sont toutes préservées sur le disque.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-1518.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1518.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-1518.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1518.zip)

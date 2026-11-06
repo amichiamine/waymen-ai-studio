@@ -4,6 +4,7 @@ import { Hero } from "@/components/Hero";
 import { CategoryCards } from "@/components/CategoryCards";
 import { UseChips } from "@/components/UseChips";
 import { BestSellers } from "@/components/BestSellers";
+import { FeaturedTabs } from "@/components/FeaturedTabs";
 import { BrandsMarquee } from "@/components/BrandsMarquee";
 import { FlashSale } from "@/components/FlashSale";
 import { WhyUs } from "@/components/WhyUs";
@@ -50,6 +51,7 @@ export default function Index() {
         </section>
       )}
       <BestSellers />
+      <FeaturedTabs />
       <BrandsMarquee />
       <WhyUs />
       {siteSettings.builderEnabled !== false && <BuilderTeaser />}

@@ -8,6 +8,7 @@ import { AlertTriangle, ArrowLeft, Pencil, Plus, Tag } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useBrandDetail, useProductList, useCategoryList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
+import { resoudreUrlMedia } from "@/components/media-url";
 import { useLocalize, useI18n } from "@/lib/i18n";
 
 const STOCK_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
@@ -138,9 +139,19 @@ export default function AdminBrandDetail() {
         <Card>
           <CardContent className="space-y-3 p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <Tag className="h-6 w-6" />
-              </div>
+              {brand.logo ? (
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border bg-card p-1 shadow-sm overflow-hidden">
+                  <img
+                    src={resoudreUrlMedia(brand.logo)}
+                    alt={brand.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Tag className="h-6 w-6" />
+                </div>
+              )}
               <div>
                 <p className="text-lg font-semibold">{brand.name}</p>
                 <p className="text-xs text-muted-foreground">

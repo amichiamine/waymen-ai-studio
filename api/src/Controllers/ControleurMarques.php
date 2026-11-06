@@ -33,6 +33,11 @@ final class ControleurMarques
 
     public function __construct(private readonly Db $db)
     {
+        try {
+            $this->db->run("ALTER TABLE brands ADD COLUMN logo TEXT");
+        } catch (\Throwable) {
+            // Colonne déjà présente
+        }
     }
 
     /**
@@ -103,9 +108,10 @@ final class ControleurMarques
             'name'        => $nom,
             'description' => $r->corps('description'),
             'country'     => $r->corps('country'),
+            'logo'        => $r->corps('logo'),
             'created_at'  => $maintenant,
             'updated_at'  => $maintenant,
-        ], ['id'], ['name', 'description', 'country', 'updated_at']));
+        ], ['id'], ['name', 'description', 'country', 'logo', 'updated_at']));
 
         Journal::consigner($this->db, 'marque_creee', 'brand', ['id' => $id, 'name' => $nom]);
 
@@ -132,6 +138,7 @@ final class ControleurMarques
         $nom         = trim((string) $r->corps('name', $existant['name']));
         $description = $r->corps('description') !== null ? (string) $r->corps('description') : $existant['description'];
         $country     = $r->corps('country') !== null ? (string) $r->corps('country') : $existant['country'];
+        $logo        = $r->corps('logo') !== null ? (string) $r->corps('logo') : ($existant['logo'] ?? null);
 
         if ($nom === '') {
             throw ApiException::validation('Marque invalide.', ['name' => ['Champ obligatoire.']]);
@@ -140,12 +147,13 @@ final class ControleurMarques
         $maintenant = gmdate('c');
 
         $this->db->run(
-            'UPDATE brands SET name = :name, description = :description, country = :country,
+            'UPDATE brands SET name = :name, description = :description, country = :country, logo = :logo,
              updated_at = :updated_at WHERE id = :id',
             [
                 ':name'        => $nom,
                 ':description' => $description,
                 ':country'     => $country,
+                ':logo'        => $logo,
                 ':updated_at'  => $maintenant,
                 ':id'          => $id,
             ],
@@ -228,6 +236,9 @@ final class ControleurMarques
         }
         if ($l['country'] !== null) {
             $dto['country'] = (string) $l['country'];
+        }
+        if (isset($l['logo']) && $l['logo'] !== null && $l['logo'] !== '') {
+            $dto['logo'] = (string) $l['logo'];
         }
 
         return $dto;

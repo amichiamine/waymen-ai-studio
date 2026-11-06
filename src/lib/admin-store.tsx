@@ -25,6 +25,7 @@ export type AdminBrand = {
   name: string;
   description?: string;
   country?: string;
+  logo?: string;
 };
 
 export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";

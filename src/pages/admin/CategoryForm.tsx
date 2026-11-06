@@ -34,8 +34,11 @@ const optionalUrl = z
       v.startsWith("/") ||
       v.startsWith("http://") ||
       v.startsWith("https://") ||
-      v.startsWith("data:"),
-    { message: "URL invalide (http(s):// ou / attendu)" },
+      v.startsWith("data:") ||
+      v.startsWith("uploads/") ||
+      v.startsWith("assets/") ||
+      /^[\w./-]+\.(png|jpe?g|webp|svg|gif|avif)$/i.test(v),
+    { message: "URL ou chemin d'image invalide (http(s)://, / ou uploads/ attendu)" },
   );
 
 const schema = z.object({

@@ -141,6 +141,7 @@ final class ControleurMaintenance
         return Reponse::ok([
             'driver'       => $pilote,
             'database'     => $nomBase,
+            'path'         => $pilote === Db::PILOTE_SQLITE ? (string) $this->db->cheminSqlite() : null,
             'size'         => $tailleOctets,
             'sizeHuman'    => $tailleOctets !== null ? $this->tailleLisible($tailleOctets) : null,
             'tables'       => $tables,
@@ -930,9 +931,13 @@ final class ControleurMaintenance
         fclose($tuyaux[1]);
         fclose($tuyaux[2]);
 
-        $code = proc_close($processus);
+        $closeCode = proc_close($processus);
+        // En PHP/Linux, proc_close() renvoie -1 si proc_get_status() a déjà moissonné le processus.
+        // Le véritable code de sortie se trouve alors dans $etat['exitcode'].
+        $code = ($closeCode !== -1) ? $closeCode : (isset($etat['exitcode']) && $etat['exitcode'] !== -1 ? (int) $etat['exitcode'] : $closeCode);
 
-        if ($code !== 0) {
+        // Si le code n'est pas 0 et que la sortie ne confirme pas explicitement le succès de l'outil :
+        if ($code !== 0 && !str_contains($sortie, 'TERMINÉ avec succès')) {
             // L'outil échoue TOUJOURS en expliquant pourquoi (droits, espace
             // disque, contenu divergent…). Ce message est justement ce dont le
             // propriétaire a besoin : on le transmet plutôt que de le remplacer
