@@ -1276,7 +1276,7 @@
 - **Validation ArchiSys3.0 :** Approbation formelle du Plan 27 pour :
   1. Résoudre le goulet d'étranglement de persistance SQLite sur la section « À propos » et raccorder l'ensemble des pages éditoriales (dont Contact & FAQ) à la source de vérité dynamique.
   2. Raccorder la page `/contact` aux données éditables (`siteContent.contact`) avec composant accordéon dynamique pour la foire aux questions (FAQ).
-  3. Ajouter l'éditeur visuel complet de la page Contact et de sa FAQ dans le backstage (*Contenus du site > Pages & Textes > Page Contact & FAQ*).
+  3. Ajouter l'éditeur visuel complet de la page Contact et de sa FAQ dans le backstage (_Contenus du site > Pages & Textes > Page Contact & FAQ_).
   4. Éradiquer les avertissements console i18n manquants (`admin.media.*` substitués par les clés officielles conformes `admin.catalogue.media.*`).
   5. Optimiser la réconciliation React dans l'éditeur de contenu pour éliminer les violations de temps d'exécution.
 - **Actions Réalisées :**
@@ -1309,3 +1309,50 @@
   - Plan interactif et miroir : 📄 [27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md)
   - Archive application horodatée : 📦 [katech-site-06112026-1905.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1905.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-1905.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1905.zip)
+
+---
+
+## Phase 28 : Universalisation Catalogue (Specs IT Pliées & Catégorie Neutre), Auteur Dynamique Blog & Éditeur Multimédia Markdown (Vidéos YouTube/MP4, Médiathèque & Live Preview)
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 28 pour :
+  1. Éliminer le hardcodage de la catégorie par défaut `category: "laptops"` et replier la section Spécifications informatiques (CPU, RAM, GPU, Écran, OS) par défaut à la création de produit.
+  2. Supprimer le hardcodage de l'auteur de blog `"Équipe KA Tech"` et interpoler dynamiquement l'enseigne configurée de la boutique ou le compte de l'administrateur connecté.
+  3. Créer un composant réutilisable d'édition Markdown enrichi (`MarkdownEditor`) avec barre d'outils visuelle, passerelle directe vers la Médiathèque, dialogue d'insertion vidéo (YouTube, Vimeo, MP4) et onglet d'Aperçu en direct.
+  4. Améliorer le moteur de rendu public (`MarkdownRenderer`) dans `BlogArticle.tsx` pour intégrer des lecteurs vidéo responsives 16:9, des images cataloguées, des listes à puces et des liens hypertextes.
+- **Actions Réalisées :**
+  - **Étape 28.A (Universalité Formulaire Produit `ProductForm.tsx`) :**
+    - Modification de `emptyForm(defaultCategory = "")` pour ne plus forcer `category: "laptops"`. Raccordement dynamique à la première catégorie existante (`categories[0]?.slug || ""`).
+    - Modification de l'état `showItSpecs` : initialisé à `false` en mode création. En mode édition, initialisé à `true` uniquement si le produit édité possède déjà au moins une spécification informatique non vide.
+    - Suppression de l'effet de bord forçant le déploiement automatique du volet.
+  - **Étape 28.B (Auteur Dynamique du Blog `BlogForm.tsx`) :**
+    - Raccordement aux hooks `useSiteSettings()` et `useAuth()`.
+    - Calcul de l'auteur par défaut : nom de l'utilisateur connecté (`user?.name`), ou interpolation de l'enseigne de la boutique (`Équipe ${storeName}`), ou intitulé neutre "Rédaction".
+    - Suppression totale du hardcodage `"Équipe KA Tech"`.
+  - **Étape 28.C (Composant Éditeur Markdown Enrichi `MarkdownEditor.tsx`) :**
+    - Création de [`src/components/admin/MarkdownEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/MarkdownEditor.tsx) avec :
+      - Barre d'outils complète : Titres H2/H3, Gras, Italique, Listes à puces, Listes ordonnées, Citations, Liens.
+      - Bouton Médiathèque intégré ouvrant `MediaPickerDialog` pour insérer une image `![nom](src)` en un clic.
+      - Dialogue d'insertion Vidéo avec support des URLs YouTube, Vimeo ou fichiers vidéo directs MP4/WebM.
+      - Commutateur d'onglets [ ✏️ Édition ] / [ 👁️ Aperçu en direct ] pour visualiser immédiatement le résultat avant enregistrement.
+    - Création du wrapper `LLocalizedMarkdownEditor` dans [`src/pages/admin/BlogForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/BlogForm.tsx) pour les trois langues (FR, EN, AR avec `dir="rtl"`).
+  - **Étape 28.D (Moteur de Rendu Multimédia Public `MarkdownRenderer.tsx`) :**
+    - Création de [`src/components/blog/MarkdownRenderer.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blog/MarkdownRenderer.tsx) :
+      - Détection regex et intégration responsive 16:9 des vidéos YouTube (`iframe` sécurisé `youtube-nocookie.com`) et Vimeo.
+      - Lecteur HTML5 `<video controls>` pour les fichiers directs MP4/WebM.
+      - Rendu des images Markdown `![alt](url)` via le composant optimisé `<ImageCatalogue>`.
+      - Rendu des liens cliquables `[texte](url)`, citations stylées `> `, et listes à puces `- ` / `* `.
+    - Intégration de `MarkdownRenderer` dans [`src/pages/BlogArticle.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/BlogArticle.tsx).
+  - **Étape 28.E (Parité i18n Trilingue FR, EN, AR) :**
+    - Ajout de 21 nouvelles clés trilingues pour l'éditeur Markdown dans [`src/lib/i18n/admin/contenu/{fr,en,ar}.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/contenu/fr.ts).
+  - **Étape 28.F (Validation CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue stricte FR/EN/AR.
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-2104.zip` et `katech-data-06112026-2104.zip`).
+    - Conservation cumulative respectée : l'ensemble des archives historiques (`1401`, `1444`, `1518`, `1808`, `1842`, `1905`, `2104`) est préservé.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-2104.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2104.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-2104.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2104.zip)

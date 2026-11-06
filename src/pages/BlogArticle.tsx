@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useBlogPostDetail, useSiteSettings } from "@/data-provider";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
+import { MarkdownRenderer } from "@/components/blog/MarkdownRenderer";
 
 export default function BlogArticle() {
   const { slug } = useParams<{ slug: string }>();
@@ -130,49 +131,8 @@ export default function BlogArticle() {
         />
       )}
 
-      <div className="prose prose-invert mt-8 max-w-none text-foreground/90">
-        {content.split(/\n\n+/).map((block, i) => {
-          if (block.startsWith("# "))
-            return (
-              <h2 key={i} className="mt-8 text-2xl font-bold">
-                {block.slice(2)}
-              </h2>
-            );
-          if (block.startsWith("## "))
-            return (
-              <h3 key={i} className="mt-6 text-xl font-semibold">
-                {block.slice(3)}
-              </h3>
-            );
-          if (/^\d+\.\s/.test(block)) {
-            const items = block.split(/\n/).map((l) => l.replace(/^\d+\.\s*/, ""));
-            return (
-              <ol key={i} className="my-4 list-decimal space-y-1 ps-6 text-sm leading-relaxed">
-                {items.map((it, j) => (
-                  <li key={j}>{renderInline(it)}</li>
-                ))}
-              </ol>
-            );
-          }
-          return (
-            <p key={i} className="my-4 whitespace-pre-line text-sm leading-relaxed">
-              {renderInline(block)}
-            </p>
-          );
-        })}
-      </div>
+      <MarkdownRenderer content={content} className="mt-8" />
     </article>
-  );
-}
-
-function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((p, i) =>
-    p.startsWith("**") && p.endsWith("**") ? (
-      <strong key={i}>{p.slice(2, -2)}</strong>
-    ) : (
-      <span key={i}>{p}</span>
-    ),
   );
 }
 

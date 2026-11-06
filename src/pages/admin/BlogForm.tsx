@@ -12,12 +12,19 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Save } from "lucide-react";
-import { useBlogPostDetail, useBlogPostMutations, toApiError } from "@/data-provider";
+import {
+  useBlogPostDetail,
+  useBlogPostMutations,
+  useSiteSettings,
+  toApiError,
+} from "@/data-provider";
 import type { BlogPost } from "@/api/types";
 import { usePermissions } from "@/lib/admin-auth";
+import { useAuth } from "@/lib/auth";
 import type { Localized } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { MarkdownEditor } from "@/components/admin/MarkdownEditor";
 
 type Mode = "new" | "edit";
 
@@ -98,7 +105,7 @@ function toForm(p: BlogPost): FormValues {
   };
 }
 
-function emptyForm(): FormValues {
+function emptyForm(defaultAuthor = ""): FormValues {
   return {
     titleFr: "",
     titleEn: "",
@@ -111,7 +118,7 @@ function emptyForm(): FormValues {
     contentEn: "",
     contentAr: "",
     cover: "",
-    author: "Équipe KA Tech",
+    author: defaultAuthor,
     tagsRaw: "",
     status: "draft",
   };
@@ -320,6 +327,106 @@ function LLocalizedTextarea({
   );
 }
 
+/**
+ * Éditeur Markdown trilingue (FR / EN / AR) avec barre d'outils,
+ * passerelle médiathèque et prévisualisation en direct.
+ */
+function LLocalizedMarkdownEditor({
+  labelFr,
+  labelEn,
+  labelAr,
+  valueFr,
+  valueEn,
+  valueAr,
+  onChangeFr,
+  onChangeEn,
+  onChangeAr,
+  placeholderFr,
+  placeholderEn,
+  placeholderAr,
+  rowsFr,
+  rowsOther,
+  errorFr,
+  missingLabel,
+  disabled,
+}: {
+  labelFr: string;
+  labelEn?: string;
+  labelAr?: string;
+  valueFr: string;
+  valueEn: string;
+  valueAr: string;
+  onChangeFr: (v: string) => void;
+  onChangeEn: (v: string) => void;
+  onChangeAr: (v: string) => void;
+  placeholderFr?: string;
+  placeholderEn?: string;
+  placeholderAr?: string;
+  rowsFr?: number;
+  rowsOther?: number;
+  errorFr?: string;
+  missingLabel: string;
+  disabled?: boolean;
+}) {
+  const map: Record<LangCode, string> = { fr: valueFr, en: valueEn, ar: valueAr };
+
+  return (
+    <Tabs defaultValue="fr">
+      <div className="flex items-center justify-between mb-2">
+        <TabsList>
+          {LANGS.map((l) => (
+            <TabsTrigger key={l} value={l} className="relative">
+              {LANG_LABELS[l]}
+              {isMissing(map, l) && (
+                <span
+                  className="absolute end-0.5 top-0.5 size-1.5 rounded-full bg-amber-400"
+                  aria-label={missingLabel}
+                />
+              )}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
+
+      <TabsContent value="fr" className="mt-2 space-y-1.5">
+        <Label>{labelFr}</Label>
+        <MarkdownEditor
+          rows={rowsFr ?? 14}
+          value={valueFr}
+          placeholder={placeholderFr}
+          disabled={disabled}
+          onChange={onChangeFr}
+          error={errorFr}
+        />
+        {errorFr && <p className="text-xs text-destructive">{errorFr}</p>}
+      </TabsContent>
+
+      <TabsContent value="en" className="mt-2 space-y-1.5">
+        <Label>{labelEn ?? labelFr}</Label>
+        <MarkdownEditor
+          rows={rowsOther ?? 14}
+          value={valueEn}
+          placeholder={placeholderEn}
+          disabled={disabled}
+          onChange={onChangeEn}
+        />
+      </TabsContent>
+
+      <TabsContent value="ar" className="mt-2 space-y-1.5">
+        <Label>{labelAr ?? labelFr}</Label>
+        <MarkdownEditor
+          dir="rtl"
+          rows={rowsOther ?? 14}
+          value={valueAr}
+          placeholder={placeholderAr}
+          disabled={disabled}
+          onChange={onChangeAr}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
 // ---- Main component ----
 
 export function BlogFormPage({ mode }: { mode: Mode }) {
@@ -368,10 +475,23 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
     status: z.enum(["draft", "published"]),
   });
 
-  const [form, setForm] = useState<FormValues>(() => (existing ? toForm(existing) : emptyForm()));
+  const { data: siteSettings } = useSiteSettings();
+  const { user } = useAuth();
+  const storeName = siteSettings.storeName?.trim() || "";
+  const defaultAuthor = user?.name?.trim() || (storeName ? `Équipe ${storeName}` : "Rédaction");
+
+  const [form, setForm] = useState<FormValues>(() =>
+    existing ? toForm(existing) : emptyForm(defaultAuthor),
+  );
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [touchedSlug, setTouchedSlug] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (mode === "new" && !form.author && defaultAuthor) {
+      setForm((prev) => (prev.author ? prev : { ...prev, author: defaultAuthor }));
+    }
+  }, [mode, defaultAuthor, form.author]);
 
   // Synchroniser le formulaire quand le détail de l'article est chargé.
   useEffect(() => {
@@ -550,8 +670,8 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
               disabled={saveDisabled}
             />
 
-            {/* Corps — champ long Markdown, trois langues */}
-            <LLocalizedTextarea
+            {/* Corps — champ long Markdown enrichi, trois langues */}
+            <LLocalizedMarkdownEditor
               labelFr={t("admin.contenu.blog.champ_corps")}
               labelEn={t("admin.contenu.blog.champ_corps_en")}
               labelAr={t("admin.contenu.blog.champ_corps_ar")}

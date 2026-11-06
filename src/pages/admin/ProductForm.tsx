@@ -251,12 +251,12 @@ function emptyLocalized(): Record<LangCode, string> {
   return { fr: "", en: "", ar: "" };
 }
 
-function emptyForm(): FormValues {
+function emptyForm(defaultCategory = ""): FormValues {
   return {
     id: "",
     name: emptyLocalized(),
     brand: "",
-    category: "laptops",
+    category: defaultCategory,
     productType: "physical",
     specLine: emptyLocalized(),
     price: 0,
@@ -345,22 +345,34 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
   // useProductDetail reste monté et inactif quand id est undefined — jamais de hook conditionnel.
   const { data: existing } = useProductDetail(mode === "edit" ? id : undefined);
 
-  const [v, setV] = useState<FormValues>(existing ? toForm(existing) : emptyForm());
+  const defaultCategory = categories[0]?.slug || "";
+  const [v, setV] = useState<FormValues>(() =>
+    existing ? toForm(existing) : emptyForm(defaultCategory),
+  );
   const [customSpecs, setCustomSpecs] = useState<CustomSpecItem[]>([]);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const hasExistingItSpecs = Boolean(
+    existing?.specs &&
+    (existing.specs.cpu ||
+      existing.specs.ram ||
+      existing.specs.gpu ||
+      existing.specs.storage ||
+      existing.specs.screen ||
+      existing.specs.os),
+  );
   const isItHardware =
     IT_HARDWARE_CATEGORIES.has((v.category || "").toLowerCase()) && v.productType !== "service";
-  const [showItSpecs, setShowItSpecs] = useState(isItHardware);
+  const [showItSpecs, setShowItSpecs] = useState(mode === "edit" ? hasExistingItSpecs : false);
 
   useEffect(() => {
-    if (isItHardware) {
-      setShowItSpecs(true);
+    if (mode === "new" && !v.category && categories.length > 0) {
+      setV((prev) => (prev.category ? prev : { ...prev, category: categories[0].slug }));
     }
-  }, [isItHardware]);
+  }, [mode, categories, v.category]);
 
   useEffect(() => {
     if (mode === "edit" && id) {
