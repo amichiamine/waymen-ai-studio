@@ -96,15 +96,15 @@ export default function Blog() {
                   const rawTitle = L(p.title) ?? "";
                   const title = rawTitle
                     .replace(/{storeName}/g, brand)
-                    .replace(/\bKA Tech\b/g, brand);
+                    .replace(/\bKA Tech\b|\bStacGate Platform\b/g, brand);
                   const rawExcerpt = L(p.excerpt) ?? "";
                   const excerpt = rawExcerpt
                     .replace(/{storeName}/g, brand)
-                    .replace(/\bKA Tech\b/g, brand);
+                    .replace(/\bKA Tech\b|\bStacGate Platform\b/g, brand);
                   const rawAuthor = p.author ?? "";
                   const author = rawAuthor
                     .replace(/{storeName}/g, brand)
-                    .replace(/\bKA Tech\b/g, brand);
+                    .replace(/\bKA Tech\b|\bStacGate Platform\b/g, brand);
                   return (
                     <Link
                       key={p.id}

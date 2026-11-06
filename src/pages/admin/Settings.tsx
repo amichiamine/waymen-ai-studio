@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -41,8 +42,10 @@ import {
   MessageCircle,
   Type,
   Square,
+  Globe,
+  ArrowRight,
 } from "lucide-react";
-import defaultLogoSrc from "@/assets/ka-tech-logo.webp";
+import defaultLogoSrc from "@/assets/stacgate-logo.png";
 import { resoudreUrlMedia } from "@/components/media-url";
 import { MediaPickerDialog } from "@/components/admin/MediaPickerField";
 import { BuilderStepsVisualEditor } from "@/components/admin/BuilderStepsVisualEditor";
@@ -480,6 +483,34 @@ export default function AdminSettings() {
                         placeholder={t("admin.reglages.parametres.champ_horaires_placeholder")}
                         disabled={disabledSettings}
                       />
+                    </div>
+
+                    {/* Raccourci rapide vers la gestion complète du Footer */}
+                    <div className="pt-2 border-t border-border/60">
+                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                            <Globe className="size-3.5 text-primary" />
+                            Personnalisation du Pied de page (Footer)
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Modifier la baseline, le copyright, les colonnes et liens du pied de
+                            page.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 text-xs border-primary/30 hover:bg-primary/10 gap-1.5"
+                          asChild
+                        >
+                          <Link to="/admin/content?pole=global&sub=footer">
+                            Éditer le Footer
+                            <ArrowRight className="size-3" />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

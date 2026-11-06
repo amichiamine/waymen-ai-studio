@@ -305,7 +305,7 @@ const reglagesEn: Record<string, string> = {
     "Open the Notion page under which you want to create the table.",
   "admin.reglages.notion.pages_vide_etape2": "Click « ••• » (top-right menu on the page).",
   "admin.reglages.notion.pages_vide_etape3":
-    "Choose « Connections », then add your KA Tech Hub connection.",
+    "Choose « Connections », then add your StacGate Hub connection.",
   "admin.reglages.notion.pages_vide_etape4": "Come back here and click « Refresh list ».",
   "admin.reglages.notion.btn_rafraichir_pages": "Refresh list",
   "admin.reglages.notion.btn_rafraichir_pages_cours": "Refreshing…",
@@ -315,7 +315,7 @@ const reglagesEn: Record<string, string> = {
   // Step 3 — Database
   "admin.reglages.notion.etape3_titre": "Step 3 — Create the database",
   "admin.reglages.notion.etape3_desc":
-    "The « Commandes — KA Tech Hub » table will be created in Notion with all required columns.",
+    "The « Commandes — StacGate Hub » table will be created in Notion with all required columns.",
   "admin.reglages.notion.btn_creer_base": "Create orders database",
   "admin.reglages.notion.btn_creer_base_cours": "Creating…",
   "admin.reglages.notion.base_existante_titre": "Database already linked",

@@ -60,8 +60,8 @@ const contenuAr: Record<string, string> = {
   "admin.contenu.blog.aucune_image": "لا توجد صورة",
   "admin.contenu.blog.enregistrer_brouillon": "حفظ كمسودة",
   "admin.contenu.blog.publier": "نشر",
-  "admin.contenu.blog.doc_title_edition": "تعديل مقالة — KA Tech",
-  "admin.contenu.blog.doc_title_nouveau": "مقالة جديدة — KA Tech",
+  "admin.contenu.blog.doc_title_edition": "تعديل مقالة — StacGate Platform",
+  "admin.contenu.blog.doc_title_nouveau": "مقالة جديدة — StacGate Platform",
   // Zod validation messages
   "admin.contenu.blog.zod_titre_court": "العنوان (FR) قصير جداً",
   "admin.contenu.blog.zod_slug_requis": "الرابط المختصر مطلوب",

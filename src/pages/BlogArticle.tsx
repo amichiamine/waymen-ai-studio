@@ -62,13 +62,21 @@ export default function BlogArticle() {
 
   // Résolution des champs localisés UNE SEULE FOIS — jamais post.title dans le corps.
   const rawTitle = L(post.title) ?? "";
-  const title = rawTitle.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
+  const title = rawTitle
+    .replace(/{storeName}/g, brand)
+    .replace(/\bKA Tech\b|\bStacGate Platform\b/g, brand);
   const rawExcerpt = L(post.excerpt) ?? "";
-  const excerpt = rawExcerpt.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
+  const excerpt = rawExcerpt
+    .replace(/{storeName}/g, brand)
+    .replace(/\bKA Tech\b|\bStacGate Platform\b/g, brand);
   const rawContent = L(post.content) ?? "";
-  const content = rawContent.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
+  const content = rawContent
+    .replace(/{storeName}/g, brand)
+    .replace(/\bKA Tech\b|\bStacGate Platform\b/g, brand);
   const rawAuthor = post.author ?? "";
-  const author = rawAuthor.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
+  const author = rawAuthor
+    .replace(/{storeName}/g, brand)
+    .replace(/\bKA Tech\b|\bStacGate Platform\b/g, brand);
 
   const canonical = `${window.location.origin}/blog/${post.slug}`;
   // JSON-LD Article : headline, description et image doivent être des chaînes —

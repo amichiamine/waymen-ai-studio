@@ -60,8 +60,8 @@ const contenuEn: Record<string, string> = {
   "admin.contenu.blog.aucune_image": "No image",
   "admin.contenu.blog.enregistrer_brouillon": "Save as draft",
   "admin.contenu.blog.publier": "Publish",
-  "admin.contenu.blog.doc_title_edition": "Edit post — KA Tech",
-  "admin.contenu.blog.doc_title_nouveau": "New post — KA Tech",
+  "admin.contenu.blog.doc_title_edition": "Edit post — StacGate Platform",
+  "admin.contenu.blog.doc_title_nouveau": "New post — StacGate Platform",
   // Zod validation messages
   "admin.contenu.blog.zod_titre_court": "Title (FR) too short",
   "admin.contenu.blog.zod_slug_requis": "Slug required",

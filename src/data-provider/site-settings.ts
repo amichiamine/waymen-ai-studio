@@ -37,7 +37,7 @@ declare global {
  * négociable selon DATA-PROVIDER.md §2.1.
  */
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  storeName: "KA Tech",
+  storeName: "StacGate Platform",
   contactEmail: "",
   contactPhone: "",
   whatsapp: "",

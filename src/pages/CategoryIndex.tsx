@@ -6,9 +6,9 @@ import { useSiteSettings } from "@/data-provider";
 export default function CategoryIndex() {
   const { t } = useI18n();
   const { data: siteSettings } = useSiteSettings();
-  const storeName = siteSettings.storeName?.trim() || "Boutique";
-  const title = t("categoryIndex.page.title").replace("KA Tech", storeName);
-  const desc = t("categoryIndex.page.desc").replace(/KA Tech/g, storeName);
+  const storeName = siteSettings.storeName?.trim() || "StacGate Platform";
+  const title = t("categoryIndex.page.title").replace(/KA Tech|StacGate Platform/g, storeName);
+  const desc = t("categoryIndex.page.desc").replace(/KA Tech|StacGate Platform/g, storeName);
 
   return (
     <div className="pt-6">

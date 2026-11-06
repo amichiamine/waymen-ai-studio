@@ -14,7 +14,12 @@ export function WhyUs() {
   const L = useLocalize();
 
   const interpolate = (txt?: string | null) =>
-    txt ? txt.replace(/\{storeName\}/g, storeName).replace(/KA Tech/g, storeName) : "";
+    txt
+      ? txt
+          .replace(/\{storeName\}/g, storeName)
+          .replace(/\bKA Tech\b/g, storeName)
+          .replace(/\bStacGate Platform\b/g, storeName)
+      : "";
 
   const kicker = interpolate(L(w.kicker));
   const title1 = interpolate(L(w.title1));

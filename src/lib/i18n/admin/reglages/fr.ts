@@ -314,7 +314,7 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.notion.pages_vide_etape2":
     "Cliquez sur « ••• » (menu en haut à droite de la page).",
   "admin.reglages.notion.pages_vide_etape3":
-    "Choisissez « Connexions », puis ajoutez votre connexion KA Tech Hub.",
+    "Choisissez « Connexions », puis ajoutez votre connexion StacGate Hub.",
   "admin.reglages.notion.pages_vide_etape4": "Revenez ici et cliquez sur « Rafraîchir la liste ».",
   "admin.reglages.notion.btn_rafraichir_pages": "Rafraîchir la liste",
   "admin.reglages.notion.btn_rafraichir_pages_cours": "Actualisation…",
@@ -324,7 +324,7 @@ const reglagesFr: Record<string, string> = {
   // Étape 3 — Base
   "admin.reglages.notion.etape3_titre": "Étape 3 — Créer la base",
   "admin.reglages.notion.etape3_desc":
-    "Le tableau « Commandes — KA Tech Hub » sera créé dans Notion avec toutes les colonnes nécessaires.",
+    "Le tableau « Commandes — StacGate Hub » sera créé dans Notion avec toutes les colonnes nécessaires.",
   "admin.reglages.notion.btn_creer_base": "Créer la base des commandes",
   "admin.reglages.notion.btn_creer_base_cours": "Création…",
   "admin.reglages.notion.base_existante_titre": "Base déjà rattachée",

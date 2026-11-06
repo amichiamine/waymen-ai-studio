@@ -374,8 +374,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
           ...(vars ?? {}),
         };
         let result = interpolate(value, effectiveVars, lang);
-        if (sn && sn !== "KA Tech") {
-          result = result.replace(/\bKA Tech\b/g, sn);
+        if (sn) {
+          result = result.replace(/\bKA Tech\b/g, sn).replace(/\bStacGate Platform\b/g, sn);
         }
         return result;
       },

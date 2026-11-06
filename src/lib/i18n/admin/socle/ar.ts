@@ -94,7 +94,7 @@ const socleAr: Record<string, string> = {
 
   // ── لوحة التحكم ───────────────────────────────────────────────────────────
   "admin.socle.tableau.titre": "لوحة التحكم",
-  "admin.socle.tableau.description": "نظرة عامة على متجر KA Tech (بيانات محلية).",
+  "admin.socle.tableau.description": "نظرة عامة على المتجر (بيانات محلية).",
   "admin.socle.tableau.kpi_produits": "المنتجات",
   "admin.socle.tableau.kpi_categories": "الفئات",
   "admin.socle.tableau.kpi_marques": "الماركات",

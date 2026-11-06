@@ -346,7 +346,7 @@ function seedBrands(): AdminBrand[] {
       set.set(p.brand, {
         id: p.brand.toLowerCase().replace(/\s+/g, "-"),
         name: p.brand,
-        description: `Marque ${p.brand} distribuée par KA Tech.`,
+        description: `Marque ${p.brand} distribuée sur la plateforme.`,
         country: brandCountry(p.brand),
       });
     }
@@ -625,7 +625,7 @@ function seedReviews(): Review[] {
       title: "Très bon",
       body: "Bon rapport qualité/prix, quelques détails à améliorer.",
     },
-    { rating: 5, title: "Parfait !", body: "Je recommande KA Tech, service client au top." },
+    { rating: 5, title: "Parfait !", body: "Je recommande cette boutique, service client au top." },
     { rating: 3, title: "Correct", body: "Produit correct mais délai un peu long." },
     { rating: 2, title: "Déçu", body: "L'emballage était abîmé à réception." },
     { rating: 5, title: "Rapide et pro", body: "Commande arrivée en 2 jours à Alger." },
@@ -805,9 +805,9 @@ function seedBlogPosts(): BlogPost[] {
         ar: "CPU، GPU، RAM، الشاشة — المعايير التي تهم فعلاً حسب استخدامك.",
       },
       content: {
-        fr: "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez KA Tech, tous nos laptops sont sous garantie officielle.",
-        en: "# Choosing the right laptop in 2026\n\nIn 2026, the laptop market is richer than ever. Here are the 5 criteria you should not overlook:\n\n1. **The processor**: go for an Intel Core Ultra or an AMD Ryzen 7000+.\n2. **RAM**: 16 GB minimum, 32 GB for creative work.\n3. **The SSD**: NVMe Gen4, 512 GB minimum.\n4. **The screen**: IPS or OLED panel, 100% sRGB for accurate colour.\n5. **The warranty**: at KA Tech, all our laptops come with an official warranty.",
-        ar: "# كيف تختار حاسوبك المحمول في 2026\n\nفي 2026، سوق الحواسيب المحمولة أثرى من أي وقت مضى. إليك 5 معايير لا ينبغي إغفالها:\n\n1. **المعالج**: اختر Intel Core Ultra أو AMD Ryzen 7000+.\n2. **الذاكرة RAM**: 16 غيغابايت كحد أدنى، و32 غيغابايت للإبداع والمونتاج.\n3. **القرص SSD**: NVMe Gen4، 512 غيغابايت كحد أدنى.\n4. **الشاشة**: لوحة IPS أو OLED، 100% sRGB لدقة الألوان.\n5. **الضمان**: في KA Tech، جميع حواسيبنا المحمولة تأتي مع ضمان رسمي.",
+        fr: "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez {storeName}, tous nos laptops sont sous garantie officielle.",
+        en: "# Choosing the right laptop in 2026\n\nIn 2026, the laptop market is richer than ever. Here are the 5 criteria you should not overlook:\n\n1. **The processor**: go for an Intel Core Ultra or an AMD Ryzen 7000+.\n2. **RAM**: 16 GB minimum, 32 GB for creative work.\n3. **The SSD**: NVMe Gen4, 512 GB minimum.\n4. **The screen**: IPS or OLED panel, 100% sRGB for accurate colour.\n5. **The warranty**: at {storeName}, all our laptops come with an official warranty.",
+        ar: "# كيف تختار حاسوبك المحمول في 2026\n\nفي 2026، سوق الحواسيب المحمولة أثرى من أي وقت مضى. إليك 5 معايير لا ينبغي إغفالها:\n\n1. **المعالج**: اختر Intel Core Ultra أو AMD Ryzen 7000+.\n2. **الذاكرة RAM**: 16 غيغابايت كحد أدنى، و32 غيغابايت للإبداع والمونتاج.\n3. **القرص SSD**: NVMe Gen4، 512 غيغابايت كحد أدنى.\n4. **الشاشة**: لوحة IPS أو OLED، 100% sRGB لدقة الألوان.\n5. **الضمان**: في {storeName}، جميع حواسيبنا المحمولة تأتي مع ضمان رسمي.",
       },
       tags: ["laptop", "guide"],
     },
@@ -1075,8 +1075,8 @@ function seedBuilderSteps(): BuilderStep[] {
 
 function seedSiteSettings(): SiteSettings {
   return {
-    storeName: "KA Tech",
-    contactEmail: "contact@katech.dz",
+    storeName: "StacGate Platform",
+    contactEmail: "contact@stacgate.com",
     contactPhone: "+213 555 00 00 00",
     whatsapp: "213555000000",
     address: "Alger, Algérie",
@@ -1262,7 +1262,7 @@ function seedNotifications(): AdminNotification[] {
   return [
     {
       id: "notif_1",
-      title: "Bienvenue sur KA Tech Admin",
+      title: "Bienvenue sur l'administration StacGate Platform",
       body: "Explorez le tableau de bord pour un aperçu complet.",
       level: "info",
       read: false,

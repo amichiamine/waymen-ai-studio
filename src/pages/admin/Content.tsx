@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,18 +169,39 @@ export default function AdminContent() {
   const { data: tickerMessages } = useTickerMessageList();
   const { set: setTickers } = useTickerMessageMutations();
 
-  const [activePole, setActivePole] = useState<PoleKey>("home");
+  const [searchParams] = useSearchParams();
+  const initialPole = searchParams.get("pole") as PoleKey;
+  const initialSub = searchParams.get("sub");
+
+  const [activePole, setActivePole] = useState<PoleKey>(
+    initialPole && ["home", "pages", "global", "mobile"].includes(initialPole)
+      ? initialPole
+      : "home",
+  );
   const [subHome, setSubHome] = useState<keyof SiteContent>("hero");
   const [subPages, setSubPages] = useState<"about" | "contact" | "contactCta">("about");
-  const [subGlobal, setSubGlobal] = useState<"header" | "ticker" | "footer">("header");
+  const [subGlobal, setSubGlobal] = useState<"header" | "ticker" | "footer">(
+    initialSub === "footer" ? "footer" : initialSub === "ticker" ? "ticker" : "header",
+  );
   const [subMobile, setSubMobile] = useState<"floatingWhatsApp" | "mobileBottomBar">(
     "floatingWhatsApp",
   );
 
+  useEffect(() => {
+    const pole = searchParams.get("pole");
+    const sub = searchParams.get("sub");
+    if (pole && ["home", "pages", "global", "mobile"].includes(pole)) {
+      setActivePole(pole as PoleKey);
+    }
+    if (sub && ["header", "ticker", "footer"].includes(sub)) {
+      setSubGlobal(sub as "header" | "ticker" | "footer");
+    }
+  }, [searchParams]);
+
   const POLES: { key: PoleKey; label: string; icon: typeof Home }[] = [
     { key: "home", label: "Accueil", icon: Home },
     { key: "pages", label: "Pages & Textes", icon: FileText },
-    { key: "global", label: "Global & Navigation", icon: Globe },
+    { key: "global", label: "En-tête & Pied de page (Footer)", icon: Globe },
     { key: "mobile", label: "Mobile & Flottant", icon: Smartphone },
   ];
 
@@ -206,7 +228,7 @@ export default function AdminContent() {
   const GLOBAL_SECTIONS: { key: "header" | "ticker" | "footer"; label: string }[] = [
     { key: "header", label: t("admin.contenu.contenu.section_header") },
     { key: "ticker", label: "Bandeau d'annonces (Ticker)" },
-    { key: "footer", label: t("admin.contenu.contenu.section_footer") },
+    { key: "footer", label: "Pied de page (Footer)" },
   ];
 
   const MOBILE_SECTIONS: { key: "floatingWhatsApp" | "mobileBottomBar"; labelKey: string }[] = [

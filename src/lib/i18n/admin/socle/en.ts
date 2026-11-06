@@ -88,7 +88,7 @@ const socleEn: Record<string, string> = {
 
   // ── Dashboard ─────────────────────────────────────────────────────────────
   "admin.socle.tableau.titre": "Dashboard",
-  "admin.socle.tableau.description": "Overview of the KA Tech shop (local data).",
+  "admin.socle.tableau.description": "Overview of the shop (local data).",
   "admin.socle.tableau.kpi_produits": "Products",
   "admin.socle.tableau.kpi_categories": "Categories",
   "admin.socle.tableau.kpi_marques": "Brands",

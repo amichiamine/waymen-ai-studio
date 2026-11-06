@@ -240,7 +240,7 @@ try {
     $db = Db::instance();
     $pilote = $db->pilote();
 
-    echoLigne('== Installation KA Tech Hub ==');
+    echoLigne('== Installation StacGate Platform ==');
     echoLigne('Pilote : ' . $pilote);
     if ($pilote === Db::PILOTE_SQLITE) {
         echoLigne('Fichier : ' . (string) $db->cheminSqlite());

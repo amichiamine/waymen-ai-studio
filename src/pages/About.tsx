@@ -23,35 +23,43 @@ export default function About() {
   const storeName =
     siteSettings.storeName && siteSettings.storeName.trim() !== ""
       ? siteSettings.storeName
-      : "KA Tech";
+      : "StacGate Platform";
 
   const about = siteContent?.about;
 
   const kicker = L(about?.kicker) || t("about.kicker");
   const rawTitle = L(about?.title) || t("about.title");
-  const title = rawTitle.replace(/{storeName}/g, storeName).replace(/KA Tech/g, storeName);
+  const title = rawTitle
+    .replace(/{storeName}/g, storeName)
+    .replace(/\bKA Tech\b/g, storeName)
+    .replace(/\bStacGate Platform\b/g, storeName);
 
   const rawIntro = L(about?.intro) || t("about.intro");
-  const intro = rawIntro.replace(/{storeName}/g, storeName).replace(/KA Tech/g, storeName);
+  const intro = rawIntro
+    .replace(/{storeName}/g, storeName)
+    .replace(/\bKA Tech\b/g, storeName)
+    .replace(/\bStacGate Platform\b/g, storeName);
 
   const historyTitle = L(about?.historyTitle) || t("about.history.title");
   const rawHistoryBody = L(about?.historyBody) || t("about.history.body");
   const historyBody = rawHistoryBody
     .replace(/{storeName}/g, storeName)
-    .replace(/KA Tech/g, storeName);
+    .replace(/\bKA Tech\b/g, storeName)
+    .replace(/\bStacGate Platform\b/g, storeName);
 
   const missionTitle = L(about?.missionTitle) || t("about.mission.title");
   const rawMissionBody = L(about?.missionBody) || t("about.mission.body");
   const missionBody = rawMissionBody
     .replace(/{storeName}/g, storeName)
-    .replace(/KA Tech/g, storeName);
+    .replace(/\bKA Tech\b/g, storeName)
+    .replace(/\bStacGate Platform\b/g, storeName);
 
   const ctaTitle = (L(about?.ctaTitle) || t("about.cta.title")).replace(
-    /{storeName}|KA Tech/g,
+    /{storeName}|\bKA Tech\b|\bStacGate Platform\b/g,
     storeName,
   );
   const ctaSub = (L(about?.ctaSubtitle) || t("about.cta.sub")).replace(
-    /{storeName}|KA Tech/g,
+    /{storeName}|\bKA Tech\b|\bStacGate Platform\b/g,
     storeName,
   );
   const ctaBrowse = L(about?.ctaBrowseLabel) || t("about.cta.browse");
@@ -64,8 +72,11 @@ export default function About() {
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
-        <title>{t("about.page.title").replace("KA Tech", storeName)}</title>
-        <meta name="description" content={t("about.page.desc").replace("KA Tech", storeName)} />
+        <title>{t("about.page.title").replace(/KA Tech|StacGate Platform/g, storeName)}</title>
+        <meta
+          name="description"
+          content={t("about.page.desc").replace(/KA Tech|StacGate Platform/g, storeName)}
+        />
         <link rel="canonical" href={`${window.location.origin}/about`} />
       </Helmet>
       <header className="max-w-3xl mb-12 text-start">

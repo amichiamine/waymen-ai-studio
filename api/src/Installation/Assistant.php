@@ -904,7 +904,7 @@ final class Assistant
         return '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
             . '<meta name="viewport" content="width=device-width, initial-scale=1">'
             . '<meta name="robots" content="noindex, nofollow">'
-            . '<title>' . self::h($titre) . ' — KA Tech</title><style>' . self::STYLE . '</style>'
+            . '<title>' . self::h($titre) . ' — StacGate Platform</title><style>' . self::STYLE . '</style>'
             . '</head><body><main>' . $corps . '</main></body></html>';
     }
 

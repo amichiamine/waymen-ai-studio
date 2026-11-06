@@ -100,7 +100,7 @@ const socleFr: Record<string, string> = {
 
   // ── Tableau de bord ───────────────────────────────────────────────────────
   "admin.socle.tableau.titre": "Tableau de bord",
-  "admin.socle.tableau.description": "Vue d'ensemble de la boutique KA Tech (données locales).",
+  "admin.socle.tableau.description": "Vue d'ensemble de la boutique (données locales).",
   "admin.socle.tableau.kpi_produits": "Produits",
   "admin.socle.tableau.kpi_categories": "Catégories",
   "admin.socle.tableau.kpi_marques": "Marques",

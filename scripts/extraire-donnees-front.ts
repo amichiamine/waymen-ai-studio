@@ -725,8 +725,8 @@ const siteContent = {
 // Réglages du site (settings.scope = 'site' et 'shipping')
 // -------------------------------------------------------------------
 const siteSettings = {
-  storeName: "KA Tech",
-  contactEmail: "contact@katech.dz",
+  storeName: "StacGate Platform",
+  contactEmail: "contact@stacgate.com",
   contactPhone: "+213 555 00 00 00",
   whatsapp: "213555000000",
   address: "Alger, Algérie",

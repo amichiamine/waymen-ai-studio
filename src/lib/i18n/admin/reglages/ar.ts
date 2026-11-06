@@ -304,7 +304,7 @@ const reglagesAr: Record<string, string> = {
     "اتصالك نشط، لكن لم تتم مشاركة أي صفحة معه بعد. لإصلاح ذلك:",
   "admin.reglages.notion.pages_vide_etape1": "افتح صفحة Notion التي تريد إنشاء الجدول تحتها.",
   "admin.reglages.notion.pages_vide_etape2": "انقر على « ••• » (القائمة في أعلى يمين الصفحة).",
-  "admin.reglages.notion.pages_vide_etape3": "اختر « الاتصالات »، ثم أضف اتصال KA Tech Hub.",
+  "admin.reglages.notion.pages_vide_etape3": "اختر « الاتصالات »، ثم أضف اتصال StacGate Hub.",
   "admin.reglages.notion.pages_vide_etape4": "عُد إلى هنا وانقر على « تحديث القائمة ».",
   "admin.reglages.notion.btn_rafraichir_pages": "تحديث القائمة",
   "admin.reglages.notion.btn_rafraichir_pages_cours": "جارٍ التحديث…",
@@ -314,7 +314,7 @@ const reglagesAr: Record<string, string> = {
   // الخطوة 3 — القاعدة
   "admin.reglages.notion.etape3_titre": "الخطوة 3 — إنشاء القاعدة",
   "admin.reglages.notion.etape3_desc":
-    "سيُنشأ جدول « Commandes — KA Tech Hub » في Notion بجميع الأعمدة اللازمة.",
+    "سيُنشأ جدول « Commandes — StacGate Hub » في Notion بجميع الأعمدة اللازمة.",
   "admin.reglages.notion.btn_creer_base": "إنشاء قاعدة الطلبات",
   "admin.reglages.notion.btn_creer_base_cours": "جارٍ الإنشاء…",
   "admin.reglages.notion.base_existante_titre": "القاعدة مرتبطة بالفعل",

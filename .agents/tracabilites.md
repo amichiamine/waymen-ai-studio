@@ -1417,3 +1417,40 @@
   - Plan interactif et miroir : 📄 [29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md)
   - Archive application horodatée : 📦 [katech-site-06112026-2135.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2135.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-2136.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2136.zip)
+
+---
+
+## Phase 30 : Universalisation Intégrale de la Marque Blanche "StacGate Platform" et Accessibilité Dédiée du Pied de Page (Footer)
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 30 pour :
+  1. Universalisation de la marque par défaut : remplacement intégral de l'enseigne en dur "KA Tech" (et variantes) par l'identité universelle marque blanche **"StacGate Platform"** et adoption du slogan universel **"Plateforme E-Commerce, Vitrines tous produits et tous commerces"** sans sollicitation dans `install.php`.
+  2. Assainissement 360° des métadonnées HTML (`index.html`), du manifeste PWA (`public/manifest.webmanifest`), des semences d'amorçage (`seedSiteSettings`, `DEFAULT_SITE_SETTINGS`), du logo par défaut (`src/assets/stacgate-logo.png`), et des dictionnaires trilingues (`src/lib/i18n/{fr,en,ar}.ts` et sous-domaines admin).
+  3. Ergonomie et découvrabilité du Pied de Page (Footer) : renommage du pôle global en **"🌐 En-tête & Pied de page (Footer)"** dans [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx), prise en charge du deep-linking URL (`?pole=global&sub=footer`), et intégration d'un raccourci visuel direct depuis les réglages boutique dans [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx).
+- **Actions Réalisées :**
+  - **Étape 30.A (Métadonnées Racine & Manifeste PWA) :**
+    - Modification de [`index.html`](file:///c:/xampp/htdocs/ka-tech/index.html) : Titre racine `StacGate Platform — Plateforme E-Commerce, Vitrines tous produits et tous commerces`, meta description, OpenGraph, Twitter Cards et balises JSON-LD Organization.
+    - Modification de [`public/manifest.webmanifest`](file:///c:/xampp/htdocs/ka-tech/public/manifest.webmanifest) : `name` et `short_name` passés à `StacGate Platform`.
+  - **Étape 30.B (Configuration & Amorçage Marque Blanche) :**
+    - Modification de [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/ka-tech/src/data-provider/site-settings.ts) : `DEFAULT_SITE_SETTINGS.storeName = "StacGate Platform"`.
+    - Modification de [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx) : `seedSiteSettings()` configure `storeName: "StacGate Platform"` et `contactEmail: "contact@stacgate.com"`, notifications neutres, et assainissement des avis clients et descriptions de marques.
+    - Intégration du logo officiel [`src/assets/stacgate-logo.png`](file:///c:/xampp/htdocs/ka-tech/src/assets/stacgate-logo.png) et mise à jour de [`src/components/Logo.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Logo.tsx) et [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx).
+  - **Étape 30.C (Dictionnaires i18n & Interpolation Dynamique) :**
+    - Mise à jour exhaustive des 35+ clés des dictionnaires visiteurs et admin dans [`src/lib/i18n/{fr,en,ar}.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/fr.ts) pour utiliser `{storeName}` ou `StacGate Platform`.
+    - Sécurisation du helper d'interpolation `t()` et `LLocalized` dans [`src/lib/i18n.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n.tsx) pour substituer dynamiquement tant `{storeName}` que `\bKA Tech\b` et `\bStacGate Platform\b`.
+    - Mise à jour des pages publiques (`About.tsx`, `Contact.tsx`, `CategoryIndex.tsx`, `Search.tsx`, `Blog.tsx`, `BlogArticle.tsx`, `WhyUs.tsx`).
+    - Mise à jour des titres de pages d'outils PHP (`api/install.php`, `api/recup.php`, `api/src/Installation/Assistant.php`).
+  - **Étape 30.D (Découvrabilité & Édition du Pied de Page dans Backstage) :**
+    - Modification de [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : lecture des paramètres d'URL `useSearchParams` (`pole` et `sub`) pour ouvrir directement la section demandée ; renommage du pôle en `En-tête & Pied de page (Footer)`.
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : ajout dans la carte Coordonnées d'une boîte d'accès direct vers `/admin/content?pole=global&sub=footer`.
+  - **Étape 30.E (Validation Qualité CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue FR/EN/AR sans la moindre anomalie bloquante.
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-2201.zip` et `katech-data-06112026-2201.zip`).
+    - Conservation cumulative respectée : l'ensemble des archives historiques (`1401`, `1444`, `1518`, `1808`, `1842`, `1905`, `2104`, `2119`, `2135`, `2136`, `2201`) est préservé intact.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-2201.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2201.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-2201.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2201.zip)

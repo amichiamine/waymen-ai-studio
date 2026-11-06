@@ -72,8 +72,8 @@ const contenuFr: Record<string, string> = {
   "admin.contenu.blog.aucune_image": "Aucune image",
   "admin.contenu.blog.enregistrer_brouillon": "Enregistrer en brouillon",
   "admin.contenu.blog.publier": "Publier",
-  "admin.contenu.blog.doc_title_edition": "Édition article — KA Tech",
-  "admin.contenu.blog.doc_title_nouveau": "Nouvel article — KA Tech",
+  "admin.contenu.blog.doc_title_edition": "Édition article — StacGate Platform",
+  "admin.contenu.blog.doc_title_nouveau": "Nouvel article — StacGate Platform",
   // Zod validation messages
   "admin.contenu.blog.zod_titre_court": "Titre (FR) trop court",
   "admin.contenu.blog.zod_slug_requis": "Slug requis",

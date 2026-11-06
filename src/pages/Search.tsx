@@ -22,7 +22,7 @@ export default function Search() {
   const formatPrice = useFormatPrice();
   const { data: categoryList } = useCategoryList();
   const { data: siteSettings } = useSiteSettings();
-  const storeName = siteSettings.storeName?.trim() || "Boutique";
+  const storeName = siteSettings.storeName?.trim() || "StacGate Platform";
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
   const term = q.trim().toLowerCase();
@@ -125,10 +125,10 @@ export default function Search() {
   const nfLocale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
   const pageTitle = (
     q ? t("search.page.titleQ").replace("{q}", q) : t("search.page.title")
-  ).replace("KA Tech", storeName);
+  ).replace(/KA Tech|StacGate Platform/g, storeName);
   const pageDesc = t("search.page.desc")
     .replace("{n}", String(products.length))
-    .replace(/KA Tech/g, storeName);
+    .replace(/KA Tech|StacGate Platform/g, storeName);
 
   return (
     <section className="container-page py-12">

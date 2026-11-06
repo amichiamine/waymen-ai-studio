@@ -97,7 +97,7 @@ $suggereMdp = 'Admin-' . bin2hex(random_bytes(3)) . '!2026';
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Récupération Administrateur — KA Tech</title>
+    <title>Récupération Administrateur — StacGate Platform</title>
     <style>
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

@@ -81,7 +81,7 @@ export const notionApi = {
     return {
       ...NOTION_ETAT_MOCK,
       configure: true,
-      espace: "Boutique KA Tech (mock)",
+      espace: "Boutique StacGate Platform (mock)",
       derniereVerification: new Date().toISOString(),
     };
   },
@@ -99,7 +99,7 @@ export const notionApi = {
       pages: [
         {
           id: "mock-page-001",
-          titre: "Boutique KA Tech",
+          titre: "Boutique StacGate Platform",
           url: "https://notion.so/mock-page-001",
         },
       ],
@@ -116,8 +116,8 @@ export const notionApi = {
       ...NOTION_ETAT_MOCK,
       configure: true,
       relie: true,
-      espace: "Boutique KA Tech (mock)",
-      baseTitre: "Commandes — KA Tech Hub",
+      espace: "Boutique StacGate Platform (mock)",
+      baseTitre: "Commandes — StacGate Hub",
       baseUrl: "https://notion.so/mock-database-001",
       databaseId: "mock-database-001",
       dataSourceId: "mock-datasource-001",

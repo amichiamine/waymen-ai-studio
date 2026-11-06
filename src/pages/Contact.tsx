@@ -20,7 +20,7 @@ export default function Contact() {
   const { create: addContactMessage } = useContactMessageMutations();
   const { t } = useI18n();
   const L = useLocalize();
-  const storeName = s.storeName && s.storeName.trim() !== "" ? s.storeName : "KA Tech";
+  const storeName = s.storeName && s.storeName.trim() !== "" ? s.storeName : "StacGate Platform";
 
   const contactSchema = z.object({
     name: z.string().trim().min(2, t("contact.form.name")).max(100),
@@ -63,15 +63,21 @@ export default function Contact() {
   const contact = siteContent?.contact;
   const kicker = L(contact?.kicker) || t("contact.kicker");
   const rawTitle = L(contact?.title) || t("contact.title");
-  const title = rawTitle.replace(/{storeName}/g, storeName).replace(/KA Tech/g, storeName);
+  const title = rawTitle
+    .replace(/{storeName}/g, storeName)
+    .replace(/\bKA Tech\b/g, storeName)
+    .replace(/\bStacGate Platform\b/g, storeName);
   const subtitle = L(contact?.subtitle) || t("contact.sub");
   const faqs = contact?.faqs && contact.faqs.length > 0 ? contact.faqs : [];
 
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
-        <title>{t("contact.page.title").replace("KA Tech", storeName)}</title>
-        <meta name="description" content={t("contact.page.desc").replace("KA Tech", storeName)} />
+        <title>{t("contact.page.title").replace(/KA Tech|StacGate Platform/g, storeName)}</title>
+        <meta
+          name="description"
+          content={t("contact.page.desc").replace(/KA Tech|StacGate Platform/g, storeName)}
+        />
         <link rel="canonical" href={`${window.location.origin}/contact`} />
       </Helmet>
       <header className="max-w-3xl mb-10 text-start">
