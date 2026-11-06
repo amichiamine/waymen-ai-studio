@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ShieldCheck, Truck, Headphones, Award, Star, Heart, AlertTriangle } from "lucide-react";
-import { useAboutValueList, useSiteSettings } from "@/data-provider";
+import { useAboutValueList, useSiteSettings, useSiteContent } from "@/data-provider";
 import type { AboutValue } from "@/lib/admin-store";
 import { useI18n, useLocalize } from "@/lib/i18n";
 
@@ -15,14 +15,51 @@ const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
 };
 
 export default function About() {
-  const { data: aboutValues, loading, error } = useAboutValueList();
+  const { data: aboutValues, loading: loadingValues, error } = useAboutValueList();
   const { data: siteSettings } = useSiteSettings();
+  const { data: siteContent, loading: loadingContent } = useSiteContent();
   const { t } = useI18n();
   const L = useLocalize();
   const storeName =
     siteSettings.storeName && siteSettings.storeName.trim() !== ""
       ? siteSettings.storeName
       : "KA Tech";
+
+  const about = siteContent?.about;
+
+  const kicker = L(about?.kicker) || t("about.kicker");
+  const rawTitle = L(about?.title) || t("about.title");
+  const title = rawTitle.replace(/{storeName}/g, storeName).replace(/KA Tech/g, storeName);
+
+  const rawIntro = L(about?.intro) || t("about.intro");
+  const intro = rawIntro.replace(/{storeName}/g, storeName).replace(/KA Tech/g, storeName);
+
+  const historyTitle = L(about?.historyTitle) || t("about.history.title");
+  const rawHistoryBody = L(about?.historyBody) || t("about.history.body");
+  const historyBody = rawHistoryBody
+    .replace(/{storeName}/g, storeName)
+    .replace(/KA Tech/g, storeName);
+
+  const missionTitle = L(about?.missionTitle) || t("about.mission.title");
+  const rawMissionBody = L(about?.missionBody) || t("about.mission.body");
+  const missionBody = rawMissionBody
+    .replace(/{storeName}/g, storeName)
+    .replace(/KA Tech/g, storeName);
+
+  const ctaTitle = (L(about?.ctaTitle) || t("about.cta.title")).replace(
+    /{storeName}|KA Tech/g,
+    storeName,
+  );
+  const ctaSub = (L(about?.ctaSubtitle) || t("about.cta.sub")).replace(
+    /{storeName}|KA Tech/g,
+    storeName,
+  );
+  const ctaBrowse = L(about?.ctaBrowseLabel) || t("about.cta.browse");
+  const ctaContact = L(about?.ctaContactLabel) || t("about.cta.contact");
+
+  // Les valeurs : si définies dans siteContent.about.values on les utilise, sinon repli sur aboutValues
+  const displayedValues = about?.values && about.values.length > 0 ? about.values : aboutValues;
+  const loading = loadingValues && loadingContent;
 
   return (
     <div className="container-page py-12 lg:py-16">
@@ -32,27 +69,19 @@ export default function About() {
         <link rel="canonical" href={`${window.location.origin}/about`} />
       </Helmet>
       <header className="max-w-3xl mb-12 text-start">
-        <p className="text-sm font-medium text-primary mb-2">{t("about.kicker")}</p>
-        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">
-          {t("about.title").replace("KA Tech", storeName)}
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          {t("about.intro").replace(/KA Tech/g, storeName)}
-        </p>
+        <p className="text-sm font-medium text-primary mb-2">{kicker}</p>
+        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">{title}</h1>
+        <p className="mt-4 text-lg text-muted-foreground">{intro}</p>
       </header>
 
       <section className="grid gap-10 lg:grid-cols-2 mb-16 text-start">
         <div>
-          <h2 className="text-2xl font-bold mb-3">{t("about.history.title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t("about.history.body").replace(/KA Tech/g, storeName)}
-          </p>
+          <h2 className="text-2xl font-bold mb-3">{historyTitle}</h2>
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{historyBody}</p>
         </div>
         <div>
-          <h2 className="text-2xl font-bold mb-3">{t("about.mission.title")}</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {t("about.mission.body").replace(/KA Tech/g, storeName)}
-          </p>
+          <h2 className="text-2xl font-bold mb-3">{missionTitle}</h2>
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{missionBody}</p>
         </div>
       </section>
 
@@ -78,10 +107,10 @@ export default function About() {
           )}
 
           {/* 3. Contenu (l'état vide est visuellement neutre : la section est omise) */}
-          {aboutValues.length > 0 && (
+          {displayedValues.length > 0 && (
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-12">
-              {aboutValues.map((v) => {
-                const Icon = ICONS[v.icon] ?? Award;
+              {displayedValues.map((v) => {
+                const Icon = ICONS[v.icon as keyof typeof ICONS] ?? Award;
                 return (
                   <div key={v.id} className="rounded-xl border border-border bg-card p-6">
                     <Icon className="size-8 text-primary mb-3" />
@@ -100,20 +129,20 @@ export default function About() {
       )}
 
       <section className="rounded-2xl border border-border bg-card p-8 lg:p-12 text-center">
-        <h2 className="text-2xl lg:text-3xl font-bold mb-3">{t("about.cta.title")}</h2>
-        <p className="text-muted-foreground mb-6">{t("about.cta.sub")}</p>
+        <h2 className="text-2xl lg:text-3xl font-bold mb-3">{ctaTitle}</h2>
+        <p className="text-muted-foreground mb-6">{ctaSub}</p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             to="/category"
             className="inline-flex items-center h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90"
           >
-            {t("about.cta.browse")}
+            {ctaBrowse}
           </Link>
           <Link
             to="/contact"
             className="inline-flex items-center h-11 px-6 rounded-md border border-border text-sm font-semibold hover:bg-card"
           >
-            {t("about.cta.contact")}
+            {ctaContact}
           </Link>
         </div>
       </section>

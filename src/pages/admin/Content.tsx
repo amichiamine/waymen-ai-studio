@@ -29,6 +29,7 @@ import type { Localized } from "@/lib/i18n";
 import { useI18n, type TVars } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { usePermissions, type PermissionsApi } from "@/lib/admin-auth";
+import { MediaPickerField } from "@/components/admin/MediaPickerField";
 
 type LangCode = "fr" | "en" | "ar";
 const LANGS: LangCode[] = ["fr", "en", "ar"];
@@ -140,6 +141,7 @@ export default function AdminContent() {
   const SECTIONS: { key: keyof SiteContent; labelKey: string }[] = [
     { key: "header", labelKey: "admin.contenu.contenu.section_header" },
     { key: "footer", labelKey: "admin.contenu.contenu.section_footer" },
+    { key: "about", labelKey: "admin.contenu.contenu.section_about" },
     { key: "hero", labelKey: "admin.contenu.contenu.section_hero" },
     { key: "flashSale", labelKey: "admin.contenu.contenu.section_flash_sale" },
     { key: "categories", labelKey: "admin.contenu.contenu.section_categories" },
@@ -311,6 +313,15 @@ function renderForm<K extends keyof SiteContent>(
         <FooterForm
           value={draft as SiteContent["footer"]}
           onChange={onChange as (v: SiteContent["footer"]) => void}
+          readOnly={readOnly}
+          t={t}
+        />
+      );
+    case "about":
+      return (
+        <AboutForm
+          value={draft as SiteContent["about"]}
+          onChange={onChange as (v: SiteContent["about"]) => void}
           readOnly={readOnly}
           t={t}
         />
@@ -532,6 +543,233 @@ function TitleSubForm({
   );
 }
 
+function AboutForm({
+  value,
+  onChange,
+  readOnly,
+  t,
+}: {
+  value: SiteContent["about"];
+  onChange: (v: SiteContent["about"]) => void;
+  readOnly: boolean;
+  t: TFn;
+}) {
+  const v = value;
+  const values = Array.isArray(v.values) ? v.values : [];
+
+  return (
+    <div className="space-y-6">
+      {/* 1. En-tête de la page */}
+      <div className="rounded-lg border p-4 space-y-4">
+        <h3 className="font-semibold text-base border-b pb-2">
+          {t("admin.contenu.contenu.section_header")} & {t("admin.contenu.contenu.champ_titre")}
+        </h3>
+        <div className="grid gap-3 md:grid-cols-2">
+          <LInput
+            label={t("admin.contenu.contenu.about_kicker")}
+            value={v.kicker}
+            onChange={(next) => onChange({ ...v, kicker: next })}
+            disabled={readOnly}
+          />
+          <LInput
+            label={t("admin.contenu.contenu.about_titre")}
+            value={v.title}
+            onChange={(next) => onChange({ ...v, title: next })}
+            disabled={readOnly}
+          />
+          <div className="md:col-span-2">
+            <LTextarea
+              label={t("admin.contenu.contenu.about_intro")}
+              rows={3}
+              value={v.intro}
+              onChange={(next) => onChange({ ...v, intro: next })}
+              disabled={readOnly}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Notre Histoire & Notre Mission */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-lg border p-4 space-y-3">
+          <h3 className="font-semibold text-base border-b pb-2">
+            {t("admin.contenu.contenu.about_histoire_section")}
+          </h3>
+          <LInput
+            label={t("admin.contenu.contenu.about_histoire_titre")}
+            value={v.historyTitle}
+            onChange={(next) => onChange({ ...v, historyTitle: next })}
+            disabled={readOnly}
+          />
+          <LTextarea
+            label={t("admin.contenu.contenu.about_histoire_corps")}
+            rows={5}
+            value={v.historyBody}
+            onChange={(next) => onChange({ ...v, historyBody: next })}
+            disabled={readOnly}
+          />
+        </div>
+
+        <div className="rounded-lg border p-4 space-y-3">
+          <h3 className="font-semibold text-base border-b pb-2">
+            {t("admin.contenu.contenu.about_mission_section")}
+          </h3>
+          <LInput
+            label={t("admin.contenu.contenu.about_mission_titre")}
+            value={v.missionTitle}
+            onChange={(next) => onChange({ ...v, missionTitle: next })}
+            disabled={readOnly}
+          />
+          <LTextarea
+            label={t("admin.contenu.contenu.about_mission_corps")}
+            rows={5}
+            value={v.missionBody}
+            onChange={(next) => onChange({ ...v, missionBody: next })}
+            disabled={readOnly}
+          />
+        </div>
+      </div>
+
+      {/* 3. Cartes de valeurs et engagements */}
+      <div className="rounded-lg border p-4 space-y-4">
+        <div className="flex items-center justify-between border-b pb-2">
+          <div>
+            <h3 className="font-semibold text-base">
+              {t("admin.contenu.contenu.about_valeurs_section")}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Les cartes affichées sous l'histoire et la mission de la page À propos.
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={readOnly}
+            onClick={() =>
+              onChange({
+                ...v,
+                values: [
+                  ...values,
+                  {
+                    id: `val_${Date.now()}`,
+                    icon: "shield",
+                    title: { fr: "", en: "", ar: "" },
+                    description: { fr: "", en: "", ar: "" },
+                  },
+                ],
+              })
+            }
+          >
+            <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.about_ajouter_valeur")}
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          {values.map((it, i) => (
+            <div
+              key={it.id}
+              className="grid items-end gap-3 rounded-md border p-3 md:grid-cols-[140px_1fr_2fr_auto] bg-card"
+            >
+              <Field label={t("admin.contenu.contenu.champ_icone")}>
+                <Select
+                  value={it.icon}
+                  disabled={readOnly}
+                  onValueChange={(
+                    val: "shield" | "truck" | "headphones" | "award" | "star" | "heart",
+                  ) => {
+                    const next = values.slice();
+                    next[i] = { ...it, icon: val };
+                    onChange({ ...v, values: next });
+                  }}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="shield">🛡️ Shield</SelectItem>
+                    <SelectItem value="truck">🚚 Truck</SelectItem>
+                    <SelectItem value="headphones">🎧 Support</SelectItem>
+                    <SelectItem value="award">🏆 Award</SelectItem>
+                    <SelectItem value="star">⭐ Star</SelectItem>
+                    <SelectItem value="heart">❤️ Heart</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <LInput
+                label={t("admin.contenu.contenu.champ_titre")}
+                value={it.title}
+                disabled={readOnly}
+                onChange={(next) => {
+                  const nextVals = values.slice();
+                  nextVals[i] = { ...it, title: next };
+                  onChange({ ...v, values: nextVals });
+                }}
+              />
+              <LInput
+                label={t("admin.contenu.contenu.champ_description")}
+                value={it.description}
+                disabled={readOnly}
+                onChange={(next) => {
+                  const nextVals = values.slice();
+                  nextVals[i] = { ...it, description: next };
+                  onChange({ ...v, values: nextVals });
+                }}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={readOnly}
+                aria-label={t("admin.contenu.contenu.aria_supprimer")}
+                onClick={() => {
+                  const nextVals = values.filter((_, idx) => idx !== i);
+                  onChange({ ...v, values: nextVals });
+                }}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. Appel à l'action final (CTA) */}
+      <div className="rounded-lg border p-4 space-y-4">
+        <h3 className="font-semibold text-base border-b pb-2">
+          {t("admin.contenu.contenu.about_cta_section")}
+        </h3>
+        <div className="grid gap-3 md:grid-cols-2">
+          <LInput
+            label={t("admin.contenu.contenu.about_cta_titre")}
+            value={v.ctaTitle}
+            onChange={(next) => onChange({ ...v, ctaTitle: next })}
+            disabled={readOnly}
+          />
+          <LInput
+            label={t("admin.contenu.contenu.about_cta_soustitre")}
+            value={v.ctaSubtitle}
+            onChange={(next) => onChange({ ...v, ctaSubtitle: next })}
+            disabled={readOnly}
+          />
+          <LInput
+            label={t("admin.contenu.contenu.about_cta_bouton_parcourir")}
+            value={v.ctaBrowseLabel}
+            onChange={(next) => onChange({ ...v, ctaBrowseLabel: next })}
+            disabled={readOnly}
+          />
+          <LInput
+            label={t("admin.contenu.contenu.about_cta_bouton_contact")}
+            value={v.ctaContactLabel}
+            onChange={(next) => onChange({ ...v, ctaContactLabel: next })}
+            disabled={readOnly}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HeroForm({
   value,
   onChange,
@@ -562,6 +800,17 @@ function HeroForm({
           onCheckedChange={(c) => onChange({ ...v, showImage: c })}
         />
       </div>
+      {v.showImage && (
+        <div className="md:col-span-2">
+          <MediaPickerField
+            label="Image personnalisée du Hero (optionnelle)"
+            description="Si vide, l'image officielle par défaut est affichée."
+            value={v.imageSrc ?? ""}
+            disabled={readOnly}
+            onChange={(url) => onChange({ ...v, imageSrc: url })}
+          />
+        </div>
+      )}
       <LInput
         label={t("admin.contenu.contenu.champ_titre_ligne1")}
         value={v.title1}
@@ -1055,6 +1304,15 @@ function BuilderTeaserForm({
             onChange={(e) => onChange({ ...v, cta: { ...v.cta, href: e.target.value } })}
           />
         </Field>
+        <div className="md:col-span-2">
+          <MediaPickerField
+            label="Bannière visuelle du configurateur (optionnelle)"
+            description="Si vide, la bannière officielle par défaut est affichée."
+            value={v.bannerSrc ?? ""}
+            disabled={readOnly}
+            onChange={(url) => onChange({ ...v, bannerSrc: url })}
+          />
+        </div>
       </div>
       <div className="flex items-center justify-between">
         <Label>{t("admin.contenu.contenu.builder_cartes")}</Label>

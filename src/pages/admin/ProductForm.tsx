@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
+import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -1067,38 +1068,13 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
               <CardHeader>
                 <CardTitle>{t("admin.catalogue.produit_form.section_image")}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {mediaAssets.length > 0 && (
-                  <div>
-                    <Label>{t("admin.catalogue.produit_form.label_depuis_mediatheque")}</Label>
-                    <Select value="" onValueChange={(src) => updateField("image", src)}>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={t("admin.catalogue.produit_form.placeholder_choisir_media")}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mediaAssets.map((m) => (
-                          <SelectItem key={m.id} value={m.src}>
-                            {m.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                <Label>{t("admin.catalogue.produit_form.label_url_image")}</Label>
-                <Input
+              <CardContent>
+                <MediaPickerField
                   value={v.image}
-                  onChange={(e) => updateField("image", e.target.value)}
-                  placeholder={t("admin.catalogue.produit_form.placeholder_url_image")}
+                  onChange={(url) => updateField("image", url)}
+                  aspectRatio="square"
                 />
-                {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
-                {v.image && (
-                  <div className="aspect-square overflow-hidden rounded-md border bg-muted">
-                    <ImageCatalogue src={v.image} alt="" className="h-full w-full object-cover" />
-                  </div>
-                )}
+                {errors.image && <p className="mt-2 text-xs text-destructive">{errors.image}</p>}
               </CardContent>
             </Card>
           </div>

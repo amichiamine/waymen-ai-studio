@@ -190,6 +190,7 @@ export type SiteContent = {
     title: LS;
     subtitle: LS;
     cta: Cta;
+    bannerSrc?: string;
     items: { id: string; icon: IconName; title: LS; subtitle: LS }[];
   };
   reviews: { title: LS; subtitle: LS };
@@ -203,6 +204,25 @@ export type SiteContent = {
       href: string;
       requiresAuth?: boolean;
       primary?: boolean;
+    }[];
+  };
+  about: {
+    kicker: LS;
+    title: LS;
+    intro: LS;
+    historyTitle: LS;
+    historyBody: LS;
+    missionTitle: LS;
+    missionBody: LS;
+    ctaTitle: LS;
+    ctaSubtitle: LS;
+    ctaBrowseLabel: LS;
+    ctaContactLabel: LS;
+    values: {
+      id: string;
+      icon: "shield" | "truck" | "headphones" | "award" | "star" | "heart";
+      title: LS;
+      description: LS;
     }[];
   };
 };
@@ -656,6 +676,105 @@ export function seedSiteContent(): SiteContent {
           label: { fr: "Compte", en: "Account", ar: "الحساب" },
           href: "/account",
           requiresAuth: true,
+        },
+      ],
+    },
+    about: {
+      kicker: { fr: "À propos", en: "About", ar: "من نحن" },
+      title: {
+        fr: "{storeName} — La puissance tech entre vos mains",
+        en: "{storeName} — Tech power in your hands",
+        ar: "{storeName} — قوة التكنولوجيا بين يديك",
+      },
+      intro: {
+        fr: "Nous sommes une boutique spécialisée dans les ordinateurs portables, les ordinateurs de bureau, les configurations PC et les smartphones. Notre mission : apporter les dernières technologies dans chaque foyer algérien, à des prix compétitifs et avec une vraie garantie.",
+        en: "We're a store specialized in laptops, desktops, PC builds and smartphones. Our mission: bring the latest technology to every Algerian home, at competitive prices and with a real warranty.",
+        ar: "نحن متجر متخصص في أجهزة الكمبيوتر المحمولة والمكتبية وتجميعات الحواسيب والهواتف الذكية. مهمتنا: إيصال أحدث التقنيات إلى كل بيت جزائري، بأسعار تنافسية وضمان حقيقي.",
+      },
+      historyTitle: { fr: "Notre histoire", en: "Our story", ar: "قصتنا" },
+      historyBody: {
+        fr: "{storeName} est née d'une vision simple : rendre la technologie moderne accessible à tous. Aujourd'hui, nous servons des milliers de clients partout en Algérie et continuons d'enrichir notre catalogue avec les produits des meilleures marques mondiales.",
+        en: "{storeName} was born from a simple vision: make modern technology accessible to everyone. Today we serve thousands of customers across Algeria and keep expanding our catalog with the best global brands.",
+        ar: "وُلدت {storeName} من رؤية بسيطة: جعل التكنولوجيا الحديثة في متناول الجميع. اليوم نخدم آلاف الزبائن عبر الجزائر ونواصل توسيع تشكيلتنا بأفضل العلامات العالمية.",
+      },
+      missionTitle: { fr: "Notre mission", en: "Our mission", ar: "مهمتنا" },
+      missionBody: {
+        fr: "Offrir à nos clients des produits fiables, un service après-vente irréprochable et un véritable accompagnement technique pour une expérience d'achat simple et agréable.",
+        en: "Offer reliable products, flawless after-sales service and genuine technical support for a simple and enjoyable shopping experience.",
+        ar: "تقديم منتجات موثوقة وخدمة ما بعد البيع لا تشوبها شائبة ومرافقة تقنية حقيقية لتجربة شراء سهلة وممتعة.",
+      },
+      ctaTitle: {
+        fr: "Prêt à faire votre choix ?",
+        en: "Ready to make your choice?",
+        ar: "جاهز لاختيارك؟",
+      },
+      ctaSubtitle: {
+        fr: "Découvrez notre gamme complète de produits tech.",
+        en: "Discover our full range of tech products.",
+        ar: "اكتشف مجموعتنا الكاملة من المنتجات التقنية.",
+      },
+      ctaBrowseLabel: {
+        fr: "Parcourir les catégories",
+        en: "Browse categories",
+        ar: "تصفح الفئات",
+      },
+      ctaContactLabel: { fr: "Contactez-nous", en: "Contact us", ar: "اتصل بنا" },
+      values: [
+        {
+          id: "val_1",
+          icon: "shield",
+          title: {
+            fr: "Garantie officielle",
+            en: "Official warranty",
+            ar: "ضمان رسمي",
+          },
+          description: {
+            fr: "Tous nos produits sont authentiques et sous garantie des revendeurs agréés.",
+            en: "All our products are genuine and covered by authorized dealer warranties.",
+            ar: "جميع منتجاتنا أصلية وتحت ضمان الموزعين المعتمدين.",
+          },
+        },
+        {
+          id: "val_2",
+          icon: "truck",
+          title: {
+            fr: "Livraison 58 wilayas",
+            en: "Delivery in Algeria",
+            ar: "توصيل 58 ولاية",
+          },
+          description: {
+            fr: "Livraison rapide et sécurisée dans les 58 wilayas.",
+            en: "Fast and secure delivery to all 58 wilayas.",
+            ar: "توصيل سريع وآمن لجميع الولايات الـ 58.",
+          },
+        },
+        {
+          id: "val_3",
+          icon: "headphones",
+          title: {
+            fr: "Support dédié",
+            en: "Dedicated support",
+            ar: "دعم مخصص",
+          },
+          description: {
+            fr: "Notre équipe est disponible avant et après votre achat.",
+            en: "Our team is available before and after your purchase.",
+            ar: "فريقنا في خدمتكم قبل الشراء وبعده.",
+          },
+        },
+        {
+          id: "val_4",
+          icon: "award",
+          title: {
+            fr: "Qualité certifiée",
+            en: "Certified quality",
+            ar: "جودة معتمدة",
+          },
+          description: {
+            fr: "Chaque configuration et composant est testé avant expédition.",
+            en: "Every build and component is tested before shipping.",
+            ar: "يتم فحص كل تجميعة ومكون بدقة قبل الشحن.",
+          },
         },
       ],
     },

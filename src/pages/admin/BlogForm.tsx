@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
+import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -621,25 +622,14 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
             <CardHeader>
               <CardTitle>{t("admin.contenu.blog.section_couverture")}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Input
+            <CardContent>
+              <MediaPickerField
                 value={form.cover}
-                onChange={(e) => updateField("cover", e.target.value)}
-                placeholder="https://…"
+                onChange={(url) => updateField("cover", url)}
                 disabled={saveDisabled}
+                aspectRatio="video"
               />
-              {errors.cover && <p className="text-xs text-destructive">{errors.cover}</p>}
-              {form.cover ? (
-                <ImageCatalogue
-                  src={form.cover}
-                  alt={t("admin.contenu.blog.alt_apercu")}
-                  className="mt-2 aspect-[16/9] w-full rounded-md border object-cover"
-                />
-              ) : (
-                <div className="flex h-28 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
-                  {t("admin.contenu.blog.aucune_image")}
-                </div>
-              )}
+              {errors.cover && <p className="mt-2 text-xs text-destructive">{errors.cover}</p>}
             </CardContent>
           </Card>
         </div>

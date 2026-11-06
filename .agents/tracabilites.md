@@ -1097,3 +1097,37 @@
   - `bun run lint` : 0 erreur.
   - `bunx tsc --noEmit` : 0 erreur.
 - **Résultat :** Clarté absolue et zéro ambiguïté pour le déploiement sur serveur distant.
+
+## Phase 22 : Administration Éditoriale Intégrale (« À propos ») & Sélecteur Universel de Médias (MediaPickerField)
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 22 pour (1) rendre 100% administrable la narration de la page À propos depuis le Backstage et (2) remplacer les placeholders manuels d'URL par un composant standard avec téléversement direct et médiathèque modale.
+- **Actions Réalisées :**
+  - **Étape 22.A (Modèle de Données & Consommation /about) :**
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) : extension de l'interface `SiteContent` avec la section `about` (kicker, title, intro, historyTitle, historyBody, missionTitle, missionBody, ctaTitle, ctaSubtitle, ctaBrowseLabel, ctaContactLabel, values) et champ `builderTeaser.bannerSrc`.
+    - Alimentation trilingue (FR, EN, AR) complète dans `seedSiteContent()`.
+    - Modification de [`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx) : consommation dynamique de `siteContent.about` avec remplacement des variables `{storeName}` et fallback transparent sur les clés par défaut.
+  - **Étape 22.B (Administration Éditoriale dans Admin Contenu) :**
+    - Modification de [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : ajout de l'onglet `about` (« Page À propos »), développement du sous-composant `AboutForm` (en-tête, histoire, mission, cartes de valeurs avec icônes dynamiques, CTA final).
+    - Enrichissement des dictionnaires de traductions : [`src/lib/i18n/admin/contenu/{fr,en,ar}.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/contenu/fr.ts) avec parité 100% stricte.
+  - **Étape 22.C (Composant Étalon MediaPickerField & Dialogue Modale) :**
+    - Création de [`src/components/admin/MediaPickerField.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/MediaPickerField.tsx) et du dialogue modal `MediaPickerDialog` :
+      - Aperçu instantané de l'image sélectionnée.
+      - Bouton Téléverser direct (envoi via `useMediaAssetMutations().upload(file)` sans quitter la page).
+      - Bouton « Choisir dans la médiathèque » (modale avec recherche par nom/tag et sélection par vignette).
+      - Option de saisie manuelle d'URL externe repliable et bouton de suppression.
+  - **Étape 22.D (Déploiement Généralisé sur le Backstage) :**
+    - [`src/pages/admin/CategoryForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/CategoryForm.tsx) : champ image remplacé par `MediaPickerField`.
+    - [`src/pages/admin/BlogForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/BlogForm.tsx) : couverture d'article remplacée par `MediaPickerField`.
+    - [`src/pages/admin/ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx) : sélecteur texte remplacé par `MediaPickerField` avec upload direct intégré.
+    - [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : ajout du bouton médiathèque pour le logo de la boutique.
+    - [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : sélecteurs d'images ajoutés pour `hero.imageSrc` et `builderTeaser.bannerSrc`.
+- **Validation CI & Tests :**
+  - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte.
+  - `bunx tsc --noEmit` : 0 erreur TypeScript.
+  - `bun run lint` : 0 erreur ESLint.
+  - `bun run build; bun run paqueter:data` : compilation et empaquetage réussis.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md)
+  - Archive horodatée unique application : 📦 [katech-site-06112026-1401.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1401.zip)
+  - Archive horodatée unique données : 📦 [katech-data-06112026-1401.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1401.zip)

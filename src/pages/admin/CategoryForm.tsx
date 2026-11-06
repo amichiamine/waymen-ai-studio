@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
+import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -261,14 +262,13 @@ export default function AdminCategoryForm({ mode }: { mode: "new" | "edit" }) {
               )}
             </div>
             <div>
-              <Label>{t("admin.catalogue.categorie_form.label_image")}</Label>
-              <Input value={v.cover ?? ""} onChange={(e) => update("cover", e.target.value)} />
+              <MediaPickerField
+                label={t("admin.catalogue.categorie_form.label_image")}
+                value={v.cover ?? ""}
+                onChange={(url) => update("cover", url)}
+                aspectRatio="video"
+              />
               {err.cover && <p className="mt-1 text-xs text-destructive">{err.cover}</p>}
-              {v.cover && (
-                <div className="mt-3 aspect-[16/10] overflow-hidden rounded-md border bg-muted">
-                  <ImageCatalogue src={v.cover} alt="" className="h-full w-full object-cover" />
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>

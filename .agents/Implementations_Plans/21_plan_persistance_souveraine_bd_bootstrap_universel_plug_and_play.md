@@ -24,13 +24,13 @@
 ## 2. Objectifs de la Sous-Phase 21.1
 
 - [ ] **Archives Uniques et Traçables :**  
-      Chaque exécution de build génère **un seul et unique zip horodaté** pour le site (`katech-site-JJMMAAAA-HHMM.zip`) et un seul pour les données (`katech-data-JJMMAAAA-HHMM.zip`).
+       Chaque exécution de build génère **un seul et unique zip horodaté** pour le site (`katech-site-JJMMAAAA-HHMM.zip`) et un seul pour les données (`katech-data-JJMMAAAA-HHMM.zip`).
 - [ ] **Suppression des Clones Alias :**  
-      Élimination de la copie redondante `katech-site.zip` et `katech-data.zip` dans [`scripts/paqueter.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter.ts) et [`scripts/paqueter-data.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter-data.ts).
+       Élimination de la copie redondante `katech-site.zip` et `katech-data.zip` dans [`scripts/paqueter.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter.ts) et [`scripts/paqueter-data.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter-data.ts).
 - [ ] **Nettoyage de la Racine du Projet :**  
-      Suppression des doublons `katech-site.zip` et `katech-data.zip` résiduels pour une clarté visuelle totale.
+       Suppression des doublons `katech-site.zip` et `katech-data.zip` résiduels pour une clarté visuelle totale.
 - [ ] **Mise à jour de la documentation et des logs :**  
-      Les messages de fin de build indiquent directement le nom précis de l'archive horodatée à déployer.
+       Les messages de fin de build indiquent directement le nom précis de l'archive horodatée à déployer.
 
 ---
 

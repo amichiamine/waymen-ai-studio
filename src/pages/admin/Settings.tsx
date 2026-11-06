@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import defaultLogoSrc from "@/assets/ka-tech-logo.webp";
 import { resoudreUrlMedia } from "@/components/media-url";
+import { MediaPickerDialog } from "@/components/admin/MediaPickerField";
 import {
   useSiteSettings,
   useSiteSettingsMutations,
@@ -149,6 +150,7 @@ export default function AdminSettings() {
   const { upload: uploadMedia } = useMediaAssetMutations();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoMediaOpen, setLogoMediaOpen] = useState(false);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
 
@@ -334,7 +336,29 @@ export default function AdminSettings() {
                           <Upload className="size-3.5" />
                           {uploadingLogo ? "Téléversement…" : "Téléverser"}
                         </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={disabledSettings || uploadingLogo}
+                          onClick={() => setLogoMediaOpen(true)}
+                          className="gap-1.5 shrink-0 text-xs h-9"
+                        >
+                          <ImageIcon className="size-3.5" />
+                          Médiathèque
+                        </Button>
                       </div>
+
+                      <MediaPickerDialog
+                        open={logoMediaOpen}
+                        onOpenChange={setLogoMediaOpen}
+                        selectedSrc={form.logoUrl ?? ""}
+                        onSelect={async (src) => {
+                          set("logoUrl", src);
+                          await updateSettings({ ...form, logoUrl: src });
+                          toast.success("Logo mis à jour");
+                        }}
+                      />
 
                       {form.logoUrl && (
                         <Button
