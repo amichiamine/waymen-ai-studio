@@ -1356,3 +1356,29 @@
   - Plan interactif et miroir : 📄 [28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md)
   - Archive application horodatée : 📦 [katech-site-06112026-2104.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2104.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-2104.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2104.zip)
+
+### Sous-Phase 28.1 : Consolidation Neutre Blog (Interpolation de l'Enseigne & Auteur) et Réveil Asynchrone des Spécifications IT en Édition Produit
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle de la Sous-Phase 28.1 pour éradiquer les deux angles morts résiduels identifiés lors du grand audit :
+  1. Interpolation dynamique de l'enseigne configurée (`brand` / `storeName`) dans les vues publiques du blog ([`src/pages/Blog.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Blog.tsx) et [`src/pages/BlogArticle.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/BlogArticle.tsx)) : remplacement automatique des occurrences `{storeName}` et `\bKA Tech\b` dans le titre, l'extrait, le contenu markdown, l'auteur et les métadonnées SEO/JSON-LD.
+  2. Réveil asynchrone des spécifications IT dans [`src/pages/admin/ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx) : déploiement automatique du volet (`showItSpecs(true)`) lorsque les spécifications d'un produit informatique existant arrivent en asynchrone après le premier rendu.
+  3. Neutralisation de la graine d'amorçage blog (`seedBlogPosts` dans [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx)) pour utiliser `{storeName}` au lieu du nom statique en dur.
+- **Actions Réalisées :**
+  - **Étape 28.1.A (Interpolation Vitrine Blog) :**
+    - Modification de [`src/pages/BlogArticle.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/BlogArticle.tsx) : application de l'interpolation `{storeName}` et `\bKA Tech\b` sur `title`, `excerpt`, `content`, `author` et les balises JSON-LD/SEO.
+    - Modification de [`src/pages/Blog.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Blog.tsx) : raccordement à `useSiteSettings()`, interpolation dynamique dans les cartes de la liste des articles (`title`, `excerpt`, `author`).
+  - **Étape 28.1.B (Réveil Asynchrone Specs IT) :**
+    - Modification de [`src/pages/admin/ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx) : dans le `useEffect` de chargement des données produit (`p` ou `existing`), détection de la présence d'au moins une spec standard IT (`cpu`, `ram`, `storage`, `gpu`, `screen`, `os`) et déclenchement ciblé de `setShowItSpecs(true)`.
+  - **Étape 28.1.C (Graine de Démonstration Neutre) :**
+    - Modification de [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx) : remplacement des occurrences `"Équipe KA Tech"` et `"KA Tech"` dans `seedBlogPosts()` par `"{storeName}"` pour une neutralité marque blanche intégrale à l'amorçage.
+  - **Étape 28.1.D (Contrôles CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte.
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-2119.zip` et `katech-data-06112026-2119.zip`).
+    - Conservation cumulative respectée : l'ensemble des archives historiques (`1401`, `1444`, `1518`, `1808`, `1842`, `1905`, `2104`, `2119`) est préservé intact.
+- **Livrables :**
+  - Archive application horodatée : 📦 [katech-site-06112026-2119.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2119.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-2119.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2119.zip)

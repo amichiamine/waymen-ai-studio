@@ -852,9 +852,9 @@ function seedBlogPosts(): BlogPost[] {
     {
       slug: "monter-son-pc-configurateur",
       title: {
-        fr: "Monter son PC : nos conseils du configurateur KA Tech",
-        en: "Building your PC: tips from the KA Tech configurator",
-        ar: "تجميع حاسوبك: نصائح من مُجمِّع KA Tech",
+        fr: "Monter son PC : nos conseils du configurateur {storeName}",
+        en: "Building your PC: tips from the {storeName} configurator",
+        ar: "تجميع حاسوبك: نصائح من مُجمِّع {storeName}",
       },
       excerpt: {
         fr: "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.",
@@ -881,9 +881,9 @@ function seedBlogPosts(): BlogPost[] {
         ar: "آجال التسليم، التعريفات، الدفع عند الاستلام — نجيب على أسئلتك.",
       },
       content: {
-        fr: "KA Tech livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
-        en: "KA Tech delivers to all 58 wilayas. Allow 2 to 5 business days depending on your region. Cash on delivery is available for the majority of products.",
-        ar: "KA Tech يوصّل إلى جميع الولايات الـ58. توقع من 2 إلى 5 أيام عمل حسب منطقتك: الجزائر، وهران، قسنطينة، عنابة، سطيف، تيزي وزو، البليدة، باتنة، وجميع الولايات الأخرى. الدفع عند الاستلام متاح لغالبية المنتجات.",
+        fr: "{storeName} livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
+        en: "{storeName} delivers to all 58 wilayas. Allow 2 to 5 business days depending on your region. Cash on delivery is available for the majority of products.",
+        ar: "{storeName} يوصّل إلى جميع الولايات الـ58. توقع من 2 إلى 5 أيام عمل حسب منطقتك: الجزائر، وهران، قسنطينة، عنابة، سطيف، تيزي وزو، البليدة، باتنة، وجميع الولايات الأخرى. الدفع عند الاستلام متاح لغالبية المنتجات.",
       },
       tags: ["livraison", "faq"],
     },
@@ -892,7 +892,7 @@ function seedBlogPosts(): BlogPost[] {
     id: `blog_${100 + i}`,
     ...b,
     cover: seedProducts[i % seedProducts.length]?.image,
-    author: i % 2 === 0 ? "Équipe KA Tech" : "Yacine B.",
+    author: i % 2 === 0 ? "Équipe {storeName}" : "Yacine B.",
     status: "published",
     createdAt: d(30 - i * 4),
     updatedAt: d(30 - i * 4),

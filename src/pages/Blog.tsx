@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Search, Newspaper, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useBlogPostList } from "@/data-provider";
+import { useBlogPostList, useSiteSettings } from "@/data-provider";
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
 
@@ -17,6 +17,8 @@ const haystack = (v: Localized<string> | undefined): string =>
 export default function Blog() {
   const [q, setQ] = useState("");
   const { data: blogPosts, loading, error } = useBlogPostList();
+  const { data: siteSettings } = useSiteSettings();
+  const brand = siteSettings.storeName?.trim() || "Boutique";
   const { t, lang } = useI18n();
   const L = useLocalize();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
@@ -91,8 +93,18 @@ export default function Blog() {
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {posts.map((p) => {
-                  const title = L(p.title) ?? "";
-                  const excerpt = L(p.excerpt) ?? "";
+                  const rawTitle = L(p.title) ?? "";
+                  const title = rawTitle
+                    .replace(/{storeName}/g, brand)
+                    .replace(/\bKA Tech\b/g, brand);
+                  const rawExcerpt = L(p.excerpt) ?? "";
+                  const excerpt = rawExcerpt
+                    .replace(/{storeName}/g, brand)
+                    .replace(/\bKA Tech\b/g, brand);
+                  const rawAuthor = p.author ?? "";
+                  const author = rawAuthor
+                    .replace(/{storeName}/g, brand)
+                    .replace(/\bKA Tech\b/g, brand);
                   return (
                     <Link
                       key={p.id}
@@ -125,7 +137,7 @@ export default function Blog() {
                         </h2>
                         <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{excerpt}</p>
                         <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{p.author}</span>
+                          <span>{author}</span>
                           <time>
                             {new Date(p.publishedAt ?? p.createdAt).toLocaleDateString(locale)}
                           </time>

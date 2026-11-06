@@ -61,9 +61,14 @@ export default function BlogArticle() {
   }
 
   // Résolution des champs localisés UNE SEULE FOIS — jamais post.title dans le corps.
-  const title = L(post.title) ?? "";
-  const excerpt = L(post.excerpt) ?? "";
-  const content = L(post.content) ?? "";
+  const rawTitle = L(post.title) ?? "";
+  const title = rawTitle.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
+  const rawExcerpt = L(post.excerpt) ?? "";
+  const excerpt = rawExcerpt.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
+  const rawContent = L(post.content) ?? "";
+  const content = rawContent.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
+  const rawAuthor = post.author ?? "";
+  const author = rawAuthor.replace(/{storeName}/g, brand).replace(/\bKA Tech\b/g, brand);
 
   const canonical = `${window.location.origin}/blog/${post.slug}`;
   // JSON-LD Article : headline, description et image doivent être des chaînes —
@@ -73,7 +78,7 @@ export default function BlogArticle() {
     "@type": "Article",
     headline: title,
     description: excerpt,
-    author: { "@type": "Person", name: post.author },
+    author: { "@type": "Person", name: author },
     datePublished: post.publishedAt ?? post.createdAt,
     image: post.cover,
   };
@@ -111,7 +116,7 @@ export default function BlogArticle() {
         <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl">{title}</h1>
         <p className="mt-3 text-lg text-muted-foreground">{excerpt}</p>
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">{post.author}</span>
+          <span className="font-medium text-foreground">{author}</span>
           <span>·</span>
           <time>
             {new Date(post.publishedAt ?? post.createdAt).toLocaleDateString(locale, {

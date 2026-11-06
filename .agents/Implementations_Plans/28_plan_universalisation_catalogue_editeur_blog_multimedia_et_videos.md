@@ -100,6 +100,19 @@ Faisant suite au diagnostic validé par **ArchiSys3.0**, la Phase 28 apporte la 
 
 ---
 
+## Sous-Phase 28.1 — Consolidation Neutre Blog (Interpolation de l'Enseigne & Auteur) et Réveil Asynchrone des Spécifications IT en Édition Produit
+
+- **Objectif :** Résoudre les deux angles morts identifiés lors de l'audit d'universalité :
+  1. Rendre l'affichage public du blog entièrement neutre et dynamique même avec des articles d'exemple ou graines en remplaçant `{storeName}` et `\bKA Tech\b` par le nom de l'enseigne configuré.
+  2. Assurer que le volet des spécifications IT se déploie automatiquement en mode édition lorsqu'un produit informatique existant charge ses spécifications de manière asynchrone après le montage initial.
+- **Réalisations :**
+  - [`src/pages/BlogArticle.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/BlogArticle.tsx) : interpolation `{storeName}` / `\bKA Tech\b` sur `title`, `excerpt`, `content`, `author` et les balises JSON-LD/SEO.
+  - [`src/pages/Blog.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Blog.tsx) : interpolation dynamique dans les cartes de la liste des articles (`title`, `excerpt`, `author`).
+  - [`src/pages/admin/ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx) : réveil asynchrone de `showItSpecs` si des spécifications informatiques standard sont présentes dans le produit chargé.
+  - [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx) : remplacement des occurrences `"Équipe KA Tech"` et `"KA Tech"` par `"{storeName}"` dans `seedBlogPosts()`.
+
+---
+
 ## 3. Matrice de Recette & Vérification
 
 | Test                           | Comportement Attendu                                                                                                                                     |

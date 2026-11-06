@@ -381,6 +381,12 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
         setV(toForm(p));
         if (p.specs) {
           const standardKeys = new Set(["cpu", "ram", "storage", "gpu", "screen", "os"]);
+          const hasIt = ["cpu", "ram", "storage", "gpu", "screen", "os"].some((k) =>
+            Boolean(p.specs[k as keyof typeof p.specs]),
+          );
+          if (hasIt) {
+            setShowItSpecs(true);
+          }
           const loaded: CustomSpecItem[] = [];
           for (const [key, val] of Object.entries(p.specs)) {
             if (!standardKeys.has(key) && val) {
@@ -392,6 +398,12 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
       }
     } else if (existing?.specs) {
       const standardKeys = new Set(["cpu", "ram", "storage", "gpu", "screen", "os"]);
+      const hasIt = ["cpu", "ram", "storage", "gpu", "screen", "os"].some((k) =>
+        Boolean(existing.specs[k as keyof typeof existing.specs]),
+      );
+      if (hasIt) {
+        setShowItSpecs(true);
+      }
       const loaded: CustomSpecItem[] = [];
       for (const [key, val] of Object.entries(existing.specs)) {
         if (!standardKeys.has(key) && val) {
