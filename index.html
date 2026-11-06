@@ -15,6 +15,12 @@
     <!-- iOS ignore le manifeste et le SVG : il lui faut son PNG opaque. -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <meta name="theme-color" content="#0a0d12" />
     <script>
       (function () {
@@ -46,14 +52,44 @@
           root.classList.toggle("dark", !isLight);
           root.style.colorScheme = isLight ? "light" : "dark";
 
-          // 3. Couleur primaire d'accentuation
+          // 3. Nuances chromatiques (Primaire, Secondaire, Accent)
           if (s.primaryColor && s.primaryColor.trim()) {
             root.style.setProperty("--primary", s.primaryColor);
             root.style.setProperty("--ring", s.primaryColor);
             root.style.setProperty("--primary-glow", s.primaryColor);
           }
+          if (s.secondaryColor && s.secondaryColor.trim()) {
+            root.style.setProperty("--secondary", s.secondaryColor);
+          }
+          if (s.accentColor && s.accentColor.trim()) {
+            root.style.setProperty("--accent", s.accentColor);
+          }
 
-          // 4. Favicon dynamique
+          // 4. Géométrie & Arrondi (Border Radius)
+          if (s.borderRadius) {
+            var radiusMap = { sharp: "0px", modern: "0.375rem", soft: "0.75rem", pill: "1.25rem" };
+            if (radiusMap[s.borderRadius]) {
+              root.style.setProperty("--radius", radiusMap[s.borderRadius]);
+            }
+          }
+
+          // 5. Typographie & Polices
+          if (s.fontFamily) {
+            var fontMap = {
+              inter: "'Inter', system-ui, sans-serif",
+              outfit: "'Outfit', system-ui, sans-serif",
+              jakarta: "'Plus Jakarta Sans', system-ui, sans-serif",
+              poppins: "'Poppins', system-ui, sans-serif",
+              cairo: "'Cairo', system-ui, sans-serif",
+              system: "system-ui, -apple-system, sans-serif",
+            };
+            if (fontMap[s.fontFamily]) {
+              root.style.setProperty("--font-sans", fontMap[s.fontFamily]);
+              root.style.setProperty("--font-display", fontMap[s.fontFamily]);
+            }
+          }
+
+          // 6. Favicon dynamique
           if (s.faviconUrl && s.faviconUrl.trim()) {
             var link = document.querySelector('link[rel="icon"]');
             if (link) {

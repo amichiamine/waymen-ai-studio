@@ -30,7 +30,7 @@ export default function CategoryDetail() {
   const brand = siteSettings.storeName?.trim() || "Boutique";
 
   const currentCat = categories.find((c) => c.slug === slug);
-  const isValid = Boolean(currentCat || (slug && BUILTIN_CATEGORIES.includes(slug)));
+  const isValid = Boolean(currentCat || (slug && slug.length > 0));
 
   useEffect(() => {
     document.title = `${brand} — ${slug ?? ""}`;

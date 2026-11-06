@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   useSiteSettings,
   useSiteSettingsMutations,
   useSiteContent,
@@ -17,6 +24,8 @@ import {
   useProductList,
   useProductMutations,
   useMediaAssetList,
+  useMediaAssetMutations,
+  toApiError,
 } from "@/data-provider";
 import { appliquerBrandingDynamique } from "@/data-provider/site-settings";
 import {
@@ -37,10 +46,16 @@ import {
   Sun,
   Moon,
   Monitor,
+  Upload,
+  Image as ImageIcon,
+  Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
+import { MediaPickerDialog } from "@/components/admin/MediaPickerField";
+import { resoudreUrlMedia } from "@/components/media-url";
+import type { BorderRadiusOption, FontFamilyOption } from "@/lib/admin-store";
 
 export type PresetSector = "tech" | "general" | "fashion" | "beauty" | "services";
 
@@ -124,6 +139,7 @@ export function SetupWizard({
   const { data: products } = useProductList();
   const { remove: removeProduct } = useProductMutations();
   const { data: mediaAssets } = useMediaAssetList();
+  const { upload: uploadMedia } = useMediaAssetMutations();
 
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
@@ -137,6 +153,14 @@ export function SetupWizard({
     siteSettings.defaultTheme || "dark",
   );
   const [primaryColor, setPrimaryColor] = useState(siteSettings.primaryColor || "#0284c7");
+  const [secondaryColor, setSecondaryColor] = useState(siteSettings.secondaryColor || "#10b981");
+  const [accentColor, setAccentColor] = useState(siteSettings.accentColor || "#f59e0b");
+  const [borderRadius, setBorderRadius] = useState<BorderRadiusOption>(
+    siteSettings.borderRadius || "modern",
+  );
+  const [fontFamily, setFontFamily] = useState<FontFamilyOption>(
+    siteSettings.fontFamily || "system",
+  );
   const [contactEmail, setContactEmail] = useState(siteSettings.contactEmail || "");
   const [contactPhone, setContactPhone] = useState(siteSettings.contactPhone || "");
   const [whatsapp, setWhatsapp] = useState(siteSettings.whatsapp || "");
@@ -145,6 +169,15 @@ export function SetupWizard({
   const [builderEnabled, setBuilderEnabled] = useState(siteSettings.builderEnabled ?? true);
   const [selectedSector, setSelectedSector] = useState<PresetSector>("tech");
   const [purgeDemoProducts, setPurgeDemoProducts] = useState(false);
+
+  // Media pickers and upload refs
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoMediaOpen, setLogoMediaOpen] = useState(false);
+
+  const faviconInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [faviconMediaOpen, setFaviconMediaOpen] = useState(false);
 
   // Synchronisation lors de l'ouverture
   useEffect(() => {
@@ -156,6 +189,10 @@ export function SetupWizard({
       setFaviconUrl(siteSettings.faviconUrl || "");
       setDefaultTheme(siteSettings.defaultTheme || "dark");
       setPrimaryColor(siteSettings.primaryColor || "#0284c7");
+      setSecondaryColor(siteSettings.secondaryColor || "#10b981");
+      setAccentColor(siteSettings.accentColor || "#f59e0b");
+      setBorderRadius(siteSettings.borderRadius || "modern");
+      setFontFamily(siteSettings.fontFamily || "system");
       setContactEmail(siteSettings.contactEmail || "");
       setContactPhone(siteSettings.contactPhone || "");
       setWhatsapp(siteSettings.whatsapp || "");
@@ -165,6 +202,49 @@ export function SetupWizard({
     }
   }, [open, siteSettings]);
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner un fichier image valide.");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const asset = await uploadMedia(file);
+      setLogoUrl(asset.src);
+      toast.success("Logo téléversé avec succès !");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message || "Erreur lors du téléversement du logo");
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  }
+
+  async function handleFaviconUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/") && !file.name.endsWith(".ico")) {
+      toast.error("Veuillez sélectionner une image valide (.ico, .png, .svg).");
+      return;
+    }
+    setUploadingFavicon(true);
+    try {
+      const asset = await uploadMedia(file);
+      setFaviconUrl(asset.src);
+      appliquerBrandingDynamique({ faviconUrl: asset.src });
+      toast.success("Favicon téléversé avec succès !");
+    } catch (cause) {
+      const err = toApiError(cause);
+      toast.error(err.message || "Erreur lors du téléversement du favicon");
+    } finally {
+      setUploadingFavicon(false);
+      if (faviconInputRef.current) faviconInputRef.current.value = "";
+    }
+  }
+
   const handleSectorSelect = (sector: PresetSector) => {
     setSelectedSector(sector);
     const p = PRESET_SECTORS.find((s) => s.id === sector);
@@ -172,7 +252,14 @@ export function SetupWizard({
       setBuilderEnabled(p.builder);
       setPrimaryColor(p.color);
       setSlogan(p.slogan);
-      appliquerBrandingDynamique({ primaryColor: p.color, defaultTheme });
+      appliquerBrandingDynamique({
+        primaryColor: p.color,
+        secondaryColor,
+        accentColor,
+        borderRadius,
+        fontFamily,
+        defaultTheme,
+      });
     }
   };
 
@@ -190,6 +277,10 @@ export function SetupWizard({
         currencySymbol: currencySymbol.trim() || "DA",
         defaultTheme,
         primaryColor,
+        secondaryColor,
+        accentColor,
+        borderRadius,
+        fontFamily,
         logoUrl,
         faviconUrl,
         builderEnabled,
@@ -231,7 +322,7 @@ export function SetupWizard({
             try {
               await removeProduct(prod.id);
             } catch {
-              // poursuite
+              // poursuite silencieuse
             }
           }
         }
@@ -239,7 +330,15 @@ export function SetupWizard({
       }
 
       // 4. Application visuelle immédiate
-      appliquerBrandingDynamique({ primaryColor, defaultTheme, faviconUrl });
+      appliquerBrandingDynamique({
+        primaryColor,
+        secondaryColor,
+        accentColor,
+        borderRadius,
+        fontFamily,
+        defaultTheme,
+        faviconUrl,
+      });
 
       toast.success(
         `🎉 Félicitations ! Votre boutique "${storeName || "Ma Boutique"}" est configurée et prête.`,
@@ -267,28 +366,29 @@ export function SetupWizard({
                 </span>
                 <div>
                   <DialogTitle className="text-xl font-bold">
-                    Assistant d'Installation & Personnalisation
+                    Assistant d'Installation & Personnalisation 360°
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                    Configurez votre plateforme Marque Blanche en 4 étapes simples et rapides.
+                    Configurez votre plateforme Marque Blanche en 5 étapes rapides et fluides.
                   </DialogDescription>
                 </div>
               </div>
               <div className="text-end">
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                  Étape {step} sur 4
+                  Étape {step} sur 5
                 </span>
               </div>
             </div>
           </DialogHeader>
 
-          {/* Stepper visuel */}
-          <div className="grid grid-cols-4 gap-2 mt-5">
+          {/* Stepper visuel 5 étapes */}
+          <div className="grid grid-cols-5 gap-2 mt-5">
             {[
               { n: 1, label: "Identité", icon: Store },
               { n: 2, label: "Coordonnées", icon: Phone },
-              { n: 3, label: "Profil Métier", icon: LayoutGrid },
-              { n: 4, label: "Catalogue Démo", icon: CheckCircle2 },
+              { n: 3, label: "Thème 360°", icon: Palette },
+              { n: 4, label: "Profil Métier", icon: LayoutGrid },
+              { n: 5, label: "Finalisation", icon: CheckCircle2 },
             ].map((s) => {
               const Icon = s.icon;
               const active = step === s.n;
@@ -320,7 +420,7 @@ export function SetupWizard({
 
         {/* Corps des étapes */}
         <div className="p-6 max-h-[65vh] overflow-y-auto">
-          {/* ÉTAPE 1 : IDENTITÉ & MARQUE */}
+          {/* ÉTAPE 1 : IDENTITÉ & MÉDIAS DE MARQUE */}
           {step === 1 && (
             <div className="space-y-5 animate-fade-in-up">
               <div className="grid sm:grid-cols-2 gap-4">
@@ -356,140 +456,180 @@ export function SetupWizard({
                 </div>
               </div>
 
-              {/* Logo & Favicon */}
-              <div className="grid sm:grid-cols-2 gap-4 pt-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Logo de la boutique</Label>
-                  <Input
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    placeholder="URL ou chemin du logo (/uploads/logo.webp)"
-                    className="h-9"
-                  />
-                  {mediaAssets.length > 0 && (
-                    <div className="flex gap-2 items-center flex-wrap pt-1">
-                      <span className="text-[11px] text-muted-foreground">Médiathèque :</span>
-                      {mediaAssets.slice(0, 3).map((m) => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => setLogoUrl(m.src)}
-                          className="text-[11px] px-2 py-0.5 rounded border border-border hover:border-primary bg-muted/50"
-                        >
-                          {m.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+              {/* Logo avec Téléversement Direct */}
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold flex items-center gap-2">
+                    <Store className="size-4 text-primary" />
+                    Logo officiel de l'enseigne
+                  </Label>
                   {logoUrl && (
-                    <div className="h-12 w-36 rounded border border-border bg-muted/40 p-1 flex items-center justify-center overflow-hidden">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setLogoUrl("")}
+                      className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                    >
+                      Effacer
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="h-16 w-40 rounded-lg border border-dashed border-border bg-muted/40 p-1 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                    {logoUrl ? (
                       <ImageCatalogue
                         src={logoUrl}
                         alt="Logo"
                         className="max-h-full max-w-full object-contain"
                       />
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">Aucun logo</span>
+                    )}
+                  </div>
+                  <div className="flex-1 w-full space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        value={logoUrl}
+                        onChange={(e) => setLogoUrl(e.target.value)}
+                        placeholder="https://... ou téléversez un fichier"
+                        className="h-9 text-xs"
+                      />
+                      <input
+                        type="file"
+                        ref={logoInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingLogo}
+                        onClick={() => logoInputRef.current?.click()}
+                        className="h-9 gap-1.5 text-xs shrink-0"
+                      >
+                        <Upload className="size-3.5" />
+                        <span>{uploadingLogo ? "Envoi…" : "Téléverser"}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={uploadingLogo}
+                        onClick={() => setLogoMediaOpen(true)}
+                        className="h-9 gap-1.5 text-xs shrink-0"
+                      >
+                        <ImageIcon className="size-3.5" />
+                        <span>Médiathèque</span>
+                      </Button>
                     </div>
-                  )}
-                </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Favicon du navigateur</Label>
-                  <Input
-                    value={faviconUrl}
-                    onChange={(e) => setFaviconUrl(e.target.value)}
-                    placeholder="URL de l'icône favicon (.ico, .png, .svg)"
-                    className="h-9"
-                  />
-                  {faviconUrl && (
-                    <div className="flex items-center gap-2 pt-1">
-                      <div className="size-8 rounded border border-border bg-background p-1 flex items-center justify-center">
-                        <img src={faviconUrl} alt="Favicon" className="size-5 object-contain" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">Aperçu dans l'onglet</span>
-                    </div>
-                  )}
+                    <MediaPickerDialog
+                      open={logoMediaOpen}
+                      onOpenChange={setLogoMediaOpen}
+                      selectedSrc={logoUrl}
+                      onSelect={(src) => {
+                        setLogoUrl(src);
+                        toast.success("Logo sélectionné depuis la médiathèque");
+                      }}
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      PNG, WebP ou SVG avec fond transparent recommandés (hauteur conseillée :
+                      40-60px).
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Thème & Couleur primaire */}
-              <div className="border-t border-border/80 pt-4 space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">Mode d'affichage initial</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { id: "dark", label: "Sombre", icon: Moon },
-                        { id: "light", label: "Clair", icon: Sun },
-                        { id: "system", label: "Système", icon: Monitor },
-                      ].map((th) => {
-                        const Icon = th.icon;
-                        const isSel = defaultTheme === th.id;
-                        return (
-                          <button
-                            key={th.id}
-                            type="button"
-                            onClick={() => setDefaultTheme(th.id as "dark" | "light" | "system")}
-                            className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg border text-xs font-medium transition-all ${
-                              isSel
-                                ? "border-primary bg-primary/10 text-primary font-bold shadow-sm"
-                                : "border-border hover:border-primary/50 text-muted-foreground"
-                            }`}
-                          >
-                            <Icon className="size-4" />
-                            {th.label}
-                          </button>
-                        );
-                      })}
-                    </div>
+              {/* Favicon avec Téléversement Direct */}
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold flex items-center gap-2">
+                    <ImageIcon className="size-4 text-primary" />
+                    Favicon de l'onglet navigateur
+                  </Label>
+                  {faviconUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setFaviconUrl("")}
+                      className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                    >
+                      Effacer
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="size-12 rounded-lg border border-dashed border-border bg-muted/40 p-1 flex items-center justify-center shrink-0 shadow-xs">
+                    <img
+                      src={
+                        faviconUrl && faviconUrl.trim() !== ""
+                          ? resoudreUrlMedia(faviconUrl)
+                          : "/favicon.ico"
+                      }
+                      alt="Favicon"
+                      className="size-7 object-contain"
+                    />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">
-                      Couleur d'accentuation (Branding)
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={primaryColor}
-                        onChange={(e) => {
-                          setPrimaryColor(e.target.value);
-                          appliquerBrandingDynamique({ primaryColor: e.target.value });
-                        }}
-                        className="size-10 cursor-pointer rounded border border-border bg-transparent p-0.5"
-                      />
+                  <div className="flex-1 w-full space-y-2">
+                    <div className="flex gap-2">
                       <Input
-                        value={primaryColor}
-                        onChange={(e) => {
-                          setPrimaryColor(e.target.value);
-                          if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(e.target.value)) {
-                            appliquerBrandingDynamique({ primaryColor: e.target.value });
-                          }
-                        }}
-                        className="h-10 font-mono text-sm uppercase"
+                        value={faviconUrl}
+                        onChange={(e) => setFaviconUrl(e.target.value)}
+                        placeholder="URL de l'icône favicon (.ico, .png, .svg)"
+                        className="h-9 text-xs"
                       />
+                      <input
+                        type="file"
+                        ref={faviconInputRef}
+                        accept="image/*,.ico"
+                        className="hidden"
+                        onChange={handleFaviconUpload}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingFavicon}
+                        onClick={() => faviconInputRef.current?.click()}
+                        className="h-9 gap-1.5 text-xs shrink-0"
+                      >
+                        <Upload className="size-3.5" />
+                        <span>{uploadingFavicon ? "Envoi…" : "Téléverser"}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={uploadingFavicon}
+                        onClick={() => setFaviconMediaOpen(true)}
+                        className="h-9 gap-1.5 text-xs shrink-0"
+                      >
+                        <ImageIcon className="size-3.5" />
+                        <span>Médiathèque</span>
+                      </Button>
                     </div>
-                    <div className="flex gap-1.5 flex-wrap pt-1">
-                      {PRESET_COLORS.map((c) => (
-                        <button
-                          key={c.hex}
-                          type="button"
-                          onClick={() => {
-                            setPrimaryColor(c.hex);
-                            appliquerBrandingDynamique({ primaryColor: c.hex });
-                          }}
-                          className="size-6 rounded-full border border-border/80 transition-transform hover:scale-110"
-                          style={{ backgroundColor: c.hex }}
-                          title={c.label}
-                        />
-                      ))}
-                    </div>
+
+                    <MediaPickerDialog
+                      open={faviconMediaOpen}
+                      onOpenChange={setFaviconMediaOpen}
+                      selectedSrc={faviconUrl}
+                      onSelect={(src) => {
+                        setFaviconUrl(src);
+                        appliquerBrandingDynamique({ faviconUrl: src });
+                        toast.success("Favicon sélectionné depuis la médiathèque");
+                      }}
+                    />
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ÉTAPE 2 : COORDONNÉES & CONTACT */}
+          {/* ÉTAPE 2 : COORDONNÉES & COMMERCE */}
           {step === 2 && (
             <div className="space-y-4 animate-fade-in-up">
               <div className="grid sm:grid-cols-2 gap-4">
@@ -523,25 +663,28 @@ export function SetupWizard({
               <div className="grid sm:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-2">
                   <Label htmlFor="wiz-wa" className="text-sm font-semibold">
-                    Numéro WhatsApp client (sans espace)
+                    Numéro WhatsApp client (sans espace ni +)
                   </Label>
                   <Input
                     id="wiz-wa"
                     value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
+                    onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, ""))}
                     placeholder="213555000000"
                     className="h-10"
                   />
+                  <p className="text-[11px] text-muted-foreground">
+                    Permet aux clients de commander et dialoguer directement en un clic.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="wiz-cur" className="text-sm font-semibold">
-                    Devise monétaire affichée
+                    Devise monétaire de la boutique
                   </Label>
                   <Input
                     id="wiz-cur"
                     value={currencySymbol}
                     onChange={(e) => setCurrencySymbol(e.target.value)}
-                    placeholder="DA, €, $, DZD..."
+                    placeholder="DA, €, $, DT, MAD..."
                     className="h-10 font-bold"
                   />
                 </div>
@@ -549,7 +692,7 @@ export function SetupWizard({
 
               <div className="space-y-2 pt-2">
                 <Label htmlFor="wiz-addr" className="text-sm font-semibold">
-                  Adresse de la boutique ou siège
+                  Adresse de la boutique ou showroom
                 </Label>
                 <Input
                   id="wiz-addr"
@@ -562,8 +705,216 @@ export function SetupWizard({
             </div>
           )}
 
-          {/* ÉTAPE 3 : PROFIL MÉTIER & MODULES */}
+          {/* ÉTAPE 3 : THÈME 360° & TYPOGRAPHIE */}
           {step === 3 && (
+            <div className="space-y-5 animate-fade-in-up">
+              {/* Thème clair/sombre */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Mode d'affichage initial</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "dark", label: "Sombre", icon: Moon },
+                    { id: "light", label: "Clair", icon: Sun },
+                    { id: "system", label: "Système", icon: Monitor },
+                  ].map((th) => {
+                    const Icon = th.icon;
+                    const isSel = defaultTheme === th.id;
+                    return (
+                      <button
+                        key={th.id}
+                        type="button"
+                        onClick={() => {
+                          const t = th.id as "dark" | "light" | "system";
+                          setDefaultTheme(t);
+                          appliquerBrandingDynamique({
+                            defaultTheme: t,
+                            primaryColor,
+                            secondaryColor,
+                            accentColor,
+                            borderRadius,
+                            fontFamily,
+                          });
+                        }}
+                        className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg border text-xs font-medium transition-all ${
+                          isSel
+                            ? "border-primary bg-primary/10 text-primary font-bold shadow-sm"
+                            : "border-border hover:border-primary/50 text-muted-foreground"
+                        }`}
+                      >
+                        <Icon className="size-4" />
+                        {th.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Nuancier de Couleurs */}
+              <div className="grid sm:grid-cols-2 gap-4 pt-2">
+                {/* Couleur Primaire */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Couleur primaire dominante</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={primaryColor}
+                      onChange={(e) => {
+                        setPrimaryColor(e.target.value);
+                        appliquerBrandingDynamique({
+                          primaryColor: e.target.value,
+                          secondaryColor,
+                          accentColor,
+                          borderRadius,
+                          fontFamily,
+                        });
+                      }}
+                      className="size-10 cursor-pointer rounded border border-border bg-transparent p-0.5 shrink-0"
+                    />
+                    <Input
+                      value={primaryColor}
+                      onChange={(e) => {
+                        setPrimaryColor(e.target.value);
+                        if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(e.target.value)) {
+                          appliquerBrandingDynamique({
+                            primaryColor: e.target.value,
+                            secondaryColor,
+                            accentColor,
+                            borderRadius,
+                            fontFamily,
+                          });
+                        }
+                      }}
+                      className="h-10 font-mono text-xs uppercase"
+                    />
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap pt-1">
+                    {PRESET_COLORS.map((c) => (
+                      <button
+                        key={c.hex}
+                        type="button"
+                        onClick={() => {
+                          setPrimaryColor(c.hex);
+                          appliquerBrandingDynamique({
+                            primaryColor: c.hex,
+                            secondaryColor,
+                            accentColor,
+                            borderRadius,
+                            fontFamily,
+                          });
+                        }}
+                        className="size-6 rounded-full border border-border/80 transition-transform hover:scale-110"
+                        style={{ backgroundColor: c.hex }}
+                        title={c.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Couleur Secondaire */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Couleur secondaire (Badges)</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={secondaryColor}
+                      onChange={(e) => {
+                        setSecondaryColor(e.target.value);
+                        appliquerBrandingDynamique({
+                          primaryColor,
+                          secondaryColor: e.target.value,
+                          accentColor,
+                          borderRadius,
+                          fontFamily,
+                        });
+                      }}
+                      className="size-10 cursor-pointer rounded border border-border bg-transparent p-0.5 shrink-0"
+                    />
+                    <Input
+                      value={secondaryColor}
+                      onChange={(e) => {
+                        setSecondaryColor(e.target.value);
+                        if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(e.target.value)) {
+                          appliquerBrandingDynamique({
+                            primaryColor,
+                            secondaryColor: e.target.value,
+                            accentColor,
+                            borderRadius,
+                            fontFamily,
+                          });
+                        }
+                      }}
+                      className="h-10 font-mono text-xs uppercase"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Typographie & Bordures */}
+              <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t border-border/80">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold flex items-center gap-2">
+                    <Type className="size-4 text-primary" />
+                    Police de caractères
+                  </Label>
+                  <Select
+                    value={fontFamily}
+                    onValueChange={(val: FontFamilyOption) => {
+                      setFontFamily(val);
+                      appliquerBrandingDynamique({
+                        primaryColor,
+                        secondaryColor,
+                        accentColor,
+                        borderRadius,
+                        fontFamily: val,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="system">Système universel (Sans-serif)</SelectItem>
+                      <SelectItem value="inter">Inter (Moderne & lisible)</SelectItem>
+                      <SelectItem value="outfit">Outfit (Géométrique & Tech)</SelectItem>
+                      <SelectItem value="jakarta">Plus Jakarta Sans (Épuré)</SelectItem>
+                      <SelectItem value="poppins">Poppins (Dynamique)</SelectItem>
+                      <SelectItem value="cairo">Cairo (Bilingue parfait)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Arrondi des bordures (Rayon UI)</Label>
+                  <Select
+                    value={borderRadius}
+                    onValueChange={(val: BorderRadiusOption) => {
+                      setBorderRadius(val);
+                      appliquerBrandingDynamique({
+                        primaryColor,
+                        secondaryColor,
+                        accentColor,
+                        borderRadius: val,
+                        fontFamily,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sharp">Net (0px — style brutaliste)</SelectItem>
+                      <SelectItem value="modern">Moderne (8px — équilibré)</SelectItem>
+                      <SelectItem value="soft">Doux (14px — convivial)</SelectItem>
+                      <SelectItem value="pill">Pilule (20px — arrondi)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ÉTAPE 4 : PROFIL MÉTIER & SECTEURS */}
+          {step === 4 && (
             <div className="space-y-5 animate-fade-in-up">
               <div>
                 <h3 className="text-sm font-semibold mb-1">
@@ -637,13 +988,13 @@ export function SetupWizard({
             </div>
           )}
 
-          {/* ÉTAPE 4 : CATALOGUE DÉMO & VALIDATION */}
-          {step === 4 && (
+          {/* ÉTAPE 5 : FINALISATION & DONNÉES DÉMO */}
+          {step === 5 && (
             <div className="space-y-5 animate-fade-in-up">
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
                 <div className="flex items-center gap-2 text-primary font-bold">
                   <CheckCircle2 className="size-5" />
-                  <span>Tout est presque prêt !</span>
+                  <span>Prêt pour le lancement officiel !</span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Votre enseigne <strong>"{storeName || "Ma Boutique"}"</strong> est prête à être
@@ -652,8 +1003,8 @@ export function SetupWizard({
                     ? "Sombre"
                     : defaultTheme === "light"
                       ? "Clair"
-                      : "Automatique"}{" "}
-                  et la devise {currencySymbol}.
+                      : "Automatique"}
+                  , la devise {currencySymbol}, la police {fontFamily} et l'arrondi {borderRadius}.
                 </p>
               </div>
 
@@ -674,7 +1025,7 @@ export function SetupWizard({
                     />
                     <div>
                       <div className="text-sm font-semibold">
-                        Conserver les 12 articles démo existants
+                        Conserver les articles démo existants
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
                         Idéal pour tester les fonctionnalités, le panier et la recherche avant de
@@ -696,7 +1047,7 @@ export function SetupWizard({
                         Vider le catalogue démo (Démarrer à zéro)
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        Supprime les 12 ordinateurs/téléphones démo pour démarrer sur une boutique
+                        Supprime les ordinateurs/téléphones démo pour démarrer sur une boutique
                         propre et vierge.
                       </div>
                     </div>
@@ -734,7 +1085,7 @@ export function SetupWizard({
           )}
 
           <div className="flex items-center gap-2">
-            {step < 4 ? (
+            {step < 5 ? (
               <Button
                 type="button"
                 size="sm"

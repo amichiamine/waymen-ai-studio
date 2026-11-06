@@ -41,22 +41,24 @@ export default function Index() {
         <link rel="canonical" href={window.location.origin} />
         <meta property="og:url" content={window.location.origin} />
       </Helmet>
-      <Hero />
-      <FlashSale />
-      <CategoryCards max={4} />
-      {hasProductsWithUse && (
+      {siteContent.hero?.enabled !== false && <Hero />}
+      {siteContent.flashSale?.enabled !== false && <FlashSale />}
+      {siteContent.categories?.enabled !== false && <CategoryCards max={4} />}
+      {siteContent.useChips?.enabled !== false && hasProductsWithUse && (
         <section className="container-page pb-4">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">{L(siteContent.useChips.title)}</h2>
           <UseChips />
         </section>
       )}
-      <BestSellers />
-      <FeaturedTabs />
-      <BrandsMarquee />
-      <WhyUs />
-      {siteSettings.builderEnabled !== false && <BuilderTeaser />}
-      <Reviews />
-      <ContactCTA />
+      {siteContent.bestSellers?.enabled !== false && <BestSellers />}
+      {siteContent.featuredTabs?.enabled !== false && <FeaturedTabs />}
+      {siteContent.brandsMarquee?.enabled !== false && <BrandsMarquee />}
+      {siteContent.whyUs?.enabled !== false && <WhyUs />}
+      {siteContent.builderTeaser?.enabled !== false && siteSettings.builderEnabled !== false && (
+        <BuilderTeaser />
+      )}
+      {siteContent.reviews?.enabled !== false && <Reviews />}
+      {siteContent.contactCta?.enabled !== false && <ContactCTA />}
     </>
   );
 }

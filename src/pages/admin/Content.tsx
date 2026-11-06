@@ -531,11 +531,44 @@ function SectionEditor<K extends keyof SiteContent>({
   }
 
   const readOnly = !can("update");
+  const isToggleable =
+    sectionKey === "hero" ||
+    sectionKey === "flashSale" ||
+    sectionKey === "categories" ||
+    sectionKey === "useChips" ||
+    sectionKey === "bestSellers" ||
+    sectionKey === "featuredTabs" ||
+    sectionKey === "brandsMarquee" ||
+    sectionKey === "whyUs" ||
+    sectionKey === "builderTeaser" ||
+    sectionKey === "reviews" ||
+    sectionKey === "contactCta";
+  const isEnabled = (draft as unknown as { enabled?: boolean })?.enabled !== false;
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="text-base">{label}</CardTitle>
+        <div className="flex items-center gap-3 flex-wrap">
+          <CardTitle className="text-base">{label}</CardTitle>
+          {isToggleable && (
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full border border-border bg-muted/40 text-xs">
+              <span
+                className={`size-2 rounded-full ${isEnabled ? "bg-emerald-500" : "bg-muted-foreground"}`}
+              />
+              <span className="text-[11px] font-medium text-muted-foreground">
+                {isEnabled ? "Visible sur l'accueil" : "Masquée de l'accueil"}
+              </span>
+              <Switch
+                checked={isEnabled}
+                onCheckedChange={(val) =>
+                  setDraft((d) => ({ ...(d as object), enabled: val }) as SiteContent[K])
+                }
+                disabled={readOnly || saving}
+                className="scale-75 origin-center"
+              />
+            </div>
+          )}
+        </div>
         <div className="flex gap-2">
           {/* Niveau 1 + Niveau 3 — réinitialiser = update */}
           <span title={denyReason("update")} className="inline-flex">
@@ -1315,7 +1348,24 @@ function FeaturedTabsForm({
       ? categoryList.map((c) => ({ slug: c.slug, label: c.label }))
       : [];
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <div className="p-3.5 rounded-xl border border-border bg-muted/30 text-xs text-muted-foreground space-y-1.5">
+        <p className="font-semibold text-foreground flex items-center gap-2">
+          <span>💡 À quoi correspond cette section sur la page d'accueil ?</span>
+        </p>
+        <p>
+          Il s'agit du bloc à onglets sur l'accueil qui met en valeur vos sélections de produits
+          phares répartis par rayon (ex: Ordinateurs portables, Accessoires, Nouveautés).
+        </p>
+        {availableCats.length === 0 && (
+          <p className="text-amber-500 font-medium pt-1 border-t border-border/50">
+            ⚠️ Votre base de données ne contient aucune catégorie pour l'instant. Créez d'abord vos
+            catégories dans <strong>Catalogue &gt; Catégories</strong> afin de pouvoir les
+            sélectionner ici.
+          </p>
+        )}
+      </div>
+
       <div className="grid gap-3 md:grid-cols-2">
         <LInput
           label={t("admin.contenu.contenu.champ_titre")}

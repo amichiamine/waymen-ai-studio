@@ -39,6 +39,8 @@ import {
   CheckCircle2,
   Clock,
   MessageCircle,
+  Type,
+  Square,
 } from "lucide-react";
 import defaultLogoSrc from "@/assets/ka-tech-logo.webp";
 import { resoudreUrlMedia } from "@/components/media-url";
@@ -56,7 +58,13 @@ import {
 } from "@/data-provider";
 import { isHttpMode } from "@/api";
 import { reinitialiserServeur } from "@/data-provider/maintenance";
-import { resetData, type SiteSettings } from "@/lib/admin-store";
+import {
+  resetData,
+  type SiteSettings,
+  type BorderRadiusOption,
+  type FontFamilyOption,
+  type ButtonStyleOption,
+} from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 import { formatPriceRaw } from "@/lib/format-price";
 import { useI18n } from "@/lib/i18n";
@@ -481,6 +489,7 @@ export default function AdminSettings() {
             {/* 2. ONGLET IDENTITÉ VISUELLE & THÈME */}
             <TabsContent value="appearance" className="space-y-6">
               <div className="grid gap-6 lg:grid-cols-2">
+                {/* Palette de Couleurs Complète */}
                 <Card>
                   <CardHeader className="flex flex-row items-center gap-2">
                     <Palette className="size-5 text-primary" />
@@ -489,7 +498,7 @@ export default function AdminSettings() {
                         {t("admin.reglages.parametres.carte_theme_titre")}
                       </CardTitle>
                       <CardDescription>
-                        Thème clair/sombre, nuances de couleurs et favicon.
+                        Thème clair/sombre, nuances chromatiques complètes de la boutique.
                       </CardDescription>
                     </div>
                   </CardHeader>
@@ -580,106 +589,389 @@ export default function AdminSettings() {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t("admin.reglages.parametres.couleur_primaire_aide")}
+                        Couleur dominante des boutons d'action, sélections et liens actifs.
                       </p>
                     </div>
 
-                    {/* Favicon de la boutique */}
+                    {/* Couleur secondaire */}
                     <div className="space-y-2 pt-2 border-t border-border">
                       <div className="flex items-center justify-between">
-                        <Label>{t("admin.reglages.parametres.favicon_titre")}</Label>
-                        <span className="text-[11px] text-muted-foreground font-medium">
-                          {form.faviconUrl
-                            ? t("admin.reglages.parametres.favicon_personnalise")
-                            : t("admin.reglages.parametres.favicon_officiel")}
-                        </span>
+                        <Label>Couleur secondaire</Label>
+                        {form.secondaryColor && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={disabledSettings}
+                            onClick={() => set("secondaryColor", "")}
+                            className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                          >
+                            Réinitialiser
+                          </Button>
+                        )}
                       </div>
-                      <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
-                        <div className="flex items-center justify-center p-2 rounded-md border border-border bg-card shrink-0 size-12 shadow-xs">
-                          <img
-                            src={
-                              form.faviconUrl && form.faviconUrl.trim() !== ""
-                                ? resoudreUrlMedia(form.faviconUrl)
-                                : "/favicon.ico"
-                            }
-                            alt="Aperçu favicon"
-                            className="size-7 object-contain"
-                          />
-                        </div>
-                        <div className="flex-1 w-full space-y-1.5">
-                          <div className="flex gap-2">
-                            <Input
-                              value={form.faviconUrl ?? ""}
-                              onChange={(e) => set("faviconUrl", e.target.value)}
-                              placeholder="URL du favicon (https://... ou téléversez)"
-                              disabled={disabledSettings || uploadingFavicon}
-                              className="text-xs h-9"
-                            />
-                            <input
-                              type="file"
-                              ref={faviconInputRef}
-                              accept="image/*,.ico"
-                              className="hidden"
-                              onChange={handleFaviconUpload}
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              disabled={disabledSettings || uploadingFavicon}
-                              onClick={() => faviconInputRef.current?.click()}
-                              className="h-9 gap-1.5 text-xs shrink-0"
-                            >
-                              <Upload className="size-3.5" />
-                              <span>{uploadingFavicon ? "Envoi…" : "Téléverser"}</span>
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="sm"
-                              disabled={disabledSettings || uploadingFavicon}
-                              onClick={() => setFaviconMediaOpen(true)}
-                              className="h-9 gap-1.5 text-xs shrink-0"
-                            >
-                              <ImageIcon className="size-3.5" />
-                              <span>Médiathèque</span>
-                            </Button>
-                          </div>
-
-                          <MediaPickerDialog
-                            open={faviconMediaOpen}
-                            onOpenChange={setFaviconMediaOpen}
-                            selectedSrc={form.faviconUrl ?? ""}
-                            onSelect={async (src) => {
-                              set("faviconUrl", src);
-                              await updateSettings({ ...form, faviconUrl: src });
-                              toast.success("Favicon mis à jour");
-                            }}
-                          />
-                          {form.faviconUrl && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              disabled={disabledSettings || uploadingFavicon}
-                              onClick={async () => {
-                                set("faviconUrl", "");
-                                await updateSettings({ ...form, faviconUrl: "" });
-                                toast.success(
-                                  t("admin.reglages.parametres.toast_favicon_defaut_retabli"),
-                                );
-                              }}
-                              className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
-                            >
-                              {t("admin.reglages.parametres.favicon_reinitialiser")}
-                            </Button>
-                          )}
-                        </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={form.secondaryColor || "#10b981"}
+                          onChange={(e) => set("secondaryColor", e.target.value)}
+                          disabled={disabledSettings}
+                          className="size-9 rounded-md border border-border cursor-pointer bg-card p-0.5 shrink-0"
+                        />
+                        <Input
+                          value={form.secondaryColor ?? ""}
+                          onChange={(e) => set("secondaryColor", e.target.value)}
+                          placeholder="#10b981 (vert émeraude par défaut)"
+                          disabled={disabledSettings}
+                          className="font-mono text-xs max-w-64"
+                        />
+                        <div
+                          className="size-8 rounded-full border border-border shadow-xs shrink-0"
+                          style={{
+                            backgroundColor: form.secondaryColor || "var(--secondary, #10b981)",
+                          }}
+                          title="Aperçu secondaire"
+                        />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t("admin.reglages.parametres.favicon_aide")}
+                        Utilisée pour les badges de promotion, les indicateurs de succès et statuts
+                        secondaires.
                       </p>
                     </div>
+
+                    {/* Couleur d'accentuation */}
+                    <div className="space-y-2 pt-2 border-t border-border">
+                      <div className="flex items-center justify-between">
+                        <Label>Couleur d'accentuation (Flash & Alertes)</Label>
+                        {form.accentColor && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={disabledSettings}
+                            onClick={() => set("accentColor", "")}
+                            className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                          >
+                            Réinitialiser
+                          </Button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={form.accentColor || "#f59e0b"}
+                          onChange={(e) => set("accentColor", e.target.value)}
+                          disabled={disabledSettings}
+                          className="size-9 rounded-md border border-border cursor-pointer bg-card p-0.5 shrink-0"
+                        />
+                        <Input
+                          value={form.accentColor ?? ""}
+                          onChange={(e) => set("accentColor", e.target.value)}
+                          placeholder="#f59e0b (ambre/orange par défaut)"
+                          disabled={disabledSettings}
+                          className="font-mono text-xs max-w-64"
+                        />
+                        <div
+                          className="size-8 rounded-full border border-border shadow-xs shrink-0"
+                          style={{ backgroundColor: form.accentColor || "var(--accent, #f59e0b)" }}
+                          title="Aperçu accent"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Utilisée pour les ventes flash, compte à rebours et alertes de stock limité.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Typographie, Formes & Aperçu Live */}
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center gap-2">
+                      <Type className="size-5 text-primary" />
+                      <div>
+                        <CardTitle className="text-base font-bold">
+                          Typographie & Géométrie UI
+                        </CardTitle>
+                        <CardDescription>
+                          Harmonisation des polices de caractères, arrondis et styles des boutons.
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-5">
+                      {/* Police de caractères */}
+                      <div className="space-y-1.5">
+                        <Label>Police de caractères globale</Label>
+                        <Select
+                          value={form.fontFamily ?? "system"}
+                          onValueChange={(val: FontFamilyOption) => set("fontFamily", val)}
+                          disabled={disabledSettings}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="system">
+                              Système universel (Sans-serif natif)
+                            </SelectItem>
+                            <SelectItem value="inter">Inter (Clair, moderne & lisible)</SelectItem>
+                            <SelectItem value="outfit">
+                              Outfit (Géométrique & Tech premium)
+                            </SelectItem>
+                            <SelectItem value="jakarta">
+                              Plus Jakarta Sans (Épuré & élégant)
+                            </SelectItem>
+                            <SelectItem value="poppins">
+                              Poppins (Rond, dynamique & chaleureux)
+                            </SelectItem>
+                            <SelectItem value="cairo">
+                              Cairo (Bilingue parfait Arabe & Français)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Police injectée en haute fidélité sur les titres, boutons et paragraphes
+                          du site.
+                        </p>
+                      </div>
+
+                      {/* Rayon d'arrondi des bordures */}
+                      <div className="space-y-1.5 pt-2 border-t border-border">
+                        <Label>Arrondi des bordures (Rayon UI)</Label>
+                        <Select
+                          value={form.borderRadius ?? "modern"}
+                          onValueChange={(val: BorderRadiusOption) => set("borderRadius", val)}
+                          disabled={disabledSettings}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="sharp">
+                              Net / Carré (0px — style console & brutaliste)
+                            </SelectItem>
+                            <SelectItem value="modern">
+                              Moderne (8px — équilibré & professionnel)
+                            </SelectItem>
+                            <SelectItem value="soft">Doux (14px — convivial & fluide)</SelectItem>
+                            <SelectItem value="pill">
+                              Pilule (20px — style arrondi & moderne)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Détermine le galbe de l'ensemble des cartes, boutons et champs de saisie.
+                        </p>
+                      </div>
+
+                      {/* Style des Boutons */}
+                      <div className="space-y-1.5 pt-2 border-t border-border">
+                        <Label>Style d'affichage des boutons</Label>
+                        <Select
+                          value={form.buttonStyle ?? "subtle"}
+                          onValueChange={(val: ButtonStyleOption) => set("buttonStyle", val)}
+                          disabled={disabledSettings}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="flat">Plat épuré (Flat design direct)</SelectItem>
+                            <SelectItem value="subtle">
+                              Subtil avec liseré (Moderne avec bordure contrastée)
+                            </SelectItem>
+                            <SelectItem value="glow">
+                              Tech Glow (Léger halo lumineux d'accentuation)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Mini Studio d'Aperçu en Direct */}
+                      <div className="p-4 rounded-xl border border-border bg-muted/40 space-y-3">
+                        <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                          <span>Aperçu interactif des réglages</span>
+                          <span className="text-[11px] font-mono">
+                            {form.fontFamily || "system"} • {form.borderRadius || "modern"}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            className="px-3 py-1.5 text-xs font-medium text-white shadow-xs transition-transform active:scale-95"
+                            style={{
+                              backgroundColor: form.primaryColor || "#2563eb",
+                              borderRadius:
+                                form.borderRadius === "sharp"
+                                  ? "0px"
+                                  : form.borderRadius === "soft"
+                                    ? "14px"
+                                    : form.borderRadius === "pill"
+                                      ? "9999px"
+                                      : "8px",
+                              fontFamily:
+                                form.fontFamily === "outfit"
+                                  ? "Outfit, sans-serif"
+                                  : form.fontFamily === "jakarta"
+                                    ? "'Plus Jakarta Sans', sans-serif"
+                                    : form.fontFamily === "poppins"
+                                      ? "Poppins, sans-serif"
+                                      : form.fontFamily === "cairo"
+                                        ? "Cairo, sans-serif"
+                                        : form.fontFamily === "inter"
+                                          ? "Inter, sans-serif"
+                                          : "inherit",
+                              boxShadow:
+                                form.buttonStyle === "glow"
+                                  ? `0 0 12px ${form.primaryColor || "#2563eb"}66`
+                                  : undefined,
+                            }}
+                          >
+                            Bouton Primaire
+                          </button>
+                          <button
+                            type="button"
+                            className="px-3 py-1.5 text-xs font-medium text-white shadow-xs transition-transform active:scale-95"
+                            style={{
+                              backgroundColor: form.secondaryColor || "#10b981",
+                              borderRadius:
+                                form.borderRadius === "sharp"
+                                  ? "0px"
+                                  : form.borderRadius === "soft"
+                                    ? "14px"
+                                    : form.borderRadius === "pill"
+                                      ? "9999px"
+                                      : "8px",
+                            }}
+                          >
+                            Secondaire
+                          </button>
+                          <span
+                            className="px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs"
+                            style={{
+                              backgroundColor: form.accentColor || "#f59e0b",
+                              borderRadius:
+                                form.borderRadius === "sharp"
+                                  ? "0px"
+                                  : form.borderRadius === "soft"
+                                    ? "8px"
+                                    : form.borderRadius === "pill"
+                                      ? "9999px"
+                                      : "4px",
+                            }}
+                          >
+                            Badge Flash -20%
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Favicon de la boutique */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base font-bold">
+                      {t("admin.reglages.parametres.favicon_titre")}
+                    </CardTitle>
+                    <CardDescription>
+                      Icône officielle affichée dans l'onglet du navigateur et les favoris.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Icône active</Label>
+                      <span className="text-[11px] text-muted-foreground font-medium">
+                        {form.faviconUrl
+                          ? t("admin.reglages.parametres.favicon_personnalise")
+                          : t("admin.reglages.parametres.favicon_officiel")}
+                      </span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                      <div className="flex items-center justify-center p-2 rounded-md border border-border bg-card shrink-0 size-12 shadow-xs">
+                        <img
+                          src={
+                            form.faviconUrl && form.faviconUrl.trim() !== ""
+                              ? resoudreUrlMedia(form.faviconUrl)
+                              : "/favicon.ico"
+                          }
+                          alt="Aperçu favicon"
+                          className="size-7 object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 w-full space-y-1.5">
+                        <div className="flex gap-2">
+                          <Input
+                            value={form.faviconUrl ?? ""}
+                            onChange={(e) => set("faviconUrl", e.target.value)}
+                            placeholder="URL du favicon (https://... ou téléversez)"
+                            disabled={disabledSettings || uploadingFavicon}
+                            className="text-xs h-9"
+                          />
+                          <input
+                            type="file"
+                            ref={faviconInputRef}
+                            accept="image/*,.ico"
+                            className="hidden"
+                            onChange={handleFaviconUpload}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={disabledSettings || uploadingFavicon}
+                            onClick={() => faviconInputRef.current?.click()}
+                            className="h-9 gap-1.5 text-xs shrink-0"
+                          >
+                            <Upload className="size-3.5" />
+                            <span>{uploadingFavicon ? "Envoi…" : "Téléverser"}</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={disabledSettings || uploadingFavicon}
+                            onClick={() => setFaviconMediaOpen(true)}
+                            className="h-9 gap-1.5 text-xs shrink-0"
+                          >
+                            <ImageIcon className="size-3.5" />
+                            <span>Médiathèque</span>
+                          </Button>
+                        </div>
+
+                        <MediaPickerDialog
+                          open={faviconMediaOpen}
+                          onOpenChange={setFaviconMediaOpen}
+                          selectedSrc={form.faviconUrl ?? ""}
+                          onSelect={async (src) => {
+                            set("faviconUrl", src);
+                            await updateSettings({ ...form, faviconUrl: src });
+                            toast.success("Favicon mis à jour");
+                          }}
+                        />
+                        {form.faviconUrl && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={disabledSettings || uploadingFavicon}
+                            onClick={async () => {
+                              set("faviconUrl", "");
+                              await updateSettings({ ...form, faviconUrl: "" });
+                              toast.success(
+                                t("admin.reglages.parametres.toast_favicon_defaut_retabli"),
+                              );
+                            }}
+                            className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                          >
+                            {t("admin.reglages.parametres.favicon_reinitialiser")}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t("admin.reglages.parametres.favicon_aide")}
+                    </p>
                   </CardContent>
                 </Card>
 

@@ -167,6 +167,10 @@ export type BuilderStep = {
   options: BuilderPart[];
 };
 
+export type BorderRadiusOption = "sharp" | "modern" | "soft" | "pill";
+export type FontFamilyOption = "system" | "inter" | "outfit" | "jakarta" | "poppins" | "cairo";
+export type ButtonStyleOption = "flat" | "subtle" | "glow";
+
 export type SiteSettings = {
   storeName: string;
   contactEmail: string;
@@ -194,6 +198,11 @@ export type SiteSettings = {
   logoUrl?: string;
   defaultTheme?: "dark" | "light" | "system";
   primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  borderRadius?: BorderRadiusOption;
+  fontFamily?: FontFamilyOption;
+  buttonStyle?: ButtonStyleOption;
   faviconUrl?: string;
   builderEnabled?: boolean;
   onboardingCompleted?: boolean;
@@ -1091,6 +1100,11 @@ function seedSiteSettings(): SiteSettings {
     hideRatingWhenNoReviews: true,
     defaultTheme: "dark",
     primaryColor: "",
+    secondaryColor: "",
+    accentColor: "",
+    borderRadius: "soft",
+    fontFamily: "system",
+    buttonStyle: "subtle",
     faviconUrl: "",
     builderEnabled: true,
     onboardingCompleted: true,
@@ -1124,6 +1138,11 @@ function emptySiteSettings(): SiteSettings {
     hideRatingWhenNoReviews: true,
     defaultTheme: "dark",
     primaryColor: "",
+    secondaryColor: "",
+    accentColor: "",
+    borderRadius: "soft",
+    fontFamily: "system",
+    buttonStyle: "subtle",
     faviconUrl: "",
     builderEnabled: true,
     onboardingCompleted: false,

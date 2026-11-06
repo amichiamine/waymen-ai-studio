@@ -152,6 +152,7 @@ export type SiteContent = {
     columns: FooterColumn[];
   };
   hero: {
+    enabled?: boolean;
     badge: LS;
     title1: LS;
     title2: LS;
@@ -162,23 +163,26 @@ export type SiteContent = {
     showImage: boolean;
     imageSrc?: string;
   };
-  categories: { title: LS; subtitle: LS; browseLabel: LS };
-  useChips: { title: LS };
-  bestSellers: { title: LS; subtitle: LS };
+  categories: { enabled?: boolean; title: LS; subtitle: LS; browseLabel: LS };
+  useChips: { enabled?: boolean; title: LS };
+  bestSellers: { enabled?: boolean; title: LS; subtitle: LS };
   featuredTabs: {
+    enabled?: boolean;
     title: LS;
     subtitle: LS;
     tabs: { id: string; categorySlug: Category; label: LS }[];
   };
   flashSale: {
+    enabled?: boolean;
     badge: LS;
     title: LS;
     viewAllLabel: LS;
     viewAllHref: string;
     countdownHours: number;
   };
-  brandsMarquee: { title: LS };
+  brandsMarquee: { enabled?: boolean; title: LS };
   whyUs: {
+    enabled?: boolean;
     kicker: LS;
     title1: LS;
     title2: LS;
@@ -186,6 +190,7 @@ export type SiteContent = {
     items: { id: string; icon: IconName; title: LS; description: LS }[];
   };
   builderTeaser: {
+    enabled?: boolean;
     badge: LS;
     title: LS;
     subtitle: LS;
@@ -193,8 +198,8 @@ export type SiteContent = {
     bannerSrc?: string;
     items: { id: string; icon: IconName; title: LS; subtitle: LS }[];
   };
-  reviews: { title: LS; subtitle: LS };
-  contactCta: { title: LS; subtitle: LS; whatsappLabel: LS };
+  reviews: { enabled?: boolean; title: LS; subtitle: LS };
+  contactCta: { enabled?: boolean; title: LS; subtitle: LS; whatsappLabel: LS };
   floatingWhatsApp: { enabled: boolean; ariaLabel: LS };
   mobileBottomBar: {
     items: {

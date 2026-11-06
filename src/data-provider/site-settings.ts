@@ -63,6 +63,11 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   logoUrl: "",
   defaultTheme: "dark",
   primaryColor: "",
+  secondaryColor: "",
+  accentColor: "",
+  borderRadius: "soft",
+  fontFamily: "system",
+  buttonStyle: "subtle",
   faviconUrl: "",
   builderEnabled: true,
   onboardingCompleted: true,
@@ -86,7 +91,50 @@ export function appliquerBrandingDynamique(settings: Partial<SiteSettings>): voi
     root.style.removeProperty("--primary-glow");
   }
 
-  // 2. Favicon
+  // 2. Couleur secondaire
+  if (settings.secondaryColor && settings.secondaryColor.trim()) {
+    root.style.setProperty("--secondary", settings.secondaryColor);
+  } else if (settings.secondaryColor === "") {
+    root.style.removeProperty("--secondary");
+  }
+
+  // 3. Couleur d'accentuation
+  if (settings.accentColor && settings.accentColor.trim()) {
+    root.style.setProperty("--accent", settings.accentColor);
+  } else if (settings.accentColor === "") {
+    root.style.removeProperty("--accent");
+  }
+
+  // 4. Rayon de courbure géométrique (Border Radius)
+  if (settings.borderRadius) {
+    const radiusMap: Record<string, string> = {
+      sharp: "0px",
+      modern: "0.375rem",
+      soft: "0.75rem",
+      pill: "1.25rem",
+    };
+    const rad = radiusMap[settings.borderRadius] || "0.5rem";
+    root.style.setProperty("--radius", rad);
+  }
+
+  // 5. Typographie et polices
+  if (settings.fontFamily) {
+    const fontMap: Record<string, string> = {
+      inter: "'Inter', system-ui, sans-serif",
+      outfit: "'Outfit', system-ui, sans-serif",
+      jakarta: "'Plus Jakarta Sans', system-ui, sans-serif",
+      poppins: "'Poppins', system-ui, sans-serif",
+      cairo: "'Cairo', system-ui, sans-serif",
+      system: "system-ui, -apple-system, sans-serif",
+    };
+    const font = fontMap[settings.fontFamily];
+    if (font) {
+      root.style.setProperty("--font-sans", font);
+      root.style.setProperty("--font-display", font);
+    }
+  }
+
+  // 6. Favicon
   if (settings.faviconUrl !== undefined) {
     const faviconUrl = settings.faviconUrl.trim();
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');

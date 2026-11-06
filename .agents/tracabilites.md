@@ -1225,3 +1225,46 @@
   - Plan interactif et miroir : 📄 [25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md)
   - Archive application horodatée : 📦 [katech-site-06112026-1808.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1808.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-1808.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1808.zip)
+
+---
+
+## Phase 26 : Universalisation 360°, Moteur de Thème Avancé, Setup Wizard VIP & Granularité Éditoriale
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 26 pour concrétiser les 5 Piliers d'universalisation absolue de la plateforme Marque Blanche :
+  1. Éradication des mocks et hardcodages résiduels.
+  2. Moteur de Thème 360° (Couleurs primaire, secondaire, accent, typographie, arrondis et styles des boutons).
+  3. Granularité éditoriale vue par vue et interrupteurs d'activation section par section.
+  4. Téléversement direct et médiathèque du Logo & Favicon dans le Setup Wizard.
+  5. Setup Wizard VIP enrichi en 5 étapes fluides avec préréglages métier intelligents.
+- **Actions Réalisées :**
+  - **Pilier 1 (Éradication des Mocks & Hardcodages) :**
+    - Modification de [`src/pages/CategoryDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryDetail.tsx) : élimination de la restriction `BUILTIN_CATEGORIES` ; toute catégorie créée dynamiquement en base de données ou fournie via l'URL est reconnue et rendue sans blocage.
+    - Vérification et consolidation de [`src/pages/Search.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Search.tsx) et [`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx) : consommation 100% dynamique des ressources sans mocks statiques.
+  - **Pilier 2 (Moteur de Thème 360° & Injections Dynamiques) :**
+    - Modification de [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx) : ajout des types `BorderRadiusOption`, `FontFamilyOption`, `ButtonStyleOption` et enrichissement de l'interface `SiteSettings` avec `secondaryColor`, `accentColor`, `borderRadius`, `fontFamily`, `buttonStyle`.
+    - Modification de [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/ka-tech/src/data-provider/site-settings.ts) : mise à niveau de `appliquerBrandingDynamique()` pour injecter instantanément `--primary`, `--secondary`, `--accent`, `--radius`, `--font-sans` et `--font-display` dans le `:root` du DOM.
+    - Modification de [`index.html`](file:///c:/xampp/htdocs/ka-tech/index.html) : pré-connexion Google Fonts (Inter, Outfit, Plus Jakarta Sans, Poppins, Cairo) et enrichissement du script inline anti-FOUC (0ms) pour garantir le rendu stylé sans saut visuel au rechargement.
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : refonte complète de l'onglet « Identité & Thème » avec sélecteurs de couleur secondaire, accent, police de caractères, rayon d'arrondi des bordures, styles de boutons, et Studio d'Aperçu Interactif en direct.
+  - **Pilier 3 (Granularité Éditoriale & Interrupteurs Section par Section) :**
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) : ajout de `enabled?: boolean` sur chacune des 11 sections de la page d'accueil (`hero`, `flashSale`, `categories`, `useChips`, `bestSellers`, `featuredTabs`, `brandsMarquee`, `whyUs`, `builderTeaser`, `reviews`, `contactCta`).
+    - Modification de [`src/pages/Index.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Index.tsx) : conditionnement strict de l'affichage de chaque section (`siteContent.<section>?.enabled !== false`).
+    - Modification de [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : intégration automatique d'un badge switch « Visible / Masquée » dans l'en-tête de chaque `SectionEditor`, et ajout d'un encart explicatif didactique sur `FeaturedTabsForm` pour guider le commerçant.
+  - **Pilier 4 & 5 (Setup Wizard VIP Enrichi en 5 Étapes & Upload Direct Logo/Favicon) :**
+    - Refonte intégrale de [`src/components/admin/SetupWizard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/SetupWizard.tsx) :
+      - _Étape 1 (Identité & Médias de Marque) :_ Enseigne, slogan, logo et favicon avec bouton de téléversement direct (`input type="file"`), sélecteur de médiathèque (`<MediaPickerDialog>`), saisie d'URL et aperçu en haute fidélité.
+      - _Étape 2 (Coordonnées & Commerce) :_ Email officiel, téléphone, WhatsApp client direct (avec assainissement automatique), adresse et devise monétaire personnalisable.
+      - _Étape 3 (Thème 360° & Typographie) :_ Mode clair/sombre/système, nuancier couleur primaire, couleur secondaire, police de caractères (Inter, Outfit, Jakarta, Poppins, Cairo, Système) et galbe des bordures (Sharp, Modern, Soft, Pill) appliqués en temps réel dans l'interface pendant l'assistant.
+      - _Étape 4 (Profil Métier & Modules) :_ 5 grands secteurs (Tech, Général, Mode, Beauté, Services) avec adaptation des slogans et activation/désactivation intelligente du configurateur PC.
+      - _Étape 5 (Finalisation & Données Démo) :_ Synthèse récapitulative, choix clair de conserver ou vider le catalogue démo à zéro, et lancement officiel en un clic.
+- **Validation CI & Tests :**
+  - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte.
+  - `bunx tsc --noEmit` : 0 erreur TypeScript.
+  - `bun run lint` : 0 erreur ESLint.
+  - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-1842.zip` et `katech-data-06112026-1842.zip`).
+  - Règle de conservation cumulative respectée : l'ensemble des archives historiques (`1401`, `1444`, `1518`, `1808`, `1842`) est préservé.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [26_plan_universalisation_360_theme_wizard_vip_et_granularite_editoriale.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/26_plan_universalisation_360_theme_wizard_vip_et_granularite_editoriale.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-1842.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1842.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-1842.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1842.zip)
+
