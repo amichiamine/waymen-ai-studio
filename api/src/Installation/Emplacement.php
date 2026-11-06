@@ -92,7 +92,49 @@ final class Emplacement
         public readonly ?string $racineWeb,
         public readonly string $sousDossier,
         public readonly string $explication,
+        public readonly string $nomDossier = self::NOM_DOSSIER,
     ) {
+    }
+
+    /**
+     * Valide et assainit le nom d'un dossier de données personnalisé.
+     * Renvoie un message d'erreur si invalide, ou null si conforme.
+     */
+    public static function validerNomDossier(?string $nom): ?string
+    {
+        if ($nom === null || trim($nom) === '') {
+            return 'Le nom du dossier de données ne peut pas être vide.';
+        }
+        $nom = trim($nom);
+        if (str_contains($nom, '..') || str_contains($nom, '/') || str_contains($nom, '\\')) {
+            return 'Le nom du dossier ne peut pas contenir de séparateur de chemin (« / », « \\ » ou « .. »).';
+        }
+        if (!preg_match('/^[a-zA-Z0-9_\-\.]+$/', $nom)) {
+            return 'Le nom du dossier ne peut contenir que des lettres, chiffres, tirets, points et underscores (aucun espace ni caractère spécial).';
+        }
+        if (in_array(strtolower($nom), self::NOMS_RACINE_WEB, true) || in_array(strtolower($nom), ['api', 'dist', 'src', 'node_modules', 'vendor'], true)) {
+            return 'Ce nom de dossier (« ' . $nom . ' ») est réservé et ne peut pas être utilisé comme dossier de données.';
+        }
+        return null;
+    }
+
+    /**
+     * Valide et assainit le nom du fichier de base SQLite personnalisé.
+     * Renvoie un message d'erreur si invalide, ou null si conforme.
+     */
+    public static function validerNomFichierSqlite(?string $nom): ?string
+    {
+        if ($nom === null || trim($nom) === '') {
+            return 'Le nom du fichier de base de données ne peut pas être vide.';
+        }
+        $nom = trim($nom);
+        if (str_contains($nom, '/') || str_contains($nom, '\\') || str_contains($nom, '..')) {
+            return 'Le nom du fichier ne peut pas contenir de séparateur de chemin (« / », « \\ » ou « .. »).';
+        }
+        if (!preg_match('/^[a-zA-Z0-9_\-\.]+\.sqlite$/i', $nom)) {
+            return 'Le fichier de base de données doit se terminer par l\'extension « .sqlite » (ex: boutique.sqlite).';
+        }
+        return null;
     }
 
     /**
@@ -100,10 +142,12 @@ final class Emplacement
      * pouvoir annoncer le chemin avant que l'utilisateur ne valide quoi que ce
      * soit. `preparer()` fait ensuite la création réelle.
      *
-     * @param string $racineApi  Chemin absolu du dossier `api/`.
+     * @param string $racineApi   Chemin absolu du dossier `api/`.
+     * @param string $nomDossier  Nom personnalisé du dossier de données (défaut : 'katech-data').
      */
-    public static function deduire(string $racineApi, ?string $documentRoot): self
+    public static function deduire(string $racineApi, ?string $documentRoot, string $nomDossier = self::NOM_DOSSIER): self
     {
+        $nomDossier = trim($nomDossier) !== '' ? trim($nomDossier) : self::NOM_DOSSIER;
         $racineApi = self::normaliser($racineApi);
         $racineWeb = self::normaliserRacineWeb($documentRoot);
 
@@ -115,12 +159,13 @@ final class Emplacement
             // Pas de racine web connue (ligne de commande, ou SAPI exotique).
             // Comportement historique du projet, juste hors navigateur.
             return new self(
-                \dirname($racineApi, 2) . '/' . self::NOM_DOSSIER,
+                \dirname($racineApi, 2) . '/' . $nomDossier,
                 true,
                 null,
                 '',
                 'Racine web inconnue (exécution hors navigateur) : emplacement déduit de la '
                 . 'position du dossier api/, comme le fait api/tools/sauvegarder.php.',
+                $nomDossier,
             );
         }
 
@@ -132,18 +177,19 @@ final class Emplacement
         }
 
         $parent = self::remonterHorsRacineWeb(\dirname($racineWeb));
-        $cible = $parent . '/' . self::NOM_DOSSIER;
+        $cible = $parent . '/' . $nomDossier;
 
         // Garde-fou 2 : le résultat ne doit en aucun cas retomber sous la racine
         // web, quelles que soient les fantaisies de DOCUMENT_ROOT.
         if ($parent === '' || $parent === '/' || self::estSous($cible, $racineWeb)) {
             return new self(
-                $dossierSite . '/' . self::NOM_DOSSIER,
+                $dossierSite . '/' . $nomDossier,
                 false,
                 $racineWeb,
                 $sousDossier,
                 'Aucun dossier parent utilisable n\'a pu être déduit de la racine web « '
                 . $racineWeb . ' ».',
+                $nomDossier,
             );
         }
 
@@ -158,6 +204,7 @@ final class Emplacement
                 ? ' Le site est déployé dans le sous-dossier « ' . $sousDossier
                     . ' » ; c\'est bien la racine web qui sert d\'ancre, pas ce sous-dossier.'
                 : ''),
+            $nomDossier,
         );
     }
 
@@ -185,7 +232,7 @@ final class Emplacement
             ];
         }
 
-        $repli = \dirname(self::normaliser($racineApi)) . '/' . self::NOM_DOSSIER;
+        $repli = \dirname(self::normaliser($racineApi)) . '/' . $this->nomDossier;
 
         return [
             'chemin' => $repli,
@@ -238,13 +285,14 @@ final class Emplacement
 
         if ($echec !== null && $this->horsRacineWeb) {
             // Repli DANS la racine web — dégradé, jamais silencieux.
-            $repli = \dirname($racineApi) . '/' . self::NOM_DOSSIER;
+            $repli = \dirname($racineApi) . '/' . $this->nomDossier;
             $emplacement = new self(
                 $repli,
                 false,
                 $this->racineWeb,
                 $this->sousDossier,
                 'Repli dans la racine web : ' . $echec,
+                $this->nomDossier,
             );
             $echecRepli = self::creerEtEprouver($repli);
             if ($echecRepli !== null) {
@@ -280,9 +328,9 @@ final class Emplacement
     /**
      * Nom du fichier SQLite à créer dans ce dossier.
      *
-     * HORS racine web : nom lisible et documenté (`katech.sqlite`), celui que
-     * docs/DEPLOIEMENT.md et api/.env.example annoncent — l'exploitant doit
-     * pouvoir le reconnaître dans son gestionnaire de fichiers.
+     * HORS racine web : nom lisible et documenté (par défaut `katech.sqlite`
+     * ou nom personnalisé validé) — l'exploitant peut le reconnaître dans son
+     * gestionnaire de fichiers.
      *
      * DANS la racine web (repli) : nom NON DEVINABLE. C'est la troisième
      * protection de `scripts/api-dev.mjs`, et la seule qui tienne sur un serveur
@@ -290,11 +338,27 @@ final class Emplacement
      * pas nommer. Ce n'est pas de la cryptographie, c'est ce qui reste quand les
      * deux autres barrières sont absentes.
      */
-    public function nomBaseSqlite(): string
+    public function nomBaseSqlite(?string $nomPersonnalise = null): string
     {
-        return $this->horsRacineWeb
-            ? 'katech.sqlite'
-            : 'katech-' . bin2hex(random_bytes(6)) . '.sqlite';
+        if ($this->horsRacineWeb) {
+            if ($nomPersonnalise !== null && trim($nomPersonnalise) !== '') {
+                $base = trim($nomPersonnalise);
+                if (!str_ends_with(strtolower($base), '.sqlite')) {
+                    $base .= '.sqlite';
+                }
+                return $base;
+            }
+            return 'katech.sqlite';
+        }
+
+        $prefixe = 'katech';
+        if ($nomPersonnalise !== null && trim($nomPersonnalise) !== '') {
+            $nomNettoye = (string) preg_replace('/[^a-zA-Z0-9_\-]/', '', pathinfo($nomPersonnalise, PATHINFO_FILENAME));
+            if ($nomNettoye !== '') {
+                $prefixe = $nomNettoye;
+            }
+        }
+        return $prefixe . '-' . bin2hex(random_bytes(6)) . '.sqlite';
     }
 
     /** Vrai si `$chemin` est le dossier `$racine` ou se trouve dedans. */

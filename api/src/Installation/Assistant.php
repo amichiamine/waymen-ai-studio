@@ -173,12 +173,22 @@ final class Assistant
         }
         $corps .= self::erreursDe($erreurs, 'pilote') . '</fieldset>';
 
-        // ---- Identifiants de la base ---------------------------------------
-        $corps .= '<fieldset><legend>2. Identifiants de la base</legend>'
+        // ---- Configuration SQLite (Dossier & Fichier) -----------------------
+        $corps .= '<fieldset id="bloc_sqlite"><legend>2. Stockage de la base SQLite</legend>'
+            . '<p class="aide">Par défaut, l\'installateur crée un dossier sécurisé situé en dehors de la '
+            . 'partie publique de votre hébergement (au niveau parent de <code>public_html</code>). '
+            . 'Vous pouvez personnaliser le nom de ce dossier et le nom du fichier de base de données.</p>'
+            . self::champ('sqlite_folder', 'Nom du dossier de stockage des données', $v('sqlite_folder', Emplacement::NOM_DOSSIER), 'text', $erreurs,
+                'Dossier créé hors de la racine web (ex: katech-data, boutique-data). Lettres, chiffres, tirets, underscores.')
+            . self::champ('sqlite_file', 'Nom du fichier de base de données SQLite', $v('sqlite_file', 'katech.sqlite'), 'text', $erreurs,
+                'Fichier stocké dans ce dossier (ex: katech.sqlite, boutique.sqlite). Doit obligatoirement se terminer par « .sqlite ».')
+            . '</fieldset>';
+
+        // ---- Identifiants de la base distante --------------------------------
+        $corps .= '<fieldset id="bloc_sql_distant"><legend>2 bis. Identifiants de la base (MySQL / PostgreSQL)</legend>'
             . '<p class="aide">À remplir uniquement si vous avez choisi MySQL ou PostgreSQL. '
-            . 'Ces quatre valeurs vous sont données par votre hébergeur, dans la section '
-            . '« Bases de données » de son panneau. Avec SQLite, laissez tout vide : '
-            . 'l\'installateur crée le fichier lui-même, hors de la partie publique du site.</p>'
+            . 'Ces valeurs vous sont données par votre hébergeur, dans la section '
+            . '« Bases de données » de son panneau.</p>'
             . self::champ('db_host', 'Serveur de la base', $v('db_host', 'localhost'), 'text', $erreurs)
             . self::champ('db_port', 'Port (laisser vide pour le port habituel)', $v('db_port'), 'text', $erreurs)
             . self::champ('db_name', 'Nom de la base', $v('db_name'), 'text', $erreurs)
@@ -241,7 +251,23 @@ final class Assistant
 
         $corps .= '<p><button type="submit" class="bouton">Installer la boutique</button></p>'
             . '<p class="aide">L\'opération prend quelques secondes. Ne rechargez pas la page.</p>'
-            . '</form>';
+            . '</form>'
+            . '<script>'
+            . '(function(){'
+            . '  function basculerChamps(){'
+            . '    var radio = document.querySelector(\'input[name="pilote"]:checked\');'
+            . '    var estSqlite = !radio || radio.value === "sqlite";'
+            . '    var bSqlite = document.getElementById("bloc_sqlite");'
+            . '    var bDistant = document.getElementById("bloc_sql_distant");'
+            . '    if(bSqlite) bSqlite.style.display = estSqlite ? "" : "none";'
+            . '    if(bDistant) bDistant.style.display = estSqlite ? "none" : "";'
+            . '  }'
+            . '  document.querySelectorAll(\'input[name="pilote"]\').forEach(function(r){'
+            . '    r.addEventListener("change", basculerChamps);'
+            . '  });'
+            . '  basculerChamps();'
+            . '})();'
+            . '</script>';
 
         $this->rendre('Installation — étape 2 sur 3', $corps, $erreurs === [] && $echec === null ? 200 : 400);
     }
@@ -290,6 +316,8 @@ final class Assistant
         // Ce qui peut être réaffiché sans risque. Les mots de passe n'y sont pas.
         $saisie = [
             'pilote'           => $lire('pilote'),
+            'sqlite_folder'    => $lire('sqlite_folder') !== '' ? $lire('sqlite_folder') : Emplacement::NOM_DOSSIER,
+            'sqlite_file'      => $lire('sqlite_file') !== '' ? $lire('sqlite_file') : 'katech.sqlite',
             'db_host'          => $lire('db_host'),
             'db_port'          => $lire('db_port'),
             'db_name'          => $lire('db_name'),
@@ -308,6 +336,17 @@ final class Assistant
         if (!in_array($pilote, $pilotes, true)) {
             $erreurs['pilote'] = ['Choisissez une base parmi celles proposées : elles sont les seules '
                 . 'à fonctionner sur cet hébergement.'];
+        }
+
+        if ($pilote === Db::PILOTE_SQLITE) {
+            $errDossier = Emplacement::validerNomDossier($saisie['sqlite_folder']);
+            if ($errDossier !== null) {
+                $erreurs['sqlite_folder'] = [$errDossier];
+            }
+            $errFichier = Emplacement::validerNomFichierSqlite($saisie['sqlite_file']);
+            if ($errFichier !== null) {
+                $erreurs['sqlite_file'] = [$errFichier];
+            }
         }
 
         $motDePasse = (string) ($_POST['owner_password'] ?? '');
@@ -378,9 +417,18 @@ final class Assistant
         bool $importerCatalogue,
     ): never {
         // ---- 1. Le dossier de données, au bon endroit ------------------------
-        $prevu = Emplacement::deduire($this->racineApi, isset($this->serveur['DOCUMENT_ROOT'])
-            ? (string) $this->serveur['DOCUMENT_ROOT']
-            : null);
+        $nomDossier = $pilote === Db::PILOTE_SQLITE
+            ? ($saisie['sqlite_folder'] ?? Emplacement::NOM_DOSSIER)
+            : Emplacement::NOM_DOSSIER;
+        $nomFichier = $pilote === Db::PILOTE_SQLITE
+            ? ($saisie['sqlite_file'] ?? 'katech.sqlite')
+            : 'katech.sqlite';
+
+        $prevu = Emplacement::deduire(
+            $this->racineApi,
+            isset($this->serveur['DOCUMENT_ROOT']) ? (string) $this->serveur['DOCUMENT_ROOT'] : null,
+            $nomDossier,
+        );
         $prepare = $prevu->preparer($this->racineApi);
         /** @var Emplacement $emplacement */
         $emplacement = $prepare['emplacement'];
@@ -397,7 +445,7 @@ final class Assistant
         $valeurs = ['DB_DRIVER' => $pilote];
 
         if ($pilote === Db::PILOTE_SQLITE) {
-            $valeurs['DB_SQLITE_PATH'] = $emplacement->chemin . '/' . $emplacement->nomBaseSqlite();
+            $valeurs['DB_SQLITE_PATH'] = $emplacement->chemin . '/' . $emplacement->nomBaseSqlite($nomFichier);
         } else {
             $valeurs['DB_HOST'] = $saisie['db_host'] !== '' ? $saisie['db_host'] : 'localhost';
             $valeurs['DB_PORT'] = $saisie['db_port'] !== ''

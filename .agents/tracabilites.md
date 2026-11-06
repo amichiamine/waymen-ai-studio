@@ -1382,3 +1382,38 @@
 - **Livrables :**
   - Archive application horodatée : 📦 [katech-site-06112026-2119.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2119.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-2119.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2119.zip)
+
+---
+
+## Phase 29 : Personnalisation du Dossier de Données et du Fichier SQLite dans l'Installateur Web (`install.php`)
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 29 pour :
+  1. Permettre à l'exploitant de personnaliser le nom du dossier de données (par défaut `katech-data`) et le nom du fichier de base de données SQLite (par défaut `katech.sqlite`) lors de la procédure d'installation via l'assistant web [`api/install.php`](file:///c:/xampp/htdocs/ka-tech/api/install.php).
+  2. Sécuriser les saisies par des règles d'assainissement anti-traversal strictes (rejet des slashs, traversals `../`, caractères non autorisés et dossiers web réservés).
+  3. Adapter dynamiquement la génération d'`api/.env` (`DB_SQLITE_PATH` et `BACKUP_DIR`) pour pointer fidèlement vers le dossier et le fichier personnalisés.
+  4. Préserver intacts les contrats en ligne de commande (CLI) et la CI.
+- **Actions Réalisées :**
+  - **Étape 29.A (Évolution de la classe Emplacement) :**
+    - Modification de [`api/src/Installation/Emplacement.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Installation/Emplacement.php) :
+      - Ajout de `validerNomDossier(?string $nom): ?string` avec contrôles anti-traversal et liste de dossiers réservés (`public_html`, `htdocs`, `www`, `api`, etc.).
+      - Ajout de `validerNomFichierSqlite(?string $nom): ?string` garantissant un nom de fichier assaini et l'extension `.sqlite`.
+      - Prise en charge du paramètre optionnel `$nomDossier` dans `deduire($racineApi, $documentRoot, $nomDossier)` et propagation dans l'instance.
+      - Prise en charge du paramètre optionnel `$nomPersonnalise` dans `nomBaseSqlite($nomPersonnalise)` avec normalisation `.sqlite`.
+  - **Étape 29.B (Interface Utilisateur et Contrôleur Assistant) :**
+    - Modification de [`api/src/Installation/Assistant.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Installation/Assistant.php) :
+      - Ajout dans `ecranFormulaire()` (Écran 2) d'un bloc dédié `#bloc_sqlite` contenant deux champs pré-remplis : `sqlite_folder` (`katech-data`) et `sqlite_file` (`katech.sqlite`) avec textes d'aide clairs.
+      - Ajout d'un script vanilla JS pour basculer réactivement entre les réglages SQLite et les réglages de base distante (MySQL/PgSQL).
+      - Dans `traiterFormulaire()`, extraction et validation stricte de `sqlite_folder` et `sqlite_file` lors de la sélection du moteur SQLite.
+      - Dans `installer()`, déduction et préparation du dossier personnalisé et calcul du chemin `DB_SQLITE_PATH` et `BACKUP_DIR`.
+  - **Étape 29.C (Validation Qualité CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue FR/EN/AR.
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-2135.zip` et `katech-data-06112026-2136.zip`).
+    - Conservation cumulative respectée : l'ensemble des archives historiques (`1401`, `1444`, `1518`, `1808`, `1842`, `1905`, `2104`, `2119`, `2135`, `2136`) est préservé intact.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-2135.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2135.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-2136.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2136.zip)
