@@ -23,7 +23,6 @@ const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "..");
 const DATA_SRC = path.join(ROOT, "katech-data");
-const ZIP_LATEST = path.join(ROOT, "katech-data.zip");
 
 function obtenirNomArchiveHorodatee(): string {
   const d = new Date();
@@ -105,7 +104,6 @@ function main() {
   }
 
   const nbFichiers = creerZip(DATA_SRC, zipHorodate);
-  fs.copyFileSync(zipHorodate, ZIP_LATEST);
 
   const taille = fs.statSync(zipHorodate).size;
   const tailleKo = (taille / 1024).toFixed(0);
@@ -115,12 +113,9 @@ function main() {
   log(`  Fichiers dans le zip : ${nbFichiers}`);
   log(`  Taille               : ${tailleKo} Ko (${tailleMo} Mo)`);
   log(`  Archive horodatée    : ${zipHorodate}`);
-  log(`  Alias latest         : ${ZIP_LATEST}`);
   log(``);
   log(`Pour déployer vos données :`);
-  log(
-    `  1. Déposer ${nomHorodate} (ou katech-data.zip) HORS de public_html (ex. à la racine utilisateur).`,
-  );
+  log(`  1. Déposer ${nomHorodate} HORS de public_html (ex. à la racine utilisateur).`);
   log(`  2. Extraire dans un dossier nommé katech-data.`);
   log(`  3. Vérifier que DB_SQLITE_PATH dans api/.env pointe bien vers ce dossier.`);
 }

@@ -12,13 +12,14 @@
 ## 1. Contexte & Problématique
 
 Suite aux réussites des Phases 18 et 19 sur la vitrine principale, deux questions majeures ont émergé lors de l'audit en lecture seule :
+
 1. **Warning Console Récurrent sur `home-reviews` :**
    ```
    log.ts:86 [data-provider] ressource « home-reviews » : réponse acceptée par le réseau mais inexploitable — réponse de type « tableau (0 entrée(s)) » là où le contrat annonce un objet paginé { items, total, page, perPage }.
    ```
-   *Cause :* Asymétrie de contrat entre le contrôleur backend PHP `ControleurContenu::lireHomeReviews` (qui renvoie `{"data":[]}`) et le composant de normalisation frontend `extraireItems` (qui attend `{ items: [...] }`). De plus, `ControleurMaintenance.php` purgeait la section sous forme de chaîne `'[]'`.
+   _Cause :_ Asymétrie de contrat entre le contrôleur backend PHP `ControleurContenu::lireHomeReviews` (qui renvoie `{"data":[]}`) et le composant de normalisation frontend `extraireItems` (qui attend `{ items: [...] }`). De plus, `ControleurMaintenance.php` purgeait la section sous forme de chaîne `'[]'`.
 2. **Contenus résiduels et sections orphelines sur base de données purgée :**
-   *Cause :* `CategoryCards.tsx` n'avait pas de condition de garde `if (cats.length === 0) return null;` et affichait son titre au-dessus d'une grille vide. De plus, le parachute de secours (`FALLBACK_SITE_CONTENT`) injecte légitimement les textes éditoriaux par défaut de la boutique pour éviter l'écran blanc.
+   _Cause :_ `CategoryCards.tsx` n'avait pas de condition de garde `if (cats.length === 0) return null;` et affichait son titre au-dessus d'une grille vide. De plus, le parachute de secours (`FALLBACK_SITE_CONTENT`) injecte légitimement les textes éditoriaux par défaut de la boutique pour éviter l'écran blanc.
 3. **Angles noirs multilingues résiduels :**
    Présence de chaînes codées en dur en français dans l'Espace Mon Compte (`Account.tsx`), le Suivi Public de Commande (`TrackOrder.tsx`), l'inscription (`Auth.tsx`), et les retours d'upload médias dans l'administration (`Settings.tsx`, `SettingsVisualEditors.tsx`).
 4. **Erreur Système & Portée de Variable sur `api/recup.php` (Sous-Phases 20.3 & 20.4) :**
@@ -50,14 +51,23 @@ Suite aux réussites des Phases 18 et 19 sur la vitrine principale, deux questio
 ## 3. Découpage des Étapes
 
 ### Étape 20.A : Résolution Contrat API & Résilience `home-reviews` (Livrée ✅)
+
 ### Étape 20.B : Vitrine Épurée sur Base Vide (Livrée ✅)
+
 ### Étape 20.C : Localisation Intégrale Espace Client (`Account.tsx`) (Livrée ✅)
+
 ### Étape 20.D : Localisation Intégrale Suivi Public (`TrackOrder.tsx`) (Livrée ✅)
+
 ### Étape 20.E : Assainissement Toasts Admin, Auth & Dictionnaire Arabe (Livrée ✅)
+
 ### Sous-Phase 20.1 : Correction Diagnostics Intelephense / PHP Language Server (Livrée ✅)
+
 ### Sous-Phase 20.2 : Outillage Packaging Séparé `katech-data` (Livrée ✅)
+
 ### Sous-Phase 20.3 : Sécurisation Script d'Urgence `recup.php` & Compatibilité `KaTech\Db` (Livrée ✅)
+
 ### Sous-Phase 20.4 : Portée de Variable & Typage Inféré `$admin` dans `recup.php` (Livrée ✅)
+
 1. **Édition de [`api/recup.php`](file:///c:/xampp/htdocs/ka-tech/api/recup.php) :**
    - Déclaration de `$admin = null;` ligne 30 aux côtés de `$erreur` et `$succes`.
    - Utilisation de `<?php elseif (is_array($admin)): ?>` ligne 196.
@@ -68,10 +78,10 @@ Suite aux réussites des Phases 18 et 19 sur la vitrine principale, deux questio
 
 ## 4. Matrice de Recette & Validation
 
-| Test / Scénario | Résultat Attendu |
-| :--- | :--- |
-| **Lint PHP `recup.php`** | `No syntax errors detected`. |
-| **Diagnostics Intelephense** | 0 diagnostic `Possible undefined variable $admin`. |
-| **Exécution `recup.php` en POST** | Met à jour le mot de passe sans lever `Call to undefined method Db::executer()`. |
-| **Génération Package `katech-site.zip`** | Inclut `api/recup.php` avec toutes les sécurisations. |
-| **Vérification CI Globale** | `tsc --noEmit` = 0 erreur, `build` = succès. |
+| Test / Scénario                          | Résultat Attendu                                                                 |
+| :--------------------------------------- | :------------------------------------------------------------------------------- |
+| **Lint PHP `recup.php`**                 | `No syntax errors detected`.                                                     |
+| **Diagnostics Intelephense**             | 0 diagnostic `Possible undefined variable $admin`.                               |
+| **Exécution `recup.php` en POST**        | Met à jour le mot de passe sans lever `Call to undefined method Db::executer()`. |
+| **Génération Package `katech-site.zip`** | Inclut `api/recup.php` avec toutes les sécurisations.                            |
+| **Vérification CI Globale**              | `tsc --noEmit` = 0 erreur, `build` = succès.                                     |

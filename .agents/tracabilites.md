@@ -1003,7 +1003,6 @@
   4. Test d'exécution réel : `bun run paqueter:data` ➔ succès immédiat (archive horodatée et alias créés).
 - **Résultat :** La commande `bun run paqueter:data` est opérationnelle et produit un zip isolé de 36 Ko prêt à être déposé hors racine web.
 
-
 #### Sous-Phase 20.3 : Sécurisation Script d'Urgence recup.php & Tolérance KaTech\Db::executer()
 
 - **Date :** 05 Novembre 2026
@@ -1073,6 +1072,28 @@
   - Réinitialiser la base sur le serveur purge instantanément l'affichage du site, sans persistance fantôme d'un ancien `localStorage`.
 - **Livrables :**
   - Plan interactif et miroir : 📄 [21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md)
-  - Nouvelle archive horodatée application : 📦 [katech-site-06112026-1327.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1327.zip)
-  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
-  - Nouvelle archive données : 📦 [katech-data-06112026-1327.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1327.zip) (alias `katech-data.zip`)
+  - Archive horodatée application : 📦 [katech-site-06112026-1338.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1338.zip)
+  - Archive horodatée données : 📦 [katech-data-06112026-1338.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1338.zip)
+
+#### Sous-Phase 21.1 : Unification Exclusive sur Archives Horodatées Uniques & Éradication des Alias Latest
+
+- **Date :** 06 Novembre 2026
+- **Demande & Arbitrage ArchiSys3.0 :** Suppression formelle de la double génération (`katech-site.zip` et `katech-data.zip`) qui prêtait à confusion. Décision de conserver **exclusivement et sans exception les archives horodatées uniques** (`katech-site-JJMMAAAA-HHMM.zip` et `katech-data-JJMMAAAA-HHMM.zip`).
+- **Actions Réalisées :**
+  1. Modification de [`scripts/paqueter.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter.ts) :
+     - Suppression de la constante `ZIP_LATEST`.
+     - Suppression de l'opération `fs.copyFileSync` vers `katech-site.zip`.
+     - Mise à jour du message terminal pour ne désigner et n'annoncer que l'unique archive horodatée.
+  2. Modification de [`scripts/paqueter-data.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter-data.ts) :
+     - Suppression de la constante `ZIP_LATEST`.
+     - Suppression de l'opération `fs.copyFileSync` vers `katech-data.zip`.
+     - Mise à jour du message terminal pour ne désigner et n'annoncer que l'unique archive horodatée.
+  3. Nettoyage physique du disque :
+     - Suppression de `katech-site.zip` et `katech-data.zip`.
+  4. Consolidation du plan d'implémentation (Artéfact et miroir 📂 [`.agents/Implementations_Plans/21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md)).
+- **Validation CI & Build :**
+  - `bun run build; bun run paqueter:data` : exécuté avec succès.
+  - Vérification répertoire racine : Seules 2 archives existent désormais (`katech-site-06112026-1338.zip` et `katech-data-06112026-1338.zip`).
+  - `bun run lint` : 0 erreur.
+  - `bunx tsc --noEmit` : 0 erreur.
+- **Résultat :** Clarté absolue et zéro ambiguïté pour le déploiement sur serveur distant.

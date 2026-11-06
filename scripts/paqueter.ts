@@ -80,7 +80,6 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 const DIST = path.join(ROOT, "dist");
 const API_SRC = path.join(ROOT, "api");
 const API_DEST = path.join(DIST, "api");
-const ZIP_LATEST = path.join(ROOT, "katech-site.zip");
 
 /**
  * Calcule le nom de l'archive horodatée au format exact :
@@ -323,7 +322,6 @@ function main() {
   }
 
   const nbFichiers = creerZip(DIST, zipHorodate);
-  fs.copyFileSync(zipHorodate, ZIP_LATEST);
   const taille = fs.statSync(zipHorodate).size;
   const tailleKo = (taille / 1024).toFixed(0);
   const tailleMo = (taille / (1024 * 1024)).toFixed(2);
@@ -332,16 +330,13 @@ function main() {
   log(`  Fichiers dans le zip : ${nbFichiers}`);
   log(`  Taille               : ${tailleKo} Ko (${tailleMo} Mo)`);
   log(`  Archive horodatée    : ${zipHorodate}`);
-  log(`  Alias latest         : ${ZIP_LATEST}`);
 
   const prerendu = etatPrerendu();
   log(`  Pages prérendues     : ${prerendu.ecrites}/${prerendu.attendues}`);
 
   log(``);
   log(`Pour déployer :`);
-  log(
-    `  1. Dans hPanel → Gestionnaire de fichiers, déposer ${nomHorodate} (ou katech-site.zip) dans public_html.`,
-  );
+  log(`  1. Dans hPanel → Gestionnaire de fichiers, déposer ${nomHorodate} dans public_html.`);
   log(`  2. Extraire sur place (clic droit → Extraire).`);
   log(`  3. Ouvrir https://votre-domaine/api/install.php et suivre les trois écrans.`);
   log(`  4. Cliquer le bouton « Supprimer ce fichier » à la fin de l'assistant.`);
