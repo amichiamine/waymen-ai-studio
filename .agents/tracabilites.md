@@ -1204,3 +1204,24 @@
   - Plan interactif et miroir : 📄 [24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md)
   - Archive application horodatée : 📦 [katech-site-06112026-1518.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1518.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-1518.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1518.zip)
+
+## Phase 25 : Restauration de la Souveraineté de DB_SQLITE_PATH & Relocalisation Sécurisée dans katech-data/
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 25 pour restaurer la souveraineté absolue de la directive `DB_SQLITE_PATH` définie dans `api/.env`, supprimer le déroutement involontaire causé par le test `!is_file($chemin)` dans `Db.php`, et assurer l'auto-relocalisation transparente et sans perte de données de la base active vers `/home/zzdwczcx/katech-data/katech.sqlite` sur Hostinger.
+- **Actions Réalisées :**
+  - **Étape 25.A & 25.B (Assainissement & Souveraineté de `Db::depuisEnv()`) :**
+    - Modification de [`api/src/Db.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Db.php) :
+      - Suppression définitive du test `|| !is_file($chemin)`. Le mécanisme de repli (recherche dans `katech-data/dev-*.sqlite` ou `api/var/`) est désormais réservé **exclusivement** aux cas où `DB_SQLITE_PATH` n'est pas renseigné (`$chemin === ''`).
+      - Ajout de l'auto-relocalisation transparente : lorsque `$chemin !== ''` pointe vers un fichier cible qui n'existe pas encore (ex: `/home/zzdwczcx/katech-data/katech.sqlite`) alors qu'une base SQLite existante avec des données est présente dans `api/var/katech.sqlite`, le système s'assure que le dossier parent cible est initialisé avec permissions `0775` et copie automatiquement la base existante vers le chemin configuré.
+      - Préservation intégrale : aucune perte de comptes administrateurs, configurations, produits ou commandes lors de la bascule vers le dossier sécurisé hors de `public_html`.
+  - **Étape 25.C (Validation CI & Nouveaux Livrables Horodatés) :**
+    - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-1808.zip` et `katech-data-06112026-1808.zip`).
+    - Conservation cumulative respectée : les archives antérieures (`1401`, `1444`, `1518`, `1808`) sont toutes préservées sur le disque.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-1808.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1808.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-1808.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1808.zip)

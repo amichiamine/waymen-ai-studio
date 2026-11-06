@@ -71,7 +71,7 @@ final class Db
 
         if ($pilote === self::PILOTE_SQLITE) {
             $chemin = (string) Env::get('DB_SQLITE_PATH', '');
-            if ($chemin === '' || !is_file($chemin)) {
+            if ($chemin === '') {
                 $dossierDev = dirname(__DIR__, 2) . '/katech-data';
                 $trouve = null;
                 if (is_dir($dossierDev)) {
@@ -83,6 +83,20 @@ final class Db
                 }
                 $varPath = dirname(__DIR__) . '/var/katech.sqlite';
                 $chemin = $trouve ?? (is_file($varPath) ? $varPath : ($trouve ?? $varPath));
+            } else {
+                // Souveraineté de DB_SQLITE_PATH : si le fichier cible dans katech-data n'existe
+                // pas encore mais qu'une base avec des données réside dans api/var/katech.sqlite
+                // (migration transparente post-installation), on la relocalise vers le chemin souverain.
+                $varPath = dirname(__DIR__) . '/var/katech.sqlite';
+                if (!is_file($chemin) && is_file($varPath) && (int) @filesize($varPath) > 0) {
+                    $dossierCible = dirname($chemin);
+                    if (!is_dir($dossierCible)) {
+                        @mkdir($dossierCible, 0775, true);
+                    }
+                    if (is_dir($dossierCible) && is_writable($dossierCible)) {
+                        @copy($varPath, $chemin);
+                    }
+                }
             }
 
             return new self(self::PILOTE_SQLITE, ['path' => $chemin]);
