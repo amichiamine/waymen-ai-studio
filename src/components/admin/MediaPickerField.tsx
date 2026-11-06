@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 interface MediaPickerFieldProps {
   value?: string;
+  defaultPreviewSrc?: string;
   onChange: (url: string) => void;
   label?: string;
   description?: string;
@@ -30,6 +31,7 @@ interface MediaPickerFieldProps {
 
 export function MediaPickerField({
   value = "",
+  defaultPreviewSrc,
   onChange,
   label,
   description,
@@ -81,6 +83,9 @@ export function MediaPickerField({
     }
   }, [aspectRatio]);
 
+  const activeSrc = value || defaultPreviewSrc || "";
+  const isDefaultVisual = !value && !!defaultPreviewSrc;
+
   return (
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium">{label}</Label>}
@@ -93,8 +98,15 @@ export function MediaPickerField({
             ratioClass,
           )}
         >
-          {value ? (
-            <ImageCatalogue src={value} alt="" className="h-full w-full object-cover" />
+          {activeSrc ? (
+            <>
+              <ImageCatalogue src={activeSrc} alt="" className="h-full w-full object-cover" />
+              {isDefaultVisual && (
+                <div className="absolute bottom-1 inset-x-1 text-center bg-black/60 backdrop-blur-xs text-[10px] text-white/90 py-0.5 rounded px-1 truncate">
+                  Visuel par défaut
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
               <ImageIcon className="size-8 opacity-40 mb-1" />

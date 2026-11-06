@@ -26,16 +26,11 @@ import {
 import defaultLogoSrc from "@/assets/ka-tech-logo.webp";
 import { resoudreUrlMedia } from "@/components/media-url";
 import { MediaPickerDialog } from "@/components/admin/MediaPickerField";
+import { BuilderStepsVisualEditor } from "@/components/admin/BuilderStepsVisualEditor";
 import {
   useSiteSettings,
   useSiteSettingsMutations,
   useMediaAssetMutations,
-  useTickerMessageList,
-  useTickerMessageMutations,
-  useMarqueeBrandList,
-  useMarqueeBrandMutations,
-  useAboutValueList,
-  useAboutValueMutations,
   useBuilderStepList,
   useBuilderStepMutations,
   invalidateAll,
@@ -43,20 +38,9 @@ import {
 } from "@/data-provider";
 import { isHttpMode } from "@/api";
 import { reinitialiserServeur } from "@/data-provider/maintenance";
-import {
-  resetData,
-  type SiteSettings,
-  type TickerMessage,
-  type AboutValue,
-  type BuilderStep,
-} from "@/lib/admin-store";
+import { resetData, type SiteSettings, type BuilderStep } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
 import { formatPriceRaw } from "@/lib/format-price";
-import {
-  MarqueeBrandsVisualEditor,
-  TickerMessagesVisualEditor,
-  AboutValuesVisualEditor,
-} from "@/components/admin/SettingsVisualEditors";
 import { useI18n } from "@/lib/i18n";
 
 // Répartition des permissions — voir docs/PERMISSIONS.md §2 et §3.3 :
@@ -83,15 +67,6 @@ import { useI18n } from "@/lib/i18n";
 export default function AdminSettings() {
   const { data: siteSettings, loading: lSettings, error: eSettings } = useSiteSettings();
   const { update: updateSettings } = useSiteSettingsMutations();
-
-  const { data: tickerMessages } = useTickerMessageList();
-  const { set: setTickers } = useTickerMessageMutations();
-
-  const { data: marqueeBrands } = useMarqueeBrandList();
-  const { set: setMarquee } = useMarqueeBrandMutations();
-
-  const { data: aboutValues } = useAboutValueList();
-  const { set: setAbout } = useAboutValueMutations();
 
   const { data: builderSteps } = useBuilderStepList();
   const { replace: replaceBuilder } = useBuilderStepMutations();
@@ -153,6 +128,7 @@ export default function AdminSettings() {
   const [logoMediaOpen, setLogoMediaOpen] = useState(false);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [faviconMediaOpen, setFaviconMediaOpen] = useState(false);
 
   const COLOR_PRESETS = [
     { label: "Bleu Tech", value: "#2563eb" },
@@ -575,7 +551,29 @@ export default function AdminSettings() {
                           <Upload className="size-3.5" />
                           <span>{uploadingFavicon ? "Envoi…" : "Téléverser"}</span>
                         </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={disabledSettings || uploadingFavicon}
+                          onClick={() => setFaviconMediaOpen(true)}
+                          className="h-9 gap-1.5 text-xs shrink-0"
+                        >
+                          <ImageIcon className="size-3.5" />
+                          <span>Médiathèque</span>
+                        </Button>
                       </div>
+
+                      <MediaPickerDialog
+                        open={faviconMediaOpen}
+                        onOpenChange={setFaviconMediaOpen}
+                        selectedSrc={form.faviconUrl ?? ""}
+                        onSelect={async (src) => {
+                          set("faviconUrl", src);
+                          await updateSettings({ ...form, faviconUrl: src });
+                          toast.success("Favicon mis à jour");
+                        }}
+                      />
                       {form.faviconUrl && (
                         <Button
                           type="button"
@@ -925,83 +923,12 @@ export default function AdminSettings() {
         )}
       </div>
 
-      {/* ── Contrôleurs Visuels Interactifs & Éditeurs JSON ──────────────── */}
-
-      {/* manageCriticalSettings : bandeau défilant d'annonces */}
-      <TickerMessagesVisualEditor
-        title={t("admin.reglages.parametres.json_tickers_titre")}
-        description={t("admin.reglages.parametres.json_tickers_description")}
-        value={tickerMessages}
-        permission="manageCriticalSettings"
-        onSave={async (v) => {
-          await setTickers(v);
-        }}
-        onReset={async () => {
-          if (isHttpMode()) {
-            await reinitialiserServeur("reset", "tickerMessages");
-            invalidateAll();
-          }
-          resetData("tickerMessages");
-          toast.success(t("admin.reglages.parametres.toast_reinitialise"));
-        }}
-        can={can}
-        guard={guard}
-        denyReason={denyReason}
-        t={t}
-      />
-
-      {/* manageSettings : gestionnaire visuel de badges de marques */}
-      <MarqueeBrandsVisualEditor
-        title={t("admin.reglages.parametres.json_marques_titre")}
-        description={t("admin.reglages.parametres.json_marques_description")}
-        value={marqueeBrands}
-        permission="manageSettings"
-        onSave={async (v) => {
-          await setMarquee(v);
-        }}
-        onReset={async () => {
-          if (isHttpMode()) {
-            await reinitialiserServeur("reset", "marqueeBrands");
-            invalidateAll();
-          }
-          resetData("marqueeBrands");
-          toast.success(t("admin.reglages.parametres.toast_reinitialise"));
-        }}
-        can={can}
-        guard={guard}
-        denyReason={denyReason}
-        t={t}
-      />
-
-      {/* manageSettings : cartes des valeurs et engagements */}
-      <AboutValuesVisualEditor
-        title={t("admin.reglages.parametres.json_valeurs_titre")}
-        description={t("admin.reglages.parametres.json_valeurs_description")}
-        value={aboutValues}
-        permission="manageSettings"
-        onSave={async (v) => {
-          await setAbout(v);
-        }}
-        onReset={async () => {
-          if (isHttpMode()) {
-            await reinitialiserServeur("reset", "aboutValues");
-            invalidateAll();
-          }
-          resetData("aboutValues");
-          toast.success(t("admin.reglages.parametres.toast_reinitialise"));
-        }}
-        can={can}
-        guard={guard}
-        denyReason={denyReason}
-        t={t}
-      />
-
-      {/* manageCriticalSettings : composants + tarifs du builder, impact métier fort */}
-      <JsonEditorCard<BuilderStep[]>
+      {/* ── Éditeur Visuel du Configurateur PC ──────────────── */}
+      <BuilderStepsVisualEditor
         title={t("admin.reglages.parametres.json_builder_titre")}
         description={t("admin.reglages.parametres.json_builder_description")}
         value={builderSteps}
-        permission="manageCriticalSettings"
+        disabled={!can("manageCriticalSettings")}
         onSave={async (v) => {
           await replaceBuilder(v);
         }}
@@ -1013,30 +940,6 @@ export default function AdminSettings() {
           resetData("builderSteps");
           toast.success(t("admin.reglages.parametres.toast_reinitialise"));
         }}
-        validate={(v) =>
-          Array.isArray(v) &&
-          v.every(
-            (s) =>
-              s &&
-              typeof s.id === "string" &&
-              typeof s.label === "string" &&
-              ["case", "mb", "cpu", "ram", "ssd", "gpu", "psu", "cool"].includes(
-                (s as BuilderStep).icon,
-              ) &&
-              Array.isArray((s as BuilderStep).options) &&
-              (s as BuilderStep).options.every(
-                (o) =>
-                  o &&
-                  typeof o.id === "string" &&
-                  typeof o.name === "string" &&
-                  typeof o.price === "number",
-              ),
-          )
-        }
-        can={can}
-        guard={guard}
-        denyReason={denyReason}
-        t={t}
       />
     </AdminPageShell>
   );

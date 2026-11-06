@@ -15,13 +15,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, RotateCcw, Save, AlertTriangle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  RotateCcw,
+  Save,
+  AlertTriangle,
+  Home,
+  FileText,
+  Globe,
+  Smartphone,
+} from "lucide-react";
+import heroLaptopSrc from "@/assets/hero-laptop.webp";
+import builderBannerSrc from "@/assets/builder-banner.webp";
 import {
   useSiteContent,
   useSiteContentMutations,
   useCategoryList,
+  useTickerMessageList,
+  useTickerMessageMutations,
+  useMarqueeBrandList,
+  useMarqueeBrandMutations,
+  invalidateAll,
   toApiError,
 } from "@/data-provider";
+import { isHttpMode } from "@/api";
+import { reinitialiserServeur } from "@/data-provider/maintenance";
+import { resetData, type TickerMessage } from "@/lib/admin-store";
+import {
+  MarqueeBrandsVisualEditor,
+  TickerMessagesVisualEditor,
+} from "@/components/admin/SettingsVisualEditors";
+
 import type { SiteContent } from "@/lib/site-content";
 import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
@@ -129,19 +154,36 @@ function LTextarea({
   );
 }
 
+type PoleKey = "home" | "pages" | "global" | "mobile";
+
 export default function AdminContent() {
   const { data: siteContent, loading, error } = useSiteContent();
   const { update, resetSection } = useSiteContentMutations();
   const perms = usePermissions();
   const { t } = useI18n();
-  const [tab, setTab] = useState<keyof SiteContent>("header");
 
-  // Les clés techniques (identifiants de section) ne sont pas traduits ;
-  // seuls les libellés d'onglets le sont. On mappe chaque clé à sa clé i18n.
-  const SECTIONS: { key: keyof SiteContent; labelKey: string }[] = [
-    { key: "header", labelKey: "admin.contenu.contenu.section_header" },
-    { key: "footer", labelKey: "admin.contenu.contenu.section_footer" },
-    { key: "about", labelKey: "admin.contenu.contenu.section_about" },
+  const { data: marqueeBrands } = useMarqueeBrandList();
+  const { set: setMarquee } = useMarqueeBrandMutations();
+
+  const { data: tickerMessages } = useTickerMessageList();
+  const { set: setTickers } = useTickerMessageMutations();
+
+  const [activePole, setActivePole] = useState<PoleKey>("home");
+  const [subHome, setSubHome] = useState<keyof SiteContent>("hero");
+  const [subPages, setSubPages] = useState<"about" | "contactCta">("about");
+  const [subGlobal, setSubGlobal] = useState<"header" | "ticker" | "footer">("header");
+  const [subMobile, setSubMobile] = useState<"floatingWhatsApp" | "mobileBottomBar">(
+    "floatingWhatsApp",
+  );
+
+  const POLES: { key: PoleKey; label: string; icon: typeof Home }[] = [
+    { key: "home", label: "Accueil", icon: Home },
+    { key: "pages", label: "Pages & Textes", icon: FileText },
+    { key: "global", label: "Global & Navigation", icon: Globe },
+    { key: "mobile", label: "Mobile & Flottant", icon: Smartphone },
+  ];
+
+  const HOME_SECTIONS: { key: keyof SiteContent; labelKey: string }[] = [
     { key: "hero", labelKey: "admin.contenu.contenu.section_hero" },
     { key: "flashSale", labelKey: "admin.contenu.contenu.section_flash_sale" },
     { key: "categories", labelKey: "admin.contenu.contenu.section_categories" },
@@ -153,6 +195,20 @@ export default function AdminContent() {
     { key: "builderTeaser", labelKey: "admin.contenu.contenu.section_builder_teaser" },
     { key: "reviews", labelKey: "admin.contenu.contenu.section_reviews" },
     { key: "contactCta", labelKey: "admin.contenu.contenu.section_contact_cta" },
+  ];
+
+  const PAGES_SECTIONS: { key: "about" | "contactCta"; labelKey: string }[] = [
+    { key: "about", labelKey: "admin.contenu.contenu.section_about" },
+    { key: "contactCta", labelKey: "admin.contenu.contenu.section_contact_cta" },
+  ];
+
+  const GLOBAL_SECTIONS: { key: "header" | "ticker" | "footer"; label: string }[] = [
+    { key: "header", label: t("admin.contenu.contenu.section_header") },
+    { key: "ticker", label: "Bandeau d'annonces (Ticker)" },
+    { key: "footer", label: t("admin.contenu.contenu.section_footer") },
+  ];
+
+  const MOBILE_SECTIONS: { key: "floatingWhatsApp" | "mobileBottomBar"; labelKey: string }[] = [
     { key: "floatingWhatsApp", labelKey: "admin.contenu.contenu.section_floating_wa" },
     { key: "mobileBottomBar", labelKey: "admin.contenu.contenu.section_mobile_bar" },
   ];
@@ -179,28 +235,235 @@ export default function AdminContent() {
           <div className="h-64 animate-pulse rounded-xl border border-border bg-card" />
         </div>
       ) : (
-        <Tabs value={tab} onValueChange={(v) => setTab(v as keyof SiteContent)}>
-          <TabsList className="h-auto flex-wrap">
-            {SECTIONS.map((s) => (
-              <TabsTrigger key={s.key} value={s.key}>
-                {t(s.labelKey)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {SECTIONS.map((s) => (
-            <TabsContent key={s.key} value={s.key} className="mt-4">
-              <SectionEditor
-                sectionKey={s.key}
-                label={t(s.labelKey)}
-                value={siteContent[s.key]}
-                perms={perms}
-                t={t}
-                onSaveSection={update}
-                onResetSection={resetSection}
-              />
-            </TabsContent>
-          ))}
-        </Tabs>
+        <div className="space-y-6">
+          {/* Navigation principale par Pôles thématiques */}
+          <Tabs value={activePole} onValueChange={(p) => setActivePole(p as PoleKey)}>
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1.5 gap-1.5 bg-muted/60 rounded-xl border border-border">
+              {POLES.map((pole) => {
+                const Icon = pole.icon;
+                return (
+                  <TabsTrigger
+                    key={pole.key}
+                    value={pole.key}
+                    className="flex items-center justify-center gap-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium text-xs md:text-sm rounded-lg transition-all"
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span>{pole.label}</span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
+
+          {/* 1. PÔLE ACCUEIL */}
+          {activePole === "home" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-1.5 rounded-lg border bg-card/60 p-2">
+                {HOME_SECTIONS.map((s) => (
+                  <Button
+                    key={s.key}
+                    type="button"
+                    variant={subHome === s.key ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 text-xs font-medium"
+                    onClick={() => setSubHome(s.key)}
+                  >
+                    {t(s.labelKey)}
+                  </Button>
+                ))}
+              </div>
+
+              {HOME_SECTIONS.map((s) =>
+                subHome === s.key ? (
+                  <SectionEditor
+                    key={s.key}
+                    sectionKey={s.key}
+                    label={t(s.labelKey)}
+                    value={siteContent[s.key]}
+                    perms={perms}
+                    t={t}
+                    onSaveSection={update}
+                    onResetSection={resetSection}
+                    extraChild={
+                      s.key === "brandsMarquee" ? (
+                        <div className="mt-6 border-t pt-6">
+                          <MarqueeBrandsVisualEditor
+                            title={t("admin.reglages.parametres.json_marques_titre")}
+                            description={t("admin.reglages.parametres.json_marques_description")}
+                            value={marqueeBrands}
+                            permission="manageSettings"
+                            onSave={async (v: string[]) => {
+                              await setMarquee(v);
+                            }}
+                            onReset={async () => {
+                              if (isHttpMode()) {
+                                await reinitialiserServeur("reset", "marqueeBrands");
+                                invalidateAll();
+                              }
+                              resetData("marqueeBrands");
+                              toast.success(t("admin.reglages.parametres.toast_reinitialise"));
+                            }}
+                            can={perms.can}
+                            guard={perms.guard}
+                            denyReason={perms.denyReason}
+                            t={t}
+                          />
+                        </div>
+                      ) : undefined
+                    }
+                  />
+                ) : null,
+              )}
+            </div>
+          )}
+
+          {/* 2. PÔLE PAGES & TEXTES */}
+          {activePole === "pages" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-1.5 rounded-lg border bg-card/60 p-2">
+                {PAGES_SECTIONS.map((s) => (
+                  <Button
+                    key={s.key}
+                    type="button"
+                    variant={subPages === s.key ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 text-xs font-medium"
+                    onClick={() => setSubPages(s.key)}
+                  >
+                    {t(s.labelKey)}
+                  </Button>
+                ))}
+              </div>
+
+              {subPages === "about" && (
+                <SectionEditor
+                  sectionKey="about"
+                  label={t("admin.contenu.contenu.section_about")}
+                  value={siteContent.about}
+                  perms={perms}
+                  t={t}
+                  onSaveSection={update}
+                  onResetSection={resetSection}
+                />
+              )}
+
+              {subPages === "contactCta" && (
+                <SectionEditor
+                  sectionKey="contactCta"
+                  label={t("admin.contenu.contenu.section_contact_cta")}
+                  value={siteContent.contactCta}
+                  perms={perms}
+                  t={t}
+                  onSaveSection={update}
+                  onResetSection={resetSection}
+                />
+              )}
+            </div>
+          )}
+
+          {/* 3. PÔLE GLOBAL & NAVIGATION */}
+          {activePole === "global" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-1.5 rounded-lg border bg-card/60 p-2">
+                {GLOBAL_SECTIONS.map((s) => (
+                  <Button
+                    key={s.key}
+                    type="button"
+                    variant={subGlobal === s.key ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 text-xs font-medium"
+                    onClick={() => setSubGlobal(s.key)}
+                  >
+                    {s.label}
+                  </Button>
+                ))}
+              </div>
+
+              {subGlobal === "header" && (
+                <SectionEditor
+                  sectionKey="header"
+                  label={t("admin.contenu.contenu.section_header")}
+                  value={siteContent.header}
+                  perms={perms}
+                  t={t}
+                  onSaveSection={update}
+                  onResetSection={resetSection}
+                />
+              )}
+
+              {subGlobal === "ticker" && (
+                <TickerMessagesVisualEditor
+                  title={t("admin.reglages.parametres.json_tickers_titre")}
+                  description={t("admin.reglages.parametres.json_tickers_description")}
+                  value={tickerMessages}
+                  permission="manageCriticalSettings"
+                  onSave={async (v: TickerMessage[]) => {
+                    await setTickers(v);
+                  }}
+                  onReset={async () => {
+                    if (isHttpMode()) {
+                      await reinitialiserServeur("reset", "tickerMessages");
+                      invalidateAll();
+                    }
+                    resetData("tickerMessages");
+                    toast.success(t("admin.reglages.parametres.toast_reinitialise"));
+                  }}
+                  can={perms.can}
+                  guard={perms.guard}
+                  denyReason={perms.denyReason}
+                  t={t}
+                />
+              )}
+
+              {subGlobal === "footer" && (
+                <SectionEditor
+                  sectionKey="footer"
+                  label={t("admin.contenu.contenu.section_footer")}
+                  value={siteContent.footer}
+                  perms={perms}
+                  t={t}
+                  onSaveSection={update}
+                  onResetSection={resetSection}
+                />
+              )}
+            </div>
+          )}
+
+          {/* 4. PÔLE MOBILE & FLOTTANT */}
+          {activePole === "mobile" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-1.5 rounded-lg border bg-card/60 p-2">
+                {MOBILE_SECTIONS.map((s) => (
+                  <Button
+                    key={s.key}
+                    type="button"
+                    variant={subMobile === s.key ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 text-xs font-medium"
+                    onClick={() => setSubMobile(s.key)}
+                  >
+                    {t(s.labelKey)}
+                  </Button>
+                ))}
+              </div>
+
+              {MOBILE_SECTIONS.map((s) =>
+                subMobile === s.key ? (
+                  <SectionEditor
+                    key={s.key}
+                    sectionKey={s.key}
+                    label={t(s.labelKey)}
+                    value={siteContent[s.key]}
+                    perms={perms}
+                    t={t}
+                    onSaveSection={update}
+                    onResetSection={resetSection}
+                  />
+                ) : null,
+              )}
+            </div>
+          )}
+        </div>
       )}
     </AdminPageShell>
   );
@@ -214,6 +477,7 @@ function SectionEditor<K extends keyof SiteContent>({
   t,
   onSaveSection,
   onResetSection,
+  extraChild,
 }: {
   sectionKey: K;
   label: string;
@@ -222,6 +486,7 @@ function SectionEditor<K extends keyof SiteContent>({
   t: TFn;
   onSaveSection: (patch: Partial<SiteContent>) => Promise<void>;
   onResetSection: (section: K) => Promise<void>;
+  extraChild?: React.ReactNode;
 }) {
   const { can, guard, denyReason } = perms;
   const [draft, setDraft] = useState<SiteContent[K]>(value);
@@ -286,7 +551,10 @@ function SectionEditor<K extends keyof SiteContent>({
           </span>
         </div>
       </CardHeader>
-      <CardContent>{renderForm(sectionKey, draft, (v) => setDraft(v), readOnly, t)}</CardContent>
+      <CardContent className="space-y-6">
+        {renderForm(sectionKey, draft, (v) => setDraft(v), readOnly, t)}
+        {extraChild}
+      </CardContent>
     </Card>
   );
 }
@@ -806,6 +1074,7 @@ function HeroForm({
             label="Image personnalisée du Hero (optionnelle)"
             description="Si vide, l'image officielle par défaut est affichée."
             value={v.imageSrc ?? ""}
+            defaultPreviewSrc={heroLaptopSrc}
             disabled={readOnly}
             onChange={(url) => onChange({ ...v, imageSrc: url })}
           />
@@ -1309,6 +1578,7 @@ function BuilderTeaserForm({
             label="Bannière visuelle du configurateur (optionnelle)"
             description="Si vide, la bannière officielle par défaut est affichée."
             value={v.bannerSrc ?? ""}
+            defaultPreviewSrc={builderBannerSrc}
             disabled={readOnly}
             onChange={(url) => onChange({ ...v, bannerSrc: url })}
           />

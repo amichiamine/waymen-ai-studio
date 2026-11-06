@@ -99,7 +99,7 @@ export default tseslint.config(
   {
     // Settings.tsx : resetData — réinitialise les réglages mock.
     // Même motif que Reset.tsx, suppression en phase 4.
-    files: ["src/pages/admin/Settings.tsx"],
+    files: ["src/pages/admin/Settings.tsx", "src/pages/admin/Content.tsx"],
     rules: { "@typescript-eslint/no-restricted-imports": "off" },
   },
 

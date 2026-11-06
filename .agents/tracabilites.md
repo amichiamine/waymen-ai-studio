@@ -1131,3 +1131,35 @@
   - Plan interactif et miroir : 📄 [22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md)
   - Archive horodatée unique application : 📦 [katech-site-06112026-1401.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1401.zip)
   - Archive horodatée unique données : 📦 [katech-data-06112026-1401.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1401.zip)
+
+## Phase 23 : Refonte Ergonomique du Backstage (« Contenu » & « Paramètres »), Éditeur Visuel du Builder, Aperçus Médias par Défaut & Résolution F5
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 23 pour (1) corriger le bug critique de réécriture Apache/F5 sur le domaine de production, (2) refondre l'écran « Contenu du site » en 4 pôles thématiques structurés, (3) déplacer les éditeurs visuels de bannières/marques dans leurs sections contextuelles, (4) remplacer l'éditeur JSON brut des étapes du configurateur PC par un gestionnaire visuel complet avec montants en DZD, (5) enrichir `MediaPickerField` avec aperçu intelligent de visuel officiel par défaut, et (6) appliquer la règle stricte de conservation cumulative de toutes les archives ZIP horodatées antérieures.
+- **Actions Réalisées :**
+  - **Étape 23.A (Correctif Bug Critique F5 en Production) :**
+    - Modification de [`public/.htaccess`](file:///c:/xampp/htdocs/ka-tech/public/.htaccess) : élimination de la règle de redirection relative externe `RewriteRule ^(.+?)/$ $1 [R=301,L]` qui dévoilait le chemin physique absolu du serveur Hostinger (`/home/zzdwczcx/...`) lors d'un rafraîchissement F5 sur les dossiers de sous-pages prérendues (`/about/`). Remplacement par une réécriture interne propre et directe vers `index.php [L]`.
+  - **Étape 23.B (Refonte Ergonomique de l'Écran Contenu du Site) :**
+    - Modification de [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : regroupement des 16 onglets plats en 4 pôles thématiques majeurs avec barre de navigation secondaire réactive :
+      - **Pôle 1 : Accueil (`home`)** : Bannière Hero, Vente Flash, Catégories vedettes, Chips d'usage, Meilleures ventes, Onglets vedettes, Marques & Partenaires, Pourquoi nous choisir, Teaser configurateur, Avis clients, Appel contact CTA.
+      - **Pôle 2 : Pages & Textes (`pages`)** : Page « À propos » et CTA narratif contact.
+      - **Pôle 3 : Global & Navigation (`global`)** : En-tête (Header), Bandeau défilant d'annonces (Ticker) avec gestionnaire visuel complet, Pied de page (Footer).
+      - **Pôle 4 : Mobile & Flottant (`mobile`)** : Bouton WhatsApp flottant et barre de navigation mobile inférieure.
+    - Intégration de `TickerMessagesVisualEditor` dans la section Global et `MarqueeBrandsVisualEditor` dans la section Marques & Partenaires.
+  - **Étape 23.C (Aperçus Intelligents des Médias par Défaut) :**
+    - Modification de [`src/components/admin/MediaPickerField.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/MediaPickerField.tsx) : introduction de la prop `defaultPreviewSrc?: string`. Lorsque la base de données est vierge ou l'URL non renseignée, affichage direct du visuel officiel par défaut du site avec badge discret « Visuel par défaut ».
+    - Câblage de `heroLaptopSrc` sur le Hero et `builderBannerSrc` sur le Teaser du configurateur dans `Content.tsx`.
+  - **Étape 23.D (Éditeur Visuel Universel des Étapes du Builder PC & Nettoyage Paramètres) :**
+    - Création de [`src/components/admin/BuilderStepsVisualEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BuilderStepsVisualEditor.tsx) : remplacement de la zone de saisie JSON brute par un éditeur graphique riche permettant d'administrer chaque étape matérielle (Boîtier, Carte mère, Processeur, RAM, Stockage, Carte graphique, Alimentation, Refroidissement), d'ajouter/supprimer des composants, et de gérer les tarifs unitaires en Dinars Algériens (DZD).
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : intégration du `BuilderStepsVisualEditor`, ajout de la médiathèque modale pour le favicon, et suppression des blocs de configuration déplacés vers l'écran Contenu.
+  - **Étape 23.E (Politique de Conservation Cumulée des Archives ZIP) :**
+    - Règle stricte respectée : accumulation chronologique de l'ensemble des archives `.zip` (application et données) générées, interdiction de suppression des archives antérieures.
+- **Validation CI & Tests :**
+  - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte.
+  - `bunx tsc --noEmit` : 0 erreur TypeScript.
+  - `bun run lint` : 0 erreur ESLint.
+  - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-1444.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1444.zip) (conservée en parallèle de 1401)
+  - Archive données horodatée : 📦 [katech-data-06112026-1444.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1444.zip) (conservée en parallèle de 1401)
