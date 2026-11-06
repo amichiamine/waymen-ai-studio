@@ -267,6 +267,7 @@ const en: Record<string, string> = {
   "contact.form.sending": "Sending...",
   "contact.err.invalid": "Invalid form",
   "contact.toast.ok": "Message received! We'll reply shortly.",
+  "contact.faq.title": "Frequently Asked Questions",
   "cart.title": "My cart",
   "cart.page.title": "My cart — KA Tech",
   "cart.empty": "Your cart is empty.",

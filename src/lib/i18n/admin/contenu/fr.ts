@@ -125,6 +125,12 @@ const contenuFr: Record<string, string> = {
   "admin.contenu.contenu.about_cta_soustitre": "Sous-titre du CTA",
   "admin.contenu.contenu.about_cta_bouton_parcourir": "Bouton parcourir — libellé",
   "admin.contenu.contenu.about_cta_bouton_contact": "Bouton contact — libellé",
+  "admin.contenu.contenu.section_contact": "Page « Contact & FAQ »",
+  "admin.contenu.contenu.contact_titre_section": "En-tête de la page de contact",
+  "admin.contenu.contenu.contact_faq_section": "Foire aux questions (FAQ)",
+  "admin.contenu.contenu.contact_ajouter_faq": "Ajouter une question FAQ",
+  "admin.contenu.contenu.contact_faq_question": "Question",
+  "admin.contenu.contenu.contact_faq_reponse": "Réponse",
   // Field labels — chrome uniquement (pas les valeurs Localized)
   "admin.contenu.contenu.champ_badge": "Badge",
   "admin.contenu.contenu.champ_titre_ligne1": "Titre ligne 1",

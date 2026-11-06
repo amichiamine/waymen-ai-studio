@@ -203,6 +203,12 @@ const catalogueFr: Record<string, string> = {
   "admin.catalogue.media.televerser_garde": "Téléverser un média",
   "admin.catalogue.media.renommer_garde": "Renommer le média",
   "admin.catalogue.media.supprimer_garde": "Supprimer le média",
+  "admin.catalogue.media.choisir_mediatheque": "Choisir dans la médiathèque",
+  "admin.catalogue.media.choisir_titre": "Choisir un média",
+  "admin.catalogue.media.aucun_media": "Aucun média dans la médiathèque.",
+  "admin.catalogue.media.aucun_resultat": "Aucun média trouvé pour cette recherche.",
+  "admin.catalogue.media.toast_succes_simple": "Média téléversé avec succès",
+  "admin.catalogue.media.toast_erreur_televersement": "Erreur lors du téléversement",
 
   // ── Categories — Liste des catégories ────────────────────────────────────
   "admin.catalogue.categories.titre": "Catégories",

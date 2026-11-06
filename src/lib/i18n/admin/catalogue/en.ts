@@ -200,6 +200,12 @@ const catalogueEn: Record<string, string> = {
   "admin.catalogue.media.televerser_garde": "Upload a media",
   "admin.catalogue.media.renommer_garde": "Rename media",
   "admin.catalogue.media.supprimer_garde": "Delete media",
+  "admin.catalogue.media.choisir_mediatheque": "Choose from library",
+  "admin.catalogue.media.choisir_titre": "Select media",
+  "admin.catalogue.media.aucun_media": "No media in library.",
+  "admin.catalogue.media.aucun_resultat": "No media found for this search.",
+  "admin.catalogue.media.toast_succes_simple": "Media uploaded successfully",
+  "admin.catalogue.media.toast_erreur_televersement": "Upload failed",
 
   // ── Categories — Category list ────────────────────────────────────────────
   "admin.catalogue.categories.titre": "Categories",

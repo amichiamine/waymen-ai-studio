@@ -230,6 +230,12 @@ export type SiteContent = {
       description: LS;
     }[];
   };
+  contact: {
+    kicker: LS;
+    title: LS;
+    subtitle: LS;
+    faqs: { id: string; question: LS; answer: LS }[];
+  };
 };
 
 export function seedSiteContent(): SiteContent {
@@ -783,6 +789,60 @@ export function seedSiteContent(): SiteContent {
         },
       ],
     },
+    contact: {
+      kicker: { fr: "Contact & Support", en: "Contact & Support", ar: "الاتصال والدعم" },
+      title: {
+        fr: "Une question ? Écrivez-nous !",
+        en: "Any question? Write to us!",
+        ar: "هل لديك سؤال؟ راسلنا!",
+      },
+      subtitle: {
+        fr: "Notre équipe vous répond sous 24h ouvrées. Retrouvez aussi les réponses aux questions les plus fréquentes.",
+        en: "Our team responds within 24 business hours. You can also find answers to frequent questions below.",
+        ar: "فريقنا يجيبكم خلال 24 ساعة عمل. كما يمكنكم الاطلاع على إجابات الأسئلة الشائعة أدناه.",
+      },
+      faqs: [
+        {
+          id: "faq_1",
+          question: {
+            fr: "Quels sont les délais et modalités de livraison ?",
+            en: "What are the delivery times and methods?",
+            ar: "ما هي آجال وطرق التوصيل؟",
+          },
+          answer: {
+            fr: "Nous livrons sur l'ensemble des 58 wilayas d'Algérie en 24h à 72h ouvrées selon votre localisation, avec suivi en direct et paiement à la livraison.",
+            en: "We deliver across all 58 wilayas in Algeria within 24h to 72h depending on your location, with tracking and cash on delivery.",
+            ar: "نقوم بالتوصيل إلى جميع ولايات الجزائر الـ 58 خلال 24 إلى 72 ساعة عمل حسب موقعكم، مع تتبع مباشر والدفع عند الاستلام.",
+          },
+        },
+        {
+          id: "faq_2",
+          question: {
+            fr: "Les produits bénéficient-ils d'une garantie ?",
+            en: "Do products come with a warranty?",
+            ar: "هل المنتجات مشمولة بضمان؟",
+          },
+          answer: {
+            fr: "Tous nos articles sont 100% authentiques et couverts par une garantie officielle revendeur agréé avec service après-vente dédié.",
+            en: "All our products are 100% authentic and covered by an official authorized dealer warranty with dedicated after-sales support.",
+            ar: "جميع منتجاتنا أصلية 100% ومغطاة بضمان رسمي من الموزع المعتمد مع خدمة ما بعد البيع.",
+          },
+        },
+        {
+          id: "faq_3",
+          question: {
+            fr: "Puis-je commander directement via WhatsApp ?",
+            en: "Can I order directly via WhatsApp?",
+            ar: "هل يمكنني الطلب مباشرة عبر واتساب؟",
+          },
+          answer: {
+            fr: "Absolument ! Cliquez sur le bouton WhatsApp sur n'importe quelle fiche produit ou dans notre en-tête pour échanger directement avec un conseiller commercial.",
+            en: "Absolutely! Click the WhatsApp button on any product page or in our header to chat directly with a sales advisor.",
+            ar: "بالتأكيد! اضغط على زر واتساب في أي صفحة منتج أو في أعلى الموقع للتواصل مباشرة مع مستشار المبيعات.",
+          },
+        },
+      ],
+    },
   };
 }
 
@@ -803,7 +863,17 @@ export function mergeSiteContent(seed: SiteContent, partial?: Partial<SiteConten
     ) {
       (out as Record<string, unknown>)[k] = { ...(s as object), ...(p as object) };
     } else if (p !== undefined) {
-      (out as Record<string, unknown>)[k] = p;
+      // Protection d'incompatibilité de type : si seed attend un objet mais que le persistant fournit un tableau (ex: about = [])
+      if (typeof s === "object" && s && !Array.isArray(s) && Array.isArray(p)) {
+        if (k === "about") {
+          const values = p.length > 0 ? p : (s as { values?: unknown[] }).values;
+          (out as Record<string, unknown>)[k] = { ...(s as object), values };
+        } else {
+          (out as Record<string, unknown>)[k] = s;
+        }
+      } else {
+        (out as Record<string, unknown>)[k] = p;
+      }
     }
   });
   return out;

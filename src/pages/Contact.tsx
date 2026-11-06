@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Mail, Phone, MapPin, MessageCircle, Send, Clock } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle, Send, Clock, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useContactMessageMutations, useSiteSettings, useSiteContent } from "@/data-provider";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { getIcon } from "@/lib/site-content";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function Contact() {
   const [sending, setSending] = useState(false);
@@ -54,6 +60,13 @@ export default function Contact() {
 
   const phoneDigits = s.contactPhone.replace(/\s+/g, "");
 
+  const contact = siteContent?.contact;
+  const kicker = L(contact?.kicker) || t("contact.kicker");
+  const rawTitle = L(contact?.title) || t("contact.title");
+  const title = rawTitle.replace(/{storeName}/g, storeName).replace(/KA Tech/g, storeName);
+  const subtitle = L(contact?.subtitle) || t("contact.sub");
+  const faqs = contact?.faqs && contact.faqs.length > 0 ? contact.faqs : [];
+
   return (
     <div className="container-page py-12 lg:py-16">
       <Helmet>
@@ -62,11 +75,9 @@ export default function Contact() {
         <link rel="canonical" href={`${window.location.origin}/contact`} />
       </Helmet>
       <header className="max-w-3xl mb-10 text-start">
-        <p className="text-sm font-medium text-primary mb-2">{t("contact.kicker")}</p>
-        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">
-          {t("contact.title").replace("KA Tech", storeName)}
-        </h1>
-        <p className="mt-3 text-muted-foreground">{t("contact.sub")}</p>
+        <p className="text-sm font-medium text-primary mb-2">{kicker}</p>
+        <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">{title}</h1>
+        <p className="mt-3 text-muted-foreground">{subtitle}</p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -159,6 +170,37 @@ export default function Contact() {
           </button>
         </form>
       </div>
+
+      {faqs.length > 0 && (
+        <section className="mt-16 max-w-3xl text-start">
+          <div className="flex items-center gap-2 mb-6 text-primary">
+            <HelpCircle className="size-5" />
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              {t("contact.faq.title")}
+            </h2>
+          </div>
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full divide-y divide-border rounded-xl border border-border bg-card px-4"
+          >
+            {faqs.map((faq, idx) => (
+              <AccordionItem
+                key={faq.id || idx}
+                value={`faq-${faq.id || idx}`}
+                className="border-b-0 py-1"
+              >
+                <AccordionTrigger className="text-start font-medium text-base hover:text-primary transition-colors">
+                  {L(faq.question)}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line pb-4">
+                  {L(faq.answer)}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </section>
+      )}
     </div>
   );
 }

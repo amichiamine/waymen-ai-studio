@@ -113,6 +113,12 @@ const contenuAr: Record<string, string> = {
   "admin.contenu.contenu.about_cta_soustitre": "العنوان الفرعي للدعوة",
   "admin.contenu.contenu.about_cta_bouton_parcourir": "زر التصفح — التسمية",
   "admin.contenu.contenu.about_cta_bouton_contact": "زر الاتصال — التسمية",
+  "admin.contenu.contenu.section_contact": "صفحة «اتصل بنا والأسئلة الشائعة»",
+  "admin.contenu.contenu.contact_titre_section": "ترويسة صفحة الاتصال",
+  "admin.contenu.contenu.contact_faq_section": "الأسئلة الشائعة (FAQ)",
+  "admin.contenu.contenu.contact_ajouter_faq": "إضافة سؤال شائع",
+  "admin.contenu.contenu.contact_faq_question": "السؤال",
+  "admin.contenu.contenu.contact_faq_reponse": "الإجابة",
   // Field labels
   "admin.contenu.contenu.champ_badge": "الشارة",
   "admin.contenu.contenu.champ_titre_ligne1": "العنوان السطر 1",

@@ -1268,3 +1268,44 @@
   - Archive application horodatée : 📦 [katech-site-06112026-1842.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1842.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-1842.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1842.zip)
 
+---
+
+## Phase 27 : Raccordement Pages & Textes, Page Contact & FAQ Dynamique, Assainissement Éditorial « À propos » et Éradication des Alertes i18n & Performance
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 27 pour :
+  1. Résoudre le goulet d'étranglement de persistance SQLite sur la section « À propos » et raccorder l'ensemble des pages éditoriales (dont Contact & FAQ) à la source de vérité dynamique.
+  2. Raccorder la page `/contact` aux données éditables (`siteContent.contact`) avec composant accordéon dynamique pour la foire aux questions (FAQ).
+  3. Ajouter l'éditeur visuel complet de la page Contact et de sa FAQ dans le backstage (*Contenus du site > Pages & Textes > Page Contact & FAQ*).
+  4. Éradiquer les avertissements console i18n manquants (`admin.media.*` substitués par les clés officielles conformes `admin.catalogue.media.*`).
+  5. Optimiser la réconciliation React dans l'éditeur de contenu pour éliminer les violations de temps d'exécution.
+- **Actions Réalisées :**
+  - **Étape 27.A (Diagnostic & Résolution du Décrochage « À propos ») :**
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) :
+      - Sécurisation chirurgicale de `mergeSiteContent(seed, partial)` contre les incohérences de typage héritées d'anciennes structures de base de données (si `s` est un objet complet et `p` un tableau indexé ou vide `[]`, conservation stricte de la structure objet avec conversion des éléments de tableau vers `values`).
+      - Définition et enrichissement du contrat d'interface `SiteContent["contact"]` comportant `kicker`, `title`, `subtitle`, et une collection d'items de questions fréquentes `faqs: { id: string; question: Localized<string>; answer: Localized<string> }[]`.
+      - Amorce bilingue/trilingue officielle dans `seedSiteContent()` (Français, Anglais, Arabe) pour la page de contact et la FAQ.
+    - Modification de [`api/src/Controllers/ControleurContenu.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurContenu.php) : normalisation automatique de la section `about` lors de la lecture et de la mise à jour pour garantir l'intégrité de la structure `{ values: ... }`.
+    - Nettoyage de la base active locale SQLite (`katech-data/dev-a97b6b98a368.sqlite`) pour éliminer l'entrée résiduelle `section = 'about' AND payload = '[]'`.
+  - **Étape 27.B (Raccordement de la Page Publique `/contact` & Accordéon FAQ) :**
+    - Modification de [`src/pages/Contact.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Contact.tsx) :
+      - Raccordement dynamique du surtitre (kicker), du titre principal (avec interpolation automatique du nom d'enseigne `{storeName}`) et du sous-titre depuis `siteContent.contact`.
+      - Intégration du composant accessible `<Accordion type="single" collapsible>` de Radix UI pour restituer la FAQ dynamique en bas de page sous les coordonnées et le formulaire de contact.
+  - **Étape 27.C (Éditeur Backstage « Page Contact & FAQ ») :**
+    - Modification de [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) :
+      - Ajout de l'onglet `contact` dans le pôle « Pages & Textes » (`PAGES_SECTIONS`).
+      - Création du formulaire modulaire `ContactPageForm` : gestion du kicker, du titre et du sous-titre de la page, et gestionnaire complet des items FAQ (création, édition trilingue des questions/réponses, suppression, identifiants uniques).
+  - **Étape 27.D (Éradication des Avertissements i18n & Refonte de `MediaPickerField`) :**
+    - Remplacement de toutes les fausses clés `admin.media.*` dans [`src/components/admin/MediaPickerField.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/MediaPickerField.tsx) par le référentiel officiel `admin.catalogue.media.*`.
+    - Ajout et synchronisation stricte à 100% des clés trilingues correspondantes dans [`src/lib/i18n/admin/catalogue/{fr,en,ar}.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/catalogue/fr.ts) et [`src/lib/i18n/admin/contenu/{fr,en,ar}.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/contenu/fr.ts).
+  - **Étape 27.E (Validation CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte, 0 clé manquante.
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-1905.zip` et `katech-data-06112026-1905.zip`).
+    - Conservation cumulative respectée : l'ensemble des archives historiques (`1401`, `1444`, `1518`, `1808`, `1842`, `1905`) est préservé.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-1905.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1905.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-1905.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1905.zip)

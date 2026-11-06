@@ -198,6 +198,12 @@ const catalogueAr: Record<string, string> = {
   "admin.catalogue.media.televerser_garde": "رفع وسيط",
   "admin.catalogue.media.renommer_garde": "إعادة تسمية الوسيط",
   "admin.catalogue.media.supprimer_garde": "حذف الوسيط",
+  "admin.catalogue.media.choisir_mediatheque": "اختيار من مكتبة الوسائط",
+  "admin.catalogue.media.choisir_titre": "اختيار ملف وسائط",
+  "admin.catalogue.media.aucun_media": "لا توجد وسائط في المكتبة.",
+  "admin.catalogue.media.aucun_resultat": "لم يتم العثور على وسائط مطابقة للبحث.",
+  "admin.catalogue.media.toast_succes_simple": "تم رفع الوسائط بنجاح",
+  "admin.catalogue.media.toast_erreur_televersement": "حدث خطأ أثناء الرفع",
 
   // ── Categories — قائمة الفئات ──────────────────────────────────────────────
   "admin.catalogue.categories.titre": "الفئات",

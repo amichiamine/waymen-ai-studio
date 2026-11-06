@@ -55,12 +55,12 @@ export function MediaPickerField({
     try {
       const asset = await upload(file);
       onChange(asset.src);
-      toast.success(t("admin.media.toast_televerse") || "Média téléversé avec succès");
+      toast.success(t("admin.catalogue.media.toast_succes_simple"));
     } catch (cause) {
       const err = toApiError(cause);
       toast.error(
         err.message ||
-          t("admin.media.toast_erreur_televersement") ||
+          t("admin.catalogue.media.toast_erreur_televersement") ||
           "Erreur lors du téléversement",
       );
     } finally {
@@ -111,7 +111,7 @@ export function MediaPickerField({
             <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
               <ImageIcon className="size-8 opacity-40 mb-1" />
               <span className="text-[11px]">
-                {placeholder || t("admin.media.aucun_media") || "Aucune image"}
+                {placeholder || t("admin.catalogue.media.aucun_media")}
               </span>
             </div>
           )}
@@ -149,7 +149,7 @@ export function MediaPickerField({
               ) : (
                 <Upload className="size-3.5 me-1.5" />
               )}
-              {t("admin.media.televerser") || "Téléverser"}
+              {t("admin.catalogue.media.btn_televerser")}
             </Button>
 
             {/* Bouton Médiathèque */}
@@ -161,7 +161,7 @@ export function MediaPickerField({
               onClick={() => setDialogOpen(true)}
             >
               <ImageIcon className="size-3.5 me-1.5" />
-              {t("admin.media.choisir_mediatheque") || "Choisir dans la médiathèque"}
+              {t("admin.catalogue.media.choisir_mediatheque")}
             </Button>
 
             {/* Bascule Saisie manuelle URL */}
@@ -258,7 +258,7 @@ export function MediaPickerDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ImageIcon className="size-5 text-primary" />
-            {t("admin.media.choisir_mediatheque") || "Choisir un média"}
+            {t("admin.catalogue.media.choisir_titre")}
           </DialogTitle>
         </DialogHeader>
 
@@ -268,7 +268,7 @@ export function MediaPickerDialog({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("admin.media.rechercher_placeholder") || "Rechercher par nom ou tag..."}
+            placeholder={t("admin.catalogue.media.recherche_placeholder")}
             className="ps-9"
           />
         </div>
@@ -286,8 +286,8 @@ export function MediaPickerDialog({
               <ImageIcon className="size-10 opacity-30 mb-2" />
               <p className="text-sm">
                 {search
-                  ? t("admin.media.aucun_resultat") || "Aucun média trouvé pour cette recherche."
-                  : t("admin.media.aucun_media") || "Aucun média dans la médiathèque."}
+                  ? t("admin.catalogue.media.aucun_resultat")
+                  : t("admin.catalogue.media.aucun_media")}
               </p>
             </div>
           ) : (

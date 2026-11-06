@@ -264,6 +264,7 @@ const ar: Record<string, string> = {
   "contact.form.sending": "جارٍ الإرسال...",
   "contact.err.invalid": "نموذج غير صالح",
   "contact.toast.ok": "تم استلام رسالتك! سنرد عليك قريبًا.",
+  "contact.faq.title": "الأسئلة الشائعة",
   "cart.title": "سلتي",
   "cart.page.title": "سلتي — KA Tech",
   "cart.empty": "سلتك فارغة.",

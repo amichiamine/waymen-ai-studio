@@ -113,6 +113,12 @@ const contenuEn: Record<string, string> = {
   "admin.contenu.contenu.about_cta_soustitre": "CTA subtitle",
   "admin.contenu.contenu.about_cta_bouton_parcourir": "Browse button — label",
   "admin.contenu.contenu.about_cta_bouton_contact": "Contact button — label",
+  "admin.contenu.contenu.section_contact": "« Contact & FAQ » page",
+  "admin.contenu.contenu.contact_titre_section": "Contact page header",
+  "admin.contenu.contenu.contact_faq_section": "Frequently Asked Questions (FAQ)",
+  "admin.contenu.contenu.contact_ajouter_faq": "Add FAQ question",
+  "admin.contenu.contenu.contact_faq_question": "Question",
+  "admin.contenu.contenu.contact_faq_reponse": "Answer",
   // Field labels
   "admin.contenu.contenu.champ_badge": "Badge",
   "admin.contenu.contenu.champ_titre_ligne1": "Title line 1",

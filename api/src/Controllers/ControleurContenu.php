@@ -61,7 +61,11 @@ final class ControleurContenu
 
         $resultat = [];
         foreach ($lignes as $l) {
-            $resultat[(string) $l['section']] = Db::dejson($l['payload'], (object) []);
+            $val = Db::dejson($l['payload'], (object) []);
+            if ((string) $l['section'] === 'about' && (is_array($val) && (empty($val) || array_is_list($val)))) {
+                $val = (object) ['values' => $val];
+            }
+            $resultat[(string) $l['section']] = $val;
         }
 
         return Reponse::ok($resultat);
@@ -98,6 +102,9 @@ final class ControleurContenu
             );
 
             $existant = $ligne !== null ? Db::dejson($ligne['payload'], []) : [];
+            if ($section === 'about' && is_array($existant) && array_is_list($existant)) {
+                $existant = ['values' => $existant];
+            }
 
             // Fusion profonde : les clés absentes du payload entrant sont conservées.
             $fusionne = $this->fusionnerPayload(

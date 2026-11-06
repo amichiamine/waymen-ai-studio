@@ -170,7 +170,7 @@ export default function AdminContent() {
 
   const [activePole, setActivePole] = useState<PoleKey>("home");
   const [subHome, setSubHome] = useState<keyof SiteContent>("hero");
-  const [subPages, setSubPages] = useState<"about" | "contactCta">("about");
+  const [subPages, setSubPages] = useState<"about" | "contact" | "contactCta">("about");
   const [subGlobal, setSubGlobal] = useState<"header" | "ticker" | "footer">("header");
   const [subMobile, setSubMobile] = useState<"floatingWhatsApp" | "mobileBottomBar">(
     "floatingWhatsApp",
@@ -197,8 +197,9 @@ export default function AdminContent() {
     { key: "contactCta", labelKey: "admin.contenu.contenu.section_contact_cta" },
   ];
 
-  const PAGES_SECTIONS: { key: "about" | "contactCta"; labelKey: string }[] = [
+  const PAGES_SECTIONS: { key: "about" | "contact" | "contactCta"; labelKey: string }[] = [
     { key: "about", labelKey: "admin.contenu.contenu.section_about" },
+    { key: "contact", labelKey: "admin.contenu.contenu.section_contact" },
     { key: "contactCta", labelKey: "admin.contenu.contenu.section_contact_cta" },
   ];
 
@@ -340,6 +341,18 @@ export default function AdminContent() {
                   sectionKey="about"
                   label={t("admin.contenu.contenu.section_about")}
                   value={siteContent.about}
+                  perms={perms}
+                  t={t}
+                  onSaveSection={update}
+                  onResetSection={resetSection}
+                />
+              )}
+
+              {subPages === "contact" && (
+                <SectionEditor
+                  sectionKey="contact"
+                  label={t("admin.contenu.contenu.section_contact")}
+                  value={siteContent.contact}
                   perms={perms}
                   t={t}
                   onSaveSection={update}
@@ -623,6 +636,15 @@ function renderForm<K extends keyof SiteContent>(
         <AboutForm
           value={draft as SiteContent["about"]}
           onChange={onChange as (v: SiteContent["about"]) => void}
+          readOnly={readOnly}
+          t={t}
+        />
+      );
+    case "contact":
+      return (
+        <ContactPageForm
+          value={draft as SiteContent["contact"]}
+          onChange={onChange as (v: SiteContent["contact"]) => void}
           readOnly={readOnly}
           t={t}
         />
@@ -1694,6 +1716,161 @@ function BuilderTeaserForm({
           </Button>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ContactPageForm({
+  value,
+  onChange,
+  readOnly,
+  t,
+}: {
+  value: SiteContent["contact"];
+  onChange: (v: SiteContent["contact"]) => void;
+  readOnly: boolean;
+  t: TFn;
+}) {
+  const v = value || {
+    kicker: { fr: "Contact", en: "Contact", ar: "اتصل بنا" },
+    title: {
+      fr: "Nous sommes là pour vous aider",
+      en: "We're here to help",
+      ar: "نحن هنا لمساعدتك",
+    },
+    subtitle: {
+      fr: "Envoyez-nous un message ou contactez-nous directement via les canaux ci-dessous.",
+      en: "Send us a message or reach out directly via the channels below.",
+      ar: "أرسل لنا رسالة أو تواصل معنا مباشرة عبر القنوات الموضحة أدناه.",
+    },
+    faqs: [],
+  };
+  const faqs = Array.isArray(v.faqs) ? v.faqs : [];
+
+  return (
+    <div className="space-y-6">
+      {/* 1. En-tête de la page Contact */}
+      <div className="rounded-lg border p-4 space-y-4">
+        <h3 className="font-semibold text-base border-b pb-2">
+          {t("admin.contenu.contenu.contact_titre_section")}
+        </h3>
+        <div className="grid gap-3 md:grid-cols-2">
+          <LInput
+            label={t("admin.contenu.contenu.champ_kicker")}
+            value={v.kicker}
+            onChange={(next) => onChange({ ...v, kicker: next })}
+            disabled={readOnly}
+          />
+          <LInput
+            label={t("admin.contenu.contenu.champ_titre")}
+            value={v.title}
+            onChange={(next) => onChange({ ...v, title: next })}
+            disabled={readOnly}
+          />
+          <div className="md:col-span-2">
+            <LTextarea
+              label={t("admin.contenu.contenu.champ_sous_titre")}
+              rows={2}
+              value={v.subtitle}
+              onChange={(next) => onChange({ ...v, subtitle: next })}
+              disabled={readOnly}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Questions fréquentes (FAQ) */}
+      <div className="rounded-lg border p-4 space-y-4">
+        <div className="flex items-center justify-between border-b pb-2">
+          <div>
+            <h3 className="font-semibold text-base">
+              {t("admin.contenu.contenu.contact_faq_section")}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Questions et réponses affichées sous forme d'accordéon en bas de la page contact.
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={readOnly}
+            onClick={() =>
+              onChange({
+                ...v,
+                faqs: [
+                  ...faqs,
+                  {
+                    id: `faq_${Date.now()}`,
+                    question: { fr: "", en: "", ar: "" },
+                    answer: { fr: "", en: "", ar: "" },
+                  },
+                ],
+              })
+            }
+          >
+            <Plus className="me-2 h-4 w-4" /> {t("admin.contenu.contenu.contact_ajouter_faq")}
+          </Button>
+        </div>
+
+        {faqs.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            Aucune question FAQ configurée.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <div
+                key={faq.id || idx}
+                className="rounded-md border p-4 bg-card/60 space-y-3 relative group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    FAQ #{idx + 1}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                    disabled={readOnly}
+                    onClick={() => {
+                      const nextFaqs = faqs.filter((_, i) => i !== idx);
+                      onChange({ ...v, faqs: nextFaqs });
+                    }}
+                    title={t("admin.contenu.contenu.aria_supprimer")}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <LInput
+                  label={t("admin.contenu.contenu.contact_faq_question")}
+                  value={faq.question}
+                  disabled={readOnly}
+                  onChange={(nextQ) => {
+                    const nextFaqs = faqs.slice();
+                    nextFaqs[idx] = { ...faq, question: nextQ };
+                    onChange({ ...v, faqs: nextFaqs });
+                  }}
+                />
+
+                <LTextarea
+                  label={t("admin.contenu.contenu.contact_faq_reponse")}
+                  rows={3}
+                  value={faq.answer}
+                  disabled={readOnly}
+                  onChange={(nextA) => {
+                    const nextFaqs = faqs.slice();
+                    nextFaqs[idx] = { ...faq, answer: nextA };
+                    onChange({ ...v, faqs: nextFaqs });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

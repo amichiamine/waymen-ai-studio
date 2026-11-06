@@ -269,6 +269,7 @@ const fr: Record<string, string> = {
   "contact.form.sending": "Envoi en cours...",
   "contact.err.invalid": "Formulaire invalide",
   "contact.toast.ok": "Message reçu ! Nous vous répondrons rapidement.",
+  "contact.faq.title": "Foire aux questions",
   "cart.title": "Mon panier",
   "cart.page.title": "Mon panier — KA Tech",
   "cart.empty": "Votre panier est vide.",
