@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ShieldCheck, Truck, Headphones, Award, Star, Heart, AlertTriangle } from "lucide-react";
+import archisysBannerSrc from "@/assets/stacgate-archisys-banner.webp";
 import { useAboutValueList, useSiteSettings, useSiteContent } from "@/data-provider";
 import type { AboutValue } from "@/lib/admin-store";
 import { useI18n, useLocalize } from "@/lib/i18n";
@@ -138,6 +139,34 @@ export default function About() {
           )}
         </>
       )}
+
+      {/* Sceau d'Architecture R&D & Conception */}
+      <section className="mb-14 overflow-hidden rounded-2xl border border-primary/20 bg-card/60 shadow-lg backdrop-blur-sm">
+        <div className="grid gap-6 lg:grid-cols-12 items-center p-6 lg:p-8">
+          <div className="lg:col-span-7 space-y-3 text-start">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <span>🛡️ Architecture &amp; R&amp;D Certifiées</span>
+            </div>
+            <h3 className="text-xl lg:text-2xl font-bold tracking-tight text-foreground">
+              Conception &amp; Direction Technique
+            </h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              La plateforme repose sur une architecture moderne conçue et validée sous la direction
+              de <strong className="text-foreground">ArchiSys3.0</strong>, garantissant souveraineté
+              des données, haute disponibilité, résilience transactionnelle et performances
+              d'exécution instantanées.
+            </p>
+          </div>
+          <div className="lg:col-span-5 flex justify-center">
+            <img
+              src={archisysBannerSrc}
+              alt="StacGate Platform — Conçu et Validé par ArchiSys3.0"
+              className="max-h-48 w-auto rounded-xl border border-border/80 object-cover shadow-md transition-transform hover:scale-[1.02]"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </section>
 
       <section className="rounded-2xl border border-border bg-card p-8 lg:p-12 text-center">
         <h2 className="text-2xl lg:text-3xl font-bold mb-3">{ctaTitle}</h2>

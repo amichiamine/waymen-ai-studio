@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import defaultLogoSrc from "@/assets/stacgate-logo.png";
+import defaultLogoSrc from "@/assets/stacgate-logo.webp";
 import { useSiteSettings } from "@/data-provider";
 import { resoudreUrlMedia } from "./media-url";
 

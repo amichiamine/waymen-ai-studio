@@ -1454,3 +1454,41 @@
   - Plan interactif et miroir : 📄 [30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md)
   - Archive application horodatée : 📦 [katech-site-06112026-2201.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2201.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-2201.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2201.zip)
+
+---
+
+## Phase 31 : Génération des Actifs Multiformats (StacGate Platform), Image Hybride Officielle (ArchiSys3.0) & Préservation Absolue des Téléversements Tiers
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 31 pour :
+  1. Générer et remplacer la totalité des formats d'icônes et logos dérivés (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icone-192.png`, `icone-512.png`, `stacgate-logo.webp`) à partir de `logo-StacGate.png`.
+  2. Créer une image hybride haute définition combinant le logo StacGate Platform et la signature officielle ArchiSys3.0 (`public/og-image.png`, `stacgate-archisys-banner.webp`, et badge carré `stacgate-archisys-badge.webp`).
+  3. Intégrer l'image hybride et le sceau d'architecture dans la page À Propos ([`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx)) et le tableau de bord Backstage ([`src/pages/admin/Dashboard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Dashboard.tsx)).
+  4. Respecter scrupuleusement le verrou d'architecture : priorité absolue aux téléversements tiers (`s.logoUrl` et `s.faviconUrl`) qui écrasent immédiatement les visuels par défaut.
+  5. Éradiquer les reliques graphiques obsolètes de l'ancien logo (`ka-tech-logo.webp`, `ka-tech-monogramme.svg`).
+- **Actions Réalisées :**
+  - **Étape 31.A (Pipeline de Génération Multiformats) :**
+    - Création du script de transformation graphique sous Sharp [`scripts/generer-actifs-marque.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/generer-actifs-marque.ts) (script npm `"generer-actifs"`).
+    - Génération de `public/apple-touch-icon.png` (180 × 180), `public/icone-192.png` (192 × 192), `public/icone-512.png` (512 × 512).
+    - Génération binaire de `public/favicon.ico` multi-résolutions (16, 32, 48 px).
+    - Génération vectorielle moderne de `public/favicon.svg` (64 × 64 avec emblème intégré).
+    - Compression WebP haute performance : `src/assets/stacgate-logo.webp` (231 Ko) et `public/media/stacgate-logo.webp`.
+    - Suppression propre des anciens fichiers `ka-tech-logo.webp`, `ka-tech-monogramme.svg`, et `originals/ka-tech-logo.png`.
+  - **Étape 31.B (Composition Mathématique des Images Hybrides) :**
+    - Composition de la bannière horizontale 1200 × 630 px combinant StacGate Platform et la signature officielle `Signature-ArchiSys30.png` sur fond sombre luxury avec lueurs d'accentuation : enregistrée sous `public/og-image.png` (OpenGraph/WhatsApp) et `src/assets/stacgate-archisys-banner.webp`.
+    - Composition du badge carré centré 800 × 800 px combinant logo et signature : enregistré sous `public/media/stacgate-archisys-badge.webp`.
+  - **Étape 31.C (Intégration & Préservation des Uploads Tiers) :**
+    - Modification de [`src/components/Logo.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Logo.tsx) et [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : utilisation de `defaultLogoSrc` issu du nouveau WebP compact, priorité absolue au logo personnalisé `s.logoUrl` dès qu'il est défini.
+    - Modification de [`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx) : ajout de la section officielle d'architecture et de direction R&D avec la bannière hybride validée par ArchiSys3.0.
+    - Modification de [`src/pages/admin/Dashboard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Dashboard.tsx) : ajout d'un encart attestant de la validation du socle technique par ArchiSys3.0.
+  - **Étape 31.D (Contrôles Qualité CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue FR/EN/AR.
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : compilation de production et archives zip horodatées créées avec succès (`katech-site-06112026-2359.zip` et `katech-data-06112026-2359.zip`). Poids du paquet site allégé à 4.35 Mo.
+    - Conservation cumulative respectée : l'ensemble des archives historiques (`1401`, `1444`, `1518`, `1808`, `1842`, `1905`, `2104`, `2119`, `2135`, `2136`, `2201`, `2359`) est préservé intact.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md)
+  - Archive application horodatée : 📦 [katech-site-06112026-2359.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2359.zip)
+  - Archive données horodatée : 📦 [katech-data-06112026-2359.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2359.zip)

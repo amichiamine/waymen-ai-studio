@@ -45,7 +45,7 @@ import {
   Globe,
   ArrowRight,
 } from "lucide-react";
-import defaultLogoSrc from "@/assets/stacgate-logo.png";
+import defaultLogoSrc from "@/assets/stacgate-logo.webp";
 import { resoudreUrlMedia } from "@/components/media-url";
 import { MediaPickerDialog } from "@/components/admin/MediaPickerField";
 import { BuilderStepsVisualEditor } from "@/components/admin/BuilderStepsVisualEditor";

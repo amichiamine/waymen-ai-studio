@@ -387,6 +387,32 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Sceau officiel d'architecture R&D */}
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-primary/20 bg-card/60 p-4 text-xs text-muted-foreground shadow-sm">
+        <div className="flex items-center gap-3">
+          <img
+            src="/media/stacgate-archisys-badge.webp"
+            alt="Sceau d'Architecture ArchiSys3.0"
+            className="size-10 rounded-lg border border-border object-contain shadow-xs"
+          />
+          <div>
+            <p className="font-semibold text-foreground">
+              StacGate Platform • Socle Architectural Élite
+            </p>
+            <p className="text-[11px]">
+              Conception et Direction d'Architecture R&amp;D validées par{" "}
+              <span className="font-semibold text-primary">ArchiSys3.0</span>
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Noyau Validé
+          </span>
+        </div>
+      </div>
     </AdminPageShell>
   );
 }

@@ -1,0 +1,249 @@
+import fs from "node:fs";
+import path from "node:path";
+import sharp from "sharp";
+
+const RACINE = process.cwd();
+const SRC_LOGO = path.join(RACINE, "logo-StacGate.png");
+const SRC_SIGNATURE = path.join(RACINE, "Signature-ArchiSys30.png");
+
+async function main() {
+  console.log("=== GÉNÉRATION DES ACTIFS MULTIFORMATS STACGATE & ARCHISYS ===");
+
+  if (!fs.existsSync(SRC_LOGO)) {
+    throw new Error(`Logo source manquant : ${SRC_LOGO}`);
+  }
+  if (!fs.existsSync(SRC_SIGNATURE)) {
+    throw new Error(`Signature source manquante : ${SRC_SIGNATURE}`);
+  }
+
+  // 1. Génération des icônes Apple Touch & PWA
+  console.log("[1/6] Génération des icônes PWA et mobiles…");
+  await sharp(SRC_LOGO)
+    .resize(180, 180, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toFile(path.join(RACINE, "public/apple-touch-icon.png"));
+
+  await sharp(SRC_LOGO)
+    .resize(192, 192, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toFile(path.join(RACINE, "public/icone-192.png"));
+
+  await sharp(SRC_LOGO)
+    .resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toFile(path.join(RACINE, "public/icone-512.png"));
+
+  // 2. Génération de favicon.ico multi-tailles (16, 32, 48)
+  console.log("[2/6] Génération de public/favicon.ico multi-tailles (16, 32, 48)…");
+  const icoSizes = [16, 32, 48];
+  const pngBuffers = await Promise.all(
+    icoSizes.map((s) =>
+      sharp(SRC_LOGO)
+        .resize(s, s, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toBuffer(),
+    ),
+  );
+
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // réservé
+  header.writeUInt16LE(1, 2); // type 1 = icône
+  header.writeUInt16LE(icoSizes.length, 4); // nb d'images
+
+  let offset = 6 + icoSizes.length * 16;
+  const dirEntries: Buffer[] = [];
+  for (let i = 0; i < icoSizes.length; i++) {
+    const s = icoSizes[i];
+    const buf = pngBuffers[i];
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(s === 256 ? 0 : s, 0);
+    entry.writeUInt8(s === 256 ? 0 : s, 1);
+    entry.writeUInt8(0, 2); // palette
+    entry.writeUInt8(0, 3); // réservé
+    entry.writeUInt16LE(1, 4); // plans de couleur
+    entry.writeUInt16LE(32, 6); // bits par pixel
+    entry.writeUInt32LE(buf.length, 8); // taille données
+    entry.writeUInt32LE(offset, 12); // offset dans le fichier
+    dirEntries.push(entry);
+    offset += buf.length;
+  }
+  const icoBuffer = Buffer.concat([header, ...dirEntries, ...pngBuffers]);
+  fs.writeFileSync(path.join(RACINE, "public/favicon.ico"), icoBuffer);
+
+  // 3. Génération de public/favicon.svg
+  console.log("[3/6] Génération de public/favicon.svg…");
+  const logo64Png = await sharp(SRC_LOGO)
+    .resize(64, 64, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+  const base64Png = logo64Png.toString("base64");
+  const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="StacGate Platform">
+  <rect width="64" height="64" rx="14" fill="#090d16"/>
+  <image href="data:image/png;base64,${base64Png}" width="60" height="60" x="2" y="2" preserveAspectRatio="xMidYMid meet"/>
+</svg>\n`;
+  fs.writeFileSync(path.join(RACINE, "public/favicon.svg"), faviconSvg, "utf8");
+
+  // 4. Génération des versions WebP légères pour le front & médiathèque
+  console.log("[4/6] Génération des versions WebP légères du logo…");
+  await sharp(SRC_LOGO)
+    .webp({ quality: 90 })
+    .toFile(path.join(RACINE, "src/assets/stacgate-logo.webp"));
+
+  await sharp(SRC_LOGO)
+    .webp({ quality: 90 })
+    .toFile(path.join(RACINE, "public/media/stacgate-logo.webp"));
+
+  // 5. Composition de la Bannière Hybride 1200 × 630 px (public/og-image.png & WebP)
+  console.log("[5/6] Composition de l'image hybride StacGate × ArchiSys3.0 (1200 × 630)…");
+  const bannerW = 1200;
+  const bannerH = 630;
+
+  // Préparation du logo StacGate redimensionné (hauteur ~230px)
+  const logoBannerBuf = await sharp(SRC_LOGO)
+    .resize(230, 230, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+
+  // Préparation de la signature ArchiSys3.0 avec coins adoucis et bordure subtile
+  const sigBannerBuf = await sharp(SRC_SIGNATURE)
+    .resize(240, 240, { fit: "contain" })
+    .png()
+    .toBuffer();
+
+  // Fond SVG textuel et décoratif haute définition
+  const svgOverlay = `
+  <svg width="${bannerW}" height="${bannerH}" viewBox="0 0 ${bannerW} ${bannerH}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#080b11" />
+        <stop offset="50%" stop-color="#0e1522" />
+        <stop offset="100%" stop-color="#06080d" />
+      </linearGradient>
+      <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8" />
+        <stop offset="50%" stop-color="#8b5cf6" stop-opacity="0.8" />
+        <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.8" />
+      </linearGradient>
+      <radialGradient id="leftGlow" cx="20%" cy="30%" r="40%">
+        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="rightGlow" cx="80%" cy="50%" r="40%">
+        <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Fond & lueurs ambiantes -->
+    <rect width="${bannerW}" height="${bannerH}" fill="url(#bgGrad)"/>
+    <rect width="${bannerW}" height="${bannerH}" fill="url(#leftGlow)"/>
+    <rect width="${bannerW}" height="${bannerH}" fill="url(#rightGlow)"/>
+
+    <!-- Cadre extérieur haute couture -->
+    <rect x="20" y="20" width="1160" height="590" rx="24" fill="none" stroke="url(#glowGrad)" stroke-width="1.5" stroke-opacity="0.35"/>
+
+    <!-- Séparateur vertical central élégant -->
+    <line x1="720" y1="90" x2="720" y2="520" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,6" stroke-opacity="0.6"/>
+
+    <!-- Typographie Côté Gauche (Plateforme) -->
+    <g transform="translate(340, 235)">
+      <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="900" fill="#f8fafc" letter-spacing="1">STACGATE PLATFORM</text>
+      <text x="0" y="44" font-family="system-ui, -apple-system, sans-serif" font-size="19" font-weight="600" fill="#94a3b8">Plateforme E-Commerce, Vitrines tous produits</text>
+      <text x="0" y="74" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="400" fill="#64748b">Vente en ligne, gestion unifiée, multi-commerces &amp; universelle</text>
+
+      <!-- Badges de spécifications techniques -->
+      <g transform="translate(0, 115)">
+        <rect x="0" y="0" width="110" height="30" rx="15" fill="#3b82f6" fill-opacity="0.15" stroke="#3b82f6" stroke-opacity="0.3"/>
+        <text x="55" y="19" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#60a5fa">REACT 19</text>
+
+        <rect x="122" y="0" width="125" height="30" rx="15" fill="#8b5cf6" fill-opacity="0.15" stroke="#8b5cf6" stroke-opacity="0.3"/>
+        <text x="184" y="19" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#c084fc">WHITE-LABEL</text>
+
+        <rect x="259" y="0" width="105" height="30" rx="15" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-opacity="0.3"/>
+        <text x="311" y="19" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#34d399">SQLITE BD</text>
+      </g>
+    </g>
+
+    <!-- Typographie Côté Droit (Architecture & Signature ArchiSys3.0) -->
+    <g transform="translate(950, 145)" text-anchor="middle">
+      <rect x="-190" y="-30" width="380" height="32" rx="16" fill="#1e293b" fill-opacity="0.8" stroke="#475569" stroke-opacity="0.4"/>
+      <text x="0" y="-9" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="800" fill="#38bdf8" letter-spacing="1.5">CONCEPTION &amp; ARCHITECTURE R&amp;D</text>
+
+      <text x="0" y="325" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#f1f5f9" letter-spacing="0.5">ArchiSys3.0</text>
+      <text x="0" y="352" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#94a3b8">Architecte Décideur, Directeur &amp; Concepteur</text>
+    </g>
+
+    <!-- Pied de bannière discret -->
+    <text x="600" y="585" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="500" fill="#475569">
+      Socle Technologique Universel • Conçu &amp; Validé pour Tout Déploiement • © 2026
+    </text>
+  </svg>`;
+
+  // Assemblage Sharp de la bannière
+  await sharp(Buffer.from(svgOverlay))
+    .composite([
+      { input: logoBannerBuf, top: 195, left: 75 },
+      { input: sigBannerBuf, top: 190, left: 830 },
+    ])
+    .png()
+    .toFile(path.join(RACINE, "public/og-image.png"));
+
+  await sharp(path.join(RACINE, "public/og-image.png"))
+    .webp({ quality: 92 })
+    .toFile(path.join(RACINE, "src/assets/stacgate-archisys-banner.webp"));
+
+  // 6. Composition du Badge Carré Hybride 800 × 800 px (public/media/stacgate-archisys-badge.webp)
+  console.log("[6/6] Composition du badge carré officiel (800 × 800)…");
+  const badgeSize = 800;
+  const logoBadgeBuf = await sharp(SRC_LOGO)
+    .resize(250, 250, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+
+  const sigBadgeBuf = await sharp(SRC_SIGNATURE)
+    .resize(250, 250, { fit: "contain" })
+    .png()
+    .toBuffer();
+
+  const svgBadge = `
+  <svg width="${badgeSize}" height="${badgeSize}" viewBox="0 0 ${badgeSize} ${badgeSize}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0a0e17" />
+        <stop offset="100%" stop-color="#05070a" />
+      </linearGradient>
+      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#38bdf8" />
+        <stop offset="50%" stop-color="#a855f7" />
+        <stop offset="100%" stop-color="#06b6d4" />
+      </linearGradient>
+    </defs>
+    <rect width="${badgeSize}" height="${badgeSize}" fill="url(#bGrad)" rx="48"/>
+    <rect x="16" y="16" width="768" height="768" fill="none" stroke="url(#ringGrad)" stroke-width="2" rx="40" stroke-opacity="0.4"/>
+
+    <g text-anchor="middle" transform="translate(400, 375)">
+      <text x="0" y="0" font-family="system-ui, sans-serif" font-size="28" font-weight="900" fill="#f8fafc" letter-spacing="1.5">STACGATE PLATFORM</text>
+      <text x="0" y="30" font-family="system-ui, sans-serif" font-size="14" font-weight="600" fill="#38bdf8" letter-spacing="2">CONÇU &amp; VALIDÉ PAR ARCHISYS3.0</text>
+      <line x1="-120" y1="48" x2="120" y2="48" stroke="#334155" stroke-width="1.5"/>
+    </g>
+
+    <text x="400" y="745" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#64748b" letter-spacing="1">
+      SCEAU OFFICIEL D'ARCHITECTURE R&amp;D
+    </text>
+  </svg>`;
+
+  await sharp(Buffer.from(svgBadge))
+    .composite([
+      { input: logoBadgeBuf, top: 80, left: 275 },
+      { input: sigBadgeBuf, top: 460, left: 275 },
+    ])
+    .webp({ quality: 92 })
+    .toFile(path.join(RACINE, "public/media/stacgate-archisys-badge.webp"));
+
+  console.log("✔ TOUS LES ACTIFS ONT ÉTÉ GÉNÉRÉS AVEC SUCCÈS !");
+}
+
+main().catch((err) => {
+  console.error("ÉCHEC DE GÉNÉRATION DES ACTIFS :", err);
+  process.exit(1);
+});
