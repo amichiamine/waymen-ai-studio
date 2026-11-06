@@ -260,10 +260,23 @@ if ($html === null || $remplacements !== 1) {
 // -----------------------------------------------------------------------
 $settingsBootstrap = null;
 try {
-    $bootstrapFichier = dirname(__DIR__) . '/api/src/bootstrap.php';
-    if (is_file($bootstrapFichier)) {
+    $candidatsBootstrap = [
+        __DIR__ . '/api/src/bootstrap.php',                 // Déploiement standard : public_html/ (racine) ou sous-dossier
+        dirname(__DIR__) . '/api/src/bootstrap.php',        // Environnement local Vite/XAMPP : public/ -> racine
+        dirname(__DIR__, 2) . '/api/src/bootstrap.php',     // Route profonde émulée
+    ];
+
+    $bootstrapFichier = null;
+    foreach ($candidatsBootstrap as $cand) {
+        if (is_file($cand)) {
+            $bootstrapFichier = $cand;
+            break;
+        }
+    }
+
+    if ($bootstrapFichier !== null) {
         require_once $bootstrapFichier;
-        if (class_exists('\\KaTech\\Db')) {
+        if (class_exists('\KaTech\Db')) {
             $db = \KaTech\Db::instance();
             $ligne = $db->un("SELECT payload FROM settings WHERE scope = 'site'");
             if ($ligne !== null && !empty($ligne['payload'])) {
@@ -275,20 +288,27 @@ try {
         }
     }
 } catch (\Throwable $e) {
-    // Repli de secours : scan direct katech-data en environnement de dev local
+    // Repli de secours : scan direct katech-data en environnement dev ou mutualisé
     try {
-        $dossierDev = dirname(__DIR__) . '/katech-data';
-        if (is_dir($dossierDev)) {
-            $fichiers = glob($dossierDev . '/dev-*.sqlite');
-            if (!empty($fichiers)) {
-                usort($fichiers, fn($a, $b) => filemtime($b) <=> filemtime($a));
-                $pdo = new PDO('sqlite:' . $fichiers[0]);
-                $stmt = $pdo->query("SELECT payload FROM settings WHERE scope = 'site'");
-                $row = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
-                if ($row && !empty($row['payload'])) {
-                    $payload = json_decode($row['payload'], true);
-                    if (is_array($payload)) {
-                        $settingsBootstrap = $payload;
+        $candidatsData = [
+            __DIR__ . '/katech-data',
+            dirname(__DIR__) . '/katech-data',
+            dirname(__DIR__, 2) . '/katech-data',
+        ];
+        foreach ($candidatsData as $dossierData) {
+            if (is_dir($dossierData)) {
+                $fichiers = glob($dossierData . '/dev-*.sqlite');
+                if (!empty($fichiers)) {
+                    usort($fichiers, fn($a, $b) => filemtime($b) <=> filemtime($a));
+                    $pdo = new PDO('sqlite:' . $fichiers[0]);
+                    $stmt = $pdo->query("SELECT payload FROM settings WHERE scope = 'site'");
+                    $row = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
+                    if ($row && !empty($row['payload'])) {
+                        $payload = json_decode($row['payload'], true);
+                        if (is_array($payload)) {
+                            $settingsBootstrap = $payload;
+                            break;
+                        }
                     }
                 }
             }

@@ -1035,3 +1035,44 @@
   3. Vérification de la syntaxe PHP via `php -l api/recup.php` (0 erreur).
   4. Packaging et recompilation `bun run build`.
 - **Résultat :** Robustesse absolue à 100% même en cas de défaillance amont de base de données.
+
+---
+
+## Phase 21 : Persistance Souveraine Base de Données, Bootstrap Universel Plug & Play & Éradication du LocalStorage
+
+- **Date :** 06 Novembre 2026
+- **Validation ArchiSys3.0 :** Approbation formelle du Plan 21 avec exigence formelle d'indépendance d'emplacement (déploiement à la racine de `public_html/` ou sous-dossier arbitraire 100% plug & play).
+- **Constat & Causes Racines Résolues :**
+  1. `public/index.php` échouait silencieusement en production sur la recherche de `dirname(__DIR__) . '/api/src/bootstrap.php'` car dans l'extraction de `katech-site.zip`, `api/` se trouve directement sous `__DIR__ . '/api/'`. Résultat : aucun bootstrap serveur n'était injecté.
+  2. `src/data-provider/site-settings.ts` exécutait au chargement `writeCache(SITE_SETTINGS_RESOURCE, initial)` à partir de `localStorage.getItem("katech_site_settings")`, bloquant l'appel réseau vers la base de données.
+  3. `updateSettingsHttp` écrivait dans `localStorage` avant d'attendre la confirmation réseau 200 OK du serveur.
+  4. `src/lib/admin-store.tsx` persistait 500 Ko de collections mockées dans `localStorage` même en mode HTTP.
+- **Actions Réalisées :**
+  - **Étape 21.A (Bootstrap Serveur Multi-Chemins & Plug & Play) :**
+    - Modification de [`public/index.php`](file:///c:/xampp/htdocs/ka-tech/public/index.php) : détection dynamique multi-chemins relative à `__DIR__` (`__DIR__ . '/api/src/bootstrap.php'`, `dirname(__DIR__) . '/api/src/bootstrap.php'`, etc.) et scan de fallback SQLite multi-niveaux.
+    - Fonctionne immédiatement que le site soit déployé à la racine de `public_html/` ou dans un sous-dossier (`/boutique/`, `/shop/`, etc.).
+  - **Étape 21.B (Fournisseur de Réglages Frontend & Vérité Réseau) :**
+    - Modification de [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/ka-tech/src/data-provider/site-settings.ts) :
+      - Suppression de l'injection prématurée `writeCache` au chargement de script : seul `window.__SITE_SETTINGS_BOOTSTRAP__` (injecté par la BD) est autorisé à amorcer le cache 0 ms.
+      - En l'absence de bootstrap serveur, `useResource` exécute immédiatement l'appel réseau vers la base de données distante (`GET /settings/site`).
+      - Inversion d'ordre dans `updateSettingsHttp` : la mise à jour serveur est attendue et validée en priorité absolue avant toute persistance locale.
+  - **Étape 21.D (Confinement d'AdminStore en Mode HTTP) :**
+    - Modification de [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx) :
+      - `saveState()` court-circuite et n'écrit plus rien dans `localStorage` en mode HTTP.
+      - `loadState()` purge automatiquement l'ancienne clé géante `katech.admin.store.v1` si elle est détectée dans le navigateur.
+  - **Étape 21.E (Validation CI & Packaging) :**
+    - `php -l public/index.php` : 0 erreur de syntaxe.
+    - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build` : compilation Vite et empaquetage réussi.
+    - `bun run paqueter:data` : archive de données mise à jour.
+- **Résultats de Recette :**
+  - Tout visiteur (sur n'importe quel navigateur, mobile ou navigation privée) reçoit dès le premier affichage le nom réel, logo, thème et couleurs configurés en base de données.
+  - La base de données serveur est l'unique source de vérité souveraine.
+  - Réinitialiser la base sur le serveur purge instantanément l'affichage du site, sans persistance fantôme d'un ancien `localStorage`.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md)
+  - Nouvelle archive horodatée application : 📦 [katech-site-06112026-1327.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-1327.zip)
+  - Alias miroir : 📦 [katech-site.zip](file:///c:/xampp/htdocs/ka-tech/katech-site.zip)
+  - Nouvelle archive données : 📦 [katech-data-06112026-1327.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-1327.zip) (alias `katech-data.zip`)

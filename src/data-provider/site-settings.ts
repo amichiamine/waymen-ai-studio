@@ -128,10 +128,15 @@ export function getInitialSiteSettings(): SiteSettings {
   return settings;
 }
 
-// Initialisation anticipée du cache mémoire pour useResource au chargement du module
+// Initialisation anticipée du cache mémoire pour useResource au chargement du module.
+// SEUL le bootstrap direct du serveur PHP (source BD souveraine) a le droit
+// de pré-remplir le cache mémoire à 0 ms.
+// Si le bootstrap serveur est absent, on applique le repli visuel pour le rendu
+// immédiat, mais on NE remplit PAS le cache : useResource fera l'appel réseau
+// HTTP vers la base de données dès le premier montage.
 if (typeof window !== "undefined") {
   const initial = getInitialSiteSettings();
-  if (initial && initial.storeName) {
+  if (window.__SITE_SETTINGS_BOOTSTRAP__ && initial && initial.storeName) {
     writeCache(SITE_SETTINGS_RESOURCE, initial);
   }
   appliquerBrandingDynamique(initial);
@@ -205,8 +210,10 @@ export type SiteSettingsMutations = {
 };
 
 async function updateSettingsHttp(patch: Partial<SiteSettings>): Promise<void> {
-  persistSettingsLocally(patch);
+  // Vérité BD souveraine : l'écriture en base de données doit réussir AVANT
+  // toute mise à jour du cache local, évitant tout faux positif visuel.
   await settingsApi.updateSite(patch);
+  persistSettingsLocally(patch);
   if (
     patch.currencySymbol ||
     patch.currencyPosition ||

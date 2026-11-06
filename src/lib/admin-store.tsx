@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { isHttpMode } from "@/api/config";
 import {
   products as seedProducts,
   categoryMeta,
@@ -1409,6 +1410,18 @@ function repairSeededUserPasswords(persisted: AdminUser[], seeded: AdminUser[]):
 
 function loadState(): AdminState {
   if (typeof window === "undefined") return seedAll();
+  if (isHttpMode()) {
+    // En mode HTTP, la base de données serveur est l'unique source de vérité souveraine.
+    // Si une trace résiduelle de maquette existe encore dans le localStorage, on la purge.
+    try {
+      if (window.localStorage.getItem(LS_KEY)) {
+        window.localStorage.removeItem(LS_KEY);
+      }
+    } catch {
+      /* noop */
+    }
+    return seedAll();
+  }
   try {
     const raw = window.localStorage.getItem(LS_KEY);
     if (!raw) return seedAll();
@@ -1461,6 +1474,11 @@ function loadState(): AdminState {
 }
 
 function saveState(s: AdminState) {
+  if (isHttpMode()) {
+    // En mode HTTP, aucune collection n'est écrite en localStorage :
+    // la base de données serveur distante est l'unique source de vérité.
+    return;
+  }
   try {
     window.localStorage.setItem(LS_KEY, JSON.stringify(s));
   } catch {
