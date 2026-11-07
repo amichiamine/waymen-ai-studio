@@ -192,6 +192,67 @@ async function main() {
     .webp({ quality: 92 })
     .toFile(path.join(RACINE, "src/assets/stacgate-archisys-banner.webp"));
 
+  // 5 bis. Composition du Logo Combiné Horizontal Officiel pour Header & Footer (760 × 160)
+  console.log("[5b/6] Composition du logo horizontal unifié StacGate × ArchiSys3.0 (760 × 160)…");
+  const combW = 760;
+  const combH = 160;
+  const logoCombBuf = await sharp(SRC_LOGO)
+    .resize(130, 130, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+
+  const roundedCorners = Buffer.from(
+    '<svg><rect x="0" y="0" width="130" height="130" rx="16" ry="16"/></svg>',
+  );
+  const sigCombBuf = await sharp(SRC_SIGNATURE)
+    .resize(130, 130, { fit: "cover" })
+    .composite([{ input: roundedCorners, blend: "dest-in" }])
+    .png()
+    .toBuffer();
+
+  const svgCombOverlay = `
+  <svg width="${combW}" height="${combH}" viewBox="0 0 ${combW} ${combH}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="capsuleBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#080c14" />
+        <stop offset="100%" stop-color="#05070b" />
+      </linearGradient>
+      <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4" />
+        <stop offset="50%" stop-color="#8b5cf6" stop-opacity="0.5" />
+        <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.4" />
+      </linearGradient>
+      <linearGradient id="divGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.1" />
+        <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.8" />
+        <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.1" />
+      </linearGradient>
+    </defs>
+    <rect x="2" y="2" width="${combW - 4}" height="${combH - 4}" rx="24" fill="url(#capsuleBg)" stroke="url(#borderGrad)" stroke-width="1.5"/>
+    <g transform="translate(160, 72)">
+      <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="900" fill="#f8fafc" letter-spacing="1.2">STACGATE</text>
+      <text x="0" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="2.8">PLATFORM</text>
+    </g>
+    <line x1="355" y1="28" x2="355" y2="132" stroke="url(#divGrad)" stroke-width="2" stroke-linecap="round"/>
+    <g transform="translate(380, 58)">
+      <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#94a3b8" letter-spacing="1.8">CONÇU &amp; VALIDÉ PAR</text>
+      <text x="0" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="900" fill="#38bdf8" letter-spacing="0.5">ArchiSys3.0</text>
+      <text x="0" y="47" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#64748b" letter-spacing="1.2">DIRECTION TECHNIQUE &amp; R&amp;D</text>
+    </g>
+  </svg>`;
+
+  await sharp(Buffer.from(svgCombOverlay))
+    .composite([
+      { input: logoCombBuf, top: 15, left: 16 },
+      { input: sigCombBuf, top: 15, left: 614 },
+    ])
+    .webp({ quality: 95 })
+    .toFile(path.join(RACINE, "src/assets/stacgate-archisys-combined.webp"));
+
+  await sharp(path.join(RACINE, "src/assets/stacgate-archisys-combined.webp")).toFile(
+    path.join(RACINE, "public/media/stacgate-archisys-combined.webp"),
+  );
+
   // 6. Composition du Badge Carré Hybride 800 × 800 px (public/media/stacgate-archisys-badge.webp)
   console.log("[6/6] Composition du badge carré officiel (800 × 800)…");
   const badgeSize = 800;

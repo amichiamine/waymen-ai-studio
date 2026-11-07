@@ -45,7 +45,7 @@ import {
   Globe,
   ArrowRight,
 } from "lucide-react";
-import defaultLogoSrc from "@/assets/stacgate-logo.webp";
+import defaultLogoSrc from "@/assets/stacgate-archisys-combined.webp";
 import { resoudreUrlMedia } from "@/components/media-url";
 import { MediaPickerDialog } from "@/components/admin/MediaPickerField";
 import { BuilderStepsVisualEditor } from "@/components/admin/BuilderStepsVisualEditor";
@@ -337,7 +337,7 @@ export default function AdminSettings() {
                       </div>
 
                       <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
-                        <div className="flex flex-col items-center justify-center p-2 rounded-md border border-border bg-card dark:bg-white/95 shrink-0 min-w-28 h-14 shadow-xs">
+                        <div className="flex flex-col items-center justify-center p-2 rounded-md border border-border bg-card shrink-0 min-w-36 h-14 shadow-xs">
                           <img
                             src={
                               form.logoUrl && form.logoUrl.trim() !== ""
@@ -345,7 +345,7 @@ export default function AdminSettings() {
                                 : defaultLogoSrc
                             }
                             alt="Aperçu logo"
-                            className="max-h-10 max-w-24 object-contain"
+                            className="max-h-10 max-w-32 object-contain"
                           />
                         </div>
 
