@@ -16,7 +16,7 @@ export function Logo({ className = "h-9" }: { className?: string }) {
   const hasCustomLogo = Boolean(customSrc && !loadError);
   const logoSrc = hasCustomLogo ? customSrc : defaultLogoSrc;
   const storeName = s.storeName && s.storeName.trim() !== "" ? s.storeName : "StacGate Platform";
-  const altText = `${storeName} — Plateforme E-Commerce, Conçue et Validée par ArchiSys3.0`;
+  const altText = `${storeName} — Designed & Validated by ArchiSys3.0`;
 
   return (
     <span className="inline-flex items-center justify-center align-middle transition-opacity hover:opacity-95">

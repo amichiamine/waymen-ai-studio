@@ -256,10 +256,10 @@ async function main() {
     .toBuffer();
 
   const roundedCorners = Buffer.from(
-    '<svg><rect x="0" y="0" width="130" height="130" rx="16" ry="16"/></svg>',
+    '<svg><rect x="0" y="0" width="136" height="136" rx="18" ry="18"/></svg>',
   );
   const sigCombBuf = await sharp(SRC_SIGNATURE)
-    .resize(130, 130, { fit: "cover" })
+    .resize(136, 136, { fit: "cover" })
     .composite([{ input: roundedCorners, blend: "dest-in" }])
     .png()
     .toBuffer();
@@ -288,16 +288,15 @@ async function main() {
       <text x="0" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="2.8">PLATFORM</text>
     </g>
     <line x1="355" y1="28" x2="355" y2="132" stroke="url(#divGrad)" stroke-width="2" stroke-linecap="round"/>
-    <g transform="translate(380, 58)">
-      <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#94a3b8" letter-spacing="1.8">CONÇU &amp; VALIDÉ PAR</text>
-      <text x="0" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="900" fill="#38bdf8" letter-spacing="0.5">ArchiSys3.0</text>
-      <text x="0" y="47" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#64748b" letter-spacing="1.2">DIRECTION TECHNIQUE &amp; R&amp;D</text>
+    <g transform="translate(380, 75)">
+      <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="2.2">DESIGNED &amp; VALIDATED BY</text>
+      <text x="0" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#38bdf8" letter-spacing="1.8">TECHNICAL DIRECTION &amp; R&amp;D</text>
     </g>
   </svg>`;
 
   const combComposite = sharp(Buffer.from(svgCombOverlay)).composite([
     { input: logoCombBuf, top: 15, left: 16 },
-    { input: sigCombBuf, top: 15, left: 614 },
+    { input: sigCombBuf, top: 12, left: 608 },
   ]);
 
   // 1. Format WebP haute qualité
@@ -347,12 +346,11 @@ async function main() {
     <text x="0" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="2.8">PLATFORM</text>
   </g>
   <line x1="355" y1="28" x2="355" y2="132" stroke="url(#divGrad)" stroke-width="2" stroke-linecap="round"/>
-  <g transform="translate(380, 58)">
-    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#94a3b8" letter-spacing="1.8">CONÇU &amp; VALIDÉ PAR</text>
-    <text x="0" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="900" fill="#38bdf8" letter-spacing="0.5">ArchiSys3.0</text>
-    <text x="0" y="47" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#64748b" letter-spacing="1.2">DIRECTION TECHNIQUE &amp; R&amp;D</text>
+  <g transform="translate(380, 75)">
+    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="2.2">DESIGNED &amp; VALIDATED BY</text>
+    <text x="0" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#38bdf8" letter-spacing="1.8">TECHNICAL DIRECTION &amp; R&amp;D</text>
   </g>
-  <image href="data:image/png;base64,${sigCombB64}" x="614" y="15" width="130" height="130" preserveAspectRatio="xMidYMid meet"/>
+  <image href="data:image/png;base64,${sigCombB64}" x="608" y="12" width="136" height="136" preserveAspectRatio="xMidYMid meet"/>
 </svg>\n`;
 
   fs.writeFileSync(
