@@ -51,9 +51,10 @@
  * - api/vendor/       : dépendances Composer de développement. L'API
  *   tourne sans Composer en production (voir docs/BACKEND.md).
  *
- * - uploads/ (dist)   : médias téléversés par la boutique. Ce sont des
- *   données d'exécution, pas du code. Le dossier est créé vide par
- *   l'hébergeur, ou conservé entre deux déploiements.
+ * - uploads/ (dist)   : médias téléversés par la boutique. Le dossier est
+ *   embarqué dans le package avec un .htaccess durci (interdisant tout script)
+ *   et un index.html neutre. Les fichiers déjà téléversés par l'exploitant
+ *   sont naturellement conservés entre deux déploiements.
  *
  * =====================================================================
  * COMPATIBILITÉ bun ET npm
@@ -311,6 +312,38 @@ function main() {
         ? "PRÉSENT (erreur !)"
         : "absent (correct)"),
   );
+
+  // 4 bis. Préparation et sécurisation du dossier dist/uploads/
+  const uploadsDest = path.join(DIST, "uploads");
+  if (!fs.existsSync(uploadsDest)) {
+    fs.mkdirSync(uploadsDest, { recursive: true });
+  }
+
+  const htaccessUploads = path.join(uploadsDest, ".htaccess");
+  const indexUploads = path.join(uploadsDest, "index.html");
+
+  const htaccessUploadsContent = [
+    "# StacGate Platform - Sécurisation stricte du dossier uploads",
+    "# Interdiction formelle d'exécution de scripts",
+    '<FilesMatch "\\.(php|phtml|php3|php4|php5|php7|php8|phps|phar|cgi|pl|py|sh|asp|aspx|exe|js)$">',
+    "    Require all denied",
+    "</FilesMatch>",
+    "Options -Indexes -ExecCGI",
+    "",
+  ].join("\n");
+
+  fs.writeFileSync(htaccessUploads, htaccessUploadsContent, "utf8");
+
+  if (!fs.existsSync(indexUploads)) {
+    fs.writeFileSync(
+      indexUploads,
+      "<!DOCTYPE html><html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1></body></html>\n",
+      "utf8",
+    );
+  }
+
+  log("  dist/uploads/.htaccess : présent (sécurisé)");
+  log("  dist/uploads/index.html: présent");
 
   // 5. Création du zip horodaté + réplication latest
   const nomHorodate = obtenirNomArchiveHorodatee();

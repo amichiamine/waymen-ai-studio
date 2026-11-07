@@ -156,10 +156,9 @@ final class ControleurMedias
             throw ApiException::validation('Fichier invalide.', ['file' => ['Source de fichier non autorisée.']]);
         }
 
-        $finfo    = new \finfo(FILEINFO_MIME_TYPE);
-        $mimeReel = $finfo->file($cheminTmp);
+        $mimeReel = $this->detecterMimeReel($cheminTmp);
 
-        if ($mimeReel === false || !isset(self::MIME_IMAGES[$mimeReel])) {
+        if ($mimeReel === null || !isset(self::MIME_IMAGES[$mimeReel])) {
             $acceptes = implode(', ', array_keys(self::MIME_IMAGES));
             $msg = "Type de fichier non autorisé : « {$mimeReel} ». Types acceptés : {$acceptes}.";
             throw ApiException::validation($msg, ['file' => [$msg]]);
@@ -434,5 +433,97 @@ final class ControleurMedias
         }
 
         return $dto;
+    }
+    /**
+     * Détection du type MIME réel par inspection des signatures d'octets (magic bytes).
+     * Multi-paliers ultra-résilient :
+     * 1. \finfo si l'extension PHP fileinfo est présente
+     * 2. mime_content_type() si disponible
+     * 3. getimagesize() si GD ou fonction native présente
+     * 4. Lecteur pur PHP de magic bytes (signatures binaires brutes)
+     */
+    private function detecterMimeReel(string $chemin): ?string
+    {
+        if (class_exists('\\finfo')) {
+            try {
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mime = $finfo->file($chemin);
+                if (is_string($mime) && $mime !== '') {
+                    return $mime;
+                }
+            } catch (\Throwable) {
+                // Repli
+            }
+        }
+
+        if (function_exists('mime_content_type')) {
+            try {
+                $mime = @mime_content_type($chemin);
+                if (is_string($mime) && $mime !== '') {
+                    return $mime;
+                }
+            } catch (\Throwable) {
+                // Repli
+            }
+        }
+
+        if (function_exists('getimagesize')) {
+            try {
+                $info = @getimagesize($chemin);
+                if (is_array($info) && !empty($info['mime']) && is_string($info['mime'])) {
+                    return $info['mime'];
+                }
+            } catch (\Throwable) {
+                // Repli
+            }
+        }
+
+        return $this->detecterMimeMagicBytes($chemin);
+    }
+
+    /**
+     * Analyse binaire directe des premiers octets du fichier en pur PHP.
+     * Zéro dépendance d'extension.
+     */
+    private function detecterMimeMagicBytes(string $chemin): ?string
+    {
+        $handle = @fopen($chemin, 'rb');
+        if ($handle === false) {
+            return null;
+        }
+
+        $octets = (string) @fread($handle, 512);
+        @fclose($handle);
+
+        if (strlen($octets) < 4) {
+            return null;
+        }
+
+        if (str_starts_with($octets, "\xFF\xD8\xFF")) {
+            return 'image/jpeg';
+        }
+
+        if (str_starts_with($octets, "\x89PNG\r\n\x1a\n")) {
+            return 'image/png';
+        }
+
+        if (str_starts_with($octets, 'GIF87a') || str_starts_with($octets, 'GIF89a')) {
+            return 'image/gif';
+        }
+
+        if (str_starts_with($octets, 'RIFF') && substr($octets, 8, 4) === 'WEBP') {
+            return 'image/webp';
+        }
+
+        if (strlen($octets) >= 12 && (substr($octets, 4, 8) === 'ftypavif' || substr($octets, 4, 8) === 'ftypavis')) {
+            return 'image/avif';
+        }
+
+        $debutTexte = strtolower(substr($octets, 0, 512));
+        if (str_contains($debutTexte, '<svg') && !str_contains($debutTexte, '<?php') && !str_contains($debutTexte, '<%')) {
+            return 'image/svg+xml';
+        }
+
+        return null;
     }
 }

@@ -34,7 +34,8 @@ final class ControleurMarques
     public function __construct(private readonly Db $db)
     {
         try {
-            $this->db->run("ALTER TABLE brands ADD COLUMN logo TEXT");
+            // Migration idempotente exécutée directement sur PDO pour ne pas polluer les journaux d'erreurs
+            $this->db->pdo()->exec("ALTER TABLE brands ADD COLUMN logo TEXT");
         } catch (\Throwable) {
             // Colonne déjà présente
         }

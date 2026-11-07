@@ -224,12 +224,53 @@ final class Installateur
      * Un témoin déposé sur une transaction annulée interdirait de réinstaller
      * une base vide.
      */
+    /**
+     * Initialise et sécurise le dossier uploads/ s'il n'existe pas encore.
+     * Crée le dossier, pose le .htaccess restrictif et l'index.html anti-listing.
+     */
+    public function initialiserDossierUploads(?string $dossierUploads = null): bool
+    {
+        $dossier = $dossierUploads !== null
+            ? rtrim($dossierUploads, '/')
+            : dirname($this->racineApi) . '/uploads';
+
+        if (!is_dir($dossier)) {
+            if (!@mkdir($dossier, 0775, true) && !is_dir($dossier)) {
+                ($this->ligne)("Avertissement : impossible de créer le dossier d'upload « {$dossier} ». Vérifiez les permissions.");
+                return false;
+            }
+        }
+
+        // Fichier .htaccess protecteur contre l'exécution de scripts
+        $htaccess = $dossier . '/.htaccess';
+        if (!file_exists($htaccess)) {
+            $contenuHtaccess = "# StacGate Platform - Sécurisation stricte du dossier uploads\n"
+                . "# Interdiction formelle d'exécution de scripts\n"
+                . "<FilesMatch \"\\.(php|phtml|php3|php4|php5|php7|php8|phps|phar|cgi|pl|py|sh|asp|aspx|exe|js)$\">\n"
+                . "    Require all denied\n"
+                . "</FilesMatch>\n"
+                . "Options -Indexes -ExecCGI\n";
+            @file_put_contents($htaccess, $contenuHtaccess);
+        }
+
+        // Index neutre anti-listing
+        $indexHtml = $dossier . '/index.html';
+        if (!file_exists($indexHtml)) {
+            @file_put_contents($indexHtml, "<!DOCTYPE html><html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1></body></html>\n");
+        }
+
+        ($this->ligne)("Dossier d'upload initialisé et sécurisé : {$dossier}");
+        return true;
+    }
+
     public function conclure(): void
     {
         if ($this->transactionOuverte) {
             $this->db->commit();
             $this->transactionOuverte = false;
         }
+
+        $this->initialiserDossierUploads();
 
         file_put_contents(
             $this->cheminTemoin(),

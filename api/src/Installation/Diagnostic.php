@@ -166,6 +166,16 @@ final class Diagnostic
             );
         }
 
+        $fileinfo = extension_loaded('fileinfo') || class_exists('\\finfo');
+        $this->ajouter(
+            'Module PHP « fileinfo » (détection optimisée des images téléversées)',
+            $fileinfo ? 'présent' : 'absent (repli autonome actif)',
+            self::OK,
+            $fileinfo ? null : 'Recommandé : activez l\'extension « fileinfo » dans le panneau de votre '
+                . 'hébergeur (Configuration PHP → Extensions) pour des performances d\'upload optimales. '
+                . 'Le système dispose d\'un repli 100% autonome par signatures binaires (magic-bytes).',
+        );
+
         $argon = function_exists('password_algos')
             && defined('PASSWORD_ARGON2ID')
             && in_array((string) PASSWORD_ARGON2ID, password_algos(), true);
@@ -188,6 +198,21 @@ final class Diagnostic
             $this->apiInscriptible ? null : 'BLOQUANT : l\'assistant ne pourra pas écrire le '
                 . 'fichier api/.env. Dans le gestionnaire de fichiers de votre hébergeur, '
                 . 'donnez les droits 0755 au dossier api/.',
+        );
+
+        $racineSite = dirname($racineApi);
+        $dossierUploads = $racineSite . '/uploads';
+        $uploadsExiste = is_dir($dossierUploads);
+        $uploadsInscriptible = $uploadsExiste ? is_writable($dossierUploads) : is_writable($racineSite);
+
+        $this->ajouter(
+            'Dossier des médias téléversés (uploads/)',
+            $uploadsExiste
+                ? ($uploadsInscriptible ? 'présent et inscriptible' : 'présent mais NON inscriptible')
+                : ($uploadsInscriptible ? 'création automatique possible à l\'installation' : 'absent et racine non inscriptible'),
+            $uploadsInscriptible ? self::OK : self::ALERTE,
+            $uploadsInscriptible ? null : 'BLOQUANT : le serveur ne pourra pas enregistrer les images téléversées. '
+                . 'Créez le dossier uploads/ à la racine du site et attribuez-lui les permissions 0755 ou 0775.',
         );
 
         $this->ajouter(

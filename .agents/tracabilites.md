@@ -1492,3 +1492,47 @@
   - Plan interactif et miroir : 📄 [31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md)
   - Archive application horodatée : 📦 [katech-site-06112026-2359.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2359.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-2359.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2359.zip)
+
+
+---
+
+## Phase 32 : Blindage Universel des Téléversements Médias, Embarquement Dossier uploads dans le Package ZIP & Initialisation Proactive par l'Installateur
+
+- **Date :** 07 Novembre 2026
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation 32.
+- **Contexte & Problématique Terrain :**
+  - Sur le serveur de test cPanel mutualisé `https://ardpod.com`, tout téléversement d'image depuis le panneau d'administration échouait avec une erreur HTTP 500 (`INTERNAL_ERROR : Class "finfo" not found in ControleurMedias.php:159`).
+  - L'extension PHP `ext-fileinfo` n'était pas activée dans le sélecteur PHP de l'hébergeur.
+  - La création manuelle du dossier `uploads/` en 755 ne résolvait rien car le crash survenait en amont lors de la tentative d'instanciation de `\finfo`.
+  - Par ailleurs, le journal serveur `error_log` était massivement pollué par `Échec SQL : ALTER TABLE brands ADD COLUMN logo TEXT — duplicate column name: logo` à chaque consultation des marques.
+- **Actions Réalisées :**
+  - **Étape 32.A (Détection MIME Multi-Paliers 100% PHP Pur — Insubmersibilité) :**
+    - Modification de [`api/src/Controllers/ControleurMedias.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMedias.php) : remplacement de l'instanciation directe de `\finfo` par `detecterMimeReel()`.
+    - Implémentation d'une cascade de 4 paliers :
+      1. `\finfo` (si la classe existe dans l'environnement PHP).
+      2. `mime_content_type()` (si la fonction native est déclarée).
+      3. `getimagesize()` (si GD ou la fonction standard est disponible).
+      4. Lecteur pur PHP autonome de signatures d'octets (*magic bytes*) : détection binaire infaillible pour JPEG (`\xFF\xD8\xFF`), PNG (`\x89PNG\r\n\x1a\n`), GIF (`GIF87a`/`GIF89a`), WebP (`RIFF....WEBP`), AVIF (`ftypavif`/`ftypavis`) et SVG (`<svg` sécurisé sans balise script/php).
+    - Zéro crash 500 même sur un serveur PHP minimaliste dépourvu d'extension média.
+  - **Étape 32.B (Embarquement Natif de uploads/ dans le Package de Déploiement) :**
+    - Modification de [`scripts/paqueter.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter.ts) : ajout de l'étape 4 bis générant proactivement `dist/uploads/` avant compression dans le ZIP.
+    - Injection automatique d'un fichier `.htaccess` blindé interdisant strictement l'exécution de tout script (`.php`, `.phtml`, `.cgi`, `.sh`, `.exe`, `.js`, etc.) et neutralisant le listing de répertoire (`Options -Indexes -ExecCGI`).
+    - Injection automatique d'un fichier `index.html` neutre anti-listing.
+    - Présence effective de `uploads/.htaccess` et `uploads/index.html` validée dans l'archive finale.
+  - **Étape 32.C (Initialisation & Réparation Proactive par install.php) :**
+    - Modification de [`api/src/Installation/Installateur.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Installation/Installateur.php) : ajout de la méthode `initialiserDossierUploads()` appelée automatiquement lors de la conclusion de l'installation (`conclure()`), créant le dossier avec permissions `0775`/`0755` et y déployant les verrous `.htaccess` et `index.html` s'ils sont manquants.
+    - Modification de [`api/src/Installation/Diagnostic.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Installation/Diagnostic.php) :
+      - Diagnostic de l'extension `fileinfo` (affichant un statut vert avec mention du repli autonome en cas d'absence).
+      - Diagnostic de la présence et des droits d'écriture sur le dossier `uploads/` dès l'écran 1 de l'assistant.
+  - **Étape 32.D (Assainissement des Journaux SQL) :**
+    - Modification de [`api/src/Controllers/ControleurMarques.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMarques.php) : exécution de la migration idempotente directement sur l'instance native PDO (`$this->db->pdo()->exec(...)`), évitant ainsi de déclencher `Db::journaliser()` et éradiquant tout faux positif `duplicate column name: logo` dans les journaux d'erreurs Apache/cPanel.
+  - **Étape 32.E (Contrôles Qualité CI & Packaging Cumulatif) :**
+    - `verifier-i18n` : 100% de parité trilingue FR/EN/AR.
+    - `format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `eslint` : 0 erreur ESLint.
+    - `build & paqueter` : archives horodatées `katech-site-07112026-1411.zip` (4.35 Mo) et `katech-data-07112026-1411.zip` (36 Ko) créées et vérifiées.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md)
+  - Archive application horodatée : 📦 [katech-site-07112026-1411.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-07112026-1411.zip)
+  - Archive données horodatée : 📦 [katech-data-07112026-1411.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-07112026-1411.zip)
