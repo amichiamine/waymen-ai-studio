@@ -104,11 +104,17 @@ final class ControleurMarques
             ? strtolower(trim((string) $r->corps('id')))
             : strtolower(preg_replace('/[^a-z0-9]+/i', '-', $nom) ?? '');
 
+        $descBrut = $r->corps('description');
+        $desc = is_array($descBrut) ? Db::json($descBrut) : ($descBrut !== null ? trim((string) $descBrut) : null);
+
+        $paysBrut = $r->corps('country');
+        $pays = is_array($paysBrut) ? Db::json($paysBrut) : ($paysBrut !== null ? trim((string) $paysBrut) : null);
+
         $this->db->transaction(fn (Db $d) => $d->upsert('brands', [
             'id'          => $id,
             'name'        => $nom,
-            'description' => $r->corps('description'),
-            'country'     => $r->corps('country'),
+            'description' => $desc,
+            'country'     => $pays,
             'logo'        => $r->corps('logo'),
             'created_at'  => $maintenant,
             'updated_at'  => $maintenant,
@@ -137,8 +143,10 @@ final class ControleurMarques
 
         // Fusion PATCH : seuls les champs fournis écrasent l'existant.
         $nom         = trim((string) $r->corps('name', $existant['name']));
-        $description = $r->corps('description') !== null ? (string) $r->corps('description') : $existant['description'];
-        $country     = $r->corps('country') !== null ? (string) $r->corps('country') : $existant['country'];
+        $descBrut    = $r->corps('description');
+        $description = $descBrut !== null ? (is_array($descBrut) ? Db::json($descBrut) : (string) $descBrut) : $existant['description'];
+        $paysBrut    = $r->corps('country');
+        $country     = $paysBrut !== null ? (is_array($paysBrut) ? Db::json($paysBrut) : (string) $paysBrut) : $existant['country'];
         $logo        = $r->corps('logo') !== null ? (string) $r->corps('logo') : ($existant['logo'] ?? null);
 
         if ($nom === '') {
@@ -233,10 +241,10 @@ final class ControleurMarques
         $dto = ['id' => (string) $l['id'], 'name' => (string) $l['name']];
 
         if ($l['description'] !== null) {
-            $dto['description'] = (string) $l['description'];
+            $dto['description'] = Db::dejson($l['description'], (string) $l['description']);
         }
         if ($l['country'] !== null) {
-            $dto['country'] = (string) $l['country'];
+            $dto['country'] = Db::dejson($l['country'], (string) $l['country']);
         }
         if (isset($l['logo']) && $l['logo'] !== null && $l['logo'] !== '') {
             $dto['logo'] = (string) $l['logo'];

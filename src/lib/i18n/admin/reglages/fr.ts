@@ -363,6 +363,50 @@ const reglagesFr: Record<string, string> = {
   "admin.reglages.notion.erreur_backend_desc":
     "Le serveur ne répond pas. Vérifiez votre connexion et actualisez la page.",
   "admin.reglages.notion.btn_reessayer": "Réessayer",
+  "admin.reglages.parametres.onglet_boutique": "Boutique",
+  "admin.reglages.parametres.onglet_apparence": "Identité & Thème",
+  "admin.reglages.parametres.onglet_maintenance": "Maintenance VIP",
+  "admin.reglages.parametres.onglet_finance": "Devise & Tarifs",
+  "admin.reglages.parametres.onglet_configurateur": "Configurateur PC",
+  "admin.reglages.parametres.onglet_options": "Options & Stocks",
+  "admin.reglages.parametres.typographie_titre": "Typographie & Géométrie UI",
+  "admin.reglages.parametres.typographie_desc":
+    "Harmonisation des polices de caractères, arrondis et styles des boutons.",
+  "admin.reglages.parametres.typographie_police_globale": "Police de caractères globale",
+  "admin.reglages.parametres.typographie_police_aide":
+    "Police injectée en haute fidélité sur les titres, boutons et paragraphes du site.",
+  "admin.reglages.parametres.typographie_arrondi_titre": "Arrondi des bordures (Rayon UI)",
+  "admin.reglages.parametres.typographie_arrondi_aide":
+    "Détermine le galbe de l'ensemble des cartes, boutons et champs de saisie.",
+  "admin.reglages.parametres.typographie_style_boutons": "Style d'affichage des boutons",
+  "admin.reglages.parametres.typographie_apercu_interactif": "Aperçu interactif des réglages",
+  "admin.reglages.parametres.bouton_style_flat": "Plat épuré (Flat design direct)",
+  "admin.reglages.parametres.bouton_style_subtle":
+    "Subtil avec liseré (Moderne avec bordure contrastée)",
+  "admin.reglages.parametres.bouton_style_glow": "Tech Glow (Léger halo lumineux d'accentuation)",
+  "admin.reglages.parametres.police_system": "Système universel (Sans-serif natif)",
+  "admin.reglages.parametres.police_inter": "Inter (Clair, moderne & lisible)",
+  "admin.reglages.parametres.police_outfit": "Outfit (Géométrique & Tech premium)",
+  "admin.reglages.parametres.police_jakarta": "Plus Jakarta Sans (Épuré & élégant)",
+  "admin.reglages.parametres.police_poppins": "Poppins (Rond, dynamique & chaleureux)",
+  "admin.reglages.parametres.police_cairo": "Cairo (Bilingue parfait Arabe & Français)",
+  "admin.reglages.parametres.arrondi_sharp": "Net / Carré (0px — style console & brutaliste)",
+  "admin.reglages.parametres.arrondi_modern": "Moderne (8px — équilibré & professionnel)",
+  "admin.reglages.parametres.arrondi_soft": "Doux (14px — convivial & fluide)",
+  "admin.reglages.parametres.arrondi_pill": "Pilule (20px — style arrondi & moderne)",
+  "admin.reglages.parametres.maintenance_modal_titre": "Aperçu Live (Modal)",
+  "admin.reglages.parametres.maintenance_accroche_label": "Titre d'accroche personnalisé",
+  "admin.reglages.parametres.maintenance_accroche_placeholder": "ex: Réouverture très bientôt...",
+  "admin.reglages.parametres.maintenance_message_placeholder":
+    "Message d'information pour vos visiteurs...",
+  "admin.reglages.parametres.maintenance_reouverture_label":
+    "Date / Heure estimée de réouverture (optionnel)",
+  "admin.reglages.parametres.maintenance_reouverture_placeholder": "ex: Demain dès 09h00",
+  "admin.reglages.parametres.maintenance_whatsapp_label": "Bouton d'assistance WhatsApp VIP",
+  "admin.reglages.parametres.maintenance_whatsapp_aide":
+    "Affiche un bouton vert direct pour discuter sur WhatsApp pendant la maintenance.",
+  "admin.reglages.parametres.maintenance_modal_live": "Aperçu Live du Mode Maintenance VIP",
+  "admin.reglages.wizard.pret_lancement": "Prêt pour le lancement officiel !",
 };
 
 export default reglagesFr;

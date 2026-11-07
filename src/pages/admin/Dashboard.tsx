@@ -25,7 +25,7 @@ import {
   useReviewList,
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -57,6 +57,7 @@ export default function AdminDashboard() {
   const { data: reviews, loading: lRev, error: eRev } = useReviewList();
 
   const { t } = useI18n();
+  const L = useLocalize();
 
   // Niveau 1 — lecture uniquement : aucune garde d'action n'est requise sur ce
   // tableau de bord. Le hook est présent pour cohérence et évolution future.
@@ -335,7 +336,7 @@ export default function AdminDashboard() {
                     <div key={c.slug}>
                       <div className="mb-1 flex items-center justify-between text-sm">
                         <Link to={`/admin/products`} className="hover:text-primary">
-                          {c.label}
+                          {L(c.label)}
                         </Link>
                         <span className="text-muted-foreground">
                           {c.count} · {pct}%
@@ -393,23 +394,20 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-3">
           <img
             src="/media/stacgate-archisys-badge.webp"
-            alt="Sceau d'Architecture ArchiSys3.0"
+            alt={t("admin.socle.archisys.alt")}
             className="size-10 rounded-lg border border-border object-contain shadow-xs"
           />
           <div>
-            <p className="font-semibold text-foreground">
-              StacGate Platform • Socle Architectural Élite
-            </p>
+            <p className="font-semibold text-foreground">{t("admin.socle.archisys.badge")}</p>
             <p className="text-[11px]">
-              Conception et Direction d'Architecture R&amp;D validées par{" "}
-              <span className="font-semibold text-primary">ArchiSys3.0</span>
+              {t("admin.socle.archisys.desc", { auteur: "ArchiSys3.0" })}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
             <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Noyau Validé
+            {t("admin.socle.archisys.noyau_valide")}
           </span>
         </div>
       </div>

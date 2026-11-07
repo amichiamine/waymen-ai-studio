@@ -134,14 +134,22 @@ final class ControleurCategories
         }
 
         // Fusion PATCH : seuls les champs fournis écrasent l'existant.
-        $label       = trim((string) $r->corps('label', $existant['label']));
-        $description = trim((string) $r->corps('description', $existant['description']));
+        $labelBrut = $r->corps('label');
+        if ($labelBrut !== null) {
+            $label = is_array($labelBrut) ? Db::json($labelBrut) : trim((string) $labelBrut);
+            if ($label === '' || $label === '[]' || $label === '{}') {
+                throw ApiException::validation('Catégorie invalide.', ['label' => ['Champ obligatoire.']]);
+            }
+        } else {
+            $label = $existant['label'];
+        }
+
+        $descBrut = $r->corps('description');
+        $description = $descBrut !== null
+            ? (is_array($descBrut) ? Db::json($descBrut) : trim((string) $descBrut))
+            : $existant['description'];
         $cover       = $r->corps('cover') !== null ? (string) $r->corps('cover') : $existant['cover'];
         $position    = $r->corps('position') !== null ? (int) $r->corps('position') : (int) $existant['position'];
-
-        if ($label === '') {
-            throw ApiException::validation('Catégorie invalide.', ['label' => ['Champ obligatoire.']]);
-        }
 
         $maintenant = gmdate('c');
 
@@ -216,17 +224,26 @@ final class ControleurCategories
      */
     private function validerCorps(Requete $r): array
     {
-        $label = trim((string) $r->corps('label', ''));
-        if ($label === '') {
+        $labelBrut = $r->corps('label', '');
+        if (is_array($labelBrut)) {
+            $label = Db::json($labelBrut);
+            $slugSource = (string) ($labelBrut['fr'] ?? $labelBrut['en'] ?? reset($labelBrut) ?? '');
+        } else {
+            $label = trim((string) $labelBrut);
+            $slugSource = $label;
+        }
+
+        if ($label === '' || $label === '[]' || $label === '{}') {
             throw ApiException::validation('Catégorie invalide.', ['label' => ['Champ obligatoire.']]);
         }
 
-        $description = trim((string) $r->corps('description', ''));
+        $descBrut = $r->corps('description', '');
+        $description = is_array($descBrut) ? Db::json($descBrut) : trim((string) $descBrut);
 
         // Le slug peut être fourni ; sinon on le dérive du label.
         $slug = $r->corps('slug') !== null
             ? strtolower(trim((string) $r->corps('slug')))
-            : strtolower(preg_replace('/[^a-z0-9]+/i', '-', $label) ?? '');
+            : strtolower(preg_replace('/[^a-z0-9]+/i', '-', $slugSource) ?? '');
 
         if ($slug === '') {
             throw ApiException::validation('Catégorie invalide.', ['slug' => ['Slug invalide ou non dérivable du label.']]);
@@ -265,8 +282,8 @@ final class ControleurCategories
     {
         $dto = [
             'slug'        => (string) $l['slug'],
-            'label'       => (string) $l['label'],
-            'description' => (string) $l['description'],
+            'label'       => Db::dejson($l['label'], (string) $l['label']),
+            'description' => Db::dejson($l['description'], (string) $l['description']),
             'position'    => (int) $l['position'],
         ];
 

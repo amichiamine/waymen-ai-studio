@@ -475,9 +475,9 @@ export const categoryMeta: Record<
 export type CategoryMetaInfo = {
   slug: string;
   labelKey?: string;
-  labelText?: string;
+  labelText?: Localized<string>;
   descKey?: string;
-  descText?: string;
+  descText?: Localized<string>;
 };
 
 /**
@@ -485,7 +485,7 @@ export type CategoryMetaInfo = {
  */
 export function getCategoryMeta(
   slug: string,
-  dynamicCategory?: { slug: string; label: string; description?: string },
+  dynamicCategory?: { slug: string; label: Localized<string>; description?: Localized<string> },
 ): CategoryMetaInfo {
   if (slug in categoryMeta) {
     const b = categoryMeta[slug as BuiltinCategory];

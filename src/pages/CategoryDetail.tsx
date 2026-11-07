@@ -7,7 +7,7 @@ import { useProducts } from "@/lib/useProducts";
 import { ProductCard } from "@/components/ProductCard";
 import { UseChips } from "@/components/UseChips";
 import { ChevronRight } from "lucide-react";
-import { useI18n, type TKey } from "@/lib/i18n";
+import { useI18n, useLocalize, type TKey } from "@/lib/i18n";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { useCategoryList, useSiteSettings } from "@/data-provider";
 import { useFormatPrice } from "@/lib/format-price";
@@ -105,8 +105,9 @@ function CategoryView({ cat, dynamicCat }: { cat: Category; dynamicCat?: AdminCa
     onLoadMore: () => setVisible((v) => v + PAGE),
   });
 
-  const label = meta.labelKey ? t(meta.labelKey) : meta.labelText || cat;
-  const desc = meta.descKey ? t(meta.descKey) : meta.descText || "";
+  const L = useLocalize();
+  const label = (meta.labelKey ? t(meta.labelKey) : L(meta.labelText)) || cat;
+  const desc = (meta.descKey ? t(meta.descKey) : L(meta.descText)) || "";
 
   return (
     <div className="container-page py-8 lg:py-12">

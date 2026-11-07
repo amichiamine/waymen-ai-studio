@@ -145,22 +145,19 @@ export default function About() {
         <div className="grid gap-6 lg:grid-cols-12 items-center p-6 lg:p-8">
           <div className="lg:col-span-7 space-y-3 text-start">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <span>🛡️ Architecture &amp; R&amp;D Certifiées</span>
+              <span>{t("about.archisys.badge")}</span>
             </div>
             <h3 className="text-xl lg:text-2xl font-bold tracking-tight text-foreground">
-              Conception &amp; Direction Technique
+              {t("about.archisys.title")}
             </h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              La plateforme repose sur une architecture moderne conçue et validée sous la direction
-              de <strong className="text-foreground">ArchiSys3.0</strong>, garantissant souveraineté
-              des données, haute disponibilité, résilience transactionnelle et performances
-              d'exécution instantanées.
+              {t("about.archisys.desc", { auteur: "ArchiSys3.0" })}
             </p>
           </div>
           <div className="lg:col-span-5 flex justify-center">
             <img
               src={archisysBannerSrc}
-              alt="StacGate Platform — Conçu et Validé par ArchiSys3.0"
+              alt={t("about.archisys.alt")}
               className="max-h-48 w-auto rounded-xl border border-border/80 object-cover shadow-md transition-transform hover:scale-[1.02]"
               loading="lazy"
             />

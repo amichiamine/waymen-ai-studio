@@ -353,6 +353,48 @@ const reglagesAr: Record<string, string> = {
   "admin.reglages.notion.erreur_backend_desc":
     "الخادم لا يستجيب. تحقق من اتصالك وأعد تحميل الصفحة.",
   "admin.reglages.notion.btn_reessayer": "إعادة المحاولة",
+  "admin.reglages.parametres.onglet_boutique": "المتجر",
+  "admin.reglages.parametres.onglet_apparence": "الهوية والمظهر",
+  "admin.reglages.parametres.onglet_maintenance": "صيانة VIP",
+  "admin.reglages.parametres.onglet_finance": "العملة والأسعار",
+  "admin.reglages.parametres.onglet_configurateur": "مُجمّع الحواسيب",
+  "admin.reglages.parametres.onglet_options": "الخيارات والمخزون",
+  "admin.reglages.parametres.typographie_titre": "الخطوط والهندسة البصرية",
+  "admin.reglages.parametres.typographie_desc": "تناسق الخطوط، انحناء الحواف وأنماط الأزرار.",
+  "admin.reglages.parametres.typographie_police_globale": "الخط العام للموقع",
+  "admin.reglages.parametres.typographie_police_aide":
+    "خط مخصص عالي الدقة يُطبق على العناوين والأزرار والفقرات.",
+  "admin.reglages.parametres.typographie_arrondi_titre": "انحناء الحواف (نصف قطر الواجهة)",
+  "admin.reglages.parametres.typographie_arrondi_aide":
+    "يحدد درجة استدارة البطاقات والأزرار وحقول الإدخال في المتجر.",
+  "admin.reglages.parametres.typographie_style_boutons": "نمط عرض الأزرار",
+  "admin.reglages.parametres.typographie_apercu_interactif": "معاينة تفاعلية للإعدادات",
+  "admin.reglages.parametres.bouton_style_flat": "مسطح عصري (تصميم مباشر وأنيق)",
+  "admin.reglages.parametres.bouton_style_subtle": "ناعم مع إطار (عصري بحواف متباينة)",
+  "admin.reglages.parametres.bouton_style_glow": "توهج تقني (هالة مضيئة محيطة)",
+  "admin.reglages.parametres.police_system": "خط النظام العام (Sans-serif افتراضي)",
+  "admin.reglages.parametres.police_inter": "Inter (واضح وعصري وسلس القراءة)",
+  "admin.reglages.parametres.police_outfit": "Outfit (هندسي وتقني راقٍ)",
+  "admin.reglages.parametres.police_jakarta": "Plus Jakarta Sans (أنيق وراقٍ)",
+  "admin.reglages.parametres.police_poppins": "Poppins (دائري وحيوي وجذاب)",
+  "admin.reglages.parametres.police_cairo": "Cairo (مثالي ومتقن للغتين العربية واللاتينية)",
+  "admin.reglages.parametres.arrondi_sharp": "حاد / مربع (0 بكسل — نمط كونسول وبروتاليست)",
+  "admin.reglages.parametres.arrondi_modern": "عصري (8 بكسل — متوازن واحترافي)",
+  "admin.reglages.parametres.arrondi_soft": "ناعم (14 بكسل — انسيابي ومريح)",
+  "admin.reglages.parametres.arrondi_pill": "كبسولة (20 بكسل — مستدير وعصري)",
+  "admin.reglages.parametres.maintenance_modal_titre": "معاينة حية (نافذة منبثقة)",
+  "admin.reglages.parametres.maintenance_accroche_label": "عنوان لافت مخصص",
+  "admin.reglages.parametres.maintenance_accroche_placeholder": "مثال: نعود إليكم قريباً جداً...",
+  "admin.reglages.parametres.maintenance_message_placeholder": "رسالة إخبارية لزوار متجرك...",
+  "admin.reglages.parametres.maintenance_reouverture_label":
+    "تاريخ / وقت إعادة الفتح المتوقع (اختياري)",
+  "admin.reglages.parametres.maintenance_reouverture_placeholder":
+    "مثال: غداً ابتداءً من الساعة 09:00 صباحاً",
+  "admin.reglages.parametres.maintenance_whatsapp_label": "زر دعم واتساب VIP",
+  "admin.reglages.parametres.maintenance_whatsapp_aide":
+    "يعرض زراً أخضر للتواصل المباشر عبر واتساب أثناء فترة الصيانة.",
+  "admin.reglages.parametres.maintenance_modal_live": "معاينة حية لوضع صيانة VIP",
+  "admin.reglages.wizard.pret_lancement": "جاهز للإطلاق الرسمي!",
 };
 
 export default reglagesAr;

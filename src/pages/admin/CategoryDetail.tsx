@@ -105,8 +105,8 @@ export default function AdminCategoryDetail() {
 
   return (
     <AdminPageShell
-      title={category.label}
-      description={category.description}
+      title={L(category.label) ?? ""}
+      description={L(category.description)}
       actions={
         <div className="flex gap-2">
           <Link to="/admin/categories">
@@ -140,7 +140,7 @@ export default function AdminCategoryDetail() {
             <div className="aspect-[16/10] bg-muted">
               <ImageCatalogue
                 src={category.cover}
-                alt={category.label}
+                alt={L(category.label) ?? ""}
                 loading="lazy"
                 className="h-full w-full object-cover"
               />

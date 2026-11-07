@@ -83,7 +83,7 @@ function ProductView({ p }: { p: ProductType }) {
   const [tab, setTab] = useState("desc");
   const { t, lang } = useI18n();
   const L = useLocalize();
-  const catLabel = catMeta.labelKey ? t(catMeta.labelKey) : catMeta.labelText || p.category;
+  const catLabel = catMeta.labelKey ? t(catMeta.labelKey) : L(catMeta.labelText) || p.category;
   const isService = p.productType === "service";
   const { user } = useAuth();
   const { addToCart, toggleFavorite, isFavorite } = useStore();

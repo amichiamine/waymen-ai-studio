@@ -262,21 +262,21 @@ export default function AdminSettings() {
                 className="gap-2 py-2.5 data-[state=active]:bg-card data-[state=active]:shadow-xs text-xs font-semibold"
               >
                 <Store className="size-4 shrink-0 text-primary" />
-                <span>Boutique</span>
+                <span>{t("admin.reglages.parametres.onglet_boutique")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="appearance"
                 className="gap-2 py-2.5 data-[state=active]:bg-card data-[state=active]:shadow-xs text-xs font-semibold"
               >
                 <Palette className="size-4 shrink-0 text-primary" />
-                <span>Identité & Thème</span>
+                <span>{t("admin.reglages.parametres.onglet_apparence")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="maintenance"
                 className="gap-2 py-2.5 data-[state=active]:bg-card data-[state=active]:shadow-xs text-xs font-semibold relative"
               >
                 <Wrench className="size-4 shrink-0 text-primary" />
-                <span>Maintenance VIP</span>
+                <span>{t("admin.reglages.parametres.onglet_maintenance")}</span>
                 {form.maintenance && (
                   <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
                 )}
@@ -286,21 +286,21 @@ export default function AdminSettings() {
                 className="gap-2 py-2.5 data-[state=active]:bg-card data-[state=active]:shadow-xs text-xs font-semibold"
               >
                 <Coins className="size-4 shrink-0 text-primary" />
-                <span>Devise & Tarifs</span>
+                <span>{t("admin.reglages.parametres.onglet_finance")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="builder"
                 className="gap-2 py-2.5 data-[state=active]:bg-card data-[state=active]:shadow-xs text-xs font-semibold"
               >
                 <Cpu className="size-4 shrink-0 text-primary" />
-                <span>Configurateur PC</span>
+                <span>{t("admin.reglages.parametres.onglet_configurateur")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="options"
                 className="gap-2 py-2.5 data-[state=active]:bg-card data-[state=active]:shadow-xs text-xs font-semibold"
               >
                 <Sliders className="size-4 shrink-0 text-primary" />
-                <span>Options & Stocks</span>
+                <span>{t("admin.reglages.parametres.onglet_options")}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -722,17 +722,17 @@ export default function AdminSettings() {
                       <Type className="size-5 text-primary" />
                       <div>
                         <CardTitle className="text-base font-bold">
-                          Typographie & Géométrie UI
+                          {t("admin.reglages.parametres.typographie_titre")}
                         </CardTitle>
                         <CardDescription>
-                          Harmonisation des polices de caractères, arrondis et styles des boutons.
+                          {t("admin.reglages.parametres.typographie_desc")}
                         </CardDescription>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-5">
                       {/* Police de caractères */}
                       <div className="space-y-1.5">
-                        <Label>Police de caractères globale</Label>
+                        <Label>{t("admin.reglages.parametres.typographie_police_globale")}</Label>
                         <Select
                           value={form.fontFamily ?? "system"}
                           onValueChange={(val: FontFamilyOption) => set("fontFamily", val)}
@@ -743,32 +743,33 @@ export default function AdminSettings() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="system">
-                              Système universel (Sans-serif natif)
+                              {t("admin.reglages.parametres.police_system")}
                             </SelectItem>
-                            <SelectItem value="inter">Inter (Clair, moderne & lisible)</SelectItem>
+                            <SelectItem value="inter">
+                              {t("admin.reglages.parametres.police_inter")}
+                            </SelectItem>
                             <SelectItem value="outfit">
-                              Outfit (Géométrique & Tech premium)
+                              {t("admin.reglages.parametres.police_outfit")}
                             </SelectItem>
                             <SelectItem value="jakarta">
-                              Plus Jakarta Sans (Épuré & élégant)
+                              {t("admin.reglages.parametres.police_jakarta")}
                             </SelectItem>
                             <SelectItem value="poppins">
-                              Poppins (Rond, dynamique & chaleureux)
+                              {t("admin.reglages.parametres.police_poppins")}
                             </SelectItem>
                             <SelectItem value="cairo">
-                              Cairo (Bilingue parfait Arabe & Français)
+                              {t("admin.reglages.parametres.police_cairo")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                          Police injectée en haute fidélité sur les titres, boutons et paragraphes
-                          du site.
+                          {t("admin.reglages.parametres.typographie_police_aide")}
                         </p>
                       </div>
 
                       {/* Rayon d'arrondi des bordures */}
                       <div className="space-y-1.5 pt-2 border-t border-border">
-                        <Label>Arrondi des bordures (Rayon UI)</Label>
+                        <Label>{t("admin.reglages.parametres.typographie_arrondi_titre")}</Label>
                         <Select
                           value={form.borderRadius ?? "modern"}
                           onValueChange={(val: BorderRadiusOption) => set("borderRadius", val)}
@@ -779,25 +780,27 @@ export default function AdminSettings() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="sharp">
-                              Net / Carré (0px — style console & brutaliste)
+                              {t("admin.reglages.parametres.arrondi_sharp")}
                             </SelectItem>
                             <SelectItem value="modern">
-                              Moderne (8px — équilibré & professionnel)
+                              {t("admin.reglages.parametres.arrondi_modern")}
                             </SelectItem>
-                            <SelectItem value="soft">Doux (14px — convivial & fluide)</SelectItem>
+                            <SelectItem value="soft">
+                              {t("admin.reglages.parametres.arrondi_soft")}
+                            </SelectItem>
                             <SelectItem value="pill">
-                              Pilule (20px — style arrondi & moderne)
+                              {t("admin.reglages.parametres.arrondi_pill")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                          Détermine le galbe de l'ensemble des cartes, boutons et champs de saisie.
+                          {t("admin.reglages.parametres.typographie_arrondi_aide")}
                         </p>
                       </div>
 
                       {/* Style des Boutons */}
                       <div className="space-y-1.5 pt-2 border-t border-border">
-                        <Label>Style d'affichage des boutons</Label>
+                        <Label>{t("admin.reglages.parametres.typographie_style_boutons")}</Label>
                         <Select
                           value={form.buttonStyle ?? "subtle"}
                           onValueChange={(val: ButtonStyleOption) => set("buttonStyle", val)}
@@ -807,12 +810,14 @@ export default function AdminSettings() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="flat">Plat épuré (Flat design direct)</SelectItem>
+                            <SelectItem value="flat">
+                              {t("admin.reglages.parametres.bouton_style_flat")}
+                            </SelectItem>
                             <SelectItem value="subtle">
-                              Subtil avec liseré (Moderne avec bordure contrastée)
+                              {t("admin.reglages.parametres.bouton_style_subtle")}
                             </SelectItem>
                             <SelectItem value="glow">
-                              Tech Glow (Léger halo lumineux d'accentuation)
+                              {t("admin.reglages.parametres.bouton_style_glow")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -821,7 +826,9 @@ export default function AdminSettings() {
                       {/* Mini Studio d'Aperçu en Direct */}
                       <div className="p-4 rounded-xl border border-border bg-muted/40 space-y-3">
                         <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                          <span>Aperçu interactif des réglages</span>
+                          <span>
+                            {t("admin.reglages.parametres.typographie_apercu_interactif")}
+                          </span>
                           <span className="text-[11px] font-mono">
                             {form.fontFamily || "system"} • {form.borderRadius || "modern"}
                           </span>
@@ -1137,7 +1144,7 @@ export default function AdminSettings() {
                     className="gap-2 shrink-0 cursor-pointer"
                   >
                     <Eye className="size-4 text-primary" />
-                    <span>Aperçu Live (Modal)</span>
+                    <span>{t("admin.reglages.parametres.maintenance_modal_titre")}</span>
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1162,11 +1169,11 @@ export default function AdminSettings() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label>Titre d'accroche personnalisé</Label>
+                    <Label>{t("admin.reglages.parametres.maintenance_accroche_label")}</Label>
                     <Input
                       value={form.maintenanceTitle || ""}
                       onChange={(e) => set("maintenanceTitle", e.target.value)}
-                      placeholder="ex: Réouverture très bientôt..."
+                      placeholder={t("admin.reglages.parametres.maintenance_accroche_placeholder")}
                       disabled={disabledCritical}
                     />
                   </div>
@@ -1177,7 +1184,7 @@ export default function AdminSettings() {
                       rows={3}
                       value={form.maintenanceMessage}
                       onChange={(e) => set("maintenanceMessage", e.target.value)}
-                      placeholder="Message d'information pour vos visiteurs..."
+                      placeholder={t("admin.reglages.parametres.maintenance_message_placeholder")}
                       disabled={disabledCritical}
                     />
                   </div>
@@ -1185,12 +1192,14 @@ export default function AdminSettings() {
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5">
                       <Clock className="size-3.5 text-primary" />
-                      <span>Date / Heure estimée de réouverture (optionnel)</span>
+                      <span>{t("admin.reglages.parametres.maintenance_reouverture_label")}</span>
                     </Label>
                     <Input
                       value={form.maintenanceEstimatedReturn || ""}
                       onChange={(e) => set("maintenanceEstimatedReturn", e.target.value)}
-                      placeholder="ex: Demain dès 09h00"
+                      placeholder={t(
+                        "admin.reglages.parametres.maintenance_reouverture_placeholder",
+                      )}
                       disabled={disabledCritical}
                     />
                   </div>
@@ -1199,11 +1208,10 @@ export default function AdminSettings() {
                     <div className="space-y-0.5">
                       <Label className="flex items-center gap-1.5">
                         <MessageCircle className="size-3.5 text-emerald-500" />
-                        <span>Bouton d'assistance WhatsApp VIP</span>
+                        <span>{t("admin.reglages.parametres.maintenance_whatsapp_label")}</span>
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Affiche un bouton vert direct pour discuter sur WhatsApp pendant la
-                        maintenance
+                        {t("admin.reglages.parametres.maintenance_whatsapp_aide")}
                       </p>
                     </div>
                     <span
@@ -1226,7 +1234,7 @@ export default function AdminSettings() {
                     <div className="flex items-center justify-between">
                       <DialogTitle className="text-base font-bold flex items-center gap-2">
                         <Eye className="size-4 text-primary" />
-                        Aperçu Live du Mode Maintenance VIP
+                        {t("admin.reglages.parametres.maintenance_modal_live")}
                       </DialogTitle>
                     </div>
                     <DialogDescription className="text-xs text-muted-foreground">

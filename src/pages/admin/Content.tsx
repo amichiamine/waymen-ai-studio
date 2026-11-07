@@ -52,7 +52,7 @@ import type { SiteContent } from "@/lib/site-content";
 import { ICON_NAMES, getIcon, type IconName } from "@/lib/site-content";
 import type { Category } from "@/data/products";
 import type { Localized } from "@/lib/i18n";
-import { useI18n, type TVars } from "@/lib/i18n";
+import { useI18n, useLocalize, type TVars } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { usePermissions, type PermissionsApi } from "@/lib/admin-auth";
 import { MediaPickerField } from "@/components/admin/MediaPickerField";
@@ -1386,6 +1386,7 @@ function FeaturedTabsForm({
   t: TFn;
 }) {
   const v = value;
+  const L = useLocalize();
   const { data: categoryList } = useCategoryList();
   const availableCats =
     categoryList && categoryList.length > 0
@@ -1469,7 +1470,7 @@ function FeaturedTabsForm({
               <SelectContent>
                 {availableCats.map((c) => (
                   <SelectItem key={c.slug} value={c.slug}>
-                    {c.label} ({c.slug})
+                    {L(c.label)} ({c.slug})
                   </SelectItem>
                 ))}
               </SelectContent>

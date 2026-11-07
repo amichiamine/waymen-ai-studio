@@ -133,6 +133,10 @@ const socleEn: Record<string, string> = {
     "The product “{nom}” will be removed from the local catalogue. This action cannot be undone.",
   "admin.socle.produits.suppression_en_cours": "Deleting…",
   "admin.socle.produits.toast_supprime": "“{nom}” deleted",
+  "admin.socle.archisys.badge": "StacGate Platform • Elite Architectural Core",
+  "admin.socle.archisys.desc": "R&D Architecture Design and Direction validated by {auteur}",
+  "admin.socle.archisys.noyau_valide": "Core Validated",
+  "admin.socle.archisys.alt": "ArchiSys3.0 Architectural Seal",
 };
 
 export default socleEn;

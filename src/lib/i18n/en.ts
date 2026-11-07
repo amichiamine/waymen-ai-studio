@@ -501,6 +501,11 @@ const en: Record<string, string> = {
   "admin.restricted.title": "Area reserved for the admin team",
   "admin.restricted.desc":
     "You must be signed in with an administrator account to access the back-office.",
+  "about.archisys.badge": "🛡️ Certified Architecture & R&D",
+  "about.archisys.title": "Engineering Design & Technical Leadership",
+  "about.archisys.desc":
+    "The platform is built on modern architecture engineered and approved under the leadership of {auteur}, ensuring data sovereignty, high availability, transactional resilience, and instant performance.",
+  "about.archisys.alt": "StacGate Platform — Engineered and Approved by ArchiSys3.0",
 };
 
 export default en;

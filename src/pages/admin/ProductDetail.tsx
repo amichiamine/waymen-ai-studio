@@ -271,7 +271,7 @@ export default function AdminProductDetail() {
                     to={`/admin/categories/${cat.slug}/view`}
                     className="text-primary hover:underline"
                   >
-                    {cat.label}
+                    {L(cat.label)}
                   </Link>
                 ) : (
                   <span className="text-muted-foreground">—</span>

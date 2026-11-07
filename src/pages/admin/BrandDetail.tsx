@@ -107,7 +107,7 @@ export default function AdminBrandDetail() {
   return (
     <AdminPageShell
       title={brand.name}
-      description={brand.description ?? `Marque ${brand.name}`}
+      description={L(brand.description) ?? brand.name}
       actions={
         <div className="flex gap-2">
           <Link to="/admin/brands">
@@ -155,7 +155,7 @@ export default function AdminBrandDetail() {
               <div>
                 <p className="text-lg font-semibold">{brand.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {brand.country ?? t("admin.catalogue.marque_detail.origine_inconnue")}
+                  {L(brand.country) ?? t("admin.catalogue.marque_detail.origine_inconnue")}
                 </p>
               </div>
             </div>
@@ -174,7 +174,7 @@ export default function AdminBrandDetail() {
               </div>
             </div>
             {brand.description && (
-              <p className="text-sm text-muted-foreground">{brand.description}</p>
+              <p className="text-sm text-muted-foreground">{L(brand.description)}</p>
             )}
           </CardContent>
         </Card>
@@ -192,7 +192,7 @@ export default function AdminBrandDetail() {
               ) : (
                 catsUsed.map((slug) => {
                   const c = categories.find((x) => x.slug === slug);
-                  const label = c?.label ?? slug;
+                  const label = c ? L(c.label) : slug;
                   return (
                     <Link key={slug} to={`/admin/categories/${slug}/view`}>
                       <Badge variant="outline" className="hover:border-primary">

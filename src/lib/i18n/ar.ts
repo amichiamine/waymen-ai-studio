@@ -494,6 +494,11 @@ const ar: Record<string, string> = {
   "app.loading": "جارٍ التحميل…",
   "admin.restricted.title": "منطقة مخصصة لفريق الإدارة",
   "admin.restricted.desc": "يجب أن تكون مسجلاً بحساب مسؤول للوصول إلى لوحة الإدارة.",
+  "about.archisys.badge": "🛡️ بنية وهندسة بحث وتطوير معتمدة",
+  "about.archisys.title": "التصميم والإشراف التقني والهندسي",
+  "about.archisys.desc":
+    "تعتمد المنصة على بنية تحتية حديثة مصممة ومعتمدة تحت إشراف {auteur}، مما يضمن السيادة الكاملة على البيانات، والتوافر العالي، والمرونة التشغيلية، والأداء الفائق.",
+  "about.archisys.alt": "منصة StacGate — تصميم واعتماد ArchiSys3.0",
 };
 
 export default ar;

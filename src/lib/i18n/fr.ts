@@ -512,6 +512,11 @@ const fr: Record<string, string> = {
   "admin.restricted.title": "Zone réservée à l'équipe admin",
   "admin.restricted.desc":
     "Vous devez être connecté avec un compte administrateur pour accéder au back-office.",
+  "about.archisys.badge": "🛡️ Architecture & R&D Certifiées",
+  "about.archisys.title": "Conception & Direction Technique",
+  "about.archisys.desc":
+    "La plateforme repose sur une architecture moderne conçue et validée sous la direction de {auteur}, garantissant souveraineté des données, haute disponibilité, résilience transactionnelle et performances d'exécution instantanées.",
+  "about.archisys.alt": "StacGate Platform — Conçu et Validé par ArchiSys3.0",
 };
 
 export default fr;

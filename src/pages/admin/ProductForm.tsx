@@ -667,7 +667,7 @@ export default function AdminProductForm({ mode }: { mode: "new" | "edit" }) {
                     <SelectContent>
                       {categories.map((c) => (
                         <SelectItem key={c.slug} value={c.slug}>
-                          {c.label}
+                          {L(c.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>

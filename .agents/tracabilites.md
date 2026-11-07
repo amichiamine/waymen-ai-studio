@@ -1493,7 +1493,6 @@
   - Archive application horodatée : 📦 [katech-site-06112026-2359.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-06112026-2359.zip)
   - Archive données horodatée : 📦 [katech-data-06112026-2359.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-06112026-2359.zip)
 
-
 ---
 
 ## Phase 32 : Blindage Universel des Téléversements Médias, Embarquement Dossier uploads dans le Package ZIP & Initialisation Proactive par l'Installateur
@@ -1512,7 +1511,7 @@
       1. `\finfo` (si la classe existe dans l'environnement PHP).
       2. `mime_content_type()` (si la fonction native est déclarée).
       3. `getimagesize()` (si GD ou la fonction standard est disponible).
-      4. Lecteur pur PHP autonome de signatures d'octets (*magic bytes*) : détection binaire infaillible pour JPEG (`\xFF\xD8\xFF`), PNG (`\x89PNG\r\n\x1a\n`), GIF (`GIF87a`/`GIF89a`), WebP (`RIFF....WEBP`), AVIF (`ftypavif`/`ftypavis`) et SVG (`<svg` sécurisé sans balise script/php).
+      4. Lecteur pur PHP autonome de signatures d'octets (_magic bytes_) : détection binaire infaillible pour JPEG (`\xFF\xD8\xFF`), PNG (`\x89PNG\r\n\x1a\n`), GIF (`GIF87a`/`GIF89a`), WebP (`RIFF....WEBP`), AVIF (`ftypavif`/`ftypavis`) et SVG (`<svg` sécurisé sans balise script/php).
     - Zéro crash 500 même sur un serveur PHP minimaliste dépourvu d'extension média.
   - **Étape 32.B (Embarquement Natif de uploads/ dans le Package de Déploiement) :**
     - Modification de [`scripts/paqueter.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/paqueter.ts) : ajout de l'étape 4 bis générant proactivement `dist/uploads/` avant compression dans le ZIP.
@@ -1536,3 +1535,41 @@
   - Plan interactif et miroir : 📄 [32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md)
   - Archive application horodatée : 📦 [katech-site-07112026-1411.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-07112026-1411.zip)
   - Archive données horodatée : 📦 [katech-data-07112026-1411.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-07112026-1411.zip)
+
+---
+
+## Phase 33 : Universalisation Linguistique 360° : Persistance BD Trilingue (Catégories & Marques), Vitrine Multilingue Intégrale, Assainissement Backstage & Alignement Dictionnaires
+
+- **Date :** 07 Novembre 2026
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation 33.
+- **Contexte & Enjeux :**
+  - Alors que le catalogue produits supportait déjà la trilinguité (`name` et `specLine`), les catégories et les marques persistaient encore des libellés et descriptions monolingues dans SQLite/MySQL.
+  - La vitrine (`CategoryCards`, `CategoryDetail`, filtres `Search`, fiches `Product`) et le Sceau d'Architecture R&D officiel (`About.tsx` et `Dashboard.tsx`) comportaient des fragments de texte en français brut figeant l'affichage en mode anglais ou arabe.
+  - Le panneau d'administration (`Settings.tsx`, `SetupWizard.tsx`, onglets d'apparence, géométrie, maintenance VIP) présentait plusieurs libellés en dur.
+- **Actions Réalisées :**
+  - **Étape 33.A (Persistance Souveraine BD Backend PHP) :**
+    - Modification de [`api/src/Controllers/ControleurCategories.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurCategories.php) : support universel des formats JSON et chaîne brute dans `validerCorps()`, `modifier()` et `enDto()`. Dérivation intelligente du slug depuis la première langue renseignée et conversion bidirectionnelle transparente via `Db::json()` / `Db::dejson()`.
+    - Modification de [`api/src/Controllers/ControleurMarques.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurMarques.php) : traitement multilingue pour les champs `description` et `country` dans `creer()`, `modifier()` et `enDto()`. Rétrocompatibilité totale avec les chaînes existantes.
+  - **Étape 33.B (Typage TypeScript & Formulaires d'Édition Trilingues) :**
+    - Modification de [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/ka-tech/src/lib/admin-store.tsx) : types `AdminCategory` et `AdminBrand` enrichis en `Localized<string>` pour les libellés, descriptions et pays. Données de seed trilingues complètes `{ fr, en, ar }`.
+    - Modification de [`src/data/products.ts`](file:///c:/xampp/htdocs/ka-tech/src/data/products.ts) : mise à niveau de `CategoryMetaInfo` et `getCategoryMeta` pour accepter et restituer des métadonnées localisées.
+    - Refonte complète de [`src/pages/admin/CategoryForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/CategoryForm.tsx) et [`src/pages/admin/BrandForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/BrandForm.tsx) : intégration d'onglets de langues FR / EN / AR avec pastilles visuelles d'alerte (`MissingDot`), orientation RTL pour l'arabe, schémas de validation Zod multilingues et assistants bidirectionnels `toMap()` / `fromMap()`.
+  - **Étape 33.C (Vitrine & Sceau d'Architecture ArchiSys3.0 100% Multilingues) :**
+    - Modification de [`src/components/CategoryCards.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/CategoryCards.tsx) et [`src/pages/CategoryDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryDetail.tsx) : résolution systématique `L(...)` des libellés et descriptions de catégories.
+    - Modification de [`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx) : internationalisation complète du Sceau d'Architecture R&D certifié sous la direction d'ArchiSys3.0 via les clés `about.archisys.*`.
+    - Modification de [`src/pages/admin/Dashboard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Dashboard.tsx) : internationalisation du Sceau d'architecture du socle d'élite via `admin.socle.archisys.*`.
+    - Sécurisation et résolution `L(...)` sur l'ensemble des modules d'affichage : [`Product.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Product.tsx), [`Search.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Search.tsx), [`Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx), [`Products.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Products.tsx), [`Categories.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Categories.tsx), [`CategoryDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/CategoryDetail.tsx), [`Brands.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Brands.tsx), [`BrandDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/BrandDetail.tsx), [`ProductDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductDetail.tsx), [`ProductForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/ProductForm.tsx).
+  - **Étape 33.D (Backstage & Dictionnaires i18n Synchronisés) :**
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : internationalisation des onglets généraux, de la typographie, des arrondis UI, des styles de boutons et de la modale de maintenance VIP.
+    - Modification de [`src/components/admin/SetupWizard.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/SetupWizard.tsx) : connexion des polices et bordures aux clés de réglages partagées.
+    - Synchronisation et parité stricte FR/EN/AR dans [`src/lib/i18n/admin/reglages/`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/reglages), [`src/lib/i18n/admin/socle/`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/socle) et [`src/lib/i18n/`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n).
+  - **Étape 33.E (Contrôles Qualité CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue FR/EN/AR sans aucune clé orpheline ni valeur vide.
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : archives horodatées `katech-site-07112026-1439.zip` (4.36 Mo) et `katech-data-07112026-1439.zip` (36 Ko) créées et vérifiées.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md)
+  - Archive application horodatée : 📦 [katech-site-07112026-1439.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-07112026-1439.zip)
+  - Archive données horodatée : 📦 [katech-data-07112026-1439.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-07112026-1439.zip)

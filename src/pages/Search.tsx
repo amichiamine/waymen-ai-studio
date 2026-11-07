@@ -3,7 +3,7 @@ import { AlertTriangle, Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { catalogProducts, getCategoryMeta, type Category } from "@/data/products";
 import { useCategoryList, useProductList, useSiteSettings } from "@/data-provider";
-import { useI18n, type Localized } from "@/lib/i18n";
+import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
 
 /** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
 const haystack = (v: Localized<string> | undefined): string =>
@@ -19,6 +19,7 @@ import { useFormatPrice } from "@/lib/format-price";
 
 export default function Search() {
   const { t, lang } = useI18n();
+  const L = useLocalize();
   const formatPrice = useFormatPrice();
   const { data: categoryList } = useCategoryList();
   const { data: siteSettings } = useSiteSettings();
@@ -163,7 +164,7 @@ export default function Search() {
                 </label>
                 {categoryList.map((c) => {
                   const meta = getCategoryMeta(c.slug, c);
-                  const catLabel = meta.labelKey ? t(meta.labelKey) : meta.labelText || c.slug;
+                  const catLabel = meta.labelKey ? t(meta.labelKey) : L(meta.labelText) || c.slug;
                   return (
                     <label key={c.slug} className="flex items-center gap-2 text-sm cursor-pointer">
                       <input

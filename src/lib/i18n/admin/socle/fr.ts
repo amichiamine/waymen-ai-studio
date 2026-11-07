@@ -149,6 +149,10 @@ const socleFr: Record<string, string> = {
     "Le produit « {nom} » sera supprimé du catalogue local. Cette action est irréversible.",
   "admin.socle.produits.suppression_en_cours": "Suppression…",
   "admin.socle.produits.toast_supprime": "« {nom} » supprimé",
+  "admin.socle.archisys.badge": "StacGate Platform • Socle Architectural Élite",
+  "admin.socle.archisys.desc": "Conception et Direction d'Architecture R&D validées par {auteur}",
+  "admin.socle.archisys.noyau_valide": "Noyau Validé",
+  "admin.socle.archisys.alt": "Sceau d'Architecture ArchiSys3.0",
 };
 
 export default socleFr;

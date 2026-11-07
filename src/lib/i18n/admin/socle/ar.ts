@@ -139,6 +139,11 @@ const socleAr: Record<string, string> = {
     "سيُحذف المنتج «{nom}» من الكتالوج المحلي. لا يمكن الرجوع عن هذا الإجراء.",
   "admin.socle.produits.suppression_en_cours": "جارٍ الحذف…",
   "admin.socle.produits.toast_supprime": "تم حذف «{nom}»",
+  "admin.socle.archisys.badge": "منصة StacGate • نواة معمارية رائدة",
+  "admin.socle.archisys.desc":
+    "تصميم وإدارة الهندسة المعمارية والبحث والتطوير معتمدة من طرف {auteur}",
+  "admin.socle.archisys.noyau_valide": "نواة معتمدة",
+  "admin.socle.archisys.alt": "ختم الهندسة المعمارية ArchiSys3.0",
 };
 
 export default socleAr;

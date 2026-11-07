@@ -7,13 +7,14 @@ import { AlertTriangle, Plus, Tag, Pencil } from "lucide-react";
 import { formatDZD } from "@/data/products";
 import { useBrandList, useProductList } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 
 export default function AdminBrands() {
   const { data: brands, loading, error } = useBrandList();
   const { data: products } = useProductList();
   const { can, denyReason } = usePermissions();
   const { t } = useI18n();
+  const L = useLocalize();
 
   const rows = useMemo(() => {
     return brands
@@ -92,7 +93,7 @@ export default function AdminBrands() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {t("admin.catalogue.marques.produits", { n: b.count })}
-                      {b.country ? ` · ${b.country}` : ""}
+                      {b.country ? ` · ${L(b.country)}` : ""}
                     </p>
                   </div>
                 </Link>

@@ -268,7 +268,7 @@ export default function AdminProducts() {
             <SelectItem value="all">{t("admin.socle.produits.toutes_categories")}</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c.slug} value={c.slug}>
-                {c.label}
+                {L(c.label)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -317,7 +317,7 @@ export default function AdminProducts() {
                     (table `categories`), pas une chaîne d'interface : il n'entre
                     pas dans un dictionnaire. Repli sur le slug technique. */}
                 <TableCell className="text-sm">
-                  {categories.find((c) => c.slug === p.category)?.label ?? p.category}
+                  {L(categories.find((c) => c.slug === p.category)?.label) ?? p.category}
                 </TableCell>
                 <TableCell className="text-end font-medium">{formatDZD(p.price)}</TableCell>
                 <TableCell>

@@ -354,6 +354,50 @@ const reglagesEn: Record<string, string> = {
   "admin.reglages.notion.erreur_backend_desc":
     "The server is not responding. Check your connection and refresh the page.",
   "admin.reglages.notion.btn_reessayer": "Retry",
+  "admin.reglages.parametres.onglet_boutique": "Store",
+  "admin.reglages.parametres.onglet_apparence": "Identity & Theme",
+  "admin.reglages.parametres.onglet_maintenance": "VIP Maintenance",
+  "admin.reglages.parametres.onglet_finance": "Currency & Pricing",
+  "admin.reglages.parametres.onglet_configurateur": "PC Builder",
+  "admin.reglages.parametres.onglet_options": "Options & Stock",
+  "admin.reglages.parametres.typographie_titre": "Typography & UI Geometry",
+  "admin.reglages.parametres.typographie_desc":
+    "Harmonization of fonts, corner radii and button styles.",
+  "admin.reglages.parametres.typographie_police_globale": "Global Font Family",
+  "admin.reglages.parametres.typographie_police_aide":
+    "High-fidelity font injected across titles, buttons, and site paragraphs.",
+  "admin.reglages.parametres.typographie_arrondi_titre": "Corner Radius (UI Radius)",
+  "admin.reglages.parametres.typographie_arrondi_aide":
+    "Sets the curvature across all cards, buttons, and inputs.",
+  "admin.reglages.parametres.typographie_style_boutons": "Button Display Style",
+  "admin.reglages.parametres.typographie_apercu_interactif": "Interactive Settings Preview",
+  "admin.reglages.parametres.bouton_style_flat": "Clean Flat (Direct flat design)",
+  "admin.reglages.parametres.bouton_style_subtle":
+    "Subtle with Border (Modern with contrast border)",
+  "admin.reglages.parametres.bouton_style_glow": "Tech Glow (Slight accent light halo)",
+  "admin.reglages.parametres.police_system": "Universal System (Native sans-serif)",
+  "admin.reglages.parametres.police_inter": "Inter (Crisp, modern & readable)",
+  "admin.reglages.parametres.police_outfit": "Outfit (Geometric & Tech premium)",
+  "admin.reglages.parametres.police_jakarta": "Plus Jakarta Sans (Clean & elegant)",
+  "admin.reglages.parametres.police_poppins": "Poppins (Round, vibrant & warm)",
+  "admin.reglages.parametres.police_cairo": "Cairo (Perfect bilingual Arabic & Latin)",
+  "admin.reglages.parametres.arrondi_sharp": "Sharp / Square (0px — console & brutalist style)",
+  "admin.reglages.parametres.arrondi_modern": "Modern (8px — balanced & professional)",
+  "admin.reglages.parametres.arrondi_soft": "Soft (14px — friendly & smooth)",
+  "admin.reglages.parametres.arrondi_pill": "Pill (20px — rounded & modern style)",
+  "admin.reglages.parametres.maintenance_modal_titre": "Live Preview (Modal)",
+  "admin.reglages.parametres.maintenance_accroche_label": "Custom Headline",
+  "admin.reglages.parametres.maintenance_accroche_placeholder": "e.g. Reopening very soon...",
+  "admin.reglages.parametres.maintenance_message_placeholder":
+    "Information message for your visitors...",
+  "admin.reglages.parametres.maintenance_reouverture_label":
+    "Estimated Reopening Date / Time (optional)",
+  "admin.reglages.parametres.maintenance_reouverture_placeholder": "e.g. Tomorrow from 09:00 AM",
+  "admin.reglages.parametres.maintenance_whatsapp_label": "VIP WhatsApp Support Button",
+  "admin.reglages.parametres.maintenance_whatsapp_aide":
+    "Displays a direct green button to chat on WhatsApp during maintenance.",
+  "admin.reglages.parametres.maintenance_modal_live": "Live Preview of VIP Maintenance Mode",
+  "admin.reglages.wizard.pret_lancement": "Ready for official launch!",
 };
 
 export default reglagesEn;

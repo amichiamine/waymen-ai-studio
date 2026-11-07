@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   useBrandList,
   useBrandDetail,
@@ -19,7 +20,52 @@ import {
 } from "@/data-provider";
 import { usePermissions } from "@/lib/admin-auth";
 import { MediaPickerField } from "@/components/admin/MediaPickerField";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type Localized } from "@/lib/i18n";
+
+type LangCode = "fr" | "en" | "ar";
+const LANGS: LangCode[] = ["fr", "en", "ar"];
+
+function toMap(v: Localized<string> | undefined): Record<LangCode, string> {
+  if (v == null) return { fr: "", en: "", ar: "" };
+  if (typeof v === "string") return { fr: v, en: "", ar: "" };
+  return { fr: v.fr ?? "", en: v.en ?? "", ar: v.ar ?? "" };
+}
+
+function fromMap(
+  map: { fr?: string; en?: string; ar?: string } | undefined,
+): Localized<string> | undefined {
+  if (!map) return undefined;
+  const fr = map.fr?.trim() ?? "";
+  const en = map.en?.trim() ?? "";
+  const ar = map.ar?.trim() ?? "";
+  if (!fr && !en && !ar) return undefined;
+  if (!en && !ar) return fr;
+  const result: { fr: string; en?: string; ar?: string } = { fr };
+  if (en) result.en = en;
+  if (ar) result.ar = ar;
+  return result;
+}
+
+function MissingDot() {
+  return (
+    <span
+      aria-label="traduction manquante"
+      className="ms-1 inline-block size-1.5 rounded-full bg-amber-400 align-middle"
+    />
+  );
+}
+
+const localizedOptStringSchema = z.object({
+  fr: z.string().trim().max(100, "Trop long (max 100)").optional(),
+  en: z.string().trim().max(100).optional(),
+  ar: z.string().trim().max(100).optional(),
+});
+
+const localizedOptDescSchema = z.object({
+  fr: z.string().trim().max(500, "Description trop longue (max 500)").optional(),
+  en: z.string().trim().max(500).optional(),
+  ar: z.string().trim().max(500).optional(),
+});
 
 const schema = z.object({
   id: z
@@ -29,15 +75,11 @@ const schema = z.object({
     .max(40, "Slug trop long")
     .regex(/^[a-z0-9-]+$/, "Slug: lettres minuscules, chiffres, tirets"),
   name: z.string().trim().min(1, "Nom requis").max(60, "Nom trop long"),
-  description: z
-    .string()
-    .trim()
-    .max(300, "Description trop longue (max 300)")
-    .optional()
-    .or(z.literal("")),
-  country: z.string().trim().max(60, "Nom de pays trop long").optional().or(z.literal("")),
+  country: localizedOptStringSchema,
+  description: localizedOptDescSchema,
   logo: z.string().trim().max(2048).optional().or(z.literal("")),
 });
+
 type V = z.infer<typeof schema>;
 
 export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
@@ -47,50 +89,66 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
   const { id } = useParams();
   const { t } = useI18n();
 
-  // useBrandDetail reste monté et inactif quand id est undefined — jamais de hook conditionnel.
   const { data: existing } = useBrandDetail(mode === "edit" ? id : undefined);
-
   const { create, update: updateBrand, remove } = useBrandMutations();
   const nav = useNavigate();
 
-  const [v, setV] = useState<V>(
-    existing
-      ? {
-          id: existing.id,
-          name: existing.name,
-          description: existing.description ?? "",
-          country: existing.country ?? "",
-          logo: existing.logo ?? "",
-        }
-      : { id: "", name: "", description: "", country: "", logo: "" },
-  );
+  const [activeLangCountry, setActiveLangCountry] = useState<LangCode>("fr");
+  const [activeLangDesc, setActiveLangDesc] = useState<LangCode>("fr");
+
+  const [v, setV] = useState<V>({
+    id: "",
+    name: "",
+    country: { fr: "", en: "", ar: "" },
+    description: { fr: "", en: "", ar: "" },
+    logo: "",
+  });
+
   const [err, setErr] = useState<Partial<Record<keyof V, string>>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (mode === "edit" && id) {
+    if (existing) {
+      setV({
+        id: existing.id,
+        name: existing.name,
+        country: toMap(existing.country),
+        description: toMap(existing.description),
+        logo: existing.logo ?? "",
+      });
+    } else if (mode === "edit" && id) {
       const b = brands.find((x) => x.id === id);
-      if (b)
+      if (b) {
         setV({
           id: b.id,
           name: b.name,
-          description: b.description ?? "",
-          country: b.country ?? "",
+          country: toMap(b.country),
+          description: toMap(b.description),
           logo: b.logo ?? "",
         });
+      }
     }
-  }, [id, mode, brands]);
+  }, [id, mode, existing, brands]);
 
   function update<K extends keyof V>(k: K, val: V[K]) {
     setV((prev) => ({ ...prev, [k]: val }));
     setErr((e) => ({ ...e, [k]: undefined }));
   }
 
+  function updateCountry(lang: LangCode, text: string) {
+    setV((prev) => ({ ...prev, country: { ...prev.country, [lang]: text } }));
+    setErr((e) => ({ ...e, country: undefined }));
+  }
+
+  function updateDescription(lang: LangCode, text: string) {
+    setV((prev) => ({ ...prev, description: { ...prev.description, [lang]: text } }));
+    setErr((e) => ({ ...e, description: undefined }));
+  }
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Niveau 2 — vérification dans le handler avant toute mutation.
     const perm = mode === "new" ? "create" : "update";
     if (
       !guard(
@@ -101,6 +159,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       )
     )
       return;
+
     const p = schema.safeParse(v);
     if (!p.success) {
       const errs: Partial<Record<keyof V, string>> = {};
@@ -111,6 +170,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       toast.error(t("admin.catalogue.marque_form.toast_form_invalide"));
       return;
     }
+
     if (mode === "new" && brands.some((b) => b.id === p.data.id)) {
       setErr({ id: t("admin.catalogue.marque_form.erreur_slug_existant") });
       toast.error(t("admin.catalogue.marque_form.toast_slug_existant"));
@@ -121,14 +181,17 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
       toast.error(t("admin.catalogue.marque_form.toast_nom_existant"));
       return;
     }
+
     setSaving(true);
     try {
       const payload = {
         id: p.data.id,
         name: p.data.name,
-        description: p.data.description || undefined,
-        country: p.data.country || undefined,
+        country: fromMap(p.data.country),
+        description: fromMap(p.data.description),
+        logo: p.data.logo || undefined,
       };
+
       if (mode === "new") {
         await create(payload);
       } else {
@@ -152,9 +215,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
 
   const doDelete = async () => {
     if (!existing) return;
-    // Niveau 2 — vérification dans le handler avant toute mutation.
     if (!guard("delete", t("admin.catalogue.marque_form.supprimer_garde"))) return;
-    // Garde métier préservée : refus si des produits sont encore rattachés.
     if (usedCount > 0) {
       toast.error(t("admin.catalogue.marque_form.erreur_produits_utilises", { n: usedCount }));
       return;
@@ -172,7 +233,6 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
     }
   };
 
-  // Clé de permission selon le mode : création ou modification.
   const formPerm = mode === "new" ? "create" : "update";
 
   return (
@@ -191,7 +251,6 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
             </Button>
           </Link>
           {mode === "edit" && existing && (
-            // Niveau 1+3 : bouton Supprimer dans l'en-tête du formulaire.
             <span title={denyReason("delete")} className="inline-flex">
               <Button
                 variant="destructive"
@@ -226,6 +285,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
               />
               {err.id && <p className="mt-1 text-xs text-destructive">{err.id}</p>}
             </div>
+
             <div>
               <Label>
                 {t("admin.catalogue.marque_form.label_nom")}{" "}
@@ -238,11 +298,54 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
               />
               {err.name && <p className="mt-1 text-xs text-destructive">{err.name}</p>}
             </div>
+
+            {/* Pays d'origine multilingue FR / EN / AR */}
             <div>
-              <Label>{t("admin.catalogue.marque_form.label_pays")}</Label>
-              <Input value={v.country ?? ""} onChange={(e) => update("country", e.target.value)} />
+              <div className="flex items-center justify-between pb-1">
+                <Label>{t("admin.catalogue.marque_form.label_pays")}</Label>
+                <div
+                  role="tablist"
+                  aria-label="Langue du pays"
+                  className="inline-flex rounded-md border bg-muted/40 p-0.5 text-xs"
+                >
+                  {LANGS.map((lang) => {
+                    const hasVal = Boolean(v.country[lang]?.trim());
+                    return (
+                      <button
+                        key={lang}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeLangCountry === lang}
+                        onClick={() => setActiveLangCountry(lang)}
+                        className={cn(
+                          "rounded px-2 py-0.5 font-mono text-[11px] font-medium transition",
+                          activeLangCountry === lang
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {lang.toUpperCase()}
+                        {!hasVal && lang !== "fr" && <MissingDot />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <Input
+                value={v.country[activeLangCountry] ?? ""}
+                dir={activeLangCountry === "ar" ? "rtl" : "ltr"}
+                onChange={(e) => updateCountry(activeLangCountry, e.target.value)}
+                placeholder={
+                  activeLangCountry === "fr"
+                    ? "ex: Taïwan, États-Unis..."
+                    : activeLangCountry === "en"
+                      ? "e.g. Taiwan, United States..."
+                      : "مثال: تايوان، الولايات المتحدة..."
+                }
+              />
               {err.country && <p className="mt-1 text-xs text-destructive">{err.country}</p>}
             </div>
+
             <div>
               <MediaPickerField
                 label="Logo officiel de la marque (optionnel)"
@@ -252,16 +355,55 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
                 onChange={(url) => update("logo", url)}
               />
             </div>
+
+            {/* Description multilingue FR / EN / AR */}
             <div>
-              <Label>{t("admin.catalogue.marque_form.label_description")}</Label>
+              <div className="flex items-center justify-between pb-1">
+                <Label>{t("admin.catalogue.marque_form.label_description")}</Label>
+                <div
+                  role="tablist"
+                  aria-label="Langue de la description"
+                  className="inline-flex rounded-md border bg-muted/40 p-0.5 text-xs"
+                >
+                  {LANGS.map((lang) => {
+                    const hasVal = Boolean(v.description[lang]?.trim());
+                    return (
+                      <button
+                        key={lang}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeLangDesc === lang}
+                        onClick={() => setActiveLangDesc(lang)}
+                        className={cn(
+                          "rounded px-2 py-0.5 font-mono text-[11px] font-medium transition",
+                          activeLangDesc === lang
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {lang.toUpperCase()}
+                        {!hasVal && lang !== "fr" && <MissingDot />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <Textarea
                 rows={3}
-                value={v.description ?? ""}
-                onChange={(e) => update("description", e.target.value)}
+                dir={activeLangDesc === "ar" ? "rtl" : "ltr"}
+                value={v.description[activeLangDesc] ?? ""}
+                onChange={(e) => updateDescription(activeLangDesc, e.target.value)}
+                placeholder={
+                  activeLangDesc === "fr"
+                    ? "Présentation officielle de la marque..."
+                    : activeLangDesc === "en"
+                      ? "Official brand overview..."
+                      : "نظرة عامة رسمية عن العلامة التجارية..."
+                }
               />
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("admin.catalogue.marque_form.compteur_description", {
-                  n: (v.description ?? "").length,
+                  n: (v.description[activeLangDesc] ?? "").length,
                 })}
               </p>
               {err.description && (
@@ -270,13 +412,13 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
             </div>
           </CardContent>
         </Card>
+
         <div className="mt-4 flex justify-end gap-2">
           <Link to="/admin/brands">
             <Button variant="outline" type="button">
               {t("admin.catalogue.marque_form.annuler")}
             </Button>
           </Link>
-          {/* Niveau 1+3 : bouton de soumission désactivé si pas la permission. */}
           <span title={denyReason(formPerm)} className="inline-flex">
             <Button type="submit" disabled={!can(formPerm) || saving}>
               {saving
@@ -288,6 +430,7 @@ export default function AdminBrandForm({ mode }: { mode: "new" | "edit" }) {
           </span>
         </div>
       </form>
+
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

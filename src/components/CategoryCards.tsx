@@ -15,7 +15,8 @@ import phonesImg from "@/assets/cat-phones.webp";
 import { useCategoryList, useSiteContent } from "@/data-provider";
 import { Reveal } from "@/components/Reveal";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, useI18n } from "@/lib/i18n";
+import { categoryMeta, type BuiltinCategory } from "@/data/products";
 
 const DEFAULT_IMG: Record<string, string> = {
   laptops: laptopsImg,
@@ -35,6 +36,7 @@ export function CategoryCards({ max }: { max?: number } = {}) {
   const { data: siteContent } = useSiteContent();
   const cfg = siteContent.categories;
   const L = useLocalize();
+  const { t } = useI18n();
   const cats = typeof max === "number" ? categories.slice(0, max) : categories;
   // Ne jamais afficher de titre de section au-dessus d'une grille vide.
   if (cats.length === 0) return null;
@@ -48,6 +50,21 @@ export function CategoryCards({ max }: { max?: number } = {}) {
         {cats.map((c, i) => {
           const Icon = DEFAULT_ICON[c.slug] ?? LayoutGrid;
           const img = c.cover || DEFAULT_IMG[c.slug];
+          const label =
+            L(c.label) ||
+            (c.slug in categoryMeta
+              ? t(categoryMeta[c.slug as BuiltinCategory].labelKey)
+              : typeof c.label === "string"
+                ? c.label
+                : c.slug);
+          const desc =
+            L(c.description) ||
+            (c.slug in categoryMeta
+              ? t(categoryMeta[c.slug as BuiltinCategory].descKey)
+              : typeof c.description === "string"
+                ? c.description
+                : "");
+
           return (
             <Reveal key={c.slug} variant="up" delay={i * 90}>
               <Link
@@ -57,7 +74,7 @@ export function CategoryCards({ max }: { max?: number } = {}) {
                 {img ? (
                   <ImageCatalogue
                     src={img}
-                    alt={c.label}
+                    alt={label}
                     width={800}
                     height={600}
                     loading="lazy"
@@ -71,8 +88,8 @@ export function CategoryCards({ max }: { max?: number } = {}) {
                 <div className="absolute inset-0 bg-gradient-to-t from-card/95 via-card/40 to-transparent transition-opacity duration-500 group-hover:from-card/80" />
                 <div className="relative space-y-2">
                   <Icon className="size-6 text-primary transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6" />
-                  <h3 className="text-xl font-bold text-foreground">{c.label}</h3>
-                  <p className="text-sm text-muted-foreground">{c.description}</p>
+                  <h3 className="text-xl font-bold text-foreground">{label}</h3>
+                  <p className="text-sm text-muted-foreground">{desc}</p>
                   <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary mt-2">
                     {L(cfg.browseLabel)}{" "}
                     <ArrowRight className="size-4 rtl:rotate-180 transition-transform duration-300 group-hover:translate-x-1.5 rtl:group-hover:-translate-x-1.5" />

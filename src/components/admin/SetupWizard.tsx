@@ -873,18 +873,32 @@ export function SetupWizard({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="system">Système universel (Sans-serif)</SelectItem>
-                      <SelectItem value="inter">Inter (Moderne & lisible)</SelectItem>
-                      <SelectItem value="outfit">Outfit (Géométrique & Tech)</SelectItem>
-                      <SelectItem value="jakarta">Plus Jakarta Sans (Épuré)</SelectItem>
-                      <SelectItem value="poppins">Poppins (Dynamique)</SelectItem>
-                      <SelectItem value="cairo">Cairo (Bilingue parfait)</SelectItem>
+                      <SelectItem value="system">
+                        {t("admin.reglages.parametres.police_system")}
+                      </SelectItem>
+                      <SelectItem value="inter">
+                        {t("admin.reglages.parametres.police_inter")}
+                      </SelectItem>
+                      <SelectItem value="outfit">
+                        {t("admin.reglages.parametres.police_outfit")}
+                      </SelectItem>
+                      <SelectItem value="jakarta">
+                        {t("admin.reglages.parametres.police_jakarta")}
+                      </SelectItem>
+                      <SelectItem value="poppins">
+                        {t("admin.reglages.parametres.police_poppins")}
+                      </SelectItem>
+                      <SelectItem value="cairo">
+                        {t("admin.reglages.parametres.police_cairo")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Arrondi des bordures (Rayon UI)</Label>
+                  <Label className="text-sm font-semibold">
+                    {t("admin.reglages.parametres.typographie_arrondi_titre")}
+                  </Label>
                   <Select
                     value={borderRadius}
                     onValueChange={(val: BorderRadiusOption) => {
@@ -902,10 +916,18 @@ export function SetupWizard({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sharp">Net (0px — style brutaliste)</SelectItem>
-                      <SelectItem value="modern">Moderne (8px — équilibré)</SelectItem>
-                      <SelectItem value="soft">Doux (14px — convivial)</SelectItem>
-                      <SelectItem value="pill">Pilule (20px — arrondi)</SelectItem>
+                      <SelectItem value="sharp">
+                        {t("admin.reglages.parametres.arrondi_sharp")}
+                      </SelectItem>
+                      <SelectItem value="modern">
+                        {t("admin.reglages.parametres.arrondi_modern")}
+                      </SelectItem>
+                      <SelectItem value="soft">
+                        {t("admin.reglages.parametres.arrondi_soft")}
+                      </SelectItem>
+                      <SelectItem value="pill">
+                        {t("admin.reglages.parametres.arrondi_pill")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -994,7 +1016,7 @@ export function SetupWizard({
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
                 <div className="flex items-center gap-2 text-primary font-bold">
                   <CheckCircle2 className="size-5" />
-                  <span>Prêt pour le lancement officiel !</span>
+                  <span>{t("admin.reglages.wizard.pret_lancement")}</span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Votre enseigne <strong>"{storeName || "Ma Boutique"}"</strong> est prête à être

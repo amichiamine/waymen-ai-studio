@@ -19,7 +19,7 @@ import {
 import { useCategoryList, useCategoryMutations, useProductList, toApiError } from "@/data-provider";
 import type { AdminCategory } from "@/lib/admin-store";
 import { usePermissions } from "@/lib/admin-auth";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, useLocalize } from "@/lib/i18n";
 
 export default function AdminCategories() {
   const { data: categories, loading, error } = useCategoryList();
@@ -27,6 +27,7 @@ export default function AdminCategories() {
   const { remove } = useCategoryMutations();
   const { can, guard, denyReason } = usePermissions();
   const { t } = useI18n();
+  const L = useLocalize();
   const [pending, setPending] = useState<AdminCategory | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -50,7 +51,9 @@ export default function AdminCategories() {
     setDeleting(true);
     try {
       await remove(pending.slug);
-      toast.success(t("admin.catalogue.categories.toast_supprimee", { nom: pending.label }));
+      toast.success(
+        t("admin.catalogue.categories.toast_supprimee", { nom: L(pending.label) ?? "" }),
+      );
       setPending(null);
     } catch (cause) {
       const err = toApiError(cause);
@@ -124,7 +127,7 @@ export default function AdminCategories() {
               {c.cover ? (
                 <ImageCatalogue
                   src={c.cover}
-                  alt={c.label}
+                  alt={L(c.label) ?? ""}
                   loading="lazy"
                   className="h-full w-full object-cover transition group-hover:scale-105"
                 />
@@ -140,9 +143,11 @@ export default function AdminCategories() {
                   to={`/admin/categories/${c.slug}/view`}
                   className="text-base font-semibold hover:text-primary hover:underline"
                 >
-                  {c.label}
+                  {L(c.label)}
                 </Link>
-                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{c.description}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                  {L(c.description)}
+                </p>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
@@ -212,7 +217,9 @@ export default function AdminCategories() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("admin.catalogue.categories.supprimer_titre", { nom: pending?.label ?? "" })}
+              {t("admin.catalogue.categories.supprimer_titre", {
+                nom: pending ? (L(pending.label) ?? "") : "",
+              })}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingCount > 0

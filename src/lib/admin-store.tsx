@@ -15,16 +15,16 @@ export type { SiteContent } from "./site-content";
 // ---------- Types ----------
 export type AdminCategory = {
   slug: string;
-  label: string;
-  description: string;
+  label: Localized<string>;
+  description: Localized<string>;
   cover?: string;
 };
 
 export type AdminBrand = {
   id: string;
   name: string;
-  description?: string;
-  country?: string;
+  description?: Localized<string>;
+  country?: Localized<string>;
   logo?: string;
 };
 
@@ -317,17 +317,49 @@ export const ARRAY_KEYS = [
 export type ArrayKey = (typeof ARRAY_KEYS)[number];
 
 // ---------- Seed helpers ----------
-const CAT_LABELS: Record<Category, string> = {
-  laptops: "Ordinateurs portables",
-  desktops: "Ordinateurs de bureau",
-  builds: "Configurations PC",
-  phones: "Smartphones",
+const CAT_LABELS: Record<Category, Localized<string>> = {
+  laptops: {
+    fr: "Ordinateurs portables",
+    en: "Laptops",
+    ar: "حواسيب محمولة",
+  },
+  desktops: {
+    fr: "Ordinateurs de bureau",
+    en: "Desktop Computers",
+    ar: "أجهزة كمبيوتر مكتبية",
+  },
+  builds: {
+    fr: "Configurations PC",
+    en: "Custom PC Builds",
+    ar: "تجميعات كمبيوتر مخصصة",
+  },
+  phones: {
+    fr: "Smartphones",
+    en: "Smartphones",
+    ar: "هواتف ذكية",
+  },
 };
-const CAT_DESC: Record<Category, string> = {
-  laptops: "Laptops pour le travail, les études et le gaming.",
-  desktops: "Tours et mini-PC de bureau.",
-  builds: "Configurations sur-mesure KA Build.",
-  phones: "Smartphones Android et iOS.",
+const CAT_DESC: Record<Category, Localized<string>> = {
+  laptops: {
+    fr: "Laptops pour le travail, les études et le gaming.",
+    en: "Laptops for work, studies and high-performance gaming.",
+    ar: "حواسيب محمولة للعمل والدراسة والألعاب الاحترافية.",
+  },
+  desktops: {
+    fr: "Tours et mini-PC de bureau haute performance.",
+    en: "High-performance desktop towers and compact workstations.",
+    ar: "أجهزة مكتبية ومحطات عمل مدمجة عالية الأداء.",
+  },
+  builds: {
+    fr: "Configurations sur-mesure d'élite et stations de travail.",
+    en: "Elite custom configurations and professional workstations.",
+    ar: "تجميعات نخبوية مخصصة ومحطات عمل احترافية.",
+  },
+  phones: {
+    fr: "Smartphones Android et iOS de dernière génération.",
+    en: "Latest generation Android and iOS smartphones.",
+    ar: "أحدث هواتف أندرويد وiOS الذكية والملحقات.",
+  },
 };
 
 function seedCategories(): AdminCategory[] {
@@ -346,25 +378,29 @@ function seedBrands(): AdminBrand[] {
       set.set(p.brand, {
         id: p.brand.toLowerCase().replace(/\s+/g, "-"),
         name: p.brand,
-        description: `Marque ${p.brand} distribuée sur la plateforme.`,
+        description: {
+          fr: `Marque officielle ${p.brand} distribuée sur la plateforme.`,
+          en: `Official ${p.brand} brand distributed on the platform.`,
+          ar: `العلامة التجارية الرسمية ${p.brand} المعتمدة على المنصة.`,
+        },
         country: brandCountry(p.brand),
       });
     }
   }
   return Array.from(set.values());
 }
-function brandCountry(name: string): string {
-  const map: Record<string, string> = {
-    ASUS: "Taïwan",
-    HP: "États-Unis",
-    Lenovo: "Chine",
-    Apple: "États-Unis",
-    Dell: "États-Unis",
-    Samsung: "Corée du Sud",
-    Xiaomi: "Chine",
-    "KA Build": "Algérie",
+function brandCountry(name: string): Localized<string> {
+  const map: Record<string, Localized<string>> = {
+    ASUS: { fr: "Taïwan", en: "Taiwan", ar: "تايوان" },
+    HP: { fr: "États-Unis", en: "United States", ar: "الولايات المتحدة" },
+    Lenovo: { fr: "Chine", en: "China", ar: "الصين" },
+    Apple: { fr: "États-Unis", en: "United States", ar: "الولايات المتحدة" },
+    Dell: { fr: "États-Unis", en: "United States", ar: "الولايات المتحدة" },
+    Samsung: { fr: "Corée du Sud", en: "South Korea", ar: "كوريا الجنوبية" },
+    Xiaomi: { fr: "Chine", en: "China", ar: "الصين" },
+    StacGate: { fr: "Algérie", en: "Algeria", ar: "الجزائر" },
   };
-  return map[name] ?? "International";
+  return map[name] ?? { fr: "International", en: "International", ar: "دولي" };
 }
 
 const SEED_WILAYAS = [
