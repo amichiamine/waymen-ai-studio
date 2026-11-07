@@ -356,8 +356,8 @@ export function MarkdownEditor({
             <div className="space-y-1.5">
               <Label>{t("admin.contenu.blog.editeur_dialog_video_url")}</Label>
               <Input
-                type="url"
-                placeholder="https://www.youtube.com/watch?v=..."
+                type="text"
+                placeholder="https://www.youtube.com/watch?v=... ou /uploads/video.mp4"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
               />

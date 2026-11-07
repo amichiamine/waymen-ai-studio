@@ -467,9 +467,21 @@ export function BlogFormPage({ mode }: { mode: Mode }) {
     cover: z
       .string()
       .trim()
-      .url(t("admin.contenu.blog.zod_url_invalide"))
-      .max(500)
-      .or(z.literal("")),
+      .max(2048)
+      .optional()
+      .or(z.literal(""))
+      .refine(
+        (v) =>
+          !v ||
+          v.startsWith("/") ||
+          v.startsWith("http://") ||
+          v.startsWith("https://") ||
+          v.startsWith("data:") ||
+          v.startsWith("uploads/") ||
+          v.startsWith("assets/") ||
+          /^[\w./-]+\.(png|jpe?g|webp|svg|gif|avif)$/i.test(v),
+        { message: t("admin.contenu.blog.zod_url_invalide") },
+      ),
     author: z.string().trim().min(2, t("admin.contenu.blog.zod_auteur_requis")).max(120),
     tagsRaw: z.string().max(300),
     status: z.enum(["draft", "published"]),

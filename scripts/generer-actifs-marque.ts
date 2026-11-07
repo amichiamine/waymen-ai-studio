@@ -16,33 +16,69 @@ async function main() {
     throw new Error(`Signature source manquante : ${SRC_SIGNATURE}`);
   }
 
-  // 1. Génération des icônes Apple Touch & PWA
-  console.log("[1/6] Génération des icônes PWA et mobiles…");
-  await sharp(SRC_LOGO)
-    .resize(180, 180, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  // 1. Génération des icônes Apple Touch & PWA Hybrides (StacGate Platform × ArchiSys3.0)
+  console.log("[1/6] Génération des icônes PWA et mobiles hybrides (StacGate × ArchiSys3.0)…");
+  const iconSize = 512;
+  const logoIconBuf = await sharp(SRC_LOGO)
+    .resize(290, 290, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
-    .toFile(path.join(RACINE, "public/apple-touch-icon.png"));
+    .toBuffer();
 
-  await sharp(SRC_LOGO)
-    .resize(192, 192, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  const roundedCornersSig = Buffer.from(
+    '<svg><rect x="0" y="0" width="310" height="92" rx="16" ry="16"/></svg>',
+  );
+  const sigIconBuf = await sharp(SRC_SIGNATURE)
+    .resize(310, 92, { fit: "cover" })
+    .composite([{ input: roundedCornersSig, blend: "dest-in" }])
     .png()
-    .toFile(path.join(RACINE, "public/icone-192.png"));
+    .toBuffer();
 
-  await sharp(SRC_LOGO)
-    .resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  const svgIconBase = `
+  <svg width="${iconSize}" height="${iconSize}" viewBox="0 0 ${iconSize} ${iconSize}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0a0f1d" />
+        <stop offset="100%" stop-color="#05070b" />
+      </linearGradient>
+      <linearGradient id="iconBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.6" />
+        <stop offset="50%" stop-color="#8b5cf6" stop-opacity="0.7" />
+        <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.6" />
+      </linearGradient>
+    </defs>
+    <rect width="${iconSize}" height="${iconSize}" rx="108" fill="url(#iconBg)"/>
+    <rect x="4" y="4" width="${iconSize - 8}" height="${iconSize - 8}" rx="104" fill="none" stroke="url(#iconBorder)" stroke-width="4"/>
+    <rect x="96" y="365" width="320" height="102" rx="20" fill="#080c14" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.5"/>
+  </svg>`;
+
+  const masterIconBuf = await sharp(Buffer.from(svgIconBase))
+    .composite([
+      { input: logoIconBuf, top: 48, left: 111 },
+      { input: sigIconBuf, top: 370, left: 101 },
+    ])
+    .png()
+    .toBuffer();
+
+  await sharp(masterIconBuf)
+    .resize(512, 512)
     .png()
     .toFile(path.join(RACINE, "public/icone-512.png"));
 
-  // 2. Génération de favicon.ico multi-tailles (16, 32, 48)
+  await sharp(masterIconBuf)
+    .resize(192, 192)
+    .png()
+    .toFile(path.join(RACINE, "public/icone-192.png"));
+
+  await sharp(masterIconBuf)
+    .resize(180, 180)
+    .png()
+    .toFile(path.join(RACINE, "public/apple-touch-icon.png"));
+
+  // 2. Génération de favicon.ico multi-tailles (16, 32, 48) depuis l'icône hybride
   console.log("[2/6] Génération de public/favicon.ico multi-tailles (16, 32, 48)…");
   const icoSizes = [16, 32, 48];
   const pngBuffers = await Promise.all(
-    icoSizes.map((s) =>
-      sharp(SRC_LOGO)
-        .resize(s, s, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .png()
-        .toBuffer(),
-    ),
+    icoSizes.map((s) => sharp(masterIconBuf).resize(s, s, { fit: "contain" }).png().toBuffer()),
   );
 
   const header = Buffer.alloc(6);
@@ -70,16 +106,34 @@ async function main() {
   const icoBuffer = Buffer.concat([header, ...dirEntries, ...pngBuffers]);
   fs.writeFileSync(path.join(RACINE, "public/favicon.ico"), icoBuffer);
 
-  // 3. Génération de public/favicon.svg
-  console.log("[3/6] Génération de public/favicon.svg…");
-  const logo64Png = await sharp(SRC_LOGO)
-    .resize(64, 64, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  // 3. Génération de public/favicon.svg hybride haute définition
+  console.log("[3/6] Génération de public/favicon.svg hybride haute définition…");
+  const logoFaviconBuf = await sharp(SRC_LOGO)
+    .resize(44, 44, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
     .toBuffer();
-  const base64Png = logo64Png.toString("base64");
-  const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="StacGate Platform">
-  <rect width="64" height="64" rx="14" fill="#090d16"/>
-  <image href="data:image/png;base64,${base64Png}" width="60" height="60" x="2" y="2" preserveAspectRatio="xMidYMid meet"/>
+  const sigFaviconBuf = await sharp(SRC_SIGNATURE)
+    .resize(28, 14, { fit: "cover" })
+    .png()
+    .toBuffer();
+  const logoFaviconB64 = logoFaviconBuf.toString("base64");
+  const sigFaviconB64 = sigFaviconBuf.toString("base64");
+
+  const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="StacGate Platform × ArchiSys3.0">
+  <defs>
+    <linearGradient id="favBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d" />
+      <stop offset="100%" stop-color="#05070b" />
+    </linearGradient>
+    <linearGradient id="favBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.8" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#favBg)" stroke="url(#favBorder)" stroke-width="1.5"/>
+  <image href="data:image/png;base64,${logoFaviconB64}" width="42" height="42" x="11" y="4" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="14" y="46" width="36" height="14" rx="4" fill="#080c14" stroke="#38bdf8" stroke-width="1"/>
+  <image href="data:image/png;base64,${sigFaviconB64}" width="32" height="12" x="16" y="47" preserveAspectRatio="xMidYMid meet"/>
 </svg>\n`;
   fs.writeFileSync(path.join(RACINE, "public/favicon.svg"), faviconSvg, "utf8");
 
@@ -241,16 +295,75 @@ async function main() {
     </g>
   </svg>`;
 
-  await sharp(Buffer.from(svgCombOverlay))
-    .composite([
-      { input: logoCombBuf, top: 15, left: 16 },
-      { input: sigCombBuf, top: 15, left: 614 },
-    ])
+  const combComposite = sharp(Buffer.from(svgCombOverlay)).composite([
+    { input: logoCombBuf, top: 15, left: 16 },
+    { input: sigCombBuf, top: 15, left: 614 },
+  ]);
+
+  // 1. Format WebP haute qualité
+  await combComposite
+    .clone()
     .webp({ quality: 95 })
     .toFile(path.join(RACINE, "src/assets/stacgate-archisys-combined.webp"));
+  await combComposite
+    .clone()
+    .webp({ quality: 95 })
+    .toFile(path.join(RACINE, "public/media/stacgate-archisys-combined.webp"));
 
-  await sharp(path.join(RACINE, "src/assets/stacgate-archisys-combined.webp")).toFile(
-    path.join(RACINE, "public/media/stacgate-archisys-combined.webp"),
+  // 2. Format PNG 32-bit transparent haute fidélité
+  await combComposite
+    .clone()
+    .png()
+    .toFile(path.join(RACINE, "src/assets/stacgate-archisys-combined.png"));
+  await combComposite
+    .clone()
+    .png()
+    .toFile(path.join(RACINE, "public/media/stacgate-archisys-combined.png"));
+
+  // 3. Format SVG vectoriel autonome haute définition (avec images intégrées en base64)
+  const logoCombB64 = logoCombBuf.toString("base64");
+  const sigCombB64 = sigCombBuf.toString("base64");
+  const svgStandalone = `<svg width="${combW}" height="${combH}" viewBox="0 0 ${combW} ${combH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="StacGate Platform × ArchiSys3.0">
+  <defs>
+    <linearGradient id="capsuleBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#05070b" />
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4" />
+      <stop offset="50%" stop-color="#8b5cf6" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.4" />
+    </linearGradient>
+    <linearGradient id="divGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.1" />
+      <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.1" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="${combW - 4}" height="${combH - 4}" rx="24" fill="url(#capsuleBg)" stroke="url(#borderGrad)" stroke-width="1.5"/>
+  <image href="data:image/png;base64,${logoCombB64}" x="16" y="15" width="130" height="130" preserveAspectRatio="xMidYMid meet"/>
+  <g transform="translate(160, 72)">
+    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="900" fill="#f8fafc" letter-spacing="1.2">STACGATE</text>
+    <text x="0" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="2.8">PLATFORM</text>
+  </g>
+  <line x1="355" y1="28" x2="355" y2="132" stroke="url(#divGrad)" stroke-width="2" stroke-linecap="round"/>
+  <g transform="translate(380, 58)">
+    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#94a3b8" letter-spacing="1.8">CONÇU &amp; VALIDÉ PAR</text>
+    <text x="0" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="900" fill="#38bdf8" letter-spacing="0.5">ArchiSys3.0</text>
+    <text x="0" y="47" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#64748b" letter-spacing="1.2">DIRECTION TECHNIQUE &amp; R&amp;D</text>
+  </g>
+  <image href="data:image/png;base64,${sigCombB64}" x="614" y="15" width="130" height="130" preserveAspectRatio="xMidYMid meet"/>
+</svg>\n`;
+
+  fs.writeFileSync(
+    path.join(RACINE, "src/assets/stacgate-archisys-combined.svg"),
+    svgStandalone,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(RACINE, "public/media/stacgate-archisys-combined.svg"),
+    svgStandalone,
+    "utf8",
   );
 
   // 6. Composition du Badge Carré Hybride 800 × 800 px (public/media/stacgate-archisys-badge.webp)

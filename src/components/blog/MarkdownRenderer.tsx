@@ -48,10 +48,12 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
             <div
               key={i}
               className="my-6 aspect-video w-full overflow-hidden rounded-xl border border-border bg-black shadow-md"
+              style={{ contentVisibility: "auto", containIntrinsicSize: "560px 315px" }}
             >
               <iframe
                 src={`https://www.youtube-nocookie.com/embed/${videoId}`}
                 title="Vidéo YouTube"
+                loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 className="h-full w-full border-0"
@@ -68,10 +70,12 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
             <div
               key={i}
               className="my-6 aspect-video w-full overflow-hidden rounded-xl border border-border bg-black shadow-md"
+              style={{ contentVisibility: "auto", containIntrinsicSize: "560px 315px" }}
             >
               <iframe
                 src={`https://player.vimeo.com/video/${videoId}`}
                 title="Vidéo Vimeo"
+                loading="lazy"
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowFullScreen
                 className="h-full w-full border-0"
@@ -86,8 +90,15 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
             <div
               key={i}
               className="my-6 aspect-video w-full overflow-hidden rounded-xl border border-border bg-black shadow-md"
+              style={{ contentVisibility: "auto", containIntrinsicSize: "560px 315px" }}
             >
-              <video controls className="h-full w-full object-contain" src={trimmed}>
+              <video
+                controls
+                preload="metadata"
+                playsInline
+                className="h-full w-full object-contain"
+                src={trimmed}
+              >
                 Votre navigateur ne supporte pas la lecture vidéo.
               </video>
             </div>
@@ -255,10 +266,12 @@ function renderInline(text: string): React.ReactNode {
         <span
           key={index}
           className="block my-4 aspect-video w-full overflow-hidden rounded-xl border border-border bg-black shadow-md"
+          style={{ contentVisibility: "auto", containIntrinsicSize: "560px 315px" }}
         >
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${videoId}`}
             title="Vidéo YouTube"
+            loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             className="h-full w-full border-0"

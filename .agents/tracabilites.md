@@ -54,6 +54,7 @@
 | **Phase 32** | 07/11/2026 | Blindage Universel Uploads Médias, Embarquement uploads/ & Initialisation Installateur         | 📄 [`32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md`](Implementations_Plans/32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md)                       | 🟢 **Livré & Validé** |
 | **Phase 33** | 07/11/2026 | Universalisation Linguistique 360° : Persistance BD Trilingue, Vitrine & Backstage             | 📄 [`33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md`](Implementations_Plans/33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md)                   | 🟢 **Livré & Validé** |
 | **Phase 34** | 07/11/2026 | Composition Logo Combiné Horizontal Officiel StacGate × ArchiSys3.0 & Déploiement Maître 360°  | 📄 [`34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md`](Implementations_Plans/34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md) | 🟢 **Livré & Validé** |
+| **Phase 35** | 07/11/2026 | Blindage Médias Blog, Déblocage CSP Vidéos, Anti-Reflow & Déclinaisons Multi-Formats           | 📄 [`35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md`](Implementations_Plans/35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md)         | 🟢 **Livré & Validé** |
 
 ---
 
@@ -1636,3 +1637,52 @@
   - Plan interactif et miroir : 📄 [34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md)
   - Actif combiné source : 🖼️ [`src/assets/stacgate-archisys-combined.webp`](file:///c:/xampp/htdocs/ka-tech/src/assets/stacgate-archisys-combined.webp)
   - Actif combiné statique : 🖼️ [`public/media/stacgate-archisys-combined.webp`](file:///c:/xampp/htdocs/ka-tech/public/media/stacgate-archisys-combined.webp)
+
+---
+
+## Phase 35 : Blindage Médias Blog, Déblocage CSP Vidéos (YouTube / Vimeo), Anti-Reflow & Déclinaisons Multi-Formats (PNG, SVG, Favicons) StacGate × ArchiSys3.0
+
+- **Date :** 07 Novembre 2026
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation 35.
+- **Contexte & Enjeux :**
+  - Lors de la gestion des articles de blog sur `/admin/blog`, la sélection ou le téléversement d'une image de couverture via la médiathèque provoquait l'erreur bloquante `"URL Invalide"`. Le validateur Zod `.url(...)` n'acceptait que les URLs absolues avec protocole (`http://`, `https://`) et rejetait les chemins relatifs souverains (`/uploads/...`, `uploads/...`).
+  - L'intégration de vidéos YouTube et Vimeo dans le Markdown déclenchait une violation CSP dans la console : `Framing 'https://www.youtube-nocookie.com/' violates the following Content Security Policy directive: "frame-src 'none'"`.
+  - Chromium relevait des avertissements de reflow forcé synchrone (`[Violation] Forced reflow took 32ms`) lors de l'insertion DOM des iframes vidéo non différées.
+  - Par ailleurs, ArchiSys3.0 a identifié que les formats vectoriels et haute fidélité (`.png`, `.svg`) du logo combiné ainsi que l'ensemble des favicons et icônes PWA (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icone-192.png`, `icone-512.png`) étaient restés sous l'ancien visuel StacGate isolé sans l'alliance officielle ArchiSys3.0.
+- **Actions Réalisées :**
+  - **Étape 35.A (Assainissement Formulaire Blog & Éditeur Multimédia) :**
+    - Modification de [`src/pages/admin/BlogForm.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/BlogForm.tsx) : remplacement du validateur rigide `.url(...)` par un schéma `.refine(...)` souverain acceptant les chemins relatifs (`/uploads/...`, `uploads/`, `/media/`, `/assets/`), les protocoles distants (`http://`, `https://`), les données base64 (`data:`) et les extensions web standards.
+    - Modification de [`src/components/admin/MarkdownEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/MarkdownEditor.tsx) : bascule du champ de saisie vidéo de `type="url"` à `type="text"` permettant l'insertion fluide de vidéos MP4/WebM locales ou distantes sans blocage navigateur.
+  - **Étape 35.B (Déblocage Contrôlé de la Directive CSP Apache) :**
+    - Modification de [`public/.htaccess`](file:///c:/xampp/htdocs/ka-tech/public/.htaccess) et [`dist/.htaccess`](file:///c:/xampp/htdocs/ka-tech/dist/.htaccess) :
+      - `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com;` autorisant l'affichage sécurisé des lecteurs vidéo sans affaiblir la politique générale.
+      - `media-src 'self' blob: data: https:;` autorisant le streaming et la prévisualisation des flux vidéo et audio HTML5.
+  - **Étape 35.C (Éradication des Reflows Forcés) :**
+    - Modification de [`src/components/blog/MarkdownRenderer.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blog/MarkdownRenderer.tsx) :
+      - Ajout de l'attribut natif `loading="lazy"` sur tous les iframes YouTube et Vimeo (blocs et inline).
+      - Isolation du layout via `contentVisibility: "auto"` et `containIntrinsicSize: "560px 315px"`, empêchant Chromium de recalculer synchroniquement la géométrie de la page.
+      - Ajout de `preload="metadata"` et `playsInline` sur les balises `<video>` directes.
+  - **Étape 35.D (Génération Multi-Formats Complète du Branding Officiel) :**
+    - Refonte de [`scripts/generer-actifs-marque.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/generer-actifs-marque.ts) :
+      - Création d'un master carré hybride 512 × 512 px associant l'emblème StacGate et la capsule signature ArchiSys3.0.
+      - Déclinaison de [`public/icone-512.png`](file:///c:/xampp/htdocs/ka-tech/public/icone-512.png), [`public/icone-192.png`](file:///c:/xampp/htdocs/ka-tech/public/icone-192.png) et [`public/apple-touch-icon.png`](file:///c:/xampp/htdocs/ka-tech/public/apple-touch-icon.png) (180 × 180 px).
+      - Régénération de [`public/favicon.ico`](file:///c:/xampp/htdocs/ka-tech/public/favicon.ico) en multi-tailles (16, 32, 48 px) à partir de l'icône hybride.
+      - Génération de [`public/favicon.svg`](file:///c:/xampp/htdocs/ka-tech/public/favicon.svg) hybride vectoriel haute définition (64 × 64 px) intégrant l'emblème et le sceau ArchiSys3.0.
+      - Génération des formats frères du logo combiné horizontal officiel (760 × 160 px) :
+        - `stacgate-archisys-combined.png` (32-bit transparent) dans `src/assets/` et `public/media/`.
+        - `stacgate-archisys-combined.svg` (vectoriel autonome haute fidélité avec graphismes intégrés en base64) dans `src/assets/` et `public/media/`.
+  - **Étape 35.E (Contrôles Qualité CI & Packaging Cumulatif) :**
+    - `bun run verifier-i18n` : 100% cohérent (parité trilingue FR/EN/AR).
+    - `bun run format` : 100% conforme Prettier.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build; bun run paqueter:data` : archives horodatées déployables régénérées et vérifiées.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md)
+  - Actif combiné PNG : 🖼️ [`src/assets/stacgate-archisys-combined.png`](file:///c:/xampp/htdocs/ka-tech/src/assets/stacgate-archisys-combined.png) & [`public/media/stacgate-archisys-combined.png`](file:///c:/xampp/htdocs/ka-tech/public/media/stacgate-archisys-combined.png)
+  - Actif combiné SVG : 🖼️ [`src/assets/stacgate-archisys-combined.svg`](file:///c:/xampp/htdocs/ka-tech/src/assets/stacgate-archisys-combined.svg) & [`public/media/stacgate-archisys-combined.svg`](file:///c:/xampp/htdocs/ka-tech/public/media/stacgate-archisys-combined.svg)
+  - Favicon SVG hybride : 🖼️ [`public/favicon.svg`](file:///c:/xampp/htdocs/ka-tech/public/favicon.svg)
+  - Favicon ICO multi-tailles : 🖼️ [`public/favicon.ico`](file:///c:/xampp/htdocs/ka-tech/public/favicon.ico)
+  - Icônes PWA & Apple Touch : 🖼️ [`public/apple-touch-icon.png`](file:///c:/xampp/htdocs/ka-tech/public/apple-touch-icon.png), [`public/icone-192.png`](file:///c:/xampp/htdocs/ka-tech/public/icone-192.png), [`public/icone-512.png`](file:///c:/xampp/htdocs/ka-tech/public/icone-512.png)
+  - Archive application horodatée : 📦 [katech-site-07112026-1506.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-07112026-1506.zip)
+  - Archive données horodatée : 📦 [katech-data-07112026-1506.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-07112026-1506.zip)
