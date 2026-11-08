@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
@@ -39,6 +39,7 @@ import { useSiteContent, useSiteContentMutations } from "@/data-provider";
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
 import type { BlockConfig, BlockType, CustomPageDefinition } from "@/types/pages";
 import { BLOCK_REGISTRY, getBlockMeta } from "@/components/blocks";
+import { BlockPropsEditor } from "@/components/admin/BlockPropsEditor";
 
 type LangCode = "fr" | "en" | "ar";
 const LANGS: LangCode[] = ["fr", "en", "ar"];
@@ -67,18 +68,29 @@ export default function PagesManager() {
 
   // Dialog création / paramètres de page
   const [pageModalOpen, setPageModalOpen] = useState(false);
+  const [metaLang, setMetaLang] = useState<LangCode>("fr");
   const [editingPageMeta, setEditingPageMeta] = useState<Partial<CustomPageDefinition> | null>(
     null,
   );
+
+  // Blocs dont l'inspecteur de propriétés est ouvert
+  const [expandedBlockIds, setExpandedBlockIds] = useState<Record<string, boolean>>({});
+  const toggleExpandBlock = (id: string) =>
+    setExpandedBlockIds((prev) => ({ ...prev, [id]: !prev[id] }));
 
   // Dialog catalogue d'ajout de bloc
   const [addBlockModalOpen, setAddBlockModalOpen] = useState(false);
   const [selectedFamily, setSelectedFamily] = useState<string>("all");
 
-  // Synchronisation initiale quand les données arrivent
-  useState(() => {
-    setPages(customPages);
-  });
+  // Synchronisation réactive avec le store serveur dès réception des données
+  useEffect(() => {
+    if (!isDirty && siteContent?.customPages) {
+      setPages(siteContent.customPages);
+      if (!selectedPageId && siteContent.customPages.length > 0) {
+        setSelectedPageId(siteContent.customPages[0].id);
+      }
+    }
+  }, [siteContent?.customPages, isDirty, selectedPageId]);
 
   const selectedPage = pages.find((p) => p.id === selectedPageId) || null;
 
@@ -580,6 +592,18 @@ export default function PagesManager() {
                                 )}
                               </Button>
 
+                              {/* Configurer le contenu & les paramètres */}
+                              <Button
+                                size="sm"
+                                variant={expandedBlockIds[block.id] ? "secondary" : "ghost"}
+                                className="h-8 gap-1.5 text-xs font-semibold"
+                                onClick={() => toggleExpandBlock(block.id)}
+                                title="Éditer le contenu et les paramètres de ce bloc"
+                              >
+                                <Settings className="h-3.5 w-3.5 text-primary" />
+                                <span>{expandedBlockIds[block.id] ? "Fermer" : "Contenu"}</span>
+                              </Button>
+
                               {/* Supprimer */}
                               <Button
                                 size="icon"
@@ -593,43 +617,12 @@ export default function PagesManager() {
                             </div>
                           </div>
 
-                          {/* Zone de configuration rapide du bloc si applicable */}
-                          {block.type === "markdown_section" && (
-                            <div className="mt-4 pt-3 border-t border-border/40 space-y-2">
-                              <Label className="text-xs font-semibold">
-                                Contenu Markdown de cette section :
-                              </Label>
-                              <Textarea
-                                rows={4}
-                                value={
-                                  typeof block.props?.content === "object" &&
-                                  block.props?.content !== null &&
-                                  "fr" in (block.props.content as Record<string, unknown>)
-                                    ? String(
-                                        (block.props.content as Record<string, unknown>).fr || "",
-                                      )
-                                    : typeof block.props?.content === "string"
-                                      ? block.props.content
-                                      : ""
-                                }
-                                onChange={(e) => {
-                                  const currentContent =
-                                    typeof block.props?.content === "object" &&
-                                    block.props?.content !== null
-                                      ? (block.props.content as Record<string, unknown>)
-                                      : {};
-                                  handleUpdateBlockProps(idx, {
-                                    ...(block.props || {}),
-                                    content: {
-                                      ...currentContent,
-                                      fr: e.target.value,
-                                    },
-                                  });
-                                }}
-                                placeholder="### Titre\n\nVotre contenu..."
-                                className="font-mono text-xs"
-                              />
-                            </div>
+                          {/* Inspecteur de configuration étendu du bloc */}
+                          {expandedBlockIds[block.id] && (
+                            <BlockPropsEditor
+                              block={block}
+                              onChange={(newProps) => handleUpdateBlockProps(idx, newProps)}
+                            />
                           )}
                         </div>
                       );
@@ -685,34 +678,86 @@ export default function PagesManager() {
                 </div>
               </div>
 
+              {/* Sélecteur de langue trilingue FR / EN / AR */}
+              <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={metaLang === "fr" ? "secondary" : "ghost"}
+                  className="text-xs h-7 flex-1 font-semibold"
+                  onClick={() => setMetaLang("fr")}
+                >
+                  Français (FR)
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={metaLang === "en" ? "secondary" : "ghost"}
+                  className="text-xs h-7 flex-1 font-semibold"
+                  onClick={() => setMetaLang("en")}
+                >
+                  English (EN)
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={metaLang === "ar" ? "secondary" : "ghost"}
+                  className="text-xs h-7 flex-1 font-semibold"
+                  onClick={() => setMetaLang("ar")}
+                >
+                  العربية (AR)
+                </Button>
+              </div>
+
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Titre de la Vue (FR) :</Label>
+                <Label className="text-xs font-semibold">
+                  Titre de la Vue ({metaLang.toUpperCase()}) :
+                </Label>
                 <Input
-                  value={toLocObj(editingPageMeta.title).fr}
+                  value={toLocObj(editingPageMeta.title)[metaLang]}
                   onChange={(e) =>
                     setEditingPageMeta({
                       ...editingPageMeta,
-                      title: { ...toLocObj(editingPageMeta.title), fr: e.target.value },
+                      title: {
+                        ...toLocObj(editingPageMeta.title),
+                        [metaLang]: e.target.value,
+                      },
                     })
                   }
-                  placeholder="ex: Mon Profil & CV"
+                  placeholder={
+                    metaLang === "ar"
+                      ? "عنوان الصفحة..."
+                      : metaLang === "en"
+                        ? "Page title..."
+                        : "ex: Mon Profil & CV"
+                  }
+                  dir={metaLang === "ar" ? "rtl" : "ltr"}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Description SEO (FR) :</Label>
+                <Label className="text-xs font-semibold">
+                  Description SEO ({metaLang.toUpperCase()}) :
+                </Label>
                 <Input
-                  value={toLocObj(editingPageMeta.description).fr}
+                  value={toLocObj(editingPageMeta.description)[metaLang]}
                   onChange={(e) =>
                     setEditingPageMeta({
                       ...editingPageMeta,
                       description: {
                         ...toLocObj(editingPageMeta.description),
-                        fr: e.target.value,
+                        [metaLang]: e.target.value,
                       },
                     })
                   }
-                  placeholder="Résumé pour les moteurs de recherche..."
+                  placeholder={
+                    metaLang === "ar"
+                      ? "وصف محركات البحث..."
+                      : metaLang === "en"
+                        ? "Search engine description..."
+                        : "Résumé pour les moteurs de recherche..."
+                  }
+                  dir={metaLang === "ar" ? "rtl" : "ltr"}
                 />
               </div>
 

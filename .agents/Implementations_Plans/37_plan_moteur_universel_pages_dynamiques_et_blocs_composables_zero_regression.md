@@ -4,7 +4,7 @@
 **Tech Lead, Architecte & Consultant R&D :** AImi  
 **Projet Hôte :** StacGate Platform (`ka-tech`)  
 **Workspace :** `c:\xampp\htdocs\ka-tech`  
-**Statut :** `🟢 Validé par ArchiSys3.0 — En cours d'exécution`
+**Statut :** `🟡 Sous-Phase 37.1 Soumise à Validation d'ArchiSys3.0`
 
 ---
 
@@ -36,20 +36,20 @@ Ce chantier concrétise l'**Universalité Vraie** en dotant StacGate Platform d'
          ┌──────────────────────────────┴──────────────────────────────┐
          ▼                                                             ▼
 ┌─────────────────────────────────┐                   ┌─────────────────────────────────┐
-│ GESTIONNAIRE BACKSTAGE          │                   │ REGISTRE UNIVERSEL DE BLOCS     │
+│ GESTIONNAIRE BACKSTAGE          │                   │ REGISTRE UNIVERSEL DE 24 BLOCS  │
 │ (/admin/pages)                  │                   │ (src/components/blocks/)        │
 ├─────────────────────────────────┤                   ├─────────────────────────────────┤
-│ • Créer / Dupliquer une vue     │                   │ • BlockHero (Bannière / Slogan) │
-│ • Masquer / Supprimer une vue   │                   │ • BlockProfile (Bio / CV / Liens│
-│ • Ordonner les blocs (drag/drop)│                   │ • BlockItems (Grille Catalogue) │
-│ • Ajouter / Supprimer des blocs │                   │ • BlockTimeline (Parcours/Jalons│
-│ • Intégration Menu Navbar/Footer│                   │ • BlockSkills (Matrice Techs)   │
-└────────────────┬────────────────┘                   │ • BlockMarkdown (Texte / Média) │
-                 │                                    │ • BlockContact (Devis / Message)│
-                 ▼                                    │ • BlockFaq (Accordéon FAQ)      │
-┌─────────────────────────────────┐                   │ • BlockReviews (Avis clients)   │
-│ PERSISTANCE SOUVERAINE          │                   └────────────────┬────────────────┘
-│ site_content -> 'custom_pages'  │                                    │
+│ • Créer / Dupliquer une vue     │                   │ • Famille Commerce (13 blocs)   │
+│ • Masquer / Supprimer une vue   │                   │ • Famille Identité & CV (5 bloc)│
+│ • Ordonner les blocs (drag/drop)│                   │ • Famille Vitrine & R&D (4 bloc)│
+│ • Inspecteur de Props de Blocs  │                   │ • Famille Interaction (3 blocs) │
+│ • Intégration Menu Navbar/Footer│                   └────────────────┬────────────────┘
+└────────────────┬────────────────┘                                    │
+                 │                                                     │
+                 ▼                                                     │
+┌─────────────────────────────────┐                                    │
+│ PERSISTANCE SOUVERAINE          │                                    │
+│ site_content -> 'customPages'   │                                    │
 └────────────────┬────────────────┘                                    │
                  │                                                     │
                  └──────────────────────┬──────────────────────────────┘
@@ -64,89 +64,78 @@ Ce chantier concrétise l'**Universalité Vraie** en dotant StacGate Platform d'
                       └───────────────────────────────────┘
 ```
 
-### Le Registre de Blocs Universels (Autonomes et Réutilisables) :
+---
 
-Chaque bloc est un composant React pur, typé, acceptant ses données de configuration et supportant le trilinguisme natif (FR / EN / AR) avec disposition miroir RTL :
+## 3. Découpage des Étapes Réalisées (Phase 37)
 
-1. **`BlockHero` :** Bannière d'impact avec titre, sous-titre, image/vidéo d'arrière-plan et boutons d'action.
-2. **`BlockProfile` :** Profil exécutif pour CV ou présentation (avatar/photo, nom, titre pro, badges de disponibilité, liens GitHub/LinkedIn/Email).
-3. **`BlockItems` :** Grille polyvalente filtrable par catégorie (`products` existants : PC, Logiciels, Projets R&D, Services) avec boutons d'action contextuels (Acheter, Télécharger 0 DA, Demander un devis, Voir le projet).
-4. **`BlockTimeline` :** Parcours chronologique d'expériences, jalons d'entreprise ou étapes de projet.
-5. **`BlockSkills` :** Matrice de compétences ou technologies avec jauges ou badges par domaine.
-6. **`BlockMarkdown` :** Zone de contenu éditorial libre au format Markdown/HTML avec support images et vidéos YouTube/Vimeo débloquées.
-7. **`BlockContact` :** Formulaire de contact ou de devis connecté directement à l'API existante `/api/messages`.
-8. **`BlockFaq` :** Accordéon de questions/réponses interactif.
-9. **`BlockReviews` :** Carrousel de témoignages et avis connecté à la table existante `reviews`.
+- [x] **Étape 37.A : Modèle de Données & Typage TypeScript :** [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) (24 types, configs, pages).
+- [x] **Étape 37.B : Registre & 24 Blocs Composables :** [`src/components/blocks/`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/) (14 fichiers créés).
+- [x] **Étape 37.C : Routeur Dynamique & Vue Publique :** [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx).
+- [x] **Étape 37.D : Interface Backstage d'Administration des Pages :** [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx).
+- [x] **Étape 37.E : Intégration Menu Navigation & Parité i18n :** Injection navbar dynamique dans [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) et seeds par défaut.
+- [x] **Étape 37.F : Recette Qualité & CI :** 0 erreur tsc, 0 erreur lint, packages zip générés.
 
 ---
 
-## 3. Découpage Chronologique des Étapes
+## 4. Sous-Phase 37.1 : Finition Chirurgicale & Éradication des Angles Morts
+
+Afin de garantir une robustesse absolue et une complétude exemplaire sans le moindre angle mort, les 4 interventions suivantes sont programmées :
 
 ```text
  ┌─────────────────────────────────────────────────────────────────────────────┐
- │  Phase 37 : Moteur Universel de Pages & Blocs Composables                   │
- │  ├── Étape 37.A : Modèle de Données & Typage (site_content 'custom_pages')  │
- │  ├── Étape 37.B : Implémentation du Registre des 9 Blocs Universels         │
- │  ├── Étape 37.C : Routeur Dynamique & Vue Publique (DynamicPage.tsx)        │
- │  ├── Étape 37.D : Interface Backstage de Gestion (/admin/pages)             │
- │  ├── Étape 37.E : Intégration Menu Navigation (Navbar & Footer Dynamiques)  │
- │  └── Étape 37.F : Recette Complète Non-Régression (Commandes, Users, CI)    │
+ │  Sous-Phase 37.1 : Éradication des 4 Angles Morts & Finitions 360°          │
+ │  ├── Étape 37.1.A : Synchronisation Réactive useEffect dans PagesManager    │
+ │  ├── Étape 37.1.B : Éradication du Flash 404 / FOUC dans DynamicPage        │
+ │  ├── Étape 37.1.C : Parité Linguistique Trilingue Modale (FR / EN / AR)     │
+ │  ├── Étape 37.1.D : Inspecteur Étendu de Configuration des Propriétés Blocs │
+ │  └── Étape 37.1.E : Recette Complète, Re-Build & Re-Packaging Horodaté      │
  └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Étape 37.A : Modèle de Données & Typage TypeScript
+### Étape 37.1.A : Synchronisation Réactive `useEffect` dans [`PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
 
-- Définition des types TypeScript dans `src/types/pages.ts` :
-  - `PageDefinition` : `{ id, slug, title: Localized<string>, description?: Localized<string>, blocks: BlockConfig[], isPublished: boolean, inNavbar: boolean, navOrder: number, updatedAt: string }`
-  - `BlockConfig` : `{ id, type: BlockType, enabled: boolean, props: Record<string, any> }`
-- Initialisation additive dans `site_content` via la couche API existante (`ControleurContenu.php`).
-- Zéro impact sur les autres tables SQL.
+- Remplacement de l'anti-pattern `useState(() => setPages(...))` par un `useEffect` écoutant `siteContent?.customPages` conditionné à `!isDirty`.
+- Sélection automatique de la première page si aucune page n'est sélectionnée et que des pages existent.
+- Garantie qu'un rafraîchissement direct (F5) sur `/admin/pages` charge immédiatement les données sans tableau vide.
 
-### Étape 37.B : Registre des 9 Blocs Universels
+### Étape 37.1.B : Éradication du Flash 404 / FOUC dans [`DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx)
 
-- Création du répertoire dédié `src/components/blocks/` abritant chaque composant bloc.
-- Export centralisé via `src/components/blocks/index.ts` et dictionnaire de rendu `BLOCK_COMPONENTS`.
+- Ajout d'une condition d'attente active `if (loading && !siteContent)` affichant un état de chargement élégant (spinner/skeleton) centré.
+- La redirection vers `<NotFound />` n'intervient que si le chargement est formellement terminé (`!loading`) et que le slug reste introuvable.
 
-### Étape 37.C : Routeur Dynamique & Vue Publique
+### Étape 37.1.C : Parité Linguistique Trilingue dans la Modale de Page
 
-- Création de `src/pages/DynamicPage.tsx` qui lit la définition de la page depuis le contexte, vérifie la publication et affiche séquentiellement les blocs activés.
-- Intégration dans `src/App.tsx` via une route dynamique `<Route path="/p/:slug" element={<DynamicPage />} />` (ou résolution élégante avant repli `NotFound`), sans toucher aux routes fixes existantes.
+- Refonte de la modale d'édition des métadonnées de page dans [`PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+  - Ajout d'onglets de langues trilingues `[FR | EN | AR]`.
+  - Permet la saisie native du **Titre** et de la **Description SEO** dans les trois langues officielles du projet.
+  - Sauvegarde conforme au contrat de typage `Localized<string>`.
 
-### Étape 37.D : Interface Backstage d'Administration des Pages
+### Étape 37.1.D : Inspecteur de Propriétés de Blocs Étendu
 
-- Création de `src/pages/admin/PagesManager.tsx` :
-  - Liste des pages créées avec indicateurs (Publié, Dans le menu, Nombre de blocs).
-  - Modal/Écran de création et édition d'une page.
-  - Gestionnaire de blocs : Ajouter un bloc depuis le catalogue, monter/descendre avec flèches ou drag, activer/désactiver, formulaire d'édition des paramètres du bloc.
-- Ajout de l'entrée dans le menu latéral `AdminShell.tsx` sous l'intitulé _« Pages & Vues »_.
+- Dans [`PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx), enrichissement de chaque carte de bloc avec un panneau repliable « Configuration & Propriétés » :
+  - Pour `profile_hero` : saisie du nom, titre professionnel, disponibilité, avatar URL, liens GitHub/LinkedIn/Email.
+  - Pour `contact_form` & `faq_accordion` : saisie du titre et sous-titre personnalisés.
+  - Pour `category_cards` & `latest_blog_posts` : réglage du nombre maximum d'éléments affichés (`max`).
+  - Pour tous les blocs : bouton dépliable d'édition JSON brute pour les utilisateurs avancés, permettant d'altérer 100% des propriétés de n'importe quel bloc sans limitation.
 
-### Étape 37.E : Intégration Menu Navigation & Parité i18n
+### Étape 37.1.E : Recette Qualité, Validation CI & Packaging
 
-- Mise à jour de `Navbar.tsx` et `Footer.tsx` pour inclure dynamiquement les pages personnalisées marquées `inNavbar: true`, tout en préservant les liens essentiels.
-- Clés de traduction trilingues FR / EN / AR dans `src/lib/i18n.tsx`.
-
-### Étape 37.F : Recette Complète de Non-Régression & Validation CI
-
-- Validation intégrale des flux existants :
-  - Panier et checkout commande (passage d'une commande test).
-  - Gestion des clients et utilisateurs.
-  - Notifications et médias.
-- Exécution de la suite de vérification obligatoire :
-  - `bun run verifier-i18n` (parité trilingue).
-  - `bun run format` (Prettier).
-  - `bunx tsc --noEmit` (TypeScript strict, 0 erreur).
-  - `bun run lint` (ESLint).
-  - `bun run build; bun run paqueter:data` (build complet de production).
+- Validation complète de la suite :
+  - `bun run verifier-i18n`
+  - `bun run format`
+  - `bunx tsc --noEmit` (0 erreur TypeScript)
+  - `bun run lint` (0 erreur ESLint)
+  - `bun run build; bun run paqueter:data` (régénération des archives de production horodatées).
+- Mise à jour du journal officiel [`.agents/tracabilites.md`](file:///c:/xampp/htdocs/ka-tech/.agents/tracabilites.md) (Rattachement en Sous-Phase 37.1 selon notre gouvernance).
 
 ---
 
-## 4. Matrice de Recette & Critères de Succès
+## 5. Matrice de Recette de la Sous-Phase 37.1
 
-| Domaine                              | Critère de Contrôle                                        | Résultat Attendu                                                  |
-| :----------------------------------- | :--------------------------------------------------------- | :---------------------------------------------------------------- |
-| **Création de Vue Libre**            | Créer une page `/p/cv` ou `/p/projets` dans `/admin/pages` | La page est immédiatement accessible en ligne avec ses blocs      |
-| **Modularité des Blocs**             | Ajouter, réordonner et supprimer des blocs sur une page    | L'ordre et le contenu reflètent fidèlement les réglages Backstage |
-| **Zéro Régression Commandes**        | Ajouter un produit au panier et valider le checkout        | Tunnel d'achat, wilayas, paiements 100% opérationnels             |
-| **Zéro Régression Authentification** | Connexion visiteur et connexion administrateur             | 100% fonctionnel sans altération de session                       |
-| **Zéro Régression BD**               | Exécuter `php api/tools/verifier-parite-schema.php`        | Parité SQLite / MySQL / PgSQL 100% respectée                      |
-| **Qualité & Pipeline CI**            | `bun run lint && bunx tsc --noEmit && bun run build`       | 0 erreur bloquante                                                |
+| Domaine                    | Critère de Contrôle                                  | Résultat Attendu                                                  |
+| :------------------------- | :--------------------------------------------------- | :---------------------------------------------------------------- |
+| **Synchro F5 Backstage**   | Recharger F5 sur `/admin/pages`                      | Les pages et blocs s'affichent immédiatement sans être écrasés    |
+| **0 Flash 404 Visiteur**   | Accéder directement à `/:slug`                       | Spinner propre pendant le fetch, jamais de flash de page 404      |
+| **Trilinguisme Modale**    | Éditer les titres/SEO en EN et AR                    | Les 3 variantes sont conservées et rendues selon la langue active |
+| **Inspecteur de Blocs**    | Modifier les champs d'un bloc Profil ou FAQ          | Les propriétés éditées sont persistées et visibles sur la vue     |
+| **Validation Pipeline CI** | `bun run lint && bunx tsc --noEmit && bun run build` | 0 erreur bloquante                                                |

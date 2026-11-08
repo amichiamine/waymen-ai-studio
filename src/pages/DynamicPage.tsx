@@ -16,13 +16,23 @@ export default function DynamicPage() {
     return <NotFound />;
   }
 
+  // Éradication du Flash 404 / FOUC : si les données sont en cours de chargement
+  if (loading && !siteContent) {
+    return (
+      <div className="container-page py-32 flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="h-10 w-10 animate-spin rounded-full border-3 border-primary border-t-transparent shadow-sm" />
+        <p className="mt-4 text-xs text-muted-foreground animate-pulse">Chargement de la page...</p>
+      </div>
+    );
+  }
+
   // Recherche de la page par slug dans les customPages
   const customPages = siteContent?.customPages || [];
   const page = customPages.find(
     (p) => p.slug.toLowerCase() === slug.toLowerCase() && p.isPublished,
   );
 
-  // Si le chargement est terminé et que la page n'existe pas
+  // Si le chargement est terminé et que la page n'existe pas ou n'est pas publiée
   if (!page) {
     return <NotFound />;
   }

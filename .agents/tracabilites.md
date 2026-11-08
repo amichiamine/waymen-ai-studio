@@ -1796,5 +1796,45 @@
   - Registre : 📄 [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts)
   - Catalogue de blocs : 📂 [`src/components/blocks/`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/) (14 fichiers)
   - Vues : 📄 [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx), 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
-  - Archive application horodatée : 📦 [katech-site-08112026-1231.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1231.zip) (4.12 Mo)
-  - Archive données horodatée : 📦 [katech-data-08112026-1231.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1231.zip) (38 Ko)
+  - Archive application horodatée : 📦 [katech-site-08112026-1247.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1247.zip) (4.12 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1247.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1247.zip) (38 Ko)
+
+#### Sous-Phase 37.1 : Finition Chirurgicale, Éradication des Angles Morts & Inspecteur de Propriétés de Blocs
+
+- **Date :** 08 Novembre 2026
+- **Validation ArchiSys3.0 :** Accord explicite pour le déploiement de l'Option B et de l'Inspecteur de Contenu.
+- **Actions Réalisées :**
+  - **Étape 37.1.A (Synchronisation Réactive Backstage) :**
+    - Remplacement dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) de l'anti-pattern `useState(() => setPages(...))` par un hook `useEffect` réactif asservi à `siteContent?.customPages` et conditionné à `!isDirty`.
+    - Auto-sélection de la première vue disponible au chargement, éliminant tout écran vide lors d'un rechargement F5.
+  - **Étape 37.1.B (Éradication du Flash 404 / FOUC Visiteur) :**
+    - Sécurisation dans [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx) de la phase de chargement initial via `if (loading && !siteContent)` : affichage d'un spinner de chargement élégant évitant tout affichage transitoire de la page 404.
+  - **Étape 37.1.C (Parité Trilingue 360° Modale de Page) :**
+    - Intégration d'onglets de langues trilingues `[FR | EN | AR]` dans la modale des paramètres de vue de [`PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx).
+    - Permet la saisie et la persistance native du titre et de la description SEO dans les 3 langues du projet.
+  - **Étape 37.1.D (Inspecteur de Contenu & Propriétés Étendu par Bloc) :**
+    - Création du composant dédié [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx).
+    - Intégration d'un bouton accordéon `[⚙️ Contenu]` sur chaque carte de bloc dans `PagesManager.tsx`.
+    - Formulaires ergonomiques sur-mesure pour configurer les contenus internes de chaque type de bloc :
+      - `profile_hero` : Nom, rôle, bio, disponibilité, avatar URL, liens GitHub/LinkedIn/Email, interrupteur bouton CV PDF.
+      - `timeline` : Titre, sous-titre, et ajout/modification/suppression dynamique de jalons/expériences.
+      - `skills_matrix` : Titre, sous-titre, et ajout/modification de catégories et tags technologiques.
+      - `projects_grid` : Titre, sous-titre, et gestion complète des fiches de projets (démo, GitHub, tags).
+      - `faq_accordion` : Titre, sous-titre, et ajout/suppression de questions/réponses dédiées.
+      - `contact_form` : Titre et sous-titre de contact personnalisés.
+      - `brand_banner` : URL d'image et texte alternatif SEO.
+      - `company_history` : Titres et corps de textes des deux colonnes.
+      - `category_cards` & `latest_blog_posts` : Contrôle numérique du nombre maximum d'éléments.
+      - `markdown_section` : Zone de rédaction Markdown enrichie.
+      - **Mode Développeur JSON brut :** Disponible sur les 24 blocs pour une flexibilité totale.
+  - **Étape 37.1.E (Contrôles Qualité CI & Livrables) :**
+    - `bun run verifier-i18n` : 100% conforme.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build; bun run paqueter:data` : production validée.
+- **Livrables :**
+  - Composant Inspecteur : 📄 [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx)
+  - Vues assainies : 📄 [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx), 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1247.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1247.zip) (4.12 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1247.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1247.zip) (38 Ko)
