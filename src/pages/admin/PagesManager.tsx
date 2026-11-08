@@ -158,6 +158,20 @@ export default function PagesManager() {
     }
   }, [selectedPage, selectedBlockId]);
 
+  // Navigation Studio Dédiée Mobile & Tablette (< 1024px)
+  const [mobileStudioView, setMobileStudioView] = useState<"tree" | "canvas" | "inspector">(
+    "canvas",
+  );
+
+  // 🎯 Auto-scroll focalisé : centre le bloc sélectionné dans l'arborescence
+  useEffect(() => {
+    if (!selectedBlockId) return;
+    const el = document.getElementById(`studio-tree-block-${selectedBlockId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [selectedBlockId]);
+
   const selectedBlockIdx = selectedPage?.blocks?.findIndex((b) => b.id === selectedBlockId) ?? -1;
   const selectedBlock =
     selectedBlockIdx >= 0 && selectedPage ? selectedPage.blocks[selectedBlockIdx] : null;
@@ -492,257 +506,325 @@ export default function PagesManager() {
       </div>
 
       {activeStudioTab === "views" && studioViewMode === "canvas" && (
-        <div className="grid gap-4 lg:grid-cols-12 text-start items-start">
-          {/* Colonne Gauche (3 cols) : Sélecteur de Vue & Arborescence des Blocs */}
-          {!leftCollapsed && (
-            <div className="lg:col-span-3 space-y-4">
-              <Card className="shadow-xs border-border">
-                <CardHeader className="py-2.5 px-3.5 border-b border-border/40">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                      Vue Active :
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={handleOpenCreatePage}
-                        className="h-6 text-[11px] gap-1 px-1.5 font-semibold text-primary"
-                      >
-                        <Plus className="size-3" />
-                        <span>Nouvelle</span>
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-6 text-muted-foreground hover:text-foreground"
-                        onClick={() => setLeftCollapsed(true)}
-                        title="Replier le volet d'arborescence"
-                      >
-                        <PanelLeftClose className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-3 space-y-2">
-                  <Select
-                    value={selectedPageId || ""}
-                    onValueChange={(val) => setSelectedPageId(val)}
-                  >
-                    <SelectTrigger className="w-full h-9 font-semibold text-xs">
-                      <SelectValue placeholder="Choisir une vue..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pages.map((p) => {
-                        const isHome = p.id === "page_home" || p.slug === "" || p.slug === "home";
-                        const title = L(p.title) || (isHome ? "Accueil" : p.slug);
-                        return (
-                          <SelectItem key={p.id} value={p.id} className="text-xs">
-                            {isHome ? "🏠 Accueil Vitrine (/)" : `/${p.slug} (${title})`}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-
-                  {selectedPage && (
-                    <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px]">
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <span className="font-mono">
-                          {selectedPage.id === "page_home" ? "/" : `/${selectedPage.slug}`}
-                        </span>
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "text-[9px] py-0 px-1 font-semibold",
-                            selectedPage.isPublished ? "text-emerald-500" : "text-amber-500",
-                          )}
-                        >
-                          {selectedPage.isPublished ? "Publiée" : "Brouillon"}
-                        </Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 text-[11px] gap-1 px-1.5 text-primary"
-                        onClick={() => handleOpenEditPageMeta(selectedPage)}
-                      >
-                        <Settings className="size-3" />
-                        <span>Paramètres</span>
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Arborescence ordonnée des blocs de la vue */}
-              <Card className="shadow-xs border-border">
-                <CardHeader className="py-2.5 px-3.5 border-b border-border/40 flex flex-row items-center justify-between">
-                  <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Blocs ({selectedPage?.blocks?.length || 0})
-                  </CardTitle>
-                  <Button
-                    size="sm"
-                    onClick={() => setAddBlockModalOpen(true)}
-                    className="h-7 text-xs gap-1 font-semibold shadow-xs"
-                  >
-                    <Plus className="size-3" />
-                    <span>Ajouter</span>
-                  </Button>
-                </CardHeader>
-                <CardContent className="p-2 space-y-1 max-h-[520px] overflow-y-auto">
-                  {!selectedPage || selectedPage.blocks.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-muted-foreground">
-                      Aucun bloc dans cette vue.
-                    </div>
-                  ) : (
-                    selectedPage.blocks.map((block, idx) => {
-                      const isSelected = selectedBlockId === block.id;
-                      const meta = getBlockMeta(block.type);
-                      return (
-                        <div
-                          key={block.id}
-                          onClick={() => setSelectedBlockId(block.id)}
-                          className={cn(
-                            "p-2 rounded-lg border text-xs cursor-pointer flex items-center justify-between gap-1.5 transition-all select-none",
-                            isSelected
-                              ? "bg-primary/10 border-primary text-foreground font-semibold shadow-xs"
-                              : "bg-card/50 hover:bg-muted/40 border-border/60 text-muted-foreground",
-                          )}
-                        >
-                          <div className="flex items-center gap-1.5 truncate">
-                            <span
-                              className={cn(
-                                "size-2 rounded-full shrink-0",
-                                block.enabled ? "bg-emerald-500" : "bg-muted-foreground/30",
-                              )}
-                            />
-                            <span className="truncate">{L(meta?.label) || block.type}</span>
-                          </div>
-                          <div
-                            className="flex items-center gap-0.5 shrink-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              type="button"
-                              disabled={idx === 0}
-                              onClick={() => handleMoveBlockUp(idx)}
-                              className="size-5 inline-flex items-center justify-center rounded hover:bg-muted disabled:opacity-20 text-muted-foreground"
-                              title="Monter ce bloc"
-                            >
-                              <ArrowUp className="size-3" />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={idx === selectedPage.blocks.length - 1}
-                              onClick={() => handleMoveBlockDown(idx)}
-                              className="size-5 inline-flex items-center justify-center rounded hover:bg-muted disabled:opacity-20 text-muted-foreground"
-                              title="Descendre ce bloc"
-                            >
-                              <ArrowDown className="size-3" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Colonne Centrale : Live Canvas WYSYWIG (portée dynamique 6, 9 ou 12 colonnes) */}
-          <div className={cn("h-[740px]", canvasColsClass)}>
-            <StudioLiveCanvas
-              blocks={selectedPage?.blocks || []}
-              selectedBlockId={selectedBlockId}
-              onSelectBlock={(id) => setSelectedBlockId(id)}
-              onMoveBlockUp={handleMoveBlockUp}
-              onMoveBlockDown={handleMoveBlockDown}
-              onToggleBlock={handleToggleBlock}
-              onDeleteBlock={handleDeleteBlock}
-              onOpenAddModal={() => setAddBlockModalOpen(true)}
-              leftCollapsed={leftCollapsed}
-              onToggleLeft={() => setLeftCollapsed((prev) => !prev)}
-              rightCollapsed={rightCollapsed}
-              onToggleRight={() => setRightCollapsed((prev) => !prev)}
-              isZenMode={isZenMode}
-              onToggleZen={handleToggleZen}
-            />
+        <>
+          {/* Sélecteur de mode tactile / mobile / tablette (< 1024px) */}
+          <div className="flex lg:hidden items-center p-1 bg-muted/60 rounded-xl border border-border gap-1">
+            <button
+              type="button"
+              onClick={() => setMobileStudioView("tree")}
+              className={cn(
+                "flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5",
+                mobileStudioView === "tree"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Layers className="size-3.5" />
+              <span>Structure ({selectedPage?.blocks?.length || 0})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileStudioView("canvas")}
+              className={cn(
+                "flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5",
+                mobileStudioView === "canvas"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Eye className="size-3.5" />
+              <span>Aperçu Live</span>
+            </button>
+            <button
+              type="button"
+              disabled={!selectedBlock}
+              onClick={() => setMobileStudioView("inspector")}
+              className={cn(
+                "flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-40",
+                mobileStudioView === "inspector"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Settings className="size-3.5" />
+              <span>Inspecteur</span>
+            </button>
           </div>
 
-          {/* Colonne Droite (3 cols) : Inspecteur Fin de Propriétés & Styles */}
-          {!rightCollapsed && (
-            <div className="lg:col-span-3">
-              {selectedPage && selectedBlock ? (
-                <Card className="h-full flex flex-col shadow-xs border-border">
-                  <CardHeader className="py-2.5 px-3.5 border-b border-border/40 flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xs font-bold flex items-center gap-1.5">
-                        <Settings className="size-3.5 text-primary" />
-                        <span>{L(selectedBlockMeta?.label) || selectedBlock.type}</span>
-                      </CardTitle>
-                      <CardDescription className="text-[10px]">
-                        Inspecteur visuel & fin
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-7"
-                        onClick={() => handleToggleBlock(selectedBlockIdx)}
-                        title={selectedBlock.enabled ? "Désactiver ce bloc" : "Activer ce bloc"}
-                      >
-                        {selectedBlock.enabled ? (
-                          <Eye className="size-3.5 text-emerald-500" />
-                        ) : (
-                          <EyeOff className="size-3.5 text-muted-foreground" />
-                        )}
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-7 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDeleteBlock(selectedBlockIdx)}
-                        title="Supprimer ce bloc"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-7 text-muted-foreground hover:text-foreground"
-                        onClick={() => setRightCollapsed(true)}
-                        title="Replier le volet inspecteur"
-                      >
-                        <PanelRightClose className="size-3.5" />
-                      </Button>
+          <div className="grid gap-4 lg:grid-cols-12 text-start items-start">
+            {/* Colonne Gauche (3 cols) : Sélecteur de Vue & Arborescence des Blocs */}
+            {!leftCollapsed && (
+              <div
+                className={cn(
+                  "lg:col-span-3 space-y-4",
+                  mobileStudioView !== "tree" && "hidden lg:block",
+                )}
+              >
+                <Card className="shadow-xs border-border">
+                  <CardHeader className="py-2.5 px-3.5 border-b border-border/40">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Vue Active :
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleOpenCreatePage}
+                          className="h-6 text-[11px] gap-1 px-1.5 font-semibold text-primary"
+                        >
+                          <Plus className="size-3" />
+                          <span>Nouvelle</span>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6 text-muted-foreground hover:text-foreground"
+                          onClick={() => setLeftCollapsed(true)}
+                          title="Replier le volet d'arborescence"
+                        >
+                          <PanelLeftClose className="size-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 overflow-y-auto max-h-[640px]">
-                    <BlockPropsEditor
-                      block={selectedBlock}
-                      onChange={(newProps) => handleUpdateBlockProps(selectedBlockIdx, newProps)}
-                      onStyleChange={(newStyle) =>
-                        handleUpdateBlockStyle(selectedBlockIdx, newStyle)
-                      }
-                    />
+                  <CardContent className="p-3 space-y-2">
+                    <Select
+                      value={selectedPageId || ""}
+                      onValueChange={(val) => setSelectedPageId(val)}
+                    >
+                      <SelectTrigger className="w-full h-9 font-semibold text-xs">
+                        <SelectValue placeholder="Choisir une vue..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pages.map((p) => {
+                          const isHome = p.id === "page_home" || p.slug === "" || p.slug === "home";
+                          const title = L(p.title) || (isHome ? "Accueil" : p.slug);
+                          return (
+                            <SelectItem key={p.id} value={p.id} className="text-xs">
+                              {isHome ? "🏠 Accueil Vitrine (/)" : `/${p.slug} (${title})`}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+
+                    {selectedPage && (
+                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px]">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <span className="font-mono">
+                            {selectedPage.id === "page_home" ? "/" : `/${selectedPage.slug}`}
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className={cn(
+                              "text-[9px] py-0 px-1 font-semibold",
+                              selectedPage.isPublished ? "text-emerald-500" : "text-amber-500",
+                            )}
+                          >
+                            {selectedPage.isPublished ? "Publiée" : "Brouillon"}
+                          </Badge>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 text-[11px] gap-1 px-1.5 text-primary"
+                          onClick={() => handleOpenEditPageMeta(selectedPage)}
+                        >
+                          <Settings className="size-3" />
+                          <span>Paramètres</span>
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-              ) : (
-                <Card className="p-8 text-center border-dashed">
-                  <Settings className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <h4 className="text-xs font-bold text-foreground">Aucun bloc sélectionné</h4>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Cliquez sur un bloc dans le Canvas ou dans l'arborescence de gauche pour
-                    personnaliser son contenu et son style.
-                  </p>
+
+                {/* Arborescence ordonnée des blocs de la vue */}
+                <Card className="shadow-xs border-border">
+                  <CardHeader className="py-2.5 px-3.5 border-b border-border/40 flex flex-row items-center justify-between">
+                    <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Blocs ({selectedPage?.blocks?.length || 0})
+                    </CardTitle>
+                    <Button
+                      size="sm"
+                      onClick={() => setAddBlockModalOpen(true)}
+                      className="h-7 text-xs gap-1 font-semibold shadow-xs"
+                    >
+                      <Plus className="size-3" />
+                      <span>Ajouter</span>
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="p-2 space-y-1 max-h-[520px] overflow-y-auto">
+                    {!selectedPage || selectedPage.blocks.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-muted-foreground">
+                        Aucun bloc dans cette vue.
+                      </div>
+                    ) : (
+                      selectedPage.blocks.map((block, idx) => {
+                        const isSelected = selectedBlockId === block.id;
+                        const meta = getBlockMeta(block.type);
+                        return (
+                          <div
+                            key={block.id}
+                            id={`studio-tree-block-${block.id}`}
+                            onClick={() => {
+                              setSelectedBlockId(block.id);
+                              if (window.innerWidth < 1024) {
+                                setMobileStudioView("canvas");
+                              }
+                            }}
+                            className={cn(
+                              "p-2 rounded-lg border text-xs cursor-pointer flex items-center justify-between gap-1.5 transition-all select-none",
+                              isSelected
+                                ? "bg-primary/10 border-primary text-foreground font-semibold shadow-xs"
+                                : "bg-card/50 hover:bg-muted/40 border-border/60 text-muted-foreground",
+                            )}
+                          >
+                            <div className="flex items-center gap-1.5 truncate">
+                              <span
+                                className={cn(
+                                  "size-2 rounded-full shrink-0",
+                                  block.enabled ? "bg-emerald-500" : "bg-muted-foreground/30",
+                                )}
+                              />
+                              <span className="truncate">{L(meta?.label) || block.type}</span>
+                            </div>
+                            <div
+                              className="flex items-center gap-0.5 shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => handleMoveBlockUp(idx)}
+                                className="size-5 inline-flex items-center justify-center rounded hover:bg-muted disabled:opacity-20 text-muted-foreground"
+                                title="Monter ce bloc"
+                              >
+                                <ArrowUp className="size-3" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === selectedPage.blocks.length - 1}
+                                onClick={() => handleMoveBlockDown(idx)}
+                                className="size-5 inline-flex items-center justify-center rounded hover:bg-muted disabled:opacity-20 text-muted-foreground"
+                                title="Descendre ce bloc"
+                              >
+                                <ArrowDown className="size-3" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </CardContent>
                 </Card>
+              </div>
+            )}
+
+            {/* Colonne Centrale : Live Canvas WYSYWIG (portée dynamique 6, 9 ou 12 colonnes) */}
+            <div
+              className={cn(
+                "h-[740px] w-full",
+                canvasColsClass,
+                mobileStudioView !== "canvas" && "hidden lg:block",
               )}
+            >
+              <StudioLiveCanvas
+                blocks={selectedPage?.blocks || []}
+                selectedBlockId={selectedBlockId}
+                onSelectBlock={(id) => setSelectedBlockId(id)}
+                onMoveBlockUp={handleMoveBlockUp}
+                onMoveBlockDown={handleMoveBlockDown}
+                onToggleBlock={handleToggleBlock}
+                onDeleteBlock={handleDeleteBlock}
+                onOpenAddModal={() => setAddBlockModalOpen(true)}
+                leftCollapsed={leftCollapsed}
+                onToggleLeft={() => setLeftCollapsed((prev) => !prev)}
+                rightCollapsed={rightCollapsed}
+                onToggleRight={() => setRightCollapsed((prev) => !prev)}
+                isZenMode={isZenMode}
+                onToggleZen={handleToggleZen}
+              />
             </div>
-          )}
-        </div>
+
+            {/* Colonne Droite (3 cols) : Inspecteur Fin de Propriétés & Styles */}
+            {!rightCollapsed && (
+              <div
+                className={cn(
+                  "lg:col-span-3",
+                  mobileStudioView !== "inspector" && "hidden lg:block",
+                )}
+              >
+                {selectedPage && selectedBlock ? (
+                  <Card className="h-full flex flex-col shadow-xs border-border">
+                    <CardHeader className="py-2.5 px-3.5 border-b border-border/40 flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                          <Settings className="size-3.5 text-primary" />
+                          <span>{L(selectedBlockMeta?.label) || selectedBlock.type}</span>
+                        </CardTitle>
+                        <CardDescription className="text-[10px]">
+                          Inspecteur visuel & fin
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-7"
+                          onClick={() => handleToggleBlock(selectedBlockIdx)}
+                          title={selectedBlock.enabled ? "Désactiver ce bloc" : "Activer ce bloc"}
+                        >
+                          {selectedBlock.enabled ? (
+                            <Eye className="size-3.5 text-emerald-500" />
+                          ) : (
+                            <EyeOff className="size-3.5 text-muted-foreground" />
+                          )}
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDeleteBlock(selectedBlockIdx)}
+                          title="Supprimer ce bloc"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-7 text-muted-foreground hover:text-foreground"
+                          onClick={() => setRightCollapsed(true)}
+                          title="Replier le volet inspecteur"
+                        >
+                          <PanelRightClose className="size-3.5" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-3 overflow-y-auto max-h-[640px]">
+                      <BlockPropsEditor
+                        block={selectedBlock}
+                        onChange={(newProps) => handleUpdateBlockProps(selectedBlockIdx, newProps)}
+                        onStyleChange={(newStyle) =>
+                          handleUpdateBlockStyle(selectedBlockIdx, newStyle)
+                        }
+                      />
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="p-8 text-center border-dashed">
+                    <Settings className="size-8 text-muted-foreground/30 mx-auto mb-2" />
+                    <h4 className="text-xs font-bold text-foreground">Aucun bloc sélectionné</h4>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Cliquez sur un bloc dans le Canvas ou dans l'arborescence de gauche pour
+                      personnaliser son contenu et son style.
+                    </p>
+                  </Card>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {activeStudioTab === "views" && studioViewMode === "structure" && (

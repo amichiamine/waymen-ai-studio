@@ -1,5 +1,7 @@
 import { Suspense, useState, useEffect, type ReactNode } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useI18n, useNamespace } from "@/lib/i18n";
 import { useSiteSettings } from "@/data-provider";
 import { SetupWizard } from "@/components/admin/SetupWizard";
@@ -36,6 +38,25 @@ export default function AdminShell({ pageFallback }: { pageFallback: ReactNode }
   const { data: siteSettings } = useSiteSettings();
   const [searchParams] = useSearchParams();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("admin_sidebar_collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("admin_sidebar_collapsed", String(next));
+      } catch {
+        // Ignorer les erreurs d'écriture de stockage privé
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (siteSettings && siteSettings.onboardingCompleted === false) {
@@ -73,9 +94,22 @@ export default function AdminShell({ pageFallback }: { pageFallback: ReactNode }
 
   return (
     <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
+      <AdminSidebar collapsed={sidebarCollapsed} onToggleCollapse={toggleSidebar} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-3 border-b border-border/60 bg-card/50 px-3 lg:px-8">
+        <header className="flex h-14 items-center gap-2 border-b border-border/60 bg-card/50 px-3 lg:px-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="hidden lg:flex size-8 text-muted-foreground hover:text-foreground shrink-0"
+            title={sidebarCollapsed ? "Déplier le menu backstage" : "Replier le menu backstage"}
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen className="size-4" />
+            ) : (
+              <PanelLeftClose className="size-4" />
+            )}
+          </Button>
           <AdminMobileNav />
           <AdminBreadcrumbs />
           <div className="ms-auto flex items-center gap-2">

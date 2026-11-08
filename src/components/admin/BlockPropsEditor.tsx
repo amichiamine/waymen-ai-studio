@@ -224,6 +224,162 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               />
             </div>
           </div>
+
+          {/* Rayon des bordures (Arrondis) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Rayon d'arrondi (Bordures) :</Label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[
+                { key: "none", label: "Carré (0)" },
+                { key: "md", label: "Moyen (md)" },
+                { key: "2xl", label: "Grand (2xl)" },
+                { key: "full", label: "Pilule" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("borderRadius", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.borderRadius || "none") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ombres portées & Élévation */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Ombre portée (Élévation) :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "none", label: "Plate (0)" },
+                { key: "md", label: "Douce (md)" },
+                { key: "xl", label: "Flottante (xl)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("shadow", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.shadow || "none") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bordures & Délimiteurs */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Liseré & Bordure :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "none", label: "Aucune" },
+                { key: "subtle", label: "Subtile" },
+                { key: "top_bottom", label: "Haut / Bas" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("border", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.border || "none") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Largeur maximale du conteneur */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Largeur max du contenu :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "full", label: "100% Pleine" },
+                { key: "7xl", label: "Standard (7xl)" },
+                { key: "5xl", label: "Centré (5xl)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("maxWidth", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.maxWidth || "full") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Marges externes verticales */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Marge externe verticale (Écart) :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "none", label: "Zéro (0)" },
+                { key: "compact", label: "Légère" },
+                { key: "normal", label: "Standard" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("margin", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.margin || "none") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ancre HTML fluide */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Ancre HTML (Lien direct #) :</Label>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-mono text-muted-foreground">#</span>
+              <Input
+                placeholder="ex: nos-offres, equipe, devis"
+                value={s.anchorId || ""}
+                onChange={(e) => updateStyle("anchorId", e.target.value)}
+                className="h-7 text-xs font-mono"
+              />
+            </div>
+          </div>
+
+          {/* Classes CSS utilitaires personnalisées */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Classes Tailwind personnalisées :</Label>
+            <Input
+              placeholder="ex: backdrop-blur-md opacity-95 ring-1"
+              value={s.customClassName || ""}
+              onChange={(e) => updateStyle("customClassName", e.target.value)}
+              className="h-7 text-xs font-mono"
+            />
+          </div>
         </div>
       )}
 

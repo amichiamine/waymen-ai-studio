@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Monitor,
   Tablet,
@@ -62,12 +62,21 @@ export function StudioLiveCanvas({
   const [device, setDevice] = useState<DeviceMode>("desktop");
   const L = useLocalize();
 
+  // 🎯 Auto-scroll focalisé : fait défiler le visualiseur directement vers le bloc sélectionné
+  useEffect(() => {
+    if (!selectedBlockId) return;
+    const el = document.getElementById(`studio-canvas-block-${selectedBlockId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [selectedBlockId]);
+
   const getViewportWidth = () => {
     switch (device) {
       case "mobile":
-        return "max-w-[375px]";
+        return "w-full max-w-[375px]";
       case "tablet":
-        return "max-w-[768px]";
+        return "w-full max-w-[768px]";
       default:
         return "w-full";
     }
@@ -241,6 +250,7 @@ export function StudioLiveCanvas({
                   return (
                     <div
                       key={block.id}
+                      id={`studio-canvas-block-${block.id}`}
                       onClick={() => onSelectBlock(block.id)}
                       className={cn(
                         "p-3 text-center bg-muted/30 border border-dashed border-border/70 cursor-pointer transition-all hover:bg-muted/50",
@@ -257,6 +267,7 @@ export function StudioLiveCanvas({
                 return (
                   <div
                     key={block.id}
+                    id={`studio-canvas-block-${block.id}`}
                     onClick={() => onSelectBlock(block.id)}
                     className={cn(
                       "group/canvas relative transition-all duration-200 cursor-pointer",

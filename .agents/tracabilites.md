@@ -61,6 +61,7 @@
 | **Phase 39** | 08/11/2026 | Universalisation des Vues Composables 360° (Accueil, À propos, Contact & Catalogue Global)       | 📄 [`39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md`](Implementations_Plans/39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md)                       | 🟢 **Livré & Validé** |
 | **Phase 40** | 08/11/2026 | Grand Studio Visuel Interactif (Live Canvas WYSYWIG, Inspecteur Fin & Styles)                    | 📄 [`40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md`](Implementations_Plans/40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md)                                   | 🟢 **Livré & Validé** |
 | **Phase 41** | 08/11/2026 | Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, 5 Nouveaux Blocs | 📄 [`41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md`](Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md) | 🟢 **Livré & Validé** |
+| **Phase 42** | 08/11/2026 | Ergonomie & Réactivité 360° du Studio Visuel : Sidebar Rétractable, Mode Mobile/Tablette, Auto-Scroll & Inspecteur Ultra-Fin | 📄 [`42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md`](Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md) | 🟢 **Livré & Validé** |
 
 ---
 
@@ -2118,6 +2119,59 @@
   - Archive application horodatée : 📦 [katech-site-08112026-1427.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1427.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1428.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1428.zip) (42 Ko)
 
+---
+
+### Phase 42 : Ergonomie & Réactivité 360° du Studio Visuel : Rétractabilité de la Barre Latérale Backstage, Navigation Dédiée Mobile/Tablette, Auto-Scroll Focalisé & Inspecteur Graphique Ultra-Fin
+
+- **Contexte & Enjeux :**  
+  Suite aux tests terrain d'ArchiSys3.0, 5 limitations ergonomiques majeures ont été ciblées et résolues :
+  1. L'affichage WYSIWYG sur écrans tactiles et mobiles (< 1024px) était refoulé sous plus de 800px de cartes de blocs.
+  2. L'espace de conception central était comprimé sur PC portable par l'immuabilité de la barre latérale du Backstage (256px).
+  3. La barre latérale principale du Backstage (`AdminSidebar`) manquait d'un mode de repli compact (`w-16`).
+  4. Cliquer sur un bloc dans l'arborescence ne faisait pas défiler le visualiseur vers ce bloc (`scrollIntoView` absent).
+  5. L'inspecteur de style manquait de contrôles graphiques essentiels (arrondis, ombres d'élévation, bordures, largeur max de conteneur, marges externes, ancres HTML et classes Tailwind personnalisées).
+- **Décisions d'ArchiSys3.0 :**  
+  Validation de l'Option A : refonte ergonomique globale, barre latérale principale rétractable, commutateur mobile dédié 3 onglets, auto-scroll bidirectionnel et inspecteur graphique professionnel.
+- **Actions Réalisées :**
+  - **Étape 42.1 (Rétractabilité de la Barre Latérale Backstage) :**
+    - Modification de [`src/components/admin/AdminLayout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminLayout.tsx) et [`src/components/admin/AdminShell.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminShell.tsx) :
+      - Ajout du mode compact rail `w-16` avec mémorisation de session locale (`admin_sidebar_collapsed`).
+      - Centrage des icônes avec infobulles descriptives trilingues pour les 25 entrées du menu.
+      - Bouton de bascule fluide dans le pied de la barre latérale et dans l'en-tête général du Backstage.
+  - **Étape 42.2 (Navigation Dédiée Mobile & Tablette pour le Studio) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Intégration d'une barre de navigation segmentée tactile `< lg` : `[ 📋 Structure | 👁️ Aperçu Live | ⚙️ Inspecteur ]`.
+      - Élimination de l'empilement vertical infini : chaque volet s'affiche à 100% de la largeur sur petit écran, rendant le Live Canvas immédiatement visible et manipulable.
+      - Préservation de la disposition 3 colonnes réunifiée avec volets rétractables et Mode Zen sur Desktop (`≥ lg`).
+  - **Étape 42.3 (Auto-Scroll Bidirectionnel Instantané) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Ajout des identifiants DOM `studio-canvas-block-${block.id}` et écouteur `useEffect` pour centrer automatiquement le bloc sélectionné dans le visualiseur via `scrollIntoView({ behavior: 'smooth', block: 'center' })`.
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout réciproque de `studio-tree-block-${block.id}` et auto-scroll dans la liste d'arborescence.
+  - **Étape 42.4 (Extension Majeure des Contrôles Graphiques de l'Inspecteur) :**
+    - Extension du type `BlockStyleConfig` dans [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) : `borderRadius`, `shadow`, `border`, `maxWidth`, `margin`, `anchorId`, `customClassName`.
+    - Prise en charge universelle dans [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) pour les 29 blocs.
+    - Création des sélecteurs visuels dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) : arrondis géométriques (Carré, Moyen, Grand, Pilule), ombres d'élévation (Plate, Douce, Flottante), bordures/liserés, conteneurs (Pleine, 7xl, 5xl), marges externes, ancre `#` et classes CSS libres.
+  - **Étape 42.5 (Validation CI, Certification & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme (0 erreur).
+    - `bunx tsc --noEmit` : 0 erreur de typage.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : Compilation Vite réussie en 12.59s, prérendu validé.
+    - `bun run paqueter:data` : Archive de données SQLite générée.
+- **Résultats de Recette :**
+  - Barre latérale Backstage rétractable d'un clic : libère 192px d'espace de travail supplémentaire sur grand écran.
+  - Studio Visuel 100% responsive sur mobile et tablette : accès immédiat au Live Canvas et à l'inspecteur via les 3 onglets dédiés.
+  - Défilement automatique fluide : sélectionner un bloc amène directement l'aperçu au centre de l'écran.
+  - Personnalisation graphique poussée : arrondis, ombres, bordures, marges et ancres immédiatement répercutés dans le Live Canvas et persistés en base.
+- **Livrables :**
+  - Plan d'implémentation miroir : 📄 [42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)
+  - Navigation Backstage Rétractable : 📄 [`src/components/admin/AdminLayout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminLayout.tsx) & [`src/components/admin/AdminShell.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminShell.tsx)
+  - Studio Visuel Responsive & Auto-Scroll : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) & [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
+  - Wrapper & Inspecteur Graphique Étendu : 📄 [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts), [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) & [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1447.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1447.zip) (4.15 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1447.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1447.zip) (42 Ko)
+
 #### Sous-Phase 41.1 : Audit Forensique, Éradication des 4 Angles Morts & Consolidation Intégrale de la Persistance BD Directe
 
 - **Contexte & Enjeux :**  
@@ -2125,10 +2179,10 @@
 - **Résultats de l'Audit Forensique :**
   1. **Persistance BD Directe Vérifiée :** Audit physique de `katech-data/dev-a97b6b98a368.sqlite` confirmant que les 5 vues personnalisées (`page_home`, `page_about`, `page_contact`, `page_cv_default`, `page_projets_default`) et leurs 25 blocs sont gravés en base SQLite (7 324 octets dans `customPages`), avec 0 dépendance à `localStorage`.
   2. **4 Angles Morts Identifiés & Résolus :**
-     - *Angle Mort 1 :* Les 5 nouveaux blocs n'avaient pas de `defaultProps` riches dans [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts), générant des cartes vides à l'ajout.
-     - *Angle Mort 2 :* L'éditeur de bloc en mode Structure dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) omettait `onStyleChange`, empêchant la personnalisation visuelle hors mode Visuel.
-     - *Angle Mort 3 :* Le titre du modal d'ajout affichait un compteur statique « 24 Blocs » au lieu du total dynamique réel ({BLOCK_REGISTRY.length} Blocs = 29).
-     - *Angle Mort 4 :* Le bloc `why_us` dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) manquait d'inspecteur granulaire pour ses cartes de réassurance répétables.
+     - _Angle Mort 1 :_ Les 5 nouveaux blocs n'avaient pas de `defaultProps` riches dans [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts), générant des cartes vides à l'ajout.
+     - _Angle Mort 2 :_ L'éditeur de bloc en mode Structure dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) omettait `onStyleChange`, empêchant la personnalisation visuelle hors mode Visuel.
+     - _Angle Mort 3 :_ Le titre du modal d'ajout affichait un compteur statique « 24 Blocs » au lieu du total dynamique réel ({BLOCK_REGISTRY.length} Blocs = 29).
+     - _Angle Mort 4 :_ Le bloc `why_us` dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) manquait d'inspecteur granulaire pour ses cartes de réassurance répétables.
 - **Actions Réalisées :**
   - Enrichissement de [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts) avec les `defaultProps` complètes trilingues (FR, EN, AR) pour `features_grid`, `pricing_table`, `quote_star`, `full_width_banner`, et `visual_spacer`.
   - Branchement de `onStyleChange` dans la vue Structure de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx).
@@ -2149,3 +2203,56 @@
   - Plan d'implémentation consolidé : 📄 [41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md)
   - Archive application horodatée : 📦 [katech-site-08112026-1427.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1427.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1428.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1428.zip) (42 Ko)
+
+---
+
+### Phase 42 : Ergonomie & Réactivité 360° du Studio Visuel : Rétractabilité de la Barre Latérale Backstage, Navigation Dédiée Mobile/Tablette, Auto-Scroll Focalisé & Inspecteur Graphique Ultra-Fin
+
+- **Contexte & Enjeux :**  
+  Suite aux tests terrain d'ArchiSys3.0, 5 limitations ergonomiques majeures ont été ciblées et résolues :
+  1. L'affichage WYSIWYG sur écrans tactiles et mobiles (< 1024px) était refoulé sous plus de 800px de cartes de blocs.
+  2. L'espace de conception central était comprimé sur PC portable par l'immuabilité de la barre latérale du Backstage (256px).
+  3. La barre latérale principale du Backstage (`AdminSidebar`) manquait d'un mode de repli compact (`w-16`).
+  4. Cliquer sur un bloc dans l'arborescence ne faisait pas défiler le visualiseur vers ce bloc (`scrollIntoView` absent).
+  5. L'inspecteur de style manquait de contrôles graphiques essentiels (arrondis, ombres d'élévation, bordures, largeur max de conteneur, marges externes, ancres HTML et classes Tailwind personnalisées).
+- **Décisions d'ArchiSys3.0 :**  
+  Validation de l'Option A : refonte ergonomique globale, barre latérale principale rétractable, commutateur mobile dédié 3 onglets, auto-scroll bidirectionnel et inspecteur graphique professionnel.
+- **Actions Réalisées :**
+  - **Étape 42.1 (Rétractabilité de la Barre Latérale Backstage) :**
+    - Modification de [`src/components/admin/AdminLayout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminLayout.tsx) et [`src/components/admin/AdminShell.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminShell.tsx) :
+      - Ajout du mode compact rail `w-16` avec mémorisation de session locale (`admin_sidebar_collapsed`).
+      - Centrage des icônes avec infobulles descriptives trilingues pour les 25 entrées du menu.
+      - Bouton de bascule fluide dans le pied de la barre latérale et dans l'en-tête général du Backstage.
+  - **Étape 42.2 (Navigation Dédiée Mobile & Tablette pour le Studio) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Intégration d'une barre de navigation segmentée tactile `< lg` : `[ 📋 Structure | 👁️ Aperçu Live | ⚙️ Inspecteur ]`.
+      - Élimination de l'empilement vertical infini : chaque volet s'affiche à 100% de la largeur sur petit écran, rendant le Live Canvas immédiatement visible et manipulable.
+      - Préservation de la disposition 3 colonnes réunifiée avec volets rétractables et Mode Zen sur Desktop (`≥ lg`).
+  - **Étape 42.3 (Auto-Scroll Bidirectionnel Instantané) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Ajout des identifiants DOM `studio-canvas-block-${block.id}` et écouteur `useEffect` pour centrer automatiquement le bloc sélectionné dans le visualiseur via `scrollIntoView({ behavior: 'smooth', block: 'center' })`.
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout réciproque de `studio-tree-block-${block.id}` et auto-scroll dans la liste d'arborescence.
+  - **Étape 42.4 (Extension Majeure des Contrôles Graphiques de l'Inspecteur) :**
+    - Extension du type `BlockStyleConfig` dans [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) : `borderRadius`, `shadow`, `border`, `maxWidth`, `margin`, `anchorId`, `customClassName`.
+    - Prise en charge universelle dans [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) pour les 29 blocs.
+    - Création des sélecteurs visuels dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) : arrondis géométriques (Carré, Moyen, Grand, Pilule), ombres d'élévation (Plate, Douce, Flottante), bordures/liserés, conteneurs (Pleine, 7xl, 5xl), marges externes, ancre `#` et classes CSS libres.
+  - **Étape 42.5 (Validation CI, Certification & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme (0 erreur).
+    - `bunx tsc --noEmit` : 0 erreur de typage.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : Compilation Vite réussie en 12.59s, prérendu validé.
+    - `bun run paqueter:data` : Archive de données SQLite générée.
+- **Résultats de Recette :**
+  - Barre latérale Backstage rétractable d'un clic : libère 192px d'espace de travail supplémentaire sur grand écran.
+  - Studio Visuel 100% responsive sur mobile et tablette : accès immédiat au Live Canvas et à l'inspecteur via les 3 onglets dédiés.
+  - Défilement automatique fluide : sélectionner un bloc amène directement l'aperçu au centre de l'écran.
+  - Personnalisation graphique poussée : arrondis, ombres, bordures, marges et ancres immédiatement répercutés dans le Live Canvas et persistés en base.
+- **Livrables :**
+  - Plan d'implémentation miroir : 📄 [42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)
+  - Navigation Backstage Rétractable : 📄 [`src/components/admin/AdminLayout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminLayout.tsx) & [`src/components/admin/AdminShell.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminShell.tsx)
+  - Studio Visuel Responsive & Auto-Scroll : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) & [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
+  - Wrapper & Inspecteur Graphique Étendu : 📄 [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts), [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) & [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1447.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1447.zip) (4.15 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1447.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1447.zip) (42 Ko)

@@ -45,8 +45,82 @@ export function BlockWrapper({ config, children, className }: BlockWrapperProps)
     style.hideOnDesktop && "md:hidden",
   );
 
+  const roundedClass =
+    style.borderRadius === "none"
+      ? "rounded-none"
+      : style.borderRadius === "sm"
+        ? "rounded-sm"
+        : style.borderRadius === "md"
+          ? "rounded-md"
+          : style.borderRadius === "lg"
+            ? "rounded-lg"
+            : style.borderRadius === "xl"
+              ? "rounded-xl"
+              : style.borderRadius === "2xl"
+                ? "rounded-2xl"
+                : style.borderRadius === "3xl"
+                  ? "rounded-3xl"
+                  : style.borderRadius === "full"
+                    ? "rounded-full"
+                    : "";
+
+  const shadowClass =
+    style.shadow === "none"
+      ? "shadow-none"
+      : style.shadow === "xs"
+        ? "shadow-xs"
+        : style.shadow === "sm"
+          ? "shadow-sm"
+          : style.shadow === "md"
+            ? "shadow-md"
+            : style.shadow === "lg"
+              ? "shadow-lg"
+              : style.shadow === "xl"
+                ? "shadow-xl"
+                : style.shadow === "accent"
+                  ? "shadow-xl shadow-primary/10"
+                  : "";
+
+  const borderClass =
+    style.border === "none"
+      ? ""
+      : style.border === "subtle"
+        ? "border border-border/60"
+        : style.border === "accent"
+          ? "border-2 border-primary/40"
+          : style.border === "top_bottom"
+            ? "border-y border-border/60"
+            : style.border === "dashed"
+              ? "border-2 border-dashed border-border"
+              : "";
+
+  const maxWidthClass =
+    style.maxWidth === "full"
+      ? "w-full max-w-none"
+      : style.maxWidth === "7xl"
+        ? "max-w-7xl mx-auto px-4 sm:px-6"
+        : style.maxWidth === "5xl"
+          ? "max-w-5xl mx-auto px-4 sm:px-6"
+          : style.maxWidth === "3xl"
+            ? "max-w-3xl mx-auto px-4"
+            : style.maxWidth === "prose"
+              ? "max-w-prose mx-auto px-4"
+              : "";
+
+  const marginClass =
+    style.margin === "none"
+      ? "my-0"
+      : style.margin === "compact"
+        ? "my-4 md:my-6"
+        : style.margin === "normal"
+          ? "my-8 md:my-12"
+          : style.margin === "ample"
+            ? "my-14 md:my-20"
+            : "";
+
   return (
     <div
+      id={style.anchorId || undefined}
       data-block-id={config.id}
       data-block-type={config.type}
       className={cn(
@@ -55,6 +129,12 @@ export function BlockWrapper({ config, children, className }: BlockWrapperProps)
         bgClass,
         alignClass,
         visibilityClass,
+        roundedClass,
+        shadowClass,
+        borderClass,
+        marginClass,
+        maxWidthClass,
+        style.customClassName,
         className,
       )}
     >

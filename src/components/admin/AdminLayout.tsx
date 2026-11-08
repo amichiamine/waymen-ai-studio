@@ -35,6 +35,8 @@ import {
   BookOpen,
   Sparkles,
   LayoutTemplate,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import {
@@ -242,20 +244,30 @@ function canSee(item: Item, role: AdminUserRole): boolean {
   return !item.minRole || ROLE_RANK[role] >= ROLE_RANK[item.minRole];
 }
 
-function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarNav({
+  onNavigate,
+  collapsed = false,
+}: {
+  onNavigate?: () => void;
+  collapsed?: boolean;
+}) {
   const pathname = useLocation().pathname;
   const role = useActiveRole();
   const { t } = useI18n();
   return (
-    <nav className="space-y-6 p-4 text-sm">
-      {ADMIN_SECTIONS.map((s) => {
+    <nav className={collapsed ? "space-y-4 p-2 text-sm" : "space-y-6 p-4 text-sm"}>
+      {ADMIN_SECTIONS.map((s, idx) => {
         const items = s.items.filter((it) => canSee(it, role));
         if (items.length === 0) return null;
         return (
           <div key={s.titleKey}>
-            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t(s.titleKey)}
-            </p>
+            {!collapsed ? (
+              <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">
+                {t(s.titleKey)}
+              </p>
+            ) : idx > 0 ? (
+              <div className="my-2 border-t border-border/40" />
+            ) : null}
             <ul className="space-y-1">
               {items.map((it) => {
                 const active =
@@ -265,14 +277,23 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                     <Link
                       to={it.to}
                       onClick={onNavigate}
-                      className={`flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${
-                        active
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-foreground hover:bg-accent"
-                      }`}
+                      title={collapsed ? t(it.labelKey) : undefined}
+                      className={
+                        collapsed
+                          ? `flex items-center justify-center rounded-md p-2 transition-colors ${
+                              active
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "text-foreground hover:bg-accent"
+                            }`
+                          : `flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${
+                              active
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "text-foreground hover:bg-accent"
+                            }`
+                      }
                     >
-                      <it.Icon className="h-4 w-4" />
-                      {t(it.labelKey)}
+                      <it.Icon className={collapsed ? "h-5 w-5 shrink-0" : "h-4 w-4 shrink-0"} />
+                      {!collapsed && <span className="truncate">{t(it.labelKey)}</span>}
                     </Link>
                   </li>
                 );
@@ -284,35 +305,99 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="pt-4 border-t border-border/50">
         <button
           type="button"
+          title={
+            collapsed
+              ? t("admin.reglages.parametres.wizard_bouton_lancer") || "Assistant de configuration"
+              : undefined
+          }
           onClick={() => {
             window.dispatchEvent(new CustomEvent("open-setup-wizard"));
             onNavigate?.();
           }}
-          className="flex w-full items-center gap-2 rounded-md bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-2 text-xs font-semibold transition-colors cursor-pointer"
+          className={
+            collapsed
+              ? "flex w-full items-center justify-center rounded-md bg-primary/10 hover:bg-primary/20 text-primary p-2 text-xs font-semibold transition-colors cursor-pointer"
+              : "flex w-full items-center gap-2 rounded-md bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-2 text-xs font-semibold transition-colors cursor-pointer"
+          }
         >
           <Sparkles className="h-4 w-4 shrink-0" />
-          <span className="truncate">
-            {t("admin.reglages.parametres.wizard_bouton_lancer") || "Assistant de configuration"}
-          </span>
+          {!collapsed && (
+            <span className="truncate">
+              {t("admin.reglages.parametres.wizard_bouton_lancer") || "Assistant de configuration"}
+            </span>
+          )}
         </button>
       </div>
     </nav>
   );
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  collapsed = false,
+  onToggleCollapse,
+}: {
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}) {
   const { t } = useI18n();
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-card/50 lg:flex">
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 px-4">
-        <Logo />
-        <span className="text-sm font-semibold text-muted-foreground">
-          {t("admin.socle.navigation.badge")}
-        </span>
+    <aside
+      className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border/60 bg-card/50 transition-all duration-200 lg:flex ${
+        collapsed ? "w-16" : "w-64"
+      }`}
+    >
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border/60 px-3">
+        {collapsed ? (
+          <div className="mx-auto flex items-center justify-center" title="KA Tech Backstage">
+            <Logo className="h-6 max-w-[36px] object-contain" />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 truncate">
+              <Logo />
+              <span className="text-sm font-semibold text-muted-foreground truncate">
+                {t("admin.socle.navigation.badge")}
+              </span>
+            </div>
+            {onToggleCollapse && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 text-muted-foreground hover:text-foreground shrink-0"
+                onClick={onToggleCollapse}
+                title="Replier la barre latérale"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </Button>
+            )}
+          </>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto">
-        <SidebarNav />
+        <SidebarNav collapsed={collapsed} />
       </div>
+      {onToggleCollapse && (
+        <div className="border-t border-border/40 p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleCollapse}
+            className={`w-full text-xs text-muted-foreground hover:text-foreground ${
+              collapsed ? "px-0 justify-center h-8" : "justify-between h-8 px-2"
+            }`}
+            title={collapsed ? "Déplier la barre latérale" : "Replier la barre latérale"}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <>
+                <span>Replier le menu</span>
+                <PanelLeftClose className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </aside>
   );
 }

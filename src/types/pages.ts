@@ -49,6 +49,13 @@ export interface BlockStyleConfig {
   align?: "start" | "center";
   hideOnMobile?: boolean;
   hideOnDesktop?: boolean;
+  borderRadius?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full";
+  shadow?: "none" | "xs" | "sm" | "md" | "lg" | "xl" | "accent";
+  border?: "none" | "subtle" | "accent" | "top_bottom" | "dashed";
+  maxWidth?: "full" | "7xl" | "5xl" | "3xl" | "prose";
+  margin?: "none" | "compact" | "normal" | "ample";
+  anchorId?: string;
+  customClassName?: string;
 }
 
 export interface BlockConfig {
