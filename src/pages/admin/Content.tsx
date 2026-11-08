@@ -157,7 +157,17 @@ function LTextarea({
 
 type PoleKey = "home" | "pages" | "global" | "mobile";
 
-export default function AdminContent() {
+interface AdminContentProps {
+  embedded?: boolean;
+  defaultPole?: PoleKey;
+  hidePoles?: boolean;
+}
+
+export default function AdminContent({
+  embedded = false,
+  defaultPole,
+  hidePoles = false,
+}: AdminContentProps = {}) {
   const { data: siteContent, loading, error } = useSiteContent();
   const { update, resetSection } = useSiteContentMutations();
   const perms = usePermissions();
@@ -174,9 +184,10 @@ export default function AdminContent() {
   const initialSub = searchParams.get("sub");
 
   const [activePole, setActivePole] = useState<PoleKey>(
-    initialPole && ["home", "pages", "global", "mobile"].includes(initialPole)
-      ? initialPole
-      : "home",
+    defaultPole ||
+      (initialPole && ["home", "pages", "global", "mobile"].includes(initialPole)
+        ? initialPole
+        : "home"),
   );
   const [subHome, setSubHome] = useState<keyof SiteContent>("hero");
   const [subPages, setSubPages] = useState<"about" | "contact" | "contactCta">("about");
@@ -186,6 +197,12 @@ export default function AdminContent() {
   const [subMobile, setSubMobile] = useState<"floatingWhatsApp" | "mobileBottomBar">(
     "floatingWhatsApp",
   );
+
+  useEffect(() => {
+    if (defaultPole) {
+      setActivePole(defaultPole);
+    }
+  }, [defaultPole]);
 
   useEffect(() => {
     const pole = searchParams.get("pole");
@@ -236,11 +253,8 @@ export default function AdminContent() {
     { key: "mobileBottomBar", labelKey: "admin.contenu.contenu.section_mobile_bar" },
   ];
 
-  return (
-    <AdminPageShell
-      title={t("admin.contenu.contenu.titre")}
-      description={t("admin.contenu.contenu.description")}
-    >
+  const contentBody = (
+    <div className="space-y-6">
       {error && (
         <p
           role="status"
@@ -259,24 +273,26 @@ export default function AdminContent() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Navigation principale par Pôles thématiques */}
-          <Tabs value={activePole} onValueChange={(p) => setActivePole(p as PoleKey)}>
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1.5 gap-1.5 bg-muted/60 rounded-xl border border-border">
-              {POLES.map((pole) => {
-                const Icon = pole.icon;
-                return (
-                  <TabsTrigger
-                    key={pole.key}
-                    value={pole.key}
-                    className="flex items-center justify-center gap-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium text-xs md:text-sm rounded-lg transition-all"
-                  >
-                    <Icon className="size-4 shrink-0" />
-                    <span>{pole.label}</span>
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </Tabs>
+          {/* Navigation principale par Pôles thématiques (si non masquée) */}
+          {!hidePoles && (
+            <Tabs value={activePole} onValueChange={(p) => setActivePole(p as PoleKey)}>
+              <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1.5 gap-1.5 bg-muted/60 rounded-xl border border-border">
+                {POLES.map((pole) => {
+                  const Icon = pole.icon;
+                  return (
+                    <TabsTrigger
+                      key={pole.key}
+                      value={pole.key}
+                      className="flex items-center justify-center gap-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium text-xs md:text-sm rounded-lg transition-all"
+                    >
+                      <Icon className="size-4 shrink-0" />
+                      <span>{pole.label}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+          )}
 
           {/* 1. PÔLE ACCUEIL */}
           {activePole === "home" && (
@@ -500,6 +516,19 @@ export default function AdminContent() {
           )}
         </div>
       )}
+    </div>
+  );
+
+  if (embedded) {
+    return contentBody;
+  }
+
+  return (
+    <AdminPageShell
+      title={t("admin.contenu.contenu.titre")}
+      description={t("admin.contenu.contenu.description")}
+    >
+      {contentBody}
     </AdminPageShell>
   );
 }

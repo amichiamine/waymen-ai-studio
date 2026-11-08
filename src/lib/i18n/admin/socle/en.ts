@@ -54,7 +54,7 @@ const socleEn: Record<string, string> = {
   "admin.socle.navigation.lien_paiements": "Payments",
   "admin.socle.navigation.lien_messages": "Contact messages",
   "admin.socle.navigation.lien_newsletter": "Newsletter",
-  "admin.socle.navigation.lien_pages": "Pages & Views",
+  "admin.socle.navigation.lien_pages": "Visual Studio & Pages",
   "admin.socle.navigation.lien_contenu": "Site content",
   "admin.socle.navigation.lien_blog": "Blog",
   "admin.socle.navigation.lien_avis": "Reviews",

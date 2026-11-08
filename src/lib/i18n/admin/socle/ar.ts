@@ -60,7 +60,7 @@ const socleAr: Record<string, string> = {
   "admin.socle.navigation.lien_paiements": "المدفوعات",
   "admin.socle.navigation.lien_messages": "رسائل التواصل",
   "admin.socle.navigation.lien_newsletter": "النشرة البريدية",
-  "admin.socle.navigation.lien_pages": "الصفحات والقوائم",
+  "admin.socle.navigation.lien_pages": "ستوديو التصميم والصفحات",
   "admin.socle.navigation.lien_contenu": "محتوى الموقع",
   "admin.socle.navigation.lien_blog": "المدونة",
   "admin.socle.navigation.lien_avis": "التقييمات",

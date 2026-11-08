@@ -166,12 +166,6 @@ export const ADMIN_SECTIONS: { titleKey: string; items: Item[] }[] = [
       {
         to: "/admin/pages",
         labelKey: "admin.socle.navigation.lien_pages",
-        Icon: LayoutTemplate,
-        minRole: "editor",
-      },
-      {
-        to: "/admin/content",
-        labelKey: "admin.socle.navigation.lien_contenu",
         Icon: Palette,
         minRole: "editor",
       },

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -34,12 +34,17 @@ import {
   Sparkles,
   FileCode,
   Globe,
+  Home,
+  Smartphone,
+  LayoutTemplate,
+  Palette,
 } from "lucide-react";
 import { useSiteContent, useSiteContentMutations } from "@/data-provider";
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
 import type { BlockConfig, BlockType, CustomPageDefinition } from "@/types/pages";
 import { BLOCK_REGISTRY, getBlockMeta } from "@/components/blocks";
 import { BlockPropsEditor } from "@/components/admin/BlockPropsEditor";
+import AdminContent from "./Content";
 
 type LangCode = "fr" | "en" | "ar";
 const LANGS: LangCode[] = ["fr", "en", "ar"];
@@ -59,6 +64,13 @@ export default function PagesManager() {
   const customPages = useMemo(() => {
     return siteContent?.customPages || [];
   }, [siteContent]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeStudioTab =
+    (searchParams.get("tab") as "views" | "home" | "global" | "mobile") || "views";
+  const setStudioTab = (tab: "views" | "home" | "global" | "mobile") => {
+    setSearchParams({ tab });
+  };
 
   // État de la page en cours d'édition
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
@@ -297,356 +309,410 @@ export default function PagesManager() {
 
   return (
     <AdminPageShell
-      title="Pages & Vues Composables"
-      description="Créez, supprimez et personnalisez librement les vues de votre plateforme avec le catalogue universel de blocs."
+      title="Studio Visuel & Pages"
+      description="Studio de conception unifié : composez vos vues sur-mesure, ajustez les blocs de l'accueil, l'en-tête, le bandeau déroulant et le pied de page."
       actions={
-        <div className="flex items-center gap-2">
-          {isDirty && (
-            <Badge variant="outline" className="text-amber-500 border-amber-500/40">
-              Modifications non enregistrées
-            </Badge>
-          )}
-          <Button
-            onClick={handleSave}
-            disabled={saving || !isDirty}
-            className="gap-2 font-semibold shadow-sm"
-          >
-            <Save className="h-4 w-4" />
-            <span>{saving ? "Enregistrement..." : "Enregistrer"}</span>
-          </Button>
-          <Button
-            onClick={handleOpenCreatePage}
-            variant="default"
-            className="gap-2 font-semibold shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Créer une vue</span>
-          </Button>
-        </div>
+        activeStudioTab === "views" ? (
+          <div className="flex items-center gap-2">
+            {isDirty && (
+              <Badge variant="outline" className="text-amber-500 border-amber-500/40">
+                Modifications non enregistrées
+              </Badge>
+            )}
+            <Button
+              onClick={handleSave}
+              disabled={saving || !isDirty}
+              className="gap-2 font-semibold shadow-sm"
+            >
+              <Save className="h-4 w-4" />
+              <span>{saving ? "Enregistrement..." : "Enregistrer"}</span>
+            </Button>
+            <Button
+              onClick={handleOpenCreatePage}
+              variant="default"
+              className="gap-2 font-semibold shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Créer une vue</span>
+            </Button>
+          </div>
+        ) : null
       }
     >
-      <div className="grid gap-6 lg:grid-cols-12 text-start">
-        {/* Colonne Gauche : Liste des Vues */}
-        <div className="lg:col-span-4 space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-bold flex items-center justify-between">
-                <span>Vues Créées ({pages.length})</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleOpenCreatePage}
-                  className="h-8 gap-1 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Nouvelle</span>
-                </Button>
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Sélectionnez une vue pour gérer sa composition de blocs.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 p-3">
-              {pages.length === 0 ? (
-                <div className="p-8 text-center border border-dashed rounded-xl">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Aucune vue personnalisée pour l'instant.
-                  </p>
-                  <Button size="sm" onClick={handleOpenCreatePage} className="gap-1.5 text-xs">
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Créer votre première vue</span>
-                  </Button>
-                </div>
-              ) : (
-                pages.map((p) => {
-                  const isSelected = p.id === selectedPageId;
-                  const title = L(p.title) || p.slug;
-                  const activeBlocksCount = (p.blocks || []).filter((b) => b.enabled).length;
+      {/* Barre d'onglets maîtres du Studio de Conception 360° */}
+      <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-muted/60 rounded-xl border border-border mb-6">
+        <Button
+          type="button"
+          size="sm"
+          variant={activeStudioTab === "views" ? "default" : "ghost"}
+          className="gap-2 text-xs font-semibold h-9"
+          onClick={() => setStudioTab("views")}
+        >
+          <LayoutTemplate className="h-4 w-4 text-primary" />
+          <span>Pages & Vues Composables</span>
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeStudioTab === "home" ? "default" : "ghost"}
+          className="gap-2 text-xs font-semibold h-9"
+          onClick={() => setStudioTab("home")}
+        >
+          <Home className="h-4 w-4 text-primary" />
+          <span>Sections de l'Accueil</span>
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeStudioTab === "global" ? "default" : "ghost"}
+          className="gap-2 text-xs font-semibold h-9"
+          onClick={() => setStudioTab("global")}
+        >
+          <Globe className="h-4 w-4 text-primary" />
+          <span>En-tête, Footer & Ticker</span>
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeStudioTab === "mobile" ? "default" : "ghost"}
+          className="gap-2 text-xs font-semibold h-9"
+          onClick={() => setStudioTab("mobile")}
+        >
+          <Smartphone className="h-4 w-4 text-primary" />
+          <span>Mobile & Flottant (WhatsApp)</span>
+        </Button>
+      </div>
 
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => setSelectedPageId(p.id)}
-                      className={`cursor-pointer rounded-xl border p-3.5 transition-all ${
-                        isSelected
-                          ? "border-primary bg-primary/5 shadow-xs"
-                          : "border-border/60 hover:border-primary/40 bg-card/40"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-1.5 font-bold text-sm">
-                            <span className="text-foreground">{title}</span>
-                            <span className="text-xs text-muted-foreground font-mono">
-                              /{p.slug}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                            <Badge
-                              variant="secondary"
-                              className={`text-[10px] py-0 px-1.5 ${
-                                p.isPublished
-                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                  : "bg-amber-500/10 text-amber-600"
-                              }`}
-                            >
-                              {p.isPublished ? "Publiée" : "Brouillon"}
-                            </Badge>
-
-                            {p.inNavbar && (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] py-0 px-1.5 text-primary border-primary/30"
-                              >
-                                Menu Navbar
-                              </Badge>
-                            )}
-
-                            <span className="text-[11px] text-muted-foreground">
-                              {activeBlocksCount} {activeBlocksCount > 1 ? "blocs" : "bloc"}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div
-                          className="flex items-center gap-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                            onClick={() => handleOpenEditPageMeta(p)}
-                            title="Paramètres de la vue"
-                          >
-                            <Settings className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                            onClick={() => handleDuplicatePage(p)}
-                            title="Dupliquer la vue"
-                          >
-                            <Copy className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => handleDeletePage(p.id)}
-                            title="Supprimer la vue"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Colonne Droite : Éditeur de Blocs de la Page Sélectionnée */}
-        <div className="lg:col-span-8">
-          {selectedPage ? (
+      {activeStudioTab === "views" && (
+        <div className="grid gap-6 lg:grid-cols-12 text-start">
+          {/* Colonne Gauche : Liste des Vues */}
+          <div className="lg:col-span-4 space-y-4">
             <Card>
-              <CardHeader className="border-b border-border/60 pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-xl font-bold">
-                        {L(selectedPage.title) || selectedPage.slug}
-                      </CardTitle>
-                      <Badge variant="outline" className="font-mono text-xs">
-                        /{selectedPage.slug}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-xs mt-1">
-                      Assemblez et ordonnez les blocs affichés sur cette vue.
-                    </CardDescription>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      asChild
-                      className="gap-1.5 text-xs font-semibold"
-                    >
-                      <Link to={`/${selectedPage.slug}`} target="_blank">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        <span>Prévisualiser</span>
-                      </Link>
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      onClick={() => setAddBlockModalOpen(true)}
-                      className="gap-1.5 text-xs font-semibold shadow-sm"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      <span>Ajouter un bloc</span>
-                    </Button>
-                  </div>
-                </div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center justify-between">
+                  <span>Vues Créées ({pages.length})</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleOpenCreatePage}
+                    className="h-8 gap-1 text-xs"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Nouvelle</span>
+                  </Button>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Sélectionnez une vue pour gérer sa composition de blocs.
+                </CardDescription>
               </CardHeader>
-
-              <CardContent className="p-4 sm:p-6 space-y-4">
-                {selectedPage.blocks.length === 0 ? (
-                  <div className="py-16 text-center border-2 border-dashed rounded-2xl p-6">
-                    <Layers className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                    <h3 className="text-base font-bold text-foreground">
-                      Cette vue ne contient aucun bloc
-                    </h3>
-                    <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 mb-4">
-                      Choisissez parmi les 24 blocs universels (Bannières, Profil, Expériences,
-                      Grilles de projets, Avis, Contact, etc.).
+              <CardContent className="space-y-2 p-3">
+                {pages.length === 0 ? (
+                  <div className="p-8 text-center border border-dashed rounded-xl">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Aucune vue personnalisée pour l'instant.
                     </p>
-                    <Button
-                      onClick={() => setAddBlockModalOpen(true)}
-                      className="gap-2 font-semibold shadow-sm"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Ajouter un premier bloc</span>
+                    <Button size="sm" onClick={handleOpenCreatePage} className="gap-1.5 text-xs">
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Créer votre première vue</span>
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {selectedPage.blocks.map((block, idx) => {
-                      const meta = getBlockMeta(block.type);
-                      const blockLabel = L(meta?.label) || block.type;
-                      const blockDesc = L(meta?.description) || "";
+                  pages.map((p) => {
+                    const isSelected = p.id === selectedPageId;
+                    const title = L(p.title) || p.slug;
+                    const activeBlocksCount = (p.blocks || []).filter((b) => b.enabled).length;
 
-                      return (
-                        <div
-                          key={block.id}
-                          className={`rounded-2xl border p-4 transition-all ${
-                            block.enabled
-                              ? "border-border/80 bg-card/70 shadow-xs"
-                              : "border-border/40 bg-muted/20 opacity-60"
-                          }`}
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
-                                {idx + 1}
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => setSelectedPageId(p.id)}
+                        className={`cursor-pointer rounded-xl border p-3.5 transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-xs"
+                            : "border-border/60 hover:border-primary/40 bg-card/40"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-1.5 font-bold text-sm">
+                              <span className="text-foreground">{title}</span>
+                              <span className="text-xs text-muted-foreground font-mono">
+                                /{p.slug}
                               </span>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-bold text-sm text-foreground">
-                                    {blockLabel}
-                                  </h4>
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] uppercase font-mono"
-                                  >
-                                    {block.type}
-                                  </Badge>
-                                </div>
-                                {blockDesc && (
-                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                                    {blockDesc}
-                                  </p>
-                                )}
-                              </div>
                             </div>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                              <Badge
+                                variant="secondary"
+                                className={`text-[10px] py-0 px-1.5 ${
+                                  p.isPublished
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                    : "bg-amber-500/10 text-amber-600"
+                                }`}
+                              >
+                                {p.isPublished ? "Publiée" : "Brouillon"}
+                              </Badge>
 
-                            <div className="flex items-center gap-1.5 self-end sm:self-auto">
-                              {/* Monter / Descendre */}
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8"
-                                disabled={idx === 0}
-                                onClick={() => handleMoveBlockUp(idx)}
-                                title="Monter ce bloc"
-                              >
-                                <ArrowUp className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8"
-                                disabled={idx === selectedPage.blocks.length - 1}
-                                onClick={() => handleMoveBlockDown(idx)}
-                                title="Descendre ce bloc"
-                              >
-                                <ArrowDown className="h-4 w-4" />
-                              </Button>
+                              {p.inNavbar && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] py-0 px-1.5 text-primary border-primary/30"
+                                >
+                                  Menu Navbar
+                                </Badge>
+                              )}
 
-                              {/* Activer / Désactiver */}
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                onClick={() => handleToggleBlock(idx)}
-                                title={block.enabled ? "Désactiver" : "Activer"}
-                              >
-                                {block.enabled ? (
-                                  <Eye className="h-4 w-4 text-emerald-500" />
-                                ) : (
-                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                )}
-                              </Button>
-
-                              {/* Configurer le contenu & les paramètres */}
-                              <Button
-                                size="sm"
-                                variant={expandedBlockIds[block.id] ? "secondary" : "ghost"}
-                                className="h-8 gap-1.5 text-xs font-semibold"
-                                onClick={() => toggleExpandBlock(block.id)}
-                                title="Éditer le contenu et les paramètres de ce bloc"
-                              >
-                                <Settings className="h-3.5 w-3.5 text-primary" />
-                                <span>{expandedBlockIds[block.id] ? "Fermer" : "Contenu"}</span>
-                              </Button>
-
-                              {/* Supprimer */}
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                onClick={() => handleDeleteBlock(idx)}
-                                title="Supprimer ce bloc"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <span className="text-[11px] text-muted-foreground">
+                                {activeBlocksCount} {activeBlocksCount > 1 ? "blocs" : "bloc"}
+                              </span>
                             </div>
                           </div>
 
-                          {/* Inspecteur de configuration étendu du bloc */}
-                          {expandedBlockIds[block.id] && (
-                            <BlockPropsEditor
-                              block={block}
-                              onChange={(newProps) => handleUpdateBlockProps(idx, newProps)}
-                            />
-                          )}
+                          <div
+                            className="flex items-center gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              onClick={() => handleOpenEditPageMeta(p)}
+                              title="Paramètres de la vue"
+                            >
+                              <Settings className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              onClick={() => handleDuplicatePage(p)}
+                              title="Dupliquer la vue"
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDeletePage(p.id)}
+                              title="Supprimer la vue"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })
                 )}
               </CardContent>
             </Card>
-          ) : (
-            <Card className="p-12 text-center border-dashed">
-              <Layers className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-              <h3 className="text-lg font-bold">Aucune vue sélectionnée</h3>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Sélectionnez une vue dans la colonne de gauche ou créez-en une nouvelle pour
-                composer son contenu.
-              </p>
-              <Button onClick={handleOpenCreatePage} className="gap-2 font-semibold">
-                <Plus className="h-4 w-4" />
-                <span>Créer une vue</span>
-              </Button>
-            </Card>
-          )}
+          </div>
+
+          {/* Colonne Droite : Éditeur de Blocs de la Page Sélectionnée */}
+          <div className="lg:col-span-8">
+            {selectedPage ? (
+              <Card>
+                <CardHeader className="border-b border-border/60 pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-xl font-bold">
+                          {L(selectedPage.title) || selectedPage.slug}
+                        </CardTitle>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          /{selectedPage.slug}
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-xs mt-1">
+                        Assemblez et ordonnez les blocs affichés sur cette vue.
+                      </CardDescription>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="gap-1.5 text-xs font-semibold"
+                      >
+                        <Link to={`/${selectedPage.slug}`} target="_blank">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span>Prévisualiser</span>
+                        </Link>
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        onClick={() => setAddBlockModalOpen(true)}
+                        className="gap-1.5 text-xs font-semibold shadow-sm"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Ajouter un bloc</span>
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-4 sm:p-6 space-y-4">
+                  {selectedPage.blocks.length === 0 ? (
+                    <div className="py-16 text-center border-2 border-dashed rounded-2xl p-6">
+                      <Layers className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                      <h3 className="text-base font-bold text-foreground">
+                        Cette vue ne contient aucun bloc
+                      </h3>
+                      <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 mb-4">
+                        Choisissez parmi les 24 blocs universels (Bannières, Profil, Expériences,
+                        Grilles de projets, Avis, Contact, etc.).
+                      </p>
+                      <Button
+                        onClick={() => setAddBlockModalOpen(true)}
+                        className="gap-2 font-semibold shadow-sm"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span>Ajouter un premier bloc</span>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedPage.blocks.map((block, idx) => {
+                        const meta = getBlockMeta(block.type);
+                        const blockLabel = L(meta?.label) || block.type;
+                        const blockDesc = L(meta?.description) || "";
+
+                        return (
+                          <div
+                            key={block.id}
+                            className={`rounded-2xl border p-4 transition-all ${
+                              block.enabled
+                                ? "border-border/80 bg-card/70 shadow-xs"
+                                : "border-border/40 bg-muted/20 opacity-60"
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
+                                  {idx + 1}
+                                </span>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-bold text-sm text-foreground">
+                                      {blockLabel}
+                                    </h4>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] uppercase font-mono"
+                                    >
+                                      {block.type}
+                                    </Badge>
+                                  </div>
+                                  {blockDesc && (
+                                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                      {blockDesc}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                                {/* Monter / Descendre */}
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  disabled={idx === 0}
+                                  onClick={() => handleMoveBlockUp(idx)}
+                                  title="Monter ce bloc"
+                                >
+                                  <ArrowUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  disabled={idx === selectedPage.blocks.length - 1}
+                                  onClick={() => handleMoveBlockDown(idx)}
+                                  title="Descendre ce bloc"
+                                >
+                                  <ArrowDown className="h-4 w-4" />
+                                </Button>
+
+                                {/* Activer / Désactiver */}
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  onClick={() => handleToggleBlock(idx)}
+                                  title={block.enabled ? "Désactiver" : "Activer"}
+                                >
+                                  {block.enabled ? (
+                                    <Eye className="h-4 w-4 text-emerald-500" />
+                                  ) : (
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </Button>
+
+                                {/* Configurer le contenu & les paramètres */}
+                                <Button
+                                  size="sm"
+                                  variant={expandedBlockIds[block.id] ? "secondary" : "ghost"}
+                                  className="h-8 gap-1.5 text-xs font-semibold"
+                                  onClick={() => toggleExpandBlock(block.id)}
+                                  title="Éditer le contenu et les paramètres de ce bloc"
+                                >
+                                  <Settings className="h-3.5 w-3.5 text-primary" />
+                                  <span>{expandedBlockIds[block.id] ? "Fermer" : "Contenu"}</span>
+                                </Button>
+
+                                {/* Supprimer */}
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                  onClick={() => handleDeleteBlock(idx)}
+                                  title="Supprimer ce bloc"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Inspecteur de configuration étendu du bloc */}
+                            {expandedBlockIds[block.id] && (
+                              <BlockPropsEditor
+                                block={block}
+                                onChange={(newProps) => handleUpdateBlockProps(idx, newProps)}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="p-12 text-center border-dashed">
+                <Layers className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <h3 className="text-lg font-bold">Aucune vue sélectionnée</h3>
+                <p className="text-sm text-muted-foreground mt-1 mb-4">
+                  Sélectionnez une vue dans la colonne de gauche ou créez-en une nouvelle pour
+                  composer son contenu.
+                </p>
+                <Button onClick={handleOpenCreatePage} className="gap-2 font-semibold">
+                  <Plus className="h-4 w-4" />
+                  <span>Créer une vue</span>
+                </Button>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {activeStudioTab === "home" && <AdminContent embedded defaultPole="home" hidePoles />}
+
+      {activeStudioTab === "global" && <AdminContent embedded defaultPole="global" hidePoles />}
+
+      {activeStudioTab === "mobile" && <AdminContent embedded defaultPole="mobile" hidePoles />}
 
       {/* Modal Paramètres de Vue (Création / Édition) */}
       <Dialog open={pageModalOpen} onOpenChange={setPageModalOpen}>

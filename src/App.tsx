@@ -261,7 +261,10 @@ export default function App() {
                     element={<Navigate to="/admin/settings?wizard=1" replace />}
                   />
                   <Route path="pages" element={<AdminPages />} />
-                  <Route path="content" element={<AdminContent />} />
+                  <Route
+                    path="content"
+                    element={<Navigate to="/admin/pages?tab=global" replace />}
+                  />
                   <Route path="messages" element={<AdminMessages />} />
                   <Route path="subscribers" element={<AdminSubscribers />} />
                   <Route path="shipping" element={<AdminShipping />} />

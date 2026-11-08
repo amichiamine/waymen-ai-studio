@@ -57,6 +57,7 @@
 | **Phase 35** | 07/11/2026 | Blindage Médias Blog, Déblocage CSP Vidéos, Anti-Reflow & Déclinaisons Multi-Formats             | 📄 [`35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md`](Implementations_Plans/35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md)         | 🟢 **Livré & Validé** |
 | **Phase 36** | 07/11/2026 | Refonte Épurée Logo Combiné en Anglais (Référence Directe Signature) & Déploiement Multi-Formats | 📄 [`36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md`](Implementations_Plans/36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md)                                 | 🟢 **Livré & Validé** |
 | **Phase 37** | 08/11/2026 | Moteur Universel de Pages Dynamiques & Catalogue de 24 Blocs Composables (Zéro Régression)       | 📄 [`37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md`](Implementations_Plans/37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md)           | 🟢 **Livré & Validé** |
+| **Phase 38** | 08/11/2026 | Studio de Conception Visuelle Unifié & Harmonisation Ergonomique Backstage 360°                  | 📄 [`38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md`](Implementations_Plans/38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md)                               | 🟢 **Livré & Validé** |
 
 ---
 
@@ -1838,3 +1839,54 @@
   - Vues assainies : 📄 [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx), 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
   - Archive application horodatée : 📦 [katech-site-08112026-1247.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1247.zip) (4.12 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1247.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1247.zip) (38 Ko)
+
+---
+
+## Phase 38 : Studio de Conception Visuelle Unifié & Harmonisation Ergonomique Backstage 360°
+
+- **Date :** 08 Novembre 2026
+- **Contexte & Constat Initial :**
+  - ArchiSys3.0 a mis en lumière une friction cognitive et un chevauchement ergonomique entre trois zones d'administration : `Paramètres` (`/admin/settings`), `Contenus du site` (`/admin/content`), et `Pages & Vues` (`/admin/pages`).
+  - Nécessité d'harmoniser et de centraliser toute la création visuelle et structurelle du site dans un pôle unique : le **Studio Visuel & Pages**, tout en sanctuarisant `Paramètres` pour les configurations d'identité, de commerce et de système.
+  - Zéro régression : maintien absolu des bases de données existantes, des tables `products`, `orders`, `users`, `notifications`, `messages`, des schémas SQL et des contrats API.
+- **Décisions d'ArchiSys3.0 :**
+  - Validation intégrale de la Vision 2 et du Plan d'Implémentation Phase 38 :
+    1. Unification des pages, sections d'accueil, en-tête, pied de page et widgets mobiles sous le Studio Visuel (`/admin/pages`).
+    2. Architecture à 4 onglets maîtres dans le Studio :
+       - `[📄 Pages & Vues Composables]` : Moteur universel de pages dynamiques, ordonnancement et inspecteur des 24 blocs.
+       - `[🏠 Sections de l'Accueil]` : Contrôleurs d'activation et éditeurs des sections de la page d'accueil.
+       - `[🌐 En-tête, Footer & Ticker]` : Menu de navigation principal, messages défilants (ticker bar) et colonnes du pied de page.
+       - `[📱 Mobile & Flottant (WhatsApp)]` : Bouton flottant WhatsApp et barre d'actions mobile.
+    3. Redirection automatique et fluide de `/admin/content` vers `/admin/pages?tab=global`.
+    4. Réorganisation de la barre latérale du Backstage : suppression du doublon `Contenu du site`, mise en avant de `Studio Visuel & Pages` avec icône `Palette`.
+    5. Intégration d'une passerelle visuelle claire dans `Paramètres` orientant l'administrateur vers le Studio pour les aspects graphiques.
+- **Actions Réalisées :**
+  - **Étape 38.1 (Composant de Contenu Découplé & Réutilisable) :**
+    - Modification de [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx) : ajout des props optionnelles `embedded?: boolean; defaultPole?: PoleKey; hidePoles?: boolean;` permettant une intégration sans coquille administrative superflue ni duplication de code.
+  - **Étape 38.2 (Refonte Maîtresse du Studio Visuel & Pages) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Intégration de la barre d'onglets maîtres à 4 pôles (`views`, `home`, `global`, `mobile`) synchronisée bidirectionnellement avec l'URL via `useSearchParams` (`?tab=...`).
+      - Rendu réactif conditionnel : affichage de l'éditeur composable de pages sur l'onglet `views`, et intégration modulaire de `AdminContent` sur les 3 autres pôles.
+  - **Étape 38.3 (Harmonisation Navigation Backstage & Redirection) :**
+    - Modification de [`src/components/admin/AdminLayout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminLayout.tsx) : suppression du lien redondant `Contenu du site`, attribution de l'icône `Palette` et du libellé unifié `Studio Visuel & Pages`.
+    - Modification de [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx) : configuration de la redirection `<Navigate to="/admin/pages?tab=global" replace />` pour `/admin/content`.
+  - **Étape 38.4 (Passerelle & Clarification dans Paramètres) :**
+    - Modification de [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx) : ajout d'une bannière de redirection rapide vers le Studio Visuel avec boutons d'accès direct par onglet.
+  - **Étape 38.5 (Parité Linguistique Trilingue 360°) :**
+    - Mise à jour des clés de navigation `admin.socle.navigation.lien_pages` :
+      - FR : `"Studio Visuel & Pages"`
+      - EN : `"Visual Studio & Pages"`
+      - AR : `"ستوديو التصميم والصفحات"`
+  - **Étape 38.6 (Contrôles Qualité CI & Archives de Déploiement) :**
+    - `bun run verifier-i18n` : 100% de parité (FR, EN, AR).
+    - `bun run format` : code 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build ; bun run paqueter:data` : pipeline de build et de packaging horodaté exécuté avec succès.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md)
+  - Vues Backstage unifiées : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx), 📄 [`src/pages/admin/Content.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Content.tsx), 📄 [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/Settings.tsx)
+  - Navigation & Routage : 📄 [`src/components/admin/AdminLayout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminLayout.tsx), 📄 [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx)
+  - Dictionnaires i18n : 📄 [`src/lib/i18n/admin/socle/fr.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/socle/fr.ts), 📄 [`src/lib/i18n/admin/socle/en.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/socle/en.ts), 📄 [`src/lib/i18n/admin/socle/ar.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/socle/ar.ts)
+  - Archive application horodatée : 📦 [katech-site-08112026-1301.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1301.zip) (4.12 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1301.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1301.zip) (38 Ko)

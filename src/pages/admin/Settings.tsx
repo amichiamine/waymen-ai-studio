@@ -254,6 +254,29 @@ export default function AdminSettings() {
             </CardContent>
           </Card>
 
+          {/* Passerelle rapide vers le Studio Visuel & Conception */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-primary/20 bg-primary/5 text-xs">
+            <div className="flex items-center gap-2.5">
+              <Palette className="size-4 text-primary shrink-0" />
+              <p className="text-muted-foreground">
+                <strong className="text-foreground">Conception Visuelle & Pages :</strong> Pour
+                composer vos vues, ordonner les 24 blocs ou modifier l'en-tête et le pied de page,
+                rendez-vous dans le Studio.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              asChild
+              className="gap-1.5 h-7 text-xs font-semibold shrink-0 border-primary/30 hover:bg-primary/10"
+            >
+              <Link to="/admin/pages">
+                <span>Ouvrir le Studio Visuel</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </div>
+
           {/* Navigation par Onglets Thématiques */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1.5 gap-1.5 bg-muted/70 rounded-xl">
