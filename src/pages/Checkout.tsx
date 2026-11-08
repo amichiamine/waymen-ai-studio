@@ -12,7 +12,10 @@ import {
   useOrderMutations,
   useCouponMutations,
   useProductDetail,
+  useSiteContent,
 } from "@/data-provider";
+import { renderBlock } from "@/components/blocks";
+import { cn } from "@/lib/utils";
 import { useAddresses } from "@/lib/addresses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,10 +125,33 @@ function CheckoutLine({ product_id, quantity, onContribution }: CheckoutLineProp
   );
 }
 
-export default function Checkout() {
+export default function Checkout({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { user } = useAuth();
   const { cart, clearCart } = useStore();
   const { t } = useI18n();
+  const { data: siteContent } = useSiteContent();
+
+  const systemPage = siteContent?.customPages?.find(
+    (pg) => pg.isSystem && (pg.systemKey === "checkout" || pg.slug === "checkout"),
+  );
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
+  const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
+
+  const pageBgClass =
+    systemPage?.layout?.pageBg === "dark"
+      ? "bg-slate-950 text-slate-50"
+      : systemPage?.layout?.pageBg === "muted"
+        ? "bg-muted/40"
+        : systemPage?.layout?.pageBg === "surface"
+          ? "bg-card"
+          : systemPage?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background"
+            : "";
 
   // Lectures via le provider — loading/error inertes en mode mock.
   const { data: paymentMethods } = usePaymentMethodList();
@@ -296,11 +322,15 @@ export default function Checkout() {
 
   if (cart.length === 0) {
     return (
-      <div className="container mx-auto max-w-2xl px-4 py-16 text-center">
-        <p className="text-muted-foreground">{t("checkout.empty")}</p>
-        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">
-          {t("checkout.seeProducts")}
-        </Link>
+      <div className={cn("min-h-[60vh]", pageBgClass)}>
+        {topBlocks.map(renderBlock)}
+        <div className="container mx-auto max-w-2xl px-4 py-16 text-center">
+          <p className="text-muted-foreground">{t("checkout.empty")}</p>
+          <Link to="/category" className="mt-4 inline-block text-primary hover:underline">
+            {t("checkout.seeProducts")}
+          </Link>
+        </div>
+        {bottomBlocks.map(renderBlock)}
       </div>
     );
   }
@@ -308,266 +338,273 @@ export default function Checkout() {
   const selectedPayment = activePayments.find((p) => p.id === paymentId);
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-10">
-      <Helmet>
-        <title>{t("checkout.page.title")}</title>
-        <meta name="robots" content="noindex" />
-      </Helmet>
-      <h1 className="mb-6 text-2xl font-bold">{t("checkout.title")}</h1>
+    <div className={cn("min-h-screen", pageBgClass)}>
+      {topBlocks.map(renderBlock)}
+      <div className="container mx-auto max-w-6xl px-4 py-10">
+        <Helmet>
+          <title>{t("checkout.page.title")}</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
+        <h1 className="mb-6 text-2xl font-bold">{t("checkout.title")}</h1>
 
-      {/* Erreur de soumission — visible et exploitable par le client. */}
-      {submitError && (
-        <div
-          role="alert"
-          className="mb-6 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-start text-sm text-destructive"
-        >
-          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <span>{submitError}</span>
-        </div>
-      )}
+        {/* Erreur de soumission — visible et exploitable par le client. */}
+        {submitError && (
+          <div
+            role="alert"
+            className="mb-6 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-start text-sm text-destructive"
+          >
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <span>{submitError}</span>
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-6">
-          {addresses.length > 0 && (
+        <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="space-y-6">
+            {addresses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" /> {t("checkout.savedAddr")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup value={addressId} onValueChange={setAddressId}>
+                    {addresses.map((a) => (
+                      <label
+                        key={a.id}
+                        className="flex cursor-pointer items-start gap-3 rounded border p-3"
+                      >
+                        <RadioGroupItem value={a.id} id={`a-${a.id}`} className="mt-1" />
+                        <div className="text-sm text-start">
+                          <p className="font-medium">
+                            {a.label} · {a.fullName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {a.phone} — {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr},{" "}
+                            {a.address}
+                          </p>
+                        </div>
+                      </label>
+                    ))}
+                    <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed p-3">
+                      <RadioGroupItem value="new" id="a-new" />
+                      <span className="text-sm">{t("checkout.newAddr")}</span>
+                    </label>
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            )}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" /> {t("checkout.savedAddr")}
-                </CardTitle>
+                <CardTitle>{t("checkout.contact.title")}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <RadioGroup value={addressId} onValueChange={setAddressId}>
-                  {addresses.map((a) => (
-                    <label
-                      key={a.id}
-                      className="flex cursor-pointer items-start gap-3 rounded border p-3"
-                    >
-                      <RadioGroupItem value={a.id} id={`a-${a.id}`} className="mt-1" />
-                      <div className="text-sm text-start">
-                        <p className="font-medium">
-                          {a.label} · {a.fullName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {a.phone} — {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr},{" "}
-                          {a.address}
-                        </p>
-                      </div>
-                    </label>
-                  ))}
-                  <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed p-3">
-                    <RadioGroupItem value="new" id="a-new" />
-                    <span className="text-sm">{t("checkout.newAddr")}</span>
-                  </label>
-                </RadioGroup>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor="name">{t("checkout.name")}</Label>
+                    <Input
+                      id="name"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">{t("checkout.phone")}</Label>
+                    <Input
+                      id="phone"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>{t("checkout.wilaya")}</Label>
+                  <Select value={wilaya} onValueChange={setWilaya}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("checkout.wilaya.placeholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WILAYAS.map((w) => (
+                        <SelectItem key={w.code} value={w.code}>
+                          {w.code} — {w.name_fr}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="address">{t("checkout.address")}</Label>
+                  <Textarea
+                    id="address"
+                    required
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    rows={2}
+                  />
+                </div>
               </CardContent>
             </Card>
-          )}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("checkout.contact.title")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="name">{t("checkout.name")}</Label>
-                  <Input
-                    id="name"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">{t("checkout.phone")}</Label>
-                  <Input
-                    id="phone"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>{t("checkout.wilaya")}</Label>
-                <Select value={wilaya} onValueChange={setWilaya}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("checkout.wilaya.placeholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WILAYAS.map((w) => (
-                      <SelectItem key={w.code} value={w.code}>
-                        {w.code} — {w.name_fr}
-                      </SelectItem>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("checkout.delivery.title")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup
+                  value={delivery}
+                  onValueChange={(v) => setDelivery(v as "home" | "desk")}
+                >
+                  {shippingSettings.homeEnabled && (
+                    <label className="flex cursor-pointer items-center justify-between rounded border p-3">
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="home" id="d-home" />
+                        <span>{t("checkout.delivery.home")}</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {wilaya
+                          ? fmt(
+                              calcShipping(
+                                wilaya,
+                                "home",
+                                subtotal - discount,
+                                shippingSettings.freeShippingThreshold,
+                                shippingRates,
+                              ),
+                            )
+                          : t("checkout.wilaya.choose")}
+                      </span>
+                    </label>
+                  )}
+                  {shippingSettings.deskEnabled && (
+                    <label className="flex cursor-pointer items-center justify-between rounded border p-3">
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="desk" id="d-desk" />
+                        <span>{t("checkout.delivery.desk")}</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {wilaya
+                          ? fmt(
+                              calcShipping(
+                                wilaya,
+                                "desk",
+                                subtotal - discount,
+                                shippingSettings.freeShippingThreshold,
+                                shippingRates,
+                              ),
+                            )
+                          : t("checkout.wilaya.choose")}
+                      </span>
+                    </label>
+                  )}
+                </RadioGroup>
+                {shippingSettings.freeShippingThreshold > 0 &&
+                  subtotal - discount >= shippingSettings.freeShippingThreshold && (
+                    <Badge variant="secondary" className="mt-3">
+                      {t("checkout.delivery.freeApplied")}
+                    </Badge>
+                  )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("checkout.payment.title")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {activePayments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{t("checkout.payment.none")}</p>
+                ) : (
+                  <RadioGroup value={paymentId} onValueChange={setPaymentId}>
+                    {activePayments.map((m) => (
+                      <label
+                        key={m.id}
+                        className="flex cursor-pointer items-start gap-3 rounded border p-3"
+                      >
+                        <RadioGroupItem value={m.id} id={`pm-${m.id}`} className="mt-1" />
+                        <div className="text-start">
+                          <p className="font-medium">{m.label}</p>
+                          <p className="text-xs text-muted-foreground">{m.instructions}</p>
+                        </div>
+                      </label>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="address">{t("checkout.address")}</Label>
+                  </RadioGroup>
+                )}
+                {selectedPayment && (
+                  <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                    ℹ️ {selectedPayment.instructions}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("checkout.notes.title")}</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <Textarea
-                  id="address"
-                  required
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  rows={2}
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={t("checkout.notes.placeholder")}
                 />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card>
+          <Card className="h-fit">
             <CardHeader>
-              <CardTitle>{t("checkout.delivery.title")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup value={delivery} onValueChange={(v) => setDelivery(v as "home" | "desk")}>
-                {shippingSettings.homeEnabled && (
-                  <label className="flex cursor-pointer items-center justify-between rounded border p-3">
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="home" id="d-home" />
-                      <span>{t("checkout.delivery.home")}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {wilaya
-                        ? fmt(
-                            calcShipping(
-                              wilaya,
-                              "home",
-                              subtotal - discount,
-                              shippingSettings.freeShippingThreshold,
-                              shippingRates,
-                            ),
-                          )
-                        : t("checkout.wilaya.choose")}
-                    </span>
-                  </label>
-                )}
-                {shippingSettings.deskEnabled && (
-                  <label className="flex cursor-pointer items-center justify-between rounded border p-3">
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="desk" id="d-desk" />
-                      <span>{t("checkout.delivery.desk")}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {wilaya
-                        ? fmt(
-                            calcShipping(
-                              wilaya,
-                              "desk",
-                              subtotal - discount,
-                              shippingSettings.freeShippingThreshold,
-                              shippingRates,
-                            ),
-                          )
-                        : t("checkout.wilaya.choose")}
-                    </span>
-                  </label>
-                )}
-              </RadioGroup>
-              {shippingSettings.freeShippingThreshold > 0 &&
-                subtotal - discount >= shippingSettings.freeShippingThreshold && (
-                  <Badge variant="secondary" className="mt-3">
-                    {t("checkout.delivery.freeApplied")}
-                  </Badge>
-                )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("checkout.payment.title")}</CardTitle>
+              <CardTitle>{t("checkout.summary.title")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {activePayments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("checkout.payment.none")}</p>
-              ) : (
-                <RadioGroup value={paymentId} onValueChange={setPaymentId}>
-                  {activePayments.map((m) => (
-                    <label
-                      key={m.id}
-                      className="flex cursor-pointer items-start gap-3 rounded border p-3"
-                    >
-                      <RadioGroupItem value={m.id} id={`pm-${m.id}`} className="mt-1" />
-                      <div className="text-start">
-                        <p className="font-medium">{m.label}</p>
-                        <p className="text-xs text-muted-foreground">{m.instructions}</p>
-                      </div>
-                    </label>
-                  ))}
-                </RadioGroup>
-              )}
-              {selectedPayment && (
-                <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-                  ℹ️ {selectedPayment.instructions}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("checkout.notes.title")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                rows={3}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t("checkout.notes.placeholder")}
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="h-fit">
-          <CardHeader>
-            <CardTitle>{t("checkout.summary.title")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {cart.map((entry) => (
-              <CheckoutLine
-                key={entry.product_id}
-                product_id={entry.product_id}
-                quantity={entry.quantity}
-                onContribution={handleContribution}
-              />
-            ))}
-            <div className="space-y-1 border-t pt-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("cart.subtotal")}</span>
-                <span>{fmt(subtotal)}</span>
+              {cart.map((entry) => (
+                <CheckoutLine
+                  key={entry.product_id}
+                  product_id={entry.product_id}
+                  quantity={entry.quantity}
+                  onContribution={handleContribution}
+                />
+              ))}
+              <div className="space-y-1 border-t pt-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("cart.subtotal")}</span>
+                  <span>{fmt(subtotal)}</span>
+                </div>
+                {discount > 0 && couponCode && (
+                  <div className="flex justify-between text-primary">
+                    <span className="inline-flex items-center gap-1">
+                      <Tag className="h-3 w-3" /> {couponCode}
+                    </span>
+                    <span>− {fmt(discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("cart.shipping")}</span>
+                  <span>{wilaya ? (shipping === 0 ? t("common.free") : fmt(shipping)) : "—"}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2 text-base font-semibold">
+                  <span>{t("cart.total")}</span>
+                  <span className="text-primary">{fmt(total)}</span>
+                </div>
               </div>
-              {discount > 0 && couponCode && (
-                <div className="flex justify-between text-primary">
-                  <span className="inline-flex items-center gap-1">
-                    <Tag className="h-3 w-3" /> {couponCode}
-                  </span>
-                  <span>− {fmt(discount)}</span>
+
+              {outOfStock.length > 0 && (
+                <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{outOfStock.map((l) => l.product_id).join(", ")}</span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("cart.shipping")}</span>
-                <span>{wilaya ? (shipping === 0 ? t("common.free") : fmt(shipping)) : "—"}</span>
-              </div>
-              <div className="flex justify-between border-t pt-2 text-base font-semibold">
-                <span>{t("cart.total")}</span>
-                <span className="text-primary">{fmt(total)}</span>
-              </div>
-            </div>
 
-            {outOfStock.length > 0 && (
-              <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>{outOfStock.map((l) => l.product_id).join(", ")}</span>
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={busy || !canSubmit}>
-              {busy ? t("checkout.submitting") : t("checkout.submit")}
-            </Button>
-          </CardContent>
-        </Card>
-      </form>
+              <Button type="submit" className="w-full" disabled={busy || !canSubmit}>
+                {busy ? t("checkout.submitting") : t("checkout.submit")}
+              </Button>
+            </CardContent>
+          </Card>
+        </form>
+      </div>
+      {bottomBlocks.map(renderBlock)}
     </div>
   );
 }

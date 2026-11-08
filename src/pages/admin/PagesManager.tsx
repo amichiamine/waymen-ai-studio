@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminLayout";
@@ -44,6 +44,7 @@ import {
   PanelRightOpen,
   Maximize2,
   Minimize2,
+  Sliders,
 } from "lucide-react";
 import {
   Select,
@@ -64,6 +65,7 @@ import type {
   CustomPageDefinition,
   BlockStyleConfig,
   PageLayoutConfig,
+  PageSeoConfig,
 } from "@/types/pages";
 import { BLOCK_REGISTRY, getBlockMeta } from "@/components/blocks";
 import { BlockPropsEditor } from "@/components/admin/BlockPropsEditor";
@@ -79,6 +81,289 @@ function toLocObj(v: Localized<string> | undefined): { fr: string; en: string; a
   if (!v) return { fr: "", en: "", ar: "" };
   if (typeof v === "string") return { fr: v, en: "", ar: "" };
   return { fr: v.fr ?? "", en: v.en ?? "", ar: v.ar ?? "" };
+}
+
+/**
+ * 🎛️ Inspecteur de Paramètres de Vue 360° (Phase 49)
+ * Contrôle direct et temps réel des métadonnées, du fond, des masquages et du SEO.
+ */
+function PageViewPropsEditor({
+  page,
+  onChange,
+}: {
+  page: CustomPageDefinition;
+  onChange: (updated: CustomPageDefinition) => void;
+}) {
+  const [lang, setLang] = useState<LangCode>("fr");
+
+  const titleLoc = toLocObj(page.title);
+  const descLoc = toLocObj(page.description);
+  const metaTitleLoc = toLocObj(page.seo?.metaTitle);
+  const metaDescLoc = toLocObj(page.seo?.metaDescription);
+
+  const handleTitleChange = (val: string) => {
+    onChange({
+      ...page,
+      title: { ...titleLoc, [lang]: val },
+    });
+  };
+
+  const handleDescChange = (val: string) => {
+    onChange({
+      ...page,
+      description: { ...descLoc, [lang]: val },
+    });
+  };
+
+  const handleSlugChange = (val: string) => {
+    onChange({
+      ...page,
+      slug: val.toLowerCase().replace(/[^a-z0-9_/-]/g, "-"),
+    });
+  };
+
+  const handleLayoutBgChange = (bg: PageLayoutConfig["pageBg"]) => {
+    onChange({
+      ...page,
+      layout: { ...(page.layout || {}), pageBg: bg },
+    });
+  };
+
+  const handleLayoutToggle = (key: keyof PageLayoutConfig, value: boolean) => {
+    onChange({
+      ...page,
+      layout: { ...(page.layout || {}), [key]: value },
+    });
+  };
+
+  const handleSeoTextChange = (key: "metaTitle" | "metaDescription", val: string) => {
+    const existing = key === "metaTitle" ? metaTitleLoc : metaDescLoc;
+    onChange({
+      ...page,
+      seo: {
+        ...(page.seo || {}),
+        [key]: { ...existing, [lang]: val },
+      },
+    });
+  };
+
+  const handleSeoNoIndexChange = (noIndex: boolean) => {
+    onChange({
+      ...page,
+      seo: { ...(page.seo || {}), noIndex },
+    });
+  };
+
+  const isSystemPage = Boolean(page.isSystem || page.systemKey || page.id.startsWith("system_"));
+  const isHomePage = page.id === "page_home";
+
+  return (
+    <div className="space-y-4 text-start text-xs">
+      {/* Sélecteur de langue d'édition trilingue */}
+      <div className="flex items-center justify-between border-b pb-2">
+        <span className="font-semibold text-foreground flex items-center gap-1.5">
+          <Globe className="size-3.5 text-primary" />
+          <span>Langue d'édition</span>
+        </span>
+        <div className="flex items-center rounded-md border border-border bg-muted/60 p-0.5">
+          {LANGS.map((lg) => (
+            <button
+              key={lg}
+              type="button"
+              onClick={() => setLang(lg)}
+              className={cn(
+                "px-2 py-0.5 rounded text-[11px] font-semibold uppercase transition-all",
+                lang === lg
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {lg}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Titre & Identification */}
+      <div className="space-y-1.5">
+        <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          Titre de la vue ({lang.toUpperCase()})
+        </Label>
+        <Input
+          value={titleLoc[lang] || ""}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          placeholder={`Titre en ${lang.toUpperCase()}...`}
+          className="h-8 text-xs font-semibold"
+          dir={lang === "ar" ? "rtl" : "ltr"}
+        />
+      </div>
+
+      {/* Slug URL */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            Slug d'accès URL
+          </Label>
+          {isSystemPage && (
+            <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-muted-foreground">
+              Système
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-muted-foreground text-xs font-mono">/</span>
+          <Input
+            value={page.slug}
+            disabled={isSystemPage || isHomePage}
+            onChange={(e) => handleSlugChange(e.target.value)}
+            placeholder="slug-de-la-vue"
+            className="h-8 text-xs font-mono"
+          />
+        </div>
+      </div>
+
+      {/* Description courte */}
+      <div className="space-y-1.5">
+        <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          Description ({lang.toUpperCase()})
+        </Label>
+        <Textarea
+          value={descLoc[lang] || ""}
+          onChange={(e) => handleDescChange(e.target.value)}
+          rows={2}
+          placeholder="Description de la vue pour le catalogue et SEO..."
+          className="text-xs"
+          dir={lang === "ar" ? "rtl" : "ltr"}
+        />
+      </div>
+
+      {/* Style & Couleur de Fond de la Vue */}
+      <div className="space-y-2 border-t pt-3">
+        <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Palette className="size-3.5 text-primary" />
+          <span>Atmosphère & Fond de Vue</span>
+        </Label>
+        <Select
+          value={page.layout?.pageBg || "default"}
+          onValueChange={(v) => handleLayoutBgChange(v as PageLayoutConfig["pageBg"])}
+        >
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder="Fond de page" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">Défaut du thème</SelectItem>
+            <SelectItem value="surface">Surface Blanche / Carte</SelectItem>
+            <SelectItem value="muted">Gris Muted Doux</SelectItem>
+            <SelectItem value="gradient">Dégradé Subtil</SelectItem>
+            <SelectItem value="dark">Sombre Profond (Dark 950)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Interrupteurs de Mise en Page Globale */}
+      <div className="space-y-2.5 border-t pt-3">
+        <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <LayoutTemplate className="size-3.5 text-primary" />
+          <span>Cadre & Éléments Globaux</span>
+        </Label>
+
+        <div className="space-y-2 rounded-lg border border-border/60 bg-muted/20 p-2.5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold">Masquer l'En-tête (Header)</p>
+              <p className="text-[10px] text-muted-foreground">Pour tunnels immersifs ou landing</p>
+            </div>
+            <Switch
+              checked={Boolean(page.layout?.hideHeader)}
+              onCheckedChange={(v) => handleLayoutToggle("hideHeader", v)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border/40 pt-2">
+            <div>
+              <p className="text-xs font-semibold">Masquer le Pied de Page (Footer)</p>
+              <p className="text-[10px] text-muted-foreground">
+                Focalise l'attention sur le contenu
+              </p>
+            </div>
+            <Switch
+              checked={Boolean(page.layout?.hideFooter)}
+              onCheckedChange={(v) => handleLayoutToggle("hideFooter", v)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border/40 pt-2">
+            <div>
+              <p className="text-xs font-semibold">Masquer le Ticker Déroulant</p>
+              <p className="text-[10px] text-muted-foreground">Bandeau de promotions et annonces</p>
+            </div>
+            <Switch
+              checked={Boolean(page.layout?.hideTicker)}
+              onCheckedChange={(v) => handleLayoutToggle("hideTicker", v)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border/40 pt-2">
+            <div>
+              <p className="text-xs font-semibold">Masquer l'Assistance Flottante</p>
+              <p className="text-[10px] text-muted-foreground">Bouton WhatsApp flottant</p>
+            </div>
+            <Switch
+              checked={Boolean(page.layout?.hideFloatingContact)}
+              onCheckedChange={(v) => handleLayoutToggle("hideFloatingContact", v)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Référencement Naturel & SEO */}
+      <div className="space-y-2.5 border-t pt-3">
+        <Label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Globe className="size-3.5 text-primary" />
+          <span>SEO & Référencement Google</span>
+        </Label>
+
+        <div className="space-y-2">
+          <div>
+            <Label className="text-[10px] text-muted-foreground">
+              Méta Titre ({lang.toUpperCase()})
+            </Label>
+            <Input
+              value={metaTitleLoc[lang] || ""}
+              onChange={(e) => handleSeoTextChange("metaTitle", e.target.value)}
+              placeholder="Titre affiché dans les moteurs de recherche..."
+              className="h-8 text-xs"
+              dir={lang === "ar" ? "rtl" : "ltr"}
+            />
+          </div>
+
+          <div>
+            <Label className="text-[10px] text-muted-foreground">
+              Méta Description ({lang.toUpperCase()})
+            </Label>
+            <Textarea
+              value={metaDescLoc[lang] || ""}
+              onChange={(e) => handleSeoTextChange("metaDescription", e.target.value)}
+              rows={2}
+              placeholder="Extrait visible sous le lien dans Google..."
+              className="text-xs"
+              dir={lang === "ar" ? "rtl" : "ltr"}
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <div>
+              <p className="text-xs font-semibold">Désindexer (noindex)</p>
+              <p className="text-[10px] text-muted-foreground">
+                Empêche les moteurs de référencer cette vue
+              </p>
+            </div>
+            <Switch checked={Boolean(page.seo?.noIndex)} onCheckedChange={handleSeoNoIndexChange} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function PagesManager() {
@@ -108,10 +393,58 @@ export default function PagesManager() {
   const [pages, setPages] = useState<CustomPageDefinition[]>(customPages);
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "unsaved">("idle");
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mode d'affichage : WYSYWIG Canvas (par défaut) vs Structure classique
   const [studioViewMode, setStudioViewMode] = useState<"canvas" | "structure">("canvas");
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+  // 🎛️ Mode d'Inspecteur 360° : "block" (Propriétés du Bloc sélectionné) | "page" (Paramètres de la Vue)
+  const [inspectorMode, setInspectorMode] = useState<"block" | "page">("block");
+
+  // ⏱️ Auto-Save Débouncé (1500ms) direct vers SQLite (katech-data)
+  useEffect(() => {
+    if (!isDirty) return;
+
+    setSaveStatus("unsaved");
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(async () => {
+      setSaveStatus("saving");
+      setSaving(true);
+      try {
+        await updateSiteContent({ customPages: pages });
+        setIsDirty(false);
+        setSaveStatus("saved");
+      } catch {
+        setSaveStatus("unsaved");
+      } finally {
+        setSaving(false);
+      }
+    }, 1500);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [pages, isDirty, updateSiteContent]);
+
+  // 🛡️ Garde anti-perte de données BeforeUnload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   // Volets rétractables & Mode Plein Écran Zen
   const [leftCollapsed, setLeftCollapsed] = useState(false);
@@ -457,6 +790,16 @@ export default function PagesManager() {
     setIsDirty(true);
   };
 
+  // Mise à jour complète de la configuration d'une vue (titre, fond, SEO, options)
+  const updateSelectedPageConfig = (updatedPage: CustomPageDefinition) => {
+    setPages((prev) =>
+      prev.map((p) =>
+        p.id === updatedPage.id ? { ...updatedPage, updatedAt: new Date().toISOString() } : p,
+      ),
+    );
+    setIsDirty(true);
+  };
+
   // Déplacement d'un bloc (Monter)
   const handleMoveBlockUp = (index: number) => {
     if (!selectedPage || index <= 0) return;
@@ -537,13 +880,21 @@ export default function PagesManager() {
               </Button>
             </div>
 
-            {isDirty ? (
+            {saving || saveStatus === "saving" ? (
+              <Badge
+                variant="outline"
+                className="text-blue-500 border-blue-500/40 bg-blue-500/10 gap-1.5 py-1 px-2.5 text-xs font-semibold"
+              >
+                <span className="size-2 rounded-full bg-blue-500 animate-ping" />
+                <span>Sauvegarde SQLite en cours...</span>
+              </Badge>
+            ) : isDirty || saveStatus === "unsaved" ? (
               <Badge
                 variant="outline"
                 className="text-amber-500 border-amber-500/40 bg-amber-500/10 gap-1.5 py-1 px-2.5 text-xs font-semibold"
               >
                 <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
-                <span>Modifications non enregistrées</span>
+                <span>Modifications (auto-save 1.5s)</span>
               </Badge>
             ) : (
               <Badge
@@ -906,7 +1257,7 @@ export default function PagesManager() {
               />
             </div>
 
-            {/* Colonne Droite (3 cols) : Inspecteur Fin de Propriétés & Styles */}
+            {/* Colonne Droite (3 cols) : Inspecteur Bi-Mode [ Bloc Actif ] / [ Paramètres Vue ] */}
             {!rightCollapsed && (
               <div
                 className={cn(
@@ -914,80 +1265,142 @@ export default function PagesManager() {
                   mobileStudioView !== "inspector" && "hidden lg:block",
                 )}
               >
-                {selectedPage && selectedBlock ? (
+                {selectedPage ? (
                   <Card className="h-full flex flex-col shadow-xs border-border">
-                    <CardHeader className="py-2.5 px-3.5 border-b border-border/40 flex flex-row items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xs font-bold flex items-center gap-1.5">
-                          <Settings className="size-3.5 text-primary" />
-                          <span>{L(selectedBlockMeta?.label) || selectedBlock.type}</span>
-                        </CardTitle>
-                        <CardDescription className="text-[10px]">
-                          Inspecteur visuel & fin
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {/* Raccourci tactile direct vers l'aperçu Live sur Mobile/Tablette */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs font-semibold gap-1 px-2 lg:hidden text-primary"
-                          onClick={() => setMobileStudioView("canvas")}
-                          title="Voir l'aperçu en direct"
-                        >
-                          <Eye className="size-3.5" />
-                          <span>Aperçu</span>
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="size-7"
-                          onClick={() => handleToggleBlock(selectedBlockIdx)}
-                          title={selectedBlock.enabled ? "Désactiver ce bloc" : "Activer ce bloc"}
-                        >
-                          {selectedBlock.enabled ? (
-                            <Eye className="size-3.5 text-emerald-500" />
-                          ) : (
-                            <EyeOff className="size-3.5 text-muted-foreground" />
+                    <CardHeader className="py-2.5 px-3.5 border-b border-border/40 flex flex-col gap-2">
+                      {/* Commutateur Bi-Mode d'Inspecteur */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center rounded-lg border border-border bg-muted/60 p-0.5">
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant={inspectorMode === "block" ? "default" : "ghost"}
+                            onClick={() => setInspectorMode("block")}
+                            className="h-6 text-[11px] font-semibold gap-1 px-2"
+                          >
+                            <Settings className="size-3" />
+                            <span>Bloc actif</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant={inspectorMode === "page" ? "default" : "ghost"}
+                            onClick={() => setInspectorMode("page")}
+                            className="h-6 text-[11px] font-semibold gap-1 px-2"
+                          >
+                            <Sliders className="size-3" />
+                            <span>Paramètres Vue</span>
+                          </Button>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          {/* Raccourci tactile direct vers l'aperçu Live sur Mobile/Tablette */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 text-[11px] font-semibold gap-1 px-2 lg:hidden text-primary"
+                            onClick={() => setMobileStudioView("canvas")}
+                            title="Voir l'aperçu en direct"
+                          >
+                            <Eye className="size-3" />
+                            <span>Aperçu</span>
+                          </Button>
+
+                          {inspectorMode === "block" && selectedBlock && (
+                            <>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-6"
+                                onClick={() => handleToggleBlock(selectedBlockIdx)}
+                                title={
+                                  selectedBlock.enabled ? "Désactiver ce bloc" : "Activer ce bloc"
+                                }
+                              >
+                                {selectedBlock.enabled ? (
+                                  <Eye className="size-3 text-emerald-500" />
+                                ) : (
+                                  <EyeOff className="size-3 text-muted-foreground" />
+                                )}
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-6 text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeleteBlock(selectedBlockIdx)}
+                                title="Supprimer ce bloc"
+                              >
+                                <Trash2 className="size-3" />
+                              </Button>
+                            </>
                           )}
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="size-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => handleDeleteBlock(selectedBlockIdx)}
-                          title="Supprimer ce bloc"
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-6 text-muted-foreground hover:text-foreground"
+                            onClick={() => setRightCollapsed(true)}
+                            title="Replier le volet inspecteur"
+                          >
+                            <PanelRightClose className="size-3" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Sous-titre contextuel */}
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-bold text-foreground truncate max-w-[200px]">
+                          {inspectorMode === "block"
+                            ? selectedBlock
+                              ? L(selectedBlockMeta?.label) || selectedBlock.type
+                              : "Aucun bloc sélectionné"
+                            : L(selectedPage.title) || selectedPage.slug || "Paramètres"}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] py-0 px-1 text-muted-foreground"
                         >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="size-7 text-muted-foreground hover:text-foreground"
-                          onClick={() => setRightCollapsed(true)}
-                          title="Replier le volet inspecteur"
-                        >
-                          <PanelRightClose className="size-3.5" />
-                        </Button>
+                          {inspectorMode === "block" ? "Bloc Studio" : "Vue 360°"}
+                        </Badge>
                       </div>
                     </CardHeader>
+
                     <CardContent className="p-3 overflow-y-auto flex-1 min-h-0">
-                      <BlockPropsEditor
-                        block={selectedBlock}
-                        onChange={(newProps) => handleUpdateBlockProps(selectedBlockIdx, newProps)}
-                        onStyleChange={(newStyle) =>
-                          handleUpdateBlockStyle(selectedBlockIdx, newStyle)
-                        }
-                      />
+                      {inspectorMode === "page" ? (
+                        <PageViewPropsEditor
+                          page={selectedPage}
+                          onChange={updateSelectedPageConfig}
+                        />
+                      ) : selectedBlock ? (
+                        <BlockPropsEditor
+                          block={selectedBlock}
+                          onChange={(newProps) =>
+                            handleUpdateBlockProps(selectedBlockIdx, newProps)
+                          }
+                          onStyleChange={(newStyle) =>
+                            handleUpdateBlockStyle(selectedBlockIdx, newStyle)
+                          }
+                        />
+                      ) : (
+                        <div className="p-6 text-center border border-dashed rounded-lg">
+                          <Settings className="size-7 text-muted-foreground/30 mx-auto mb-2" />
+                          <h4 className="text-xs font-bold text-foreground">
+                            Aucun bloc sélectionné
+                          </h4>
+                          <p className="text-[11px] text-muted-foreground mt-1">
+                            Sélectionnez un bloc dans le Canvas ou dans l'arborescence, ou cliquez
+                            sur "Paramètres Vue" pour modifier les options de la page.
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ) : (
                   <Card className="p-8 text-center border-dashed">
                     <Settings className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <h4 className="text-xs font-bold text-foreground">Aucun bloc sélectionné</h4>
+                    <h4 className="text-xs font-bold text-foreground">Aucune vue active</h4>
                     <p className="text-[11px] text-muted-foreground mt-1">
-                      Cliquez sur un bloc dans le Canvas ou dans l'arborescence de gauche pour
-                      personnaliser son contenu et son style.
+                      Sélectionnez une vue dans la liste de gauche pour l'inspecter et la concevoir.
                     </p>
                   </Card>
                 )}

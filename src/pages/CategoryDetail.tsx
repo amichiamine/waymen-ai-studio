@@ -9,9 +9,12 @@ import { UseChips } from "@/components/UseChips";
 import { ChevronRight } from "lucide-react";
 import { useI18n, useLocalize, type TKey } from "@/lib/i18n";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
-import { useCategoryList, useSiteSettings } from "@/data-provider";
+import { useCategoryList, useSiteSettings, useSiteContent } from "@/data-provider";
 import { useFormatPrice } from "@/lib/format-price";
+import { renderBlock } from "@/components/blocks";
+import { cn } from "@/lib/utils";
 import type { AdminCategory } from "@/api/types";
+import type { BlockConfig } from "@/types/pages";
 
 const BUILTIN_CATEGORIES = ["laptops", "desktops", "builds", "phones"];
 
@@ -22,34 +25,87 @@ const SORTS: { id: string; key: TKey }[] = [
   { id: "high", key: "cp.sort.high" },
 ];
 
-export default function CategoryDetail() {
+export default function CategoryDetail({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { slug } = useParams();
   const { data: categories } = useCategoryList();
   const { data: siteSettings } = useSiteSettings();
+  const { data: siteContent } = useSiteContent();
   const { t } = useI18n();
   const brand = siteSettings.storeName?.trim() || "Boutique";
 
-  const currentCat = categories.find((c) => c.slug === slug);
-  const isValid = Boolean(currentCat || (slug && slug.length > 0));
+  const systemPage = siteContent?.customPages?.find(
+    (pg) =>
+      pg.isSystem &&
+      (pg.systemKey === "category_detail" ||
+        pg.slug === "category/:slug" ||
+        pg.slug === "category-detail"),
+  );
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
+  const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
+
+  const pageBgClass =
+    systemPage?.layout?.pageBg === "dark"
+      ? "bg-slate-950 text-slate-50"
+      : systemPage?.layout?.pageBg === "muted"
+        ? "bg-muted/40"
+        : systemPage?.layout?.pageBg === "surface"
+          ? "bg-card"
+          : systemPage?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background"
+            : "";
+
+  // En mode Studio Live Canvas (suppressCustomBlocks), repli gracieux sur la première catégorie
+  const activeSlug = slug || (suppressCustomBlocks ? categories[0]?.slug || "laptops" : undefined);
+  const currentCat = categories.find((c) => c.slug === activeSlug);
+  const isValid = Boolean(currentCat || (activeSlug && activeSlug.length > 0));
 
   useEffect(() => {
-    document.title = `${brand} — ${slug ?? ""}`;
-  }, [slug, brand]);
+    document.title = `${brand} — ${activeSlug ?? ""}`;
+  }, [activeSlug, brand]);
 
-  if (!isValid || !slug) {
+  if (!isValid || !activeSlug) {
     return (
-      <div className="container mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">{t("cp.notFound")}</h1>
-        <Link to="/category" className="mt-4 inline-block text-primary hover:underline">
-          {t("cp.seeAllCategories")}
-        </Link>
+      <div className={cn("min-h-[60vh]", pageBgClass)}>
+        {topBlocks.map(renderBlock)}
+        <div className="container mx-auto max-w-xl px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold">{t("cp.notFound")}</h1>
+          <Link to="/category" className="mt-4 inline-block text-primary hover:underline">
+            {t("cp.seeAllCategories")}
+          </Link>
+        </div>
+        {bottomBlocks.map(renderBlock)}
       </div>
     );
   }
-  return <CategoryView cat={slug as Category} dynamicCat={currentCat} />;
+  return (
+    <CategoryView
+      cat={activeSlug as Category}
+      dynamicCat={currentCat}
+      topBlocks={topBlocks}
+      bottomBlocks={bottomBlocks}
+      pageBgClass={pageBgClass}
+    />
+  );
 }
 
-function CategoryView({ cat, dynamicCat }: { cat: Category; dynamicCat?: AdminCategory }) {
+function CategoryView({
+  cat,
+  dynamicCat,
+  topBlocks,
+  bottomBlocks,
+  pageBgClass,
+}: {
+  cat: Category;
+  dynamicCat?: AdminCategory;
+  topBlocks: BlockConfig[];
+  bottomBlocks: BlockConfig[];
+  pageBgClass: string;
+}) {
   const meta = getCategoryMeta(cat, dynamicCat);
   const { t } = useI18n();
   const formatPrice = useFormatPrice();
@@ -110,117 +166,121 @@ function CategoryView({ cat, dynamicCat }: { cat: Category; dynamicCat?: AdminCa
   const desc = (meta.descKey ? t(meta.descKey) : L(meta.descText)) || "";
 
   return (
-    <div className="container-page py-8 lg:py-12">
-      <Helmet>
-        <title>{`${label} — ${brand}`}</title>
-        <meta
-          name="description"
-          content={`${desc} ${list.length} produits disponibles chez ${brand}.`}
-        />
-        <link rel="canonical" href={`${window.location.origin}/category/${cat}`} />
-        <meta property="og:url" content={`${window.location.origin}/category/${cat}`} />
-      </Helmet>
-      <nav className="text-xs text-muted-foreground flex items-center gap-1.5 mb-6">
-        <Link to="/" className="hover:text-foreground">
-          {t("common.home")}
-        </Link>
-        <ChevronRight className="size-3" />
-        <span className="text-foreground">{label}</span>
-      </nav>
+    <div className={cn("min-h-screen", pageBgClass)}>
+      {topBlocks.map(renderBlock)}
+      <div className="container-page py-8 lg:py-12">
+        <Helmet>
+          <title>{`${label} — ${brand}`}</title>
+          <meta
+            name="description"
+            content={`${desc} ${list.length} produits disponibles chez ${brand}.`}
+          />
+          <link rel="canonical" href={`${window.location.origin}/category/${cat}`} />
+          <meta property="og:url" content={`${window.location.origin}/category/${cat}`} />
+        </Helmet>
+        <nav className="text-xs text-muted-foreground flex items-center gap-1.5 mb-6">
+          <Link to="/" className="hover:text-foreground">
+            {t("common.home")}
+          </Link>
+          <ChevronRight className="size-3" />
+          <span className="text-foreground">{label}</span>
+        </nav>
 
-      <header className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-bold">{label}</h1>
-        <p className="text-muted-foreground mt-1">
-          {desc} · {list.length} {t("cp.product")}
-        </p>
-      </header>
+        <header className="mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold">{label}</h1>
+          <p className="text-muted-foreground mt-1">
+            {desc} · {list.length} {t("cp.product")}
+          </p>
+        </header>
 
-      <div className="grid lg:grid-cols-[260px_1fr] gap-8">
-        <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start">
-          <div className="rounded-lg border border-border bg-card p-5 space-y-5">
-            <div>
-              <h3 className="text-sm font-semibold mb-3">{t("cp.maxPrice")}</h3>
-              <input
-                type="range"
-                min={0}
-                max={maxCatalogPrice}
-                step={Math.max(100, Math.round(maxCatalogPrice / 100))}
-                value={Math.min(maxPrice, maxCatalogPrice)}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-primary"
-              />
-              <div className="text-xs text-muted-foreground mt-2">
-                {t("cp.upTo")} {formatPrice(maxPrice)}
+        <div className="grid lg:grid-cols-[260px_1fr] gap-8">
+          <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start">
+            <div className="rounded-lg border border-border bg-card p-5 space-y-5">
+              <div>
+                <h3 className="text-sm font-semibold mb-3">{t("cp.maxPrice")}</h3>
+                <input
+                  type="range"
+                  min={0}
+                  max={maxCatalogPrice}
+                  step={Math.max(100, Math.round(maxCatalogPrice / 100))}
+                  value={Math.min(maxPrice, maxCatalogPrice)}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full accent-primary"
+                />
+                <div className="text-xs text-muted-foreground mt-2">
+                  {t("cp.upTo")} {formatPrice(maxPrice)}
+                </div>
               </div>
+              <div>
+                <h3 className="text-sm font-semibold mb-3">{t("cp.brand")}</h3>
+                <div className="space-y-2">
+                  {brands.map((b) => (
+                    <label key={b} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={brand.includes(b)}
+                        onChange={(e) =>
+                          setBrand((s) => (e.target.checked ? [...s, b] : s.filter((x) => x !== b)))
+                        }
+                        className="size-4 accent-primary"
+                      />
+                      {b}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {hasUseTags && (
+                <div>
+                  <h3 className="text-sm font-semibold mb-3">{t("cp.use")}</h3>
+                  <UseChips value={use} onChange={setUse} />
+                </div>
+              )}
             </div>
-            <div>
-              <h3 className="text-sm font-semibold mb-3">{t("cp.brand")}</h3>
-              <div className="space-y-2">
-                {brands.map((b) => (
-                  <label key={b} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={brand.includes(b)}
-                      onChange={(e) =>
-                        setBrand((s) => (e.target.checked ? [...s, b] : s.filter((x) => x !== b)))
-                      }
-                      className="size-4 accent-primary"
-                    />
-                    {b}
-                  </label>
+          </aside>
+
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+              <span className="text-sm text-muted-foreground">
+                {list.length} {t("cp.results")}
+              </span>
+              <div className="flex items-center gap-1 p-1 rounded-md bg-card border border-border">
+                {SORTS.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSort(s.id)}
+                    className={`h-8 px-3 rounded text-xs font-medium ${sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {t(s.key)}
+                  </button>
                 ))}
               </div>
             </div>
-            {hasUseTags && (
-              <div>
-                <h3 className="text-sm font-semibold mb-3">{t("cp.use")}</h3>
-                <UseChips value={use} onChange={setUse} />
+
+            {list.length ? (
+              <>
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {shown.map((p) => (
+                    <ProductCard key={p.id} p={p} />
+                  ))}
+                </div>
+                {hasMore && (
+                  <div
+                    ref={sentinelRef}
+                    className="h-16 mt-6 flex items-center justify-center text-xs text-muted-foreground"
+                  >
+                    {t("cp.results")}…
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
+                {t("cp.empty")}
               </div>
             )}
           </div>
-        </aside>
-
-        <div>
-          <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-            <span className="text-sm text-muted-foreground">
-              {list.length} {t("cp.results")}
-            </span>
-            <div className="flex items-center gap-1 p-1 rounded-md bg-card border border-border">
-              {SORTS.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setSort(s.id)}
-                  className={`h-8 px-3 rounded text-xs font-medium ${sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  {t(s.key)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {list.length ? (
-            <>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {shown.map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
-              </div>
-              {hasMore && (
-                <div
-                  ref={sentinelRef}
-                  className="h-16 mt-6 flex items-center justify-center text-xs text-muted-foreground"
-                >
-                  {t("cp.results")}…
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="rounded-lg border border-dashed border-border bg-card p-12 text-center text-muted-foreground">
-              {t("cp.empty")}
-            </div>
-          )}
         </div>
       </div>
+      {bottomBlocks.map(renderBlock)}
     </div>
   );
 }

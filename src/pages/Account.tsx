@@ -4,7 +4,9 @@ import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useMyOrderList } from "@/data-provider";
+import { useMyOrderList, useSiteContent } from "@/data-provider";
+import { renderBlock } from "@/components/blocks";
+import { cn } from "@/lib/utils";
 // Import de type uniquement : aucune fonction de `admin-store` n'est appelée
 // depuis cette page — les données passent par le fournisseur.
 import type { Order, OrderStatus } from "@/api/types";
@@ -54,10 +56,33 @@ const STATUS_VARIANT: Record<OrderStatus, "default" | "secondary" | "destructive
   cancelled: "destructive",
 };
 
-export default function Account() {
+export default function Account({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { user, signOut, updateProfile } = useAuth();
   const { data: orders, loading, error } = useMyOrderList();
+  const { data: siteContent } = useSiteContent();
   const navigate = useNavigate();
+
+  const systemPage = siteContent?.customPages?.find(
+    (pg) => pg.isSystem && (pg.systemKey === "account" || pg.slug === "account"),
+  );
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
+  const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
+
+  const pageBgClass =
+    systemPage?.layout?.pageBg === "dark"
+      ? "bg-slate-950 text-slate-50"
+      : systemPage?.layout?.pageBg === "muted"
+        ? "bg-muted/40"
+        : systemPage?.layout?.pageBg === "surface"
+          ? "bg-card"
+          : systemPage?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background"
+            : "";
   const { t, lang } = useI18n();
   const formatPrice = useFormatPrice();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
@@ -129,419 +154,423 @@ export default function Account() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-10">
-      <Helmet>
-        <title>{t("account.page.title")}</title>
-        <meta name="description" content={t("account.page.desc")} />
-        <link rel="canonical" href={`${window.location.origin}/account`} />
-        <meta name="robots" content="noindex" />
-      </Helmet>
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <User className="h-5 w-5" />
-        </div>
-        <div className="text-start">
-          <h1 className="text-2xl font-bold">{t("account.title")}</h1>
-          <p className="text-sm text-muted-foreground">{user?.email}</p>
-        </div>
-      </div>
-
-      <Tabs defaultValue="profile">
-        <TabsList>
-          <TabsTrigger value="profile">{t("account.tab.profile")}</TabsTrigger>
-          <TabsTrigger value="addresses">
-            {t("account.tab.addresses")} ({addresses.length})
-          </TabsTrigger>
-          <TabsTrigger value="orders">
-            {t("account.tab.orders")} ({loading ? "…" : myOrders.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="profile" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("account.profile.title")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSave} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">{t("account.fullName")}</Label>
-                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-                </div>
-                <div>
-                  <Label htmlFor="phone">{t("account.phone")}</Label>
-                  <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button type="submit">{t("account.save")}</Button>
-                  <Button type="button" variant="outline" onClick={handleLogout}>
-                    <LogOut className="me-2 h-4 w-4" /> {t("account.logout")}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="addresses" className="mt-4 space-y-4">
-          <div className="flex justify-end">
-            <Button size="sm" onClick={startNewAddress}>
-              <Plus className="me-2 h-4 w-4" /> {t("account.addr.newBtn")}
-            </Button>
+    <div className={cn("min-h-screen", pageBgClass)}>
+      {topBlocks.map(renderBlock)}
+      <div className="container mx-auto max-w-4xl px-4 py-10">
+        <Helmet>
+          <title>{t("account.page.title")}</title>
+          <meta name="description" content={t("account.page.desc")} />
+          <link rel="canonical" href={`${window.location.origin}/account`} />
+          <meta name="robots" content="noindex" />
+        </Helmet>
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <User className="h-5 w-5" />
           </div>
-          {addresses.length === 0 && !editing && (
+          <div className="text-start">
+            <h1 className="text-2xl font-bold">{t("account.title")}</h1>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
+          </div>
+        </div>
+
+        <Tabs defaultValue="profile">
+          <TabsList>
+            <TabsTrigger value="profile">{t("account.tab.profile")}</TabsTrigger>
+            <TabsTrigger value="addresses">
+              {t("account.tab.addresses")} ({addresses.length})
+            </TabsTrigger>
+            <TabsTrigger value="orders">
+              {t("account.tab.orders")} ({loading ? "…" : myOrders.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="mt-4">
             <Card>
-              <CardContent className="p-12 text-center text-sm text-muted-foreground">
-                <MapPin className="mx-auto mb-3 h-10 w-10 opacity-40" />
-                {t("account.addr.none")}
+              <CardHeader>
+                <CardTitle>{t("account.profile.title")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSave} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">{t("account.fullName")}</Label>
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">{t("account.phone")}</Label>
+                    <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="submit">{t("account.save")}</Button>
+                    <Button type="button" variant="outline" onClick={handleLogout}>
+                      <LogOut className="me-2 h-4 w-4" /> {t("account.logout")}
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             </Card>
-          )}
-          <div className="grid gap-3 md:grid-cols-2">
-            {addresses.map((a) => (
-              <Card key={a.id} className={a.isDefault ? "border-primary" : ""}>
-                <CardContent className="p-4 space-y-2 text-start">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold">{a.label}</span>
-                    {a.isDefault && (
-                      <Badge variant="default">
-                        <Star className="h-3 w-3 me-1" />
-                        {t("account.addr.default")}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm">
-                    {a.fullName} · {a.phone}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr ?? a.wilaya} — {a.address}
-                  </p>
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <Button size="sm" variant="outline" onClick={() => setEditing(a)}>
-                      {t("common.edit")}
-                    </Button>
-                    {!a.isDefault && (
-                      <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)}>
-                        {t("account.addr.setDefault")}
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        remove(a.id);
-                        toast.success(t("account.addr.delOk"));
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
+          </TabsContent>
+
+          <TabsContent value="addresses" className="mt-4 space-y-4">
+            <div className="flex justify-end">
+              <Button size="sm" onClick={startNewAddress}>
+                <Plus className="me-2 h-4 w-4" /> {t("account.addr.newBtn")}
+              </Button>
+            </div>
+            {addresses.length === 0 && !editing && (
+              <Card>
+                <CardContent className="p-12 text-center text-sm text-muted-foreground">
+                  <MapPin className="mx-auto mb-3 h-10 w-10 opacity-40" />
+                  {t("account.addr.none")}
                 </CardContent>
               </Card>
-            ))}
-          </div>
-          {editing && (
-            <Card className="border-primary/60">
-              <CardHeader>
-                <CardTitle className="text-base">
-                  {addresses.find((a) => a.id === editing.id)
-                    ? t("account.addr.editing")
-                    : t("account.addr.new")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <Label>{t("account.addr.label")}</Label>
-                  <Input
-                    value={editing.label}
-                    onChange={(e) => setEditing({ ...editing, label: e.target.value })}
-                    placeholder={t("account.addr.labelPh")}
-                  />
-                </div>
-                <div>
-                  <Label>{t("account.addr.fullName")}</Label>
-                  <Input
-                    value={editing.fullName}
-                    onChange={(e) => setEditing({ ...editing, fullName: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label>{t("account.addr.phone")}</Label>
-                  <Input
-                    value={editing.phone}
-                    onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label>{t("account.addr.wilaya")}</Label>
-                  <Select
-                    value={editing.wilaya}
-                    onValueChange={(v) => setEditing({ ...editing, wilaya: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {WILAYAS.map((w) => (
-                        <SelectItem key={w.code} value={w.code}>
-                          {w.code} — {w.name_fr}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="md:col-span-2">
-                  <Label>{t("account.addr.address")}</Label>
-                  <Textarea
-                    rows={2}
-                    value={editing.address}
-                    onChange={(e) => setEditing({ ...editing, address: e.target.value })}
-                  />
-                </div>
-                <label className="md:col-span-2 flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={!!editing.isDefault}
-                    onChange={(e) => setEditing({ ...editing, isDefault: e.target.checked })}
-                    className="size-4 accent-primary"
-                  />
-                  {t("account.addr.markDefault")}
-                </label>
-                <div className="md:col-span-2 flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setEditing(null)}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button onClick={saveAddress}>{t("common.save")}</Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="orders" className="mt-4">
-          {/* 1. Chargement */}
-          {loading ? (
-            <div className="space-y-3" aria-busy="true">
-              <span className="sr-only">{t("app.loading")}</span>
-              {Array.from({ length: 3 }, (_, i) => (
-                <div
-                  key={i}
-                  className="h-24 animate-pulse rounded-xl border border-border bg-card"
-                />
-              ))}
-            </div>
-          ) : (
-            <>
-              {/* 2. Erreur */}
-              {error && (
-                <p
-                  role="status"
-                  className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
-                >
-                  <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                  {error.message}
-                </p>
-              )}
-
-              {/* 3. Vide / contenu */}
-              {myOrders.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center text-sm text-muted-foreground">
-                    <Package className="mx-auto mb-3 h-10 w-10 opacity-40" />
-                    {t("account.orders.none")}
-                    <div className="mt-3">
-                      <Link to="/category" className="text-primary hover:underline">
-                        {t("account.orders.discover")}
-                      </Link>
+            )}
+            <div className="grid gap-3 md:grid-cols-2">
+              {addresses.map((a) => (
+                <Card key={a.id} className={a.isDefault ? "border-primary" : ""}>
+                  <CardContent className="p-4 space-y-2 text-start">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold">{a.label}</span>
+                      {a.isDefault && (
+                        <Badge variant="default">
+                          <Star className="h-3 w-3 me-1" />
+                          {t("account.addr.default")}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm">
+                      {a.fullName} · {a.phone}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {WILAYAS.find((w) => w.code === a.wilaya)?.name_fr ?? a.wilaya} — {a.address}
+                    </p>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Button size="sm" variant="outline" onClick={() => setEditing(a)}>
+                        {t("common.edit")}
+                      </Button>
+                      {!a.isDefault && (
+                        <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)}>
+                          {t("account.addr.setDefault")}
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          remove(a.id);
+                          toast.success(t("account.addr.delOk"));
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              ) : (
-                <div className="space-y-3">
-                  {myOrders.map((o) => (
-                    <Card
-                      key={o.id}
-                      onClick={() => setSelectedOrder(o)}
-                      className="cursor-pointer transition-all duration-200 hover:border-primary/60 hover:shadow-md"
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div className="text-start">
-                            <p className="font-mono text-sm font-semibold">{o.id}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(o.createdAt).toLocaleString(locale)} · {o.items.length}{" "}
-                              {t("account.order.articles")}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold">{formatPrice(o.total)}</span>
-                            <Badge variant={STATUS_VARIANT[o.status]}>
-                              {STATUS_LABEL[o.status]}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {o.items
-                            .slice(0, 4)
-                            .map(
-                              (it, i) =>
-                                it.image && (
-                                  <ImageCatalogue
-                                    key={i}
-                                    src={it.image}
-                                    alt=""
-                                    className="h-10 w-10 rounded object-cover"
-                                  />
-                                ),
-                            )}
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                          {(o.statusHistory ?? [])
-                            .map((ev, i) => (
-                              <span key={i}>
-                                {STATUS_LABEL[ev.status]} ·{" "}
-                                {new Date(ev.at).toLocaleDateString(locale)}
-                              </span>
-                            ))
-                            .reduce<React.ReactNode[]>(
-                              (acc, cur, i) => (i === 0 ? [cur] : [...acc, " → ", cur]),
-                              [],
-                            )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Modale de Détail de Commande Client */}
-      {selectedOrder && (
-        <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-          <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
-            <DialogHeader className="text-start">
-              <div className="flex items-center justify-between pe-6">
-                <DialogTitle className="text-lg font-mono">#{selectedOrder.id}</DialogTitle>
-                <Badge variant={STATUS_VARIANT[selectedOrder.status as OrderStatus]}>
-                  {STATUS_LABEL[selectedOrder.status as OrderStatus]}
-                </Badge>
-              </div>
-              <DialogDescription>
-                {new Date(selectedOrder.createdAt).toLocaleString(locale)}
-              </DialogDescription>
-            </DialogHeader>
-
-            {/* Note marchand si présente */}
-            {selectedOrder.note && (
-              <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-start text-xs text-amber-900 dark:text-amber-200">
-                <p className="font-semibold mb-0.5">{t("account.teamNote")}</p>
-                <p>{selectedOrder.note}</p>
-              </div>
-            )}
-
-            {/* Articles */}
-            <div className="space-y-2 border-t pt-3 text-start">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("account.orderedArticles", { count: selectedOrder.items.length })}
-              </h4>
-              <div className="divide-y divide-border/60">
-                {selectedOrder.items.map((item: Order["items"][number], idx: number) => (
-                  <div key={idx} className="flex items-center gap-3 py-2 text-start">
-                    {item.image ? (
-                      <ImageCatalogue
-                        src={item.image}
-                        alt={item.name}
-                        className="size-10 rounded object-contain border bg-muted/20 shrink-0"
-                      />
-                    ) : (
-                      <div className="size-10 rounded bg-muted flex items-center justify-center shrink-0">
-                        <Package className="size-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{item.name}</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {item.qty} × {formatPrice(item.price)}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold shrink-0">
-                      {formatPrice(item.price * item.qty)}
-                    </span>
+              ))}
+            </div>
+            {editing && (
+              <Card className="border-primary/60">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {addresses.find((a) => a.id === editing.id)
+                      ? t("account.addr.editing")
+                      : t("account.addr.new")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <Label>{t("account.addr.label")}</Label>
+                    <Input
+                      value={editing.label}
+                      onChange={(e) => setEditing({ ...editing, label: e.target.value })}
+                      placeholder={t("account.addr.labelPh")}
+                    />
                   </div>
+                  <div>
+                    <Label>{t("account.addr.fullName")}</Label>
+                    <Input
+                      value={editing.fullName}
+                      onChange={(e) => setEditing({ ...editing, fullName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("account.addr.phone")}</Label>
+                    <Input
+                      value={editing.phone}
+                      onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("account.addr.wilaya")}</Label>
+                    <Select
+                      value={editing.wilaya}
+                      onValueChange={(v) => setEditing({ ...editing, wilaya: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WILAYAS.map((w) => (
+                          <SelectItem key={w.code} value={w.code}>
+                            {w.code} — {w.name_fr}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label>{t("account.addr.address")}</Label>
+                    <Textarea
+                      rows={2}
+                      value={editing.address}
+                      onChange={(e) => setEditing({ ...editing, address: e.target.value })}
+                    />
+                  </div>
+                  <label className="md:col-span-2 flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={!!editing.isDefault}
+                      onChange={(e) => setEditing({ ...editing, isDefault: e.target.checked })}
+                      className="size-4 accent-primary"
+                    />
+                    {t("account.addr.markDefault")}
+                  </label>
+                  <div className="md:col-span-2 flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setEditing(null)}>
+                      {t("common.cancel")}
+                    </Button>
+                    <Button onClick={saveAddress}>{t("common.save")}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="orders" className="mt-4">
+            {/* 1. Chargement */}
+            {loading ? (
+              <div className="space-y-3" aria-busy="true">
+                <span className="sr-only">{t("app.loading")}</span>
+                {Array.from({ length: 3 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="h-24 animate-pulse rounded-xl border border-border bg-card"
+                  />
                 ))}
               </div>
-            </div>
+            ) : (
+              <>
+                {/* 2. Erreur */}
+                {error && (
+                  <p
+                    role="status"
+                    className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+                  >
+                    <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                    {error.message}
+                  </p>
+                )}
 
-            {/* Récapitulatif financier */}
-            <div className="border-t pt-3 space-y-1 text-xs text-muted-foreground text-start">
-              <div className="flex justify-between">
-                <span>{t("cart.subtotal")}</span>
-                <span className="font-medium text-foreground">
-                  {formatPrice(selectedOrder.subtotal)}
-                </span>
-              </div>
-              {selectedOrder.discount > 0 && (
-                <div className="flex justify-between text-primary">
-                  <span>
-                    {t("account.discount")}{" "}
-                    {selectedOrder.couponCode ? `(${selectedOrder.couponCode})` : ""}
-                  </span>
-                  <span className="font-medium">− {formatPrice(selectedOrder.discount)}</span>
+                {/* 3. Vide / contenu */}
+                {myOrders.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-12 text-center text-sm text-muted-foreground">
+                      <Package className="mx-auto mb-3 h-10 w-10 opacity-40" />
+                      {t("account.orders.none")}
+                      <div className="mt-3">
+                        <Link to="/category" className="text-primary hover:underline">
+                          {t("account.orders.discover")}
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {myOrders.map((o) => (
+                      <Card
+                        key={o.id}
+                        onClick={() => setSelectedOrder(o)}
+                        className="cursor-pointer transition-all duration-200 hover:border-primary/60 hover:shadow-md"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="text-start">
+                              <p className="font-mono text-sm font-semibold">{o.id}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(o.createdAt).toLocaleString(locale)} · {o.items.length}{" "}
+                                {t("account.order.articles")}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-semibold">{formatPrice(o.total)}</span>
+                              <Badge variant={STATUS_VARIANT[o.status]}>
+                                {STATUS_LABEL[o.status]}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {o.items
+                              .slice(0, 4)
+                              .map(
+                                (it, i) =>
+                                  it.image && (
+                                    <ImageCatalogue
+                                      key={i}
+                                      src={it.image}
+                                      alt=""
+                                      className="h-10 w-10 rounded object-cover"
+                                    />
+                                  ),
+                              )}
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                            {(o.statusHistory ?? [])
+                              .map((ev, i) => (
+                                <span key={i}>
+                                  {STATUS_LABEL[ev.status]} ·{" "}
+                                  {new Date(ev.at).toLocaleDateString(locale)}
+                                </span>
+                              ))
+                              .reduce<React.ReactNode[]>(
+                                (acc, cur, i) => (i === 0 ? [cur] : [...acc, " → ", cur]),
+                                [],
+                              )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Modale de Détail de Commande Client */}
+        {selectedOrder && (
+          <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+            <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+              <DialogHeader className="text-start">
+                <div className="flex items-center justify-between pe-6">
+                  <DialogTitle className="text-lg font-mono">#{selectedOrder.id}</DialogTitle>
+                  <Badge variant={STATUS_VARIANT[selectedOrder.status as OrderStatus]}>
+                    {STATUS_LABEL[selectedOrder.status as OrderStatus]}
+                  </Badge>
+                </div>
+                <DialogDescription>
+                  {new Date(selectedOrder.createdAt).toLocaleString(locale)}
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Note marchand si présente */}
+              {selectedOrder.note && (
+                <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-start text-xs text-amber-900 dark:text-amber-200">
+                  <p className="font-semibold mb-0.5">{t("account.teamNote")}</p>
+                  <p>{selectedOrder.note}</p>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span>{t("cart.shipping")}</span>
-                <span className="font-medium text-foreground">
-                  {selectedOrder.shipping === 0
-                    ? t("common.free")
-                    : formatPrice(selectedOrder.shipping)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm font-bold text-foreground border-t pt-1.5">
-                <span>{t("cart.total")}</span>
-                <span className="text-primary">{formatPrice(selectedOrder.total)}</span>
-              </div>
-            </div>
 
-            {/* Destination & Mode */}
-            <div className="border-t pt-3 text-start text-xs space-y-1">
-              <p className="font-semibold text-foreground flex items-center gap-1.5">
-                <MapPin className="size-3.5 text-primary" />
-                <span>
-                  {t("account.delivery")}{" "}
-                  {selectedOrder.deliveryKind === "desk"
-                    ? t("account.deliveryDesk")
-                    : t("account.deliveryHome")}
-                </span>
-              </p>
-              <p className="text-muted-foreground">
-                {selectedOrder.address} — {t("account.wilayaLabel")} {selectedOrder.wilaya}
-              </p>
-              <p className="text-muted-foreground">
-                {t("account.phoneLabel")} {selectedOrder.phone}
-              </p>
-            </div>
+              {/* Articles */}
+              <div className="space-y-2 border-t pt-3 text-start">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("account.orderedArticles", { count: selectedOrder.items.length })}
+                </h4>
+                <div className="divide-y divide-border/60">
+                  {selectedOrder.items.map((item: Order["items"][number], idx: number) => (
+                    <div key={idx} className="flex items-center gap-3 py-2 text-start">
+                      {item.image ? (
+                        <ImageCatalogue
+                          src={item.image}
+                          alt={item.name}
+                          className="size-10 rounded object-contain border bg-muted/20 shrink-0"
+                        />
+                      ) : (
+                        <div className="size-10 rounded bg-muted flex items-center justify-center shrink-0">
+                          <Package className="size-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{item.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {item.qty} × {formatPrice(item.price)}
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold shrink-0">
+                        {formatPrice(item.price * item.qty)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-            {/* Actions */}
-            <div className="border-t pt-3 flex justify-between items-center">
-              <Link
-                to={`/track?id=${encodeURIComponent(selectedOrder.id)}&phone=${encodeURIComponent(selectedOrder.phone)}`}
-                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
-              >
-                <Truck className="size-3.5" />
-                <span>{t("account.trackLive")}</span>
-                <ExternalLink className="size-3" />
-              </Link>
-              <Button size="sm" variant="outline" onClick={() => setSelectedOrder(null)}>
-                {t("common.close")}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+              {/* Récapitulatif financier */}
+              <div className="border-t pt-3 space-y-1 text-xs text-muted-foreground text-start">
+                <div className="flex justify-between">
+                  <span>{t("cart.subtotal")}</span>
+                  <span className="font-medium text-foreground">
+                    {formatPrice(selectedOrder.subtotal)}
+                  </span>
+                </div>
+                {selectedOrder.discount > 0 && (
+                  <div className="flex justify-between text-primary">
+                    <span>
+                      {t("account.discount")}{" "}
+                      {selectedOrder.couponCode ? `(${selectedOrder.couponCode})` : ""}
+                    </span>
+                    <span className="font-medium">− {formatPrice(selectedOrder.discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>{t("cart.shipping")}</span>
+                  <span className="font-medium text-foreground">
+                    {selectedOrder.shipping === 0
+                      ? t("common.free")
+                      : formatPrice(selectedOrder.shipping)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm font-bold text-foreground border-t pt-1.5">
+                  <span>{t("cart.total")}</span>
+                  <span className="text-primary">{formatPrice(selectedOrder.total)}</span>
+                </div>
+              </div>
+
+              {/* Destination & Mode */}
+              <div className="border-t pt-3 text-start text-xs space-y-1">
+                <p className="font-semibold text-foreground flex items-center gap-1.5">
+                  <MapPin className="size-3.5 text-primary" />
+                  <span>
+                    {t("account.delivery")}{" "}
+                    {selectedOrder.deliveryKind === "desk"
+                      ? t("account.deliveryDesk")
+                      : t("account.deliveryHome")}
+                  </span>
+                </p>
+                <p className="text-muted-foreground">
+                  {selectedOrder.address} — {t("account.wilayaLabel")} {selectedOrder.wilaya}
+                </p>
+                <p className="text-muted-foreground">
+                  {t("account.phoneLabel")} {selectedOrder.phone}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="border-t pt-3 flex justify-between items-center">
+                <Link
+                  to={`/track?id=${encodeURIComponent(selectedOrder.id)}&phone=${encodeURIComponent(selectedOrder.phone)}`}
+                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
+                >
+                  <Truck className="size-3.5" />
+                  <span>{t("account.trackLive")}</span>
+                  <ExternalLink className="size-3" />
+                </Link>
+                <Button size="sm" variant="outline" onClick={() => setSelectedOrder(null)}>
+                  {t("common.close")}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+      {bottomBlocks.map(renderBlock)}
     </div>
   );
 }

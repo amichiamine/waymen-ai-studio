@@ -33,6 +33,15 @@ import Builder from "@/pages/Builder";
 import Blog from "@/pages/Blog";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import NotFound from "@/pages/NotFound";
+import Product from "@/pages/Product";
+import CategoryIndex from "@/pages/CategoryIndex";
+import CategoryDetail from "@/pages/CategoryDetail";
+import Search from "@/pages/Search";
+import Checkout from "@/pages/Checkout";
+import Account from "@/pages/Account";
+import Favorites from "@/pages/Favorites";
+import BlogArticle from "@/pages/BlogArticle";
+import Auth from "@/pages/Auth";
 
 export type DeviceMode = "desktop" | "tablet" | "mobile";
 
@@ -77,7 +86,25 @@ function SystemViewNativePreview({ page }: { page: CustomPageDefinition }) {
               ? "checkout_success"
               : slug === "404"
                 ? "not_found"
-                : null);
+                : slug === "product" || slug.startsWith("product/")
+                  ? "product"
+                  : slug === "category"
+                    ? "category"
+                    : slug.startsWith("category/")
+                      ? "category_detail"
+                      : slug === "search" || slug === "recherche"
+                        ? "search"
+                        : slug === "checkout" || slug === "caisse"
+                          ? "checkout"
+                          : slug === "account" || slug === "compte"
+                            ? "account"
+                            : slug === "favorites" || slug === "favoris"
+                              ? "favorites"
+                              : slug.startsWith("blog/")
+                                ? "blog_article"
+                                : slug === "auth" || slug === "connexion"
+                                  ? "auth"
+                                  : null);
 
   if (!systemKey) return null;
 
@@ -106,6 +133,15 @@ function SystemViewNativePreview({ page }: { page: CustomPageDefinition }) {
         {systemKey === "blog" && <Blog suppressCustomBlocks />}
         {systemKey === "checkout_success" && <CheckoutSuccess suppressCustomBlocks />}
         {systemKey === "not_found" && <NotFound suppressCustomBlocks />}
+        {systemKey === "product" && <Product suppressCustomBlocks />}
+        {systemKey === "category" && <CategoryIndex suppressCustomBlocks />}
+        {systemKey === "category_detail" && <CategoryDetail suppressCustomBlocks />}
+        {systemKey === "search" && <Search suppressCustomBlocks />}
+        {systemKey === "checkout" && <Checkout suppressCustomBlocks />}
+        {systemKey === "account" && <Account suppressCustomBlocks />}
+        {systemKey === "favorites" && <Favorites suppressCustomBlocks />}
+        {systemKey === "blog_article" && <BlogArticle suppressCustomBlocks />}
+        {systemKey === "auth" && <Auth suppressCustomBlocks />}
       </div>
     </div>
   );

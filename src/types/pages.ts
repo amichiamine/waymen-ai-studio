@@ -103,7 +103,17 @@ export type SystemViewKey =
   | "builder"
   | "cart"
   | "checkout_success"
-  | "not_found";
+  | "not_found"
+  // 🌟 Phase 49 : 9 Vues Systèmes Publiques Parachevées
+  | "product"
+  | "category"
+  | "category_detail"
+  | "search"
+  | "checkout"
+  | "account"
+  | "favorites"
+  | "blog_article"
+  | "auth";
 
 export interface CustomPageDefinition {
   id: string;

@@ -2874,11 +2874,11 @@
 - **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 48 (`48_plan_grand_alignement_studio_360_vraies_vues_contrats_proprietes_navigation_mobile_et_badge_sqlite.md`).
 - **Contexte & Enjeux :**
   Suite à la livraison de la Phase 47, ArchiSys3.0 a mis en lumière 5 exigences et angles d'amélioration critiques :
-  1. *Fermeture impossible en navigation tactile mobile/tablette :* Lorsque l'administrateur basculait sur l'aperçu Live en vue mobile ou tablette, les colonnes Structure et Inspecteur étaient masquées et aucun bouton ne permettait de fermer l'aperçu ou de revenir en arrière.
-  2. *Vraies Vues Connectées au lieu de maquettes simulées :* Le Live Canvas utilisait des cartes statiques factices avec faux numéros de commande en dur (`CMD-2026-9842`) au lieu de monter et exécuter les vrais composants de pages métier de la plateforme.
-  3. *Décalage de contrats de propriétés dans l'Inspecteur :* Des blocs tels que `projects_grid`, `profile_hero`, `skills_matrix`, `timeline`, `hero_banner` et `pricing_table` souffraient de disparités de clés (ex: écriture dans `p.projects` au lieu de `p.items`, absence de sélecteur de médias pour les images de réalisations et avatars, absence de contrôles trilingues fins).
-  4. *Disparition silencieuse des blocs catalogue en Canvas :* Les blocs `FlashSale`, `BestSellers` ou `UseChips` renvoyaient `null` lorsque la base de données ne contenait pas encore de produit avec promo ou usage, rendant le bloc invisible et impossible à sélectionner dans le Studio.
-  5. *Visibilité de la persistance SQLite locale :* Nécessité d'exposer clairement l'état de synchronisation avec la base SQLite locale (`katech-data`) et de proposer une persistance explicite immédiate.
+  1. _Fermeture impossible en navigation tactile mobile/tablette :_ Lorsque l'administrateur basculait sur l'aperçu Live en vue mobile ou tablette, les colonnes Structure et Inspecteur étaient masquées et aucun bouton ne permettait de fermer l'aperçu ou de revenir en arrière.
+  2. _Vraies Vues Connectées au lieu de maquettes simulées :_ Le Live Canvas utilisait des cartes statiques factices avec faux numéros de commande en dur (`CMD-2026-9842`) au lieu de monter et exécuter les vrais composants de pages métier de la plateforme.
+  3. _Décalage de contrats de propriétés dans l'Inspecteur :_ Des blocs tels que `projects_grid`, `profile_hero`, `skills_matrix`, `timeline`, `hero_banner` et `pricing_table` souffraient de disparités de clés (ex: écriture dans `p.projects` au lieu de `p.items`, absence de sélecteur de médias pour les images de réalisations et avatars, absence de contrôles trilingues fins).
+  4. _Disparition silencieuse des blocs catalogue en Canvas :_ Les blocs `FlashSale`, `BestSellers` ou `UseChips` renvoyaient `null` lorsque la base de données ne contenait pas encore de produit avec promo ou usage, rendant le bloc invisible et impossible à sélectionner dans le Studio.
+  5. _Visibilité de la persistance SQLite locale :_ Nécessité d'exposer clairement l'état de synchronisation avec la base SQLite locale (`katech-data`) et de proposer une persistance explicite immédiate.
 - **Actions Réalisées :**
   - **Étape 48.1 (Bouton de Fermeture Dédié & Navigation Tactile Mobile/Tablette) :**
     - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) : ajout des props `onCloseMobilePreview` et `onOpenMobileInspector`. Intégration dans la barre d'outils mobile (`lg:hidden`) d'un bouton de fermeture bien visible avec icône fléchée et du bouton raccourci d'inspection.
@@ -2923,3 +2923,58 @@
   - Plan validé : 📄 [`48_plan_grand_alignement_studio_360_vraies_vues_contrats_proprietes_navigation_mobile_et_badge_sqlite.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/48_plan_grand_alignement_studio_360_vraies_vues_contrats_proprietes_navigation_mobile_et_badge_sqlite.md)
   - Archives horodatées : 📦 [katech-site-08112026-2101.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2101.zip) & 📦 [katech-data-08112026-2101.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2101.zip)
 
+---
+
+## Phase 49 : Grand Parachèvement Universel 360° : Universalisation des 8 Vues Publiques Restantes, Fiche Produit Composable, Auto-Save Débouncé SQLite & Inspecteur Bi-Mode
+
+- **Date :** 08 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** Livré, testé et validé sur main
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 49 (`49_plan_grand_parachevement_universel_360_toutes_vues_autosave_sqlite_et_inspecteur_bimode.md`).
+- **Contexte & Enjeux :**
+  Après l'alignement de la Phase 48 sur les 6 premières vues systèmes, ArchiSys3.0 a missionné AImi pour parachever l'universalité intégrale de l'ensemble de la plateforme sans le moindre angle mort :
+  1. _Universalisation des 8 (9) vues publiques restantes :_ Enrôler dans le Studio et rendre composables les vues catalogue et conversion : Fiche Produit (`product/:id`), Hub des Catégories (`category`), Listing Filtrable par Catégorie (`category/:slug`), Recherche Multicritère (`search`), Tunnel de Caisse (`checkout`), Espace Client (`account`), Coups de Cœur & Favoris (`favorites`), Lecture d'Article de Blog (`blog/:slug`) et Portail d'Authentification (`auth`).
+  2. _Exécution Réelle & Fallback Studio :_ Assurer que chaque vue s'exécute avec ses vrais composants métier dans le Live Canvas avec dégradation gracieuse en cas de paramètre manquant (ex: premier produit pour la fiche produit, première catégorie pour le listing, premier article de blog publié, neutralisation de la redirection sur l'authentification).
+  3. _Auto-Save Débouncé SQLite (1500ms) :_ Déclenchement automatique de la persistance en base SQLite locale 1.5s après la dernière modification, avec badge dynamique à trois états (`Sauvegarde SQLite en cours...`, `Modifications (auto-save 1.5s)`, `Synchronisé SQLite (katech-data)`) et garde d'inviolabilité `beforeunload`.
+  4. _Inspecteur Bi-Mode 360° :_ Intégration d'un commutateur `[ Bloc actif ]` / `[ Paramètres Vue ]` permettant d'éditer directement dans la colonne de droite le titre trilingue, le slug, la description, le fond de page (`pageBg`), le masquage des éléments globaux (`hideHeader`, `hideFooter`, `hideTicker`, `hideFloatingContact`) et le SEO (`metaTitle`, `metaDescription`, `noIndex`).
+- **Actions Réalisées :**
+  - **Étape 49.1 (Définition Modèle & Typage dans `types/pages.ts` & `site-content.ts`) :**
+    - Modification de [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) : élargissement du type `SystemViewKey` avec `product`, `category`, `category_detail`, `search`, `checkout`, `account`, `favorites`, `blog_article`, `auth`.
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) : déclaration dans `seedCustomPages()` des 9 nouvelles vues avec titres et descriptions trilingues, blocs par défaut pertinents et statut `isSystem: true` (totalisant 24 vues managées).
+  - **Étape 49.2 (Équipement Universel des 9 Vues Publiques Métier) :**
+    - Modification de [`Product.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Product.tsx), [`CategoryIndex.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryIndex.tsx), [`CategoryDetail.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CategoryDetail.tsx), [`Search.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Search.tsx), [`Checkout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Checkout.tsx), [`Account.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Account.tsx), [`Favorites.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Favorites.tsx), [`BlogArticle.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/BlogArticle.tsx) et [`Auth.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Auth.tsx) :
+      - Ajout de la prop `{ suppressCustomBlocks = false }`.
+      - Raccordement à `useSiteContent()` pour charger la configuration de la page.
+      - Séparation ordonnée des blocs customisés `topBlocks` (`placement: "top"`) et `bottomBlocks` (`placement: "bottom"`).
+      - Application du fond de page atmosphérique `pageBgClass` issu de `systemPage.layout.pageBg`.
+      - Fallback gracieux pour la prévisualisation Studio : `products[0]` pour la fiche produit, premier slug de catégorie, premier article de blog publié, et garde `if (suppressCustomBlocks) return;` dans `Auth.tsx` évitant toute redirection inopportune de l'administrateur.
+  - **Étape 49.3 (Raccordement des 9 Vues dans `StudioLiveCanvas.tsx`) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Import des 9 composants de pages.
+      - Raccordement déterministe dans `SystemViewNativePreview({ page })` affichant le cœur applicatif réel interactif avec badge cyan/primaire.
+  - **Étape 49.4 (Auto-Save SQLite Débouncé & Garde BeforeUnload) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Implémentation d'un timer de debounce à 1500ms via `autoSaveTimerRef` enregistrant automatiquement `customPages` dans la table SQLite `site_content` de `katech-data`.
+      - Badge dynamique d'état : `🔵 Sauvegarde SQLite en cours...` / `🟡 Modifications (auto-save 1.5s)` / `🟢 Synchronisé SQLite (katech-data)`.
+      - Écoute de l'événement `window.beforeunload` alertant l'utilisateur en cas de fermeture accidentelle avec modifications non synchronisées.
+  - **Étape 49.5 (Inspecteur Bi-Mode [ Bloc actif ] / [ Paramètres Vue ]) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout du composant `PageViewPropsEditor` : édition trilingue du titre et de la description, modification du slug d'URL, sélecteur d'ambiance et couleur de fond (`pageBg`), interrupteurs de masquage (`hideHeader`, `hideFooter`, `hideTicker`, `hideFloatingContact`), et réglages SEO Google (`metaTitle`, `metaDescription`, `noIndex`).
+      - Commutateur d'onglets compact en tête d'inspecteur permettant de basculer instantanément entre les propriétés du bloc actif et les paramètres globaux de la vue.
+  - **Étape 49.6 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte (0 clé manquante, 0 erreur).
+    - `bunx tsc --noEmit` : 0 erreur de typage TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : Compilation Vite réussie avec bundle de production complet (`dist/`).
+    - `bun run paqueter:data` : Nouvelle archive SQLite produite (`katech-data-08112026-2120.zip`).
+- **Résultats de Recette :**
+  - Les 24 vues de la plateforme (10 institutionnelles, 14 fonctionnelles/systèmes) sont désormais intégralement managées dans le Studio.
+  - Chaque vue affiche son vrai cœur fonctionnel interactif connecté au catalogue ou aux formulaires de la boutique.
+  - L'administrateur peut injecter des blocs au-dessus ou en-dessous du contenu métier sur 100% des pages (ex: avis clients sous une fiche produit, pourquoi nous choisir sous le checkout, réassurance sous la recherche).
+  - L'inspecteur bi-mode permet de configurer le fond, les éléments globaux et le SEO de n'importe quelle vue en un clic.
+  - Les modifications se sauvegardent toutes seules en 1.5 seconde dans SQLite locale sans intervention manuelle obligatoire.
+- **Livrables :**
+  - Plan validé : 📄 [`49_plan_grand_parachevement_universel_360_toutes_vues_autosave_sqlite_et_inspecteur_bimode.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/49_plan_grand_parachevement_universel_360_toutes_vues_autosave_sqlite_et_inspecteur_bimode.md)
+  - Archives horodatées : 📦 [katech-site-08112026-2120.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2120.zip) & 📦 [katech-data-08112026-2120.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2120.zip)

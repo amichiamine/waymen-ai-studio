@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { ZodError } from "zod";
-import { toApiError } from "@/data-provider";
+import { toApiError, useSiteContent } from "@/data-provider";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -16,9 +16,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { renderBlock } from "@/components/blocks";
+import { cn } from "@/lib/utils";
 
-export default function Auth() {
+export default function Auth({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { user, loading, signIn, signUp } = useAuth();
+  const { data: siteContent } = useSiteContent();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useI18n();
@@ -32,13 +39,33 @@ export default function Auth() {
   const [busy, setBusy] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
 
+  const systemPage = siteContent?.customPages?.find(
+    (pg) => pg.isSystem && (pg.systemKey === "auth" || pg.slug === "auth"),
+  );
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
+  const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
+
+  const pageBgClass =
+    systemPage?.layout?.pageBg === "dark"
+      ? "bg-slate-950 text-slate-50"
+      : systemPage?.layout?.pageBg === "muted"
+        ? "bg-muted/40"
+        : systemPage?.layout?.pageBg === "surface"
+          ? "bg-card"
+          : systemPage?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background"
+            : "";
+
   useEffect(() => {
+    // Dans le Studio Live Canvas, ne jamais déclencher la redirection automatique
+    if (suppressCustomBlocks) return;
     if (!loading && user) {
       const staff = user.role === "admin" || user.role === "owner" || user.role === "editor";
       const dest = stateFrom || (staff ? "/admin" : "/account");
       navigate(dest, { replace: true });
     }
-  }, [user, loading, navigate, stateFrom]);
+  }, [user, loading, navigate, stateFrom, suppressCustomBlocks]);
 
   // Purge de sécurité du mot de passe au démontage du composant
   useEffect(() => {
@@ -140,137 +167,141 @@ export default function Auth() {
   };
 
   return (
-    <section className="container-page py-16 max-w-md">
-      <Helmet>
-        <title>{mode === "signin" ? t("auth.page.title") : t("auth.signup")}</title>
-        <meta name="description" content={t("auth.subtitle")} />
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-      <div className="rounded-2xl border border-border bg-card p-8">
-        <h1 className="text-2xl font-bold mb-1">
-          {mode === "signin" ? t("auth.signin") : t("auth.signup")}
-        </h1>
-        <p className="text-sm text-muted-foreground mb-6">{t("auth.subtitle")}</p>
+    <div className={cn("min-h-[70vh]", pageBgClass)}>
+      {topBlocks.map(renderBlock)}
+      <section className="container-page py-16 max-w-md">
+        <Helmet>
+          <title>{mode === "signin" ? t("auth.page.title") : t("auth.signup")}</title>
+          <meta name="description" content={t("auth.subtitle")} />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="rounded-2xl border border-border bg-card p-8">
+          <h1 className="text-2xl font-bold mb-1">
+            {mode === "signin" ? t("auth.signin") : t("auth.signup")}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-6">{t("auth.subtitle")}</p>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {mode === "signup" && (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {mode === "signup" && (
+              <div>
+                <input
+                  id="auth-name"
+                  name="name"
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder={t("auth.fullName")}
+                  maxLength={100}
+                  className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
+                />
+                {fullName.length > 0 && fullName.trim().length < 2 && (
+                  <p className="mt-1 text-xs text-amber-500">{t("auth.err.name.tooShort")}</p>
+                )}
+              </div>
+            )}
             <div>
               <input
-                id="auth-name"
-                name="name"
-                autoComplete="name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder={t("auth.fullName")}
-                maxLength={100}
+                id="auth-email"
+                name="email"
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t("auth.email")}
+                required
                 className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
               />
-              {fullName.length > 0 && fullName.trim().length < 2 && (
-                <p className="mt-1 text-xs text-amber-500">{t("auth.err.name.tooShort")}</p>
+              {email.length > 0 && !isEmailValid && email.includes("@") && (
+                <p className="mt-1 text-xs text-destructive">{t("auth.err.email")}</p>
               )}
             </div>
-          )}
-          <div>
-            <input
-              id="auth-email"
-              name="email"
-              type="email"
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t("auth.email")}
-              required
-              className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
-            />
-            {email.length > 0 && !isEmailValid && email.includes("@") && (
-              <p className="mt-1 text-xs text-destructive">{t("auth.err.email")}</p>
-            )}
-          </div>
-          <div>
-            <input
-              id="auth-password"
-              name="password"
-              type="password"
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t("auth.password")}
-              required
-              minLength={10}
-              className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
-            />
-            {password.length > 0 && password.length < 10 && (
-              <p className="mt-1 text-xs text-amber-500">
-                {t("auth.err.pw.tooShort")} ({password.length}/10)
-              </p>
-            )}
-          </div>
-          <button
-            type="submit"
-            disabled={busy || !isFormValid}
-            className="w-full h-11 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {busy ? "..." : mode === "signin" ? t("auth.submit.in") : t("auth.submit.up")}
-          </button>
-        </form>
-
-        <button
-          onClick={() => {
-            setPassword("");
-            setMode(mode === "signin" ? "signup" : "signin");
-          }}
-          className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground"
-        >
-          {mode === "signin" ? t("auth.toSignup") : t("auth.toSignin")}
-        </button>
-
-        {mode === "signin" && (
-          <button
-            type="button"
-            onClick={handleForgotPassword}
-            className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            {t("auth.forgot")}
-          </button>
-        )}
-
-        <Link
-          to="/"
-          className="block mt-3 text-center text-xs text-muted-foreground hover:text-foreground"
-        >
-          {t("auth.back")}
-        </Link>
-      </div>
-
-      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("auth.forgot.dialog_title")}</DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              {t("auth.forgot.instructions")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2 text-sm">
-            <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2">
-              <p className="font-medium text-foreground">
-                {t("auth.email")} :{" "}
-                <span className="font-mono text-primary">{email.trim() || "—"}</span>
-              </p>
-              <p className="text-xs text-muted-foreground">{t("auth.forgot.admin_tip")}</p>
+            <div>
+              <input
+                id="auth-password"
+                name="password"
+                type="password"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("auth.password")}
+                required
+                minLength={10}
+                className="w-full h-11 px-4 rounded-md bg-background border border-border focus:border-primary outline-none text-sm"
+              />
+              {password.length > 0 && password.length < 10 && (
+                <p className="mt-1 text-xs text-amber-500">
+                  {t("auth.err.pw.tooShort")} ({password.length}/10)
+                </p>
+              )}
             </div>
-          </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setForgotOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button asChild>
-              <Link to="/contact" onClick={() => setForgotOpen(false)}>
-                {t("auth.forgot.contact_btn")}
-              </Link>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </section>
+            <button
+              type="submit"
+              disabled={busy || !isFormValid}
+              className="w-full h-11 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {busy ? "..." : mode === "signin" ? t("auth.submit.in") : t("auth.submit.up")}
+            </button>
+          </form>
+
+          <button
+            onClick={() => {
+              setPassword("");
+              setMode(mode === "signin" ? "signup" : "signin");
+            }}
+            className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground"
+          >
+            {mode === "signin" ? t("auth.toSignup") : t("auth.toSignin")}
+          </button>
+
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {t("auth.forgot")}
+            </button>
+          )}
+
+          <Link
+            to="/"
+            className="block mt-3 text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            {t("auth.back")}
+          </Link>
+        </div>
+
+        <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("auth.forgot.dialog_title")}</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                {t("auth.forgot.instructions")}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2 text-sm">
+              <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2">
+                <p className="font-medium text-foreground">
+                  {t("auth.email")} :{" "}
+                  <span className="font-mono text-primary">{email.trim() || "—"}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">{t("auth.forgot.admin_tip")}</p>
+              </div>
+            </div>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setForgotOpen(false)}>
+                {t("common.cancel")}
+              </Button>
+              <Button asChild>
+                <Link to="/contact" onClick={() => setForgotOpen(false)}>
+                  {t("auth.forgot.contact_btn")}
+                </Link>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </section>
+      {bottomBlocks.map(renderBlock)}
+    </div>
   );
 }

@@ -2,8 +2,10 @@ import { Link, useSearchParams } from "react-router-dom";
 import { AlertTriangle, Search as SearchIcon, X } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { catalogProducts, getCategoryMeta, type Category } from "@/data/products";
-import { useCategoryList, useProductList, useSiteSettings } from "@/data-provider";
+import { useCategoryList, useProductList, useSiteSettings, useSiteContent } from "@/data-provider";
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
+import { renderBlock } from "@/components/blocks";
+import { cn } from "@/lib/utils";
 
 /** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
 const haystack = (v: Localized<string> | undefined): string =>
@@ -17,12 +19,35 @@ import { useEffect, useMemo, useState } from "react";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { useFormatPrice } from "@/lib/format-price";
 
-export default function Search() {
+export default function Search({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { t, lang } = useI18n();
   const L = useLocalize();
   const formatPrice = useFormatPrice();
   const { data: categoryList } = useCategoryList();
   const { data: siteSettings } = useSiteSettings();
+  const { data: siteContent } = useSiteContent();
+
+  const systemPage = siteContent?.customPages?.find(
+    (pg) => pg.isSystem && (pg.systemKey === "search" || pg.slug === "search"),
+  );
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
+  const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
+
+  const pageBgClass =
+    systemPage?.layout?.pageBg === "dark"
+      ? "bg-slate-950 text-slate-50"
+      : systemPage?.layout?.pageBg === "muted"
+        ? "bg-muted/40"
+        : systemPage?.layout?.pageBg === "surface"
+          ? "bg-card"
+          : systemPage?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background"
+            : "";
   const storeName = siteSettings.storeName?.trim() || "StacGate Platform";
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
@@ -132,140 +157,145 @@ export default function Search() {
     .replace(/KA Tech|StacGate Platform/g, storeName);
 
   return (
-    <section className="container-page py-12">
-      <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDesc} />
-        <link rel="canonical" href={`${window.location.origin}/search`} />
-      </Helmet>
+    <div className={cn("min-h-screen", pageBgClass)}>
+      {topBlocks.map(renderBlock)}
+      <section className="container-page py-12">
+        <Helmet>
+          <title>{pageTitle}</title>
+          <meta name="description" content={pageDesc} />
+          <link rel="canonical" href={`${window.location.origin}/search`} />
+        </Helmet>
 
-      <div className="flex items-center gap-3 mb-6">
-        <SearchIcon className="size-6 text-primary" />
-        <h1 className="text-2xl font-bold">
-          {t("search.title")}{" "}
-          {q && <span className="text-muted-foreground font-normal">« {q} »</span>}
-        </h1>
-      </div>
+        <div className="flex items-center gap-3 mb-6">
+          <SearchIcon className="size-6 text-primary" />
+          <h1 className="text-2xl font-bold">
+            {t("search.title")}{" "}
+            {q && <span className="text-muted-foreground font-normal">« {q} »</span>}
+          </h1>
+        </div>
 
-      <div className="grid lg:grid-cols-[260px_1fr] gap-8">
-        <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-          <div className="rounded-lg border border-border bg-card p-5 space-y-5">
-            <div>
-              <h3 className="text-sm font-semibold mb-3">{t("search.category")}</h3>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={!cat}
-                    onChange={() => setCat("")}
-                    className="size-4 accent-primary"
-                  />{" "}
-                  {t("search.all")}
-                </label>
-                {categoryList.map((c) => {
-                  const meta = getCategoryMeta(c.slug, c);
-                  const catLabel = meta.labelKey ? t(meta.labelKey) : L(meta.labelText) || c.slug;
-                  return (
-                    <label key={c.slug} className="flex items-center gap-2 text-sm cursor-pointer">
+        <div className="grid lg:grid-cols-[260px_1fr] gap-8">
+          <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+            <div className="rounded-lg border border-border bg-card p-5 space-y-5">
+              <div>
+                <h3 className="text-sm font-semibold mb-3">{t("search.category")}</h3>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={!cat}
+                      onChange={() => setCat("")}
+                      className="size-4 accent-primary"
+                    />{" "}
+                    {t("search.all")}
+                  </label>
+                  {categoryList.map((c) => {
+                    const meta = getCategoryMeta(c.slug, c);
+                    const catLabel = meta.labelKey ? t(meta.labelKey) : L(meta.labelText) || c.slug;
+                    return (
+                      <label
+                        key={c.slug}
+                        className="flex items-center gap-2 text-sm cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          checked={cat === c.slug}
+                          onChange={() => setCat(c.slug as Category)}
+                          className="size-4 accent-primary"
+                        />
+                        {catLabel}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold mb-3">{t("search.priceMax")}</h3>
+                <input
+                  type="range"
+                  min={0}
+                  max={maxCatalogPrice}
+                  step={Math.max(100, Math.round(maxCatalogPrice / 100))}
+                  value={Math.min(maxPrice, maxCatalogPrice)}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full accent-primary"
+                />
+                <div className="text-xs text-muted-foreground mt-2">
+                  {t("search.upTo").replace("{v}", formatPrice(maxPrice))}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold mb-3">{t("search.brand")}</h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {brands.map((b) => (
+                    <label key={b} className="flex items-center gap-2 text-sm cursor-pointer">
                       <input
-                        type="radio"
-                        checked={cat === c.slug}
-                        onChange={() => setCat(c.slug as Category)}
+                        type="checkbox"
+                        checked={brand.includes(b)}
+                        onChange={(e) =>
+                          setBrand((s) => (e.target.checked ? [...s, b] : s.filter((x) => x !== b)))
+                        }
                         className="size-4 accent-primary"
                       />
-                      {catLabel}
+                      {b}
                     </label>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={inStock}
+                  onChange={(e) => setInStock(e.target.checked)}
+                  className="size-4 accent-primary"
+                />
+                {t("search.inStockOnly")}
+              </label>
+              {active && (
+                <button
+                  onClick={() => {
+                    setCat("");
+                    setBrand([]);
+                    setMaxPrice(maxCatalogPrice);
+                    setInStock(false);
+                    setSort("relevance");
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                >
+                  <X className="size-3" /> {t("search.reset")}
+                </button>
+              )}
             </div>
-            <div>
-              <h3 className="text-sm font-semibold mb-3">{t("search.priceMax")}</h3>
-              <input
-                type="range"
-                min={0}
-                max={maxCatalogPrice}
-                step={Math.max(100, Math.round(maxCatalogPrice / 100))}
-                value={Math.min(maxPrice, maxCatalogPrice)}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-primary"
-              />
-              <div className="text-xs text-muted-foreground mt-2">
-                {t("search.upTo").replace("{v}", formatPrice(maxPrice))}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold mb-3">{t("search.brand")}</h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {brands.map((b) => (
-                  <label key={b} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={brand.includes(b)}
-                      onChange={(e) =>
-                        setBrand((s) => (e.target.checked ? [...s, b] : s.filter((x) => x !== b)))
-                      }
-                      className="size-4 accent-primary"
-                    />
-                    {b}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={inStock}
-                onChange={(e) => setInStock(e.target.checked)}
-                className="size-4 accent-primary"
-              />
-              {t("search.inStockOnly")}
-            </label>
-            {active && (
-              <button
-                onClick={() => {
-                  setCat("");
-                  setBrand([]);
-                  setMaxPrice(maxCatalogPrice);
-                  setInStock(false);
-                  setSort("relevance");
-                }}
-                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
-              >
-                <X className="size-3" /> {t("search.reset")}
-              </button>
-            )}
-          </div>
-        </aside>
+          </aside>
 
-        <div>
-          <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-            {/*
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+              {/*
               Pendant le chargement, le compteur vaudrait « 0 résultat(s) » —
               une information fausse. On le remplace par un gabarit de la même
               hauteur pour ne pas décaler les boutons de tri.
             */}
-            {loading ? (
-              <span className="h-4 w-28 animate-pulse rounded bg-muted" aria-hidden="true" />
-            ) : (
-              <span className="text-sm text-muted-foreground">
-                {t("search.results").replace("{n}", String(results.length))}
-              </span>
-            )}
-            <div className="flex items-center gap-1 p-1 rounded-md bg-card border border-border">
-              {SORTS.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setSort(s.id)}
-                  className={`h-8 px-3 rounded text-xs font-medium ${sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  {s.label}
-                </button>
-              ))}
+              {loading ? (
+                <span className="h-4 w-28 animate-pulse rounded bg-muted" aria-hidden="true" />
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  {t("search.results").replace("{n}", String(results.length))}
+                </span>
+              )}
+              <div className="flex items-center gap-1 p-1 rounded-md bg-card border border-border">
+                {SORTS.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSort(s.id)}
+                    className={`h-8 px-3 rounded text-xs font-medium ${sort === s.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/*
+            {/*
             Ordre imposé par docs/DATA-PROVIDER.md §5.3 : chargement, puis
             erreur, puis état vide. L'erreur ne remplace PAS la page — `data`
             reste exploitable (liste vide), donc le bandeau se superpose au
@@ -273,76 +303,78 @@ export default function Search() {
             filtres et de l'état vide, et transformerait une panne partielle en
             écran mort (AGENTS.md §7).
           */}
-          {error && (
-            <p
-              role="status"
-              className="mb-5 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
-            >
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              {/*
+            {error && (
+              <p
+                role="status"
+                className="mb-5 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-start text-sm text-destructive"
+              >
+                <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {/*
                 Message issu du serveur, déjà lisible et localisé côté backend.
                 Aucune clé i18n « ressource indisponible » / « réessayer »
                 n'existe dans src/lib/i18n/*.ts et cette vague n'a pas le droit
                 d'en créer : d'où l'absence de bouton de nouvelle tentative.
                 `refetch()` est prêt côté fournisseur — il suffira de l'étiqueter.
               */}
-              {error.message}
-            </p>
-          )}
+                {error.message}
+              </p>
+            )}
 
-          {loading ? (
-            /*
+            {loading ? (
+              /*
               Squelette de la MÊME forme que la grille finale : même nombre de
               colonnes, même gouttière, hauteur fixe. Un écran vide ou un
               spinner centré provoquerait un décalage de mise en page à
               l'arrivée des données. Inerte en mode mock (`loading` y est faux).
             */
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4" aria-busy="true">
-              <span className="sr-only">{t("app.loading")}</span>
-              {Array.from({ length: PAGE }, (_, i) => (
-                <div
-                  key={i}
-                  className="h-72 animate-pulse rounded-xl border border-border bg-card"
-                />
-              ))}
-            </div>
-          ) : results.length === 0 ? (
-            <div className="rounded-xl border border-border bg-card p-8 text-center">
-              <p className="text-muted-foreground mb-4">
-                {q ? t("search.emptyQ").replace("{q}", q) : t("search.empty")}
-              </p>
-              <p className="text-sm font-semibold mb-3">{t("search.suggestions")}</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {suggestions.map((p) => (
-                  <ProductCard key={p.id} p={p} />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4" aria-busy="true">
+                <span className="sr-only">{t("app.loading")}</span>
+                {Array.from({ length: PAGE }, (_, i) => (
+                  <div
+                    key={i}
+                    className="h-72 animate-pulse rounded-xl border border-border bg-card"
+                  />
                 ))}
               </div>
-              <Link
-                to="/"
-                className="mt-6 inline-flex h-10 px-5 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold"
-              >
-                {t("search.backHome")}
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {shown.map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
-              </div>
-              {hasMore && (
-                <div
-                  ref={sentinelRef}
-                  className="h-16 mt-6 flex items-center justify-center text-xs text-muted-foreground"
-                >
-                  …
+            ) : results.length === 0 ? (
+              <div className="rounded-xl border border-border bg-card p-8 text-center">
+                <p className="text-muted-foreground mb-4">
+                  {q ? t("search.emptyQ").replace("{q}", q) : t("search.empty")}
+                </p>
+                <p className="text-sm font-semibold mb-3">{t("search.suggestions")}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {suggestions.map((p) => (
+                    <ProductCard key={p.id} p={p} />
+                  ))}
                 </div>
-              )}
-            </>
-          )}
+                <Link
+                  to="/"
+                  className="mt-6 inline-flex h-10 px-5 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold"
+                >
+                  {t("search.backHome")}
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {shown.map((p) => (
+                    <ProductCard key={p.id} p={p} />
+                  ))}
+                </div>
+                {hasMore && (
+                  <div
+                    ref={sentinelRef}
+                    className="h-16 mt-6 flex items-center justify-center text-xs text-muted-foreground"
+                  >
+                    …
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      {bottomBlocks.map(renderBlock)}
+    </div>
   );
 }
