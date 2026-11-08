@@ -3022,7 +3022,6 @@
   - Plan validé : 📄 [`50_plan_deploiement_plein_ecran_inspecteur_desktop_et_focalisation_360.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/50_plan_deploiement_plein_ecran_inspecteur_desktop_et_focalisation_360.md)
   - Archives horodatées : 📦 [katech-site-08112026-2131.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2131.zip) & 📦 [katech-data-08112026-2131.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2131.zip)
 
-
 ---
 
 ## Phase 51 : Grand Verrouillage Souverain de Persistance SQLite 360°, Hydratation Intégrale des Blocs & Synchronisation Universelle
@@ -3070,3 +3069,41 @@
   - Données d'installation régénérées : 📄 [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/ka-tech/api/tools/donnees-front.json)
   - Base SQLite physique consolidée : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/ka-tech/katech-data)
   - Archives horodatées : 📦 [katech-site-08112026-2200.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2200.zip) & 📦 [katech-data-08112026-2200.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2200.zip)
+
+---
+
+## Phase 52 : Auto-Bascule Réactive de l'Aperçu Live Studio en Mode Mobile pour Tailles Mobile & Tablette (< 1024px) avec Écouteur Dynamique de Redimensionnement
+
+- **Date :** 08 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** Livré, testé et validé sur main
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 52 (`52_plan_auto_bascule_apercu_mobile_tablette_et_ecouteur_redimensionnement.md`).
+- **Contexte & Enjeux :**
+  Sur les terminaux compacts (smartphone ou tablette, c'est-à-dire une résolution d'écran `< 1024px`) ou lors de simulations responsives via DevTools :
+  1. Le composant `StudioLiveCanvas.tsx` forçait précédemment le mode `"tablet"` (768px de large) pour les résolutions comprises entre 640px et 1023px, provoquant un débordement horizontal inadapté sur iPad et tablettes.
+  2. L'effet de détection ne s'exécutait qu'une seule fois au montage initial (`[]`), sans écouteur de redimensionnement `resize`, laissant l'aperçu figé lors d'une rotation portrait/paysage ou d'un redimensionnement.
+  3. L'exigence formelle d'ArchiSys3.0 imposait que l'aperçu bascule automatiquement en taille d'affichage mobile (`device = "mobile"`, largeur simulée de 375px centrée) dès lors que l'écran est en taille mobile ou tablette (< 1024px).
+- **Actions Réalisées :**
+  - **Étape 52.1 (Auto-Détection et Écouteur Réactif dans `StudioLiveCanvas.tsx`) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Initialisation paresseuse de l'état `device` : `() => (typeof window !== "undefined" && window.innerWidth < 1024 ? "mobile" : "desktop")` garantissant le mode mobile dès le premier cycle de rendu sans effet de flash.
+      - Ajout d'une référence `wasCompactRef` initialisée sur `window.innerWidth < 1024`.
+      - Implémentation d'un écouteur dynamique `handleResize` attaché à `window.addEventListener("resize", handleResize)` : dès qu'un franchissement de seuil est détecté, si `w < 1024px`, bascule automatique en `device = "mobile"`, si `w >= 1024px`, restauration automatique en `device = "desktop"`.
+      - Préservation du choix utilisateur explicite tant que la fenêtre reste dans la même plage (compacte ou large).
+      - Nettoyage rigoureux de l'écouteur via la fonction de retour du `useEffect` (`return () => window.removeEventListener("resize", handleResize)`), garantissant 0 fuite mémoire.
+  - **Étape 52.2 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme, 0 anomalie.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et pré-rendu réussis (`katech-site-08112026-2206.zip` produit).
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-08112026-2207.zip`](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2207.zip) produite.
+- **Résultats de Recette :**
+  - Sur mobile ET tablette (< 1024px), le Live Aperçu s'affiche d'emblée au format mobile (simulateur iPhone 375px centré).
+  - Lors de tout redimensionnement dynamique de fenêtre ou rotation d'écran, le passage sous le seuil des 1024px déclenche instantanément la bascule en mode mobile.
+  - Aucune régression sur le grand écran desktop (>= 1024px) qui conserve le mode pleine largeur ou les vues split / inspecteur déployé.
+- **Livrables :**
+  - Plan validé : 📄 [`52_plan_auto_bascule_apercu_mobile_tablette_et_ecouteur_redimensionnement.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/52_plan_auto_bascule_apercu_mobile_tablette_et_ecouteur_redimensionnement.md)
+  - Code source mis à jour : 📄 [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
+  - Archives horodatées : 📦 [katech-site-08112026-2206.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2206.zip) & 📦 [katech-data-08112026-2207.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2207.zip)

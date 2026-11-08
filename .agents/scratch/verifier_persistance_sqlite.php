@@ -51,3 +51,4 @@ if ($blocsSansProps === 0 && $blocsSansStyle === 0) {
     echo "\nAVERTISSEMENT : Certains blocs ont encore des props ou styles vides.\n";
     exit(1);
 }
+

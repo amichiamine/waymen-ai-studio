@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Monitor,
   Tablet,
@@ -166,19 +166,38 @@ export function StudioLiveCanvas({
   onCloseMobilePreview,
   onOpenMobileInspector,
 }: StudioLiveCanvasProps) {
-  const [device, setDevice] = useState<DeviceMode>("desktop");
+  const [device, setDevice] = useState<DeviceMode>(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      return "mobile";
+    }
+    return "desktop";
+  });
   const [showSiteFrame, setShowSiteFrame] = useState(false);
   const L = useLocalize();
 
-  // 📱 Auto-détection intelligente du terminal au montage selon la largeur d'écran
+  // 📱 Auto-détection réactive du terminal : sur écran mobile & tablette (< 1024px), bascule automatiquement en 'mobile' (375px)
+  const wasCompactRef = useRef<boolean>(
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false,
+  );
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const w = window.innerWidth;
-    if (w < 640) {
-      setDevice("mobile");
-    } else if (w < 1024) {
-      setDevice("tablet");
-    }
+
+    const handleResize = () => {
+      const w = window.innerWidth;
+      const isCompact = w < 1024;
+      if (wasCompactRef.current !== isCompact) {
+        wasCompactRef.current = isCompact;
+        if (isCompact) {
+          setDevice("mobile");
+        } else {
+          setDevice("desktop");
+        }
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // 🎯 Auto-scroll focalisé : fait défiler le visualiseur directement vers le bloc sélectionné
