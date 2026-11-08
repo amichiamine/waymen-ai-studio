@@ -1,6 +1,6 @@
 /**
  * DEVIS-CALCULATOR.JS — MOTEUR UNIVERSEL DE CALCUL DEVIS & COMPOSITION INTERACTIVE
- * 100% Autonome • Zéro dépendance • Calcul en DZD & Millions de centimes
+ * 100% Autonome • Zéro dépendance • Calcul en DZD & Millions de centimes • Support i18n FR/EN/AR
  * Conçu pour la suite autonome StacGate / ArchiSys3.0
  */
 
@@ -23,18 +23,34 @@
     const whatsappBtn = document.getElementById("btn-whatsapp");
     const resetBtn = document.getElementById("btn-reset");
 
-    // Formatage Algérie Dinar (ex: 120 000 DZD)
-    function formatDZD(amount) {
-      return new Intl.NumberFormat("fr-DZ", {
-        maximumFractionDigits: 0,
-      }).format(amount) + " DZD";
+    // Langue active (via DevisI18n si présent, sinon 'fr')
+    function getActiveLang() {
+      if (window.DevisI18n && typeof window.DevisI18n.getLang === "function") {
+        return window.DevisI18n.getLang();
+      }
+      return document.documentElement.lang || "fr";
     }
 
-    // Formatage Millions de centimes (10 000 DZD = 1 Million de centimes)
+    // Formatage Algérie Dinar (ex: 120 000 DZD)
+    function formatDZD(amount) {
+      return (
+        new Intl.NumberFormat("fr-DZ", {
+          maximumFractionDigits: 0,
+        }).format(amount) + " DZD"
+      );
+    }
+
+    // Formatage Millions de centimes selon la langue
     function formatCentimes(amountDZD) {
       const millions = amountDZD / 10000;
-      // Formater avec 1 décimale si non entier, ex: 8,5 Millions
+      const lang = getActiveLang();
       const formatted = Number.isInteger(millions) ? millions.toString() : millions.toFixed(1).replace(".", ",");
+
+      if (lang === "ar") {
+        return formatted + " مليون سنتيم";
+      } else if (lang === "en") {
+        return formatted + " Million centimes";
+      }
       return formatted + " Million" + (millions >= 2 ? "s" : "") + " de centimes";
     }
 
@@ -53,10 +69,20 @@
       return selected;
     }
 
+    // Libellé de base selon langue
+    function getBaseTitle() {
+      const lang = getActiveLang();
+      if (config.baseTitleTr && config.baseTitleTr[lang]) {
+        return config.baseTitleTr[lang];
+      }
+      return config.baseTitle || "Socle Applicatif Clé-en-main";
+    }
+
     // Recalcul du devis complet
     function calculate() {
       const selected = getSelectedOptions();
       let total = config.basePrice || 0;
+      const lang = getActiveLang();
 
       // Mettre à jour les classes .selected visuelles
       optionCards.forEach((card) => {
@@ -71,19 +97,20 @@
       // Mettre à jour la liste dans le panneau récapitulatif
       if (summaryRowsContainer) {
         summaryRowsContainer.innerHTML = "";
-        
+
         // Ligne de base
         const baseRow = document.createElement("div");
         baseRow.className = "summary-row";
-        baseRow.innerHTML = `<span>${config.baseTitle || "Socle Applicatif Clé-en-main"}</span><span class="price">${formatDZD(config.basePrice)}</span>`;
+        baseRow.innerHTML = `<span>${getBaseTitle()}</span><span class="price">${formatDZD(config.basePrice)}</span>`;
         summaryRowsContainer.appendChild(baseRow);
 
         // Lignes options actives
+        const includedLabel = lang === "ar" ? "مشمول" : lang === "en" ? "Included" : "Inclus";
         selected.forEach((opt) => {
           total += opt.price;
           const optRow = document.createElement("div");
           optRow.className = "summary-row item-active";
-          optRow.innerHTML = `<span>+ ${opt.name}</span><span class="price">${opt.price > 0 ? "+" + formatDZD(opt.price) : "Inclus"}</span>`;
+          optRow.innerHTML = `<span>+ ${opt.name}</span><span class="price">${opt.price > 0 ? "+" + formatDZD(opt.price) : includedLabel}</span>`;
           summaryRowsContainer.appendChild(optRow);
         });
       } else {
@@ -131,19 +158,38 @@
       }
     }
 
-    // Générateur message WhatsApp
+    // Générateur message WhatsApp localisé
     function updateWhatsAppLink(total, selected) {
       if (!whatsappBtn) return;
+      const lang = getActiveLang();
       const title = config.pageTitle || "Proposition Devis Plateforme";
-      let msg = `Bonjour ArchiSys3.0,\n\nJe viens de composer mon devis pour : *${title}*\n`;
-      msg += `\n📦 *Montant Estimé :* ${formatDZD(total)} (${formatCentimes(total)})\n`;
-      msg += `\n*Détail de ma configuration :*\n• ${config.baseTitle || "Socle Applicatif"} : ${formatDZD(config.basePrice)}\n`;
+      let msg = "";
 
-      selected.forEach((opt) => {
-        msg += `• ${opt.name} : +${formatDZD(opt.price)}\n`;
-      });
-
-      msg += `\nPouvons-nous échanger pour valider cette configuration et lancer la mise en place ?`;
+      if (lang === "ar") {
+        msg = `مرحباً ArchiSys3.0،\n\nلقد قمت باختيار وتخصيص العرض الخاص بـ : *${title}*\n`;
+        msg += `\n📦 *إجمالي الاستثمار التقديري :* ${formatDZD(total)} (${formatCentimes(total)})\n`;
+        msg += `\n*تفاصيل الباقة المحددة :*\n• ${getBaseTitle()} : ${formatDZD(config.basePrice)}\n`;
+        selected.forEach((opt) => {
+          msg += `• ${opt.name} : +${formatDZD(opt.price)}\n`;
+        });
+        msg += `\nهل يمكننا التواصل لتأكيد هذا العرض والبدء في التنفيذ؟`;
+      } else if (lang === "en") {
+        msg = `Hello ArchiSys3.0,\n\nI just configured my quote for: *${title}*\n`;
+        msg += `\n📦 *Estimated Total Investment:* ${formatDZD(total)} (${formatCentimes(total)})\n`;
+        msg += `\n*Configuration Breakdown:*\n• ${getBaseTitle()} : ${formatDZD(config.basePrice)}\n`;
+        selected.forEach((opt) => {
+          msg += `• ${opt.name} : +${formatDZD(opt.price)}\n`;
+        });
+        msg += `\nCan we discuss to validate this configuration and launch implementation?`;
+      } else {
+        msg = `Bonjour ArchiSys3.0,\n\nJe viens de composer mon devis pour : *${title}*\n`;
+        msg += `\n📦 *Montant Estimé :* ${formatDZD(total)} (${formatCentimes(total)})\n`;
+        msg += `\n*Détail de ma configuration :*\n• ${getBaseTitle()} : ${formatDZD(config.basePrice)}\n`;
+        selected.forEach((opt) => {
+          msg += `• ${opt.name} : +${formatDZD(opt.price)}\n`;
+        });
+        msg += `\nPouvons-nous échanger pour valider cette configuration et lancer la mise en place ?`;
+      }
 
       const encoded = encodeURIComponent(msg);
       const phone = config.whatsappPhone ? config.whatsappPhone.replace(/[^0-9]/g, "") : "";
@@ -178,7 +224,6 @@
         optionCards.forEach((card) => {
           const input = card.querySelector('input[type="checkbox"], input[type="radio"]');
           if (input) {
-            // Remettre selon defaultChecked si spécifié
             input.checked = input.defaultChecked;
           }
         });
@@ -193,9 +238,13 @@
       });
     }
 
+    // Écouter le changement de langue depuis devis-i18n.js
+    window.addEventListener("devis:langChanged", function () {
+      calculate();
+    });
+
     // Initialisation
     restoreState();
     calculate();
   });
 })();
-

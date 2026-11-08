@@ -474,3 +474,104 @@ body {
   }
 }
 
+
+
+/* ==========================================================================
+   MODULE I18N & SUPPORT RTL ARABE NATIF (PHASE 45)
+   ========================================================================== */
+
+/* Sélecteur de Langue (Pill Switcher) */
+.lang-selector {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: var(--shadow-sm);
+}
+
+.lang-btn {
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  line-height: 1;
+}
+
+.lang-btn:hover {
+  color: var(--secondary);
+}
+
+.lang-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+/* RÈGLES DE DIRECTION RTL (ARABE) */
+html[dir="rtl"] body {
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+  text-align: right;
+}
+
+html[dir="rtl"] .devis-header-top,
+html[dir="rtl"] .option-header,
+html[dir="rtl"] .summary-row,
+html[dir="rtl"] .pricing-pill,
+html[dir="rtl"] .hub-card-header,
+html[dir="rtl"] .hub-price-box {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .option-card {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+html[dir="rtl"] .included-item {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+html[dir="rtl"] .feature-points li,
+html[dir="rtl"] .hub-features-list li {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+html[dir="rtl"] .option-badge {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+html[dir="rtl"] .matrix-table th,
+html[dir="rtl"] .matrix-table td {
+  text-align: right;
+}
+
+html[dir="rtl"] .btn {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .total-amount-dzd {
+  direction: ltr;
+  display: inline-block;
+}
+
+html[dir="rtl"] .pricing-pill .amount {
+  direction: ltr;
+  display: inline-block;
+}
+
+@media print {
+  html[dir="rtl"] .summary-sticky {
+    text-align: right !important;
+  }
+}

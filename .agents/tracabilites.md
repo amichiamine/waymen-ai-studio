@@ -64,6 +64,7 @@
 | **Phase 42** | 08/11/2026 | Ergonomie & Réactivité 360° du Studio Visuel : Sidebar Rétractable, Mode Mobile/Tablette, Auto-Scroll & Inspecteur Ultra-Fin                                                      | 📄 [`42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md`](Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)       | 🟢 **Livré & Validé** |
 | **Phase 43** | 08/11/2026 | Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments, Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite | 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md) | 🟢 **Livré & Validé** |
 | **Phase 44** | 08/11/2026 | Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)                                                                                                     | 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)                                                                                                       | 🟢 **Livré & Validé** |
+| **Phase 45** | 08/11/2026 | Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`                                                                                                | 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)                                                                                               | 🟢 **Livré & Validé** |
 
 ---
 
@@ -2646,3 +2647,35 @@
   - Moteur Universel de Calcul : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
   - Plan Miroir Validé : 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)
 
+
+---
+
+### Phase 45 : Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`
+
+- **Contexte & Enjeux :**  
+  ArchiSys3.0 a mandaté l'implémentation de l'internationalisation 360° trilingue (Français, Anglais, Arabe avec support natif RTL) sur l'intégralité du dossier autonome [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis). L'exigence absolue était d'adopter l'Option A (moteur dynamique Vanilla JS léger, dictionnaire centralisé, zéro duplication de fichiers, bascule 0 ms et portabilité 100% hors-ligne).
+- **Décisions d'ArchiSys3.0 :**  
+  - Validation formelle de l'Option A (Vanilla JS avec sélecteur de langue dynamique).
+  - Approbation du plan interactif [`.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md).
+- **Actions Réalisées :**
+  - **Étape 1 (Moteur i18n & Dictionnaire Trilingue) :**
+    - Création de [`devis/assets/js/devis-i18n.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-i18n.js) : dictionnaire complet FR, EN, AR couvrant le vocabulaire transverse, les métadonnées de devis, les garanties et les blocs du configurateur. Moteur de balayage `data-i18n`, injection automatique du sélecteur pilule `[ FR | EN | العربية ]`, bascule `dir="rtl"` et synchronisation de l'événement `devis:langChanged`.
+  - **Étape 2 (Feuille de Style & Support RTL Natif) :**
+    - Modification de [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) : ajout des styles du sélecteur `.lang-selector` et des règles `html[dir="rtl"]` pour inverser naturellement la disposition des cartes d'options, les grilles tarifaires, les en-têtes et le panneau récapitulatif sticky sans rupture visuelle.
+  - **Étape 3 (Synchronisation du Calculateur & WhatsApp) :**
+    - Mise à jour de [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js) : réactivité au changement de langue, formatage localisé des montants en centimes (ex: *« 10,5 Millions de centimes »* / *« 10.5 Million centimes »* / *« 10.5 مليون سنتيم »*), et rédaction du message pré-rempli WhatsApp dans la langue active.
+  - **Étape 4 (Injection sur les 6 Fichiers HTML) :**
+    - Raccordement du script `devis-i18n.js` et des attributs `data-i18n` sur [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html), [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html), [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html), [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html), [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html) et [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html).
+- **Résultats de Recette :**
+  - Bascule instantanée (0 ms) entre Français, Anglais et Arabe sur simple clic.
+  - Inversion directionnelle parfaite LTR $\leftrightarrow$ RTL sur toute la structure.
+  - Persistance de la langue dans `localStorage` lors de la navigation entre devis.
+  - Calculateur et estimation en centimes traduits en temps réel.
+  - Message WhatsApp généré automatiquement dans la langue sélectionnée.
+  - Impression PDF A4 conforme en LTR et RTL.
+- **Livrables :**
+  - Moteur i18n trilingue : 📄 [`devis/assets/js/devis-i18n.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-i18n.js)
+  - Styles RTL & Sélecteur : 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
+  - Calculateur Multilingue : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
+  - 6 Fichiers HTML Localisés : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
+  - Plan Miroir Validé : 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)
