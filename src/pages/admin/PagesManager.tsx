@@ -232,8 +232,8 @@ export default function PagesManager() {
     setPageModalOpen(true);
   };
 
-  // Enregistrement modal page
-  const handleSavePageMeta = () => {
+  // Enregistrement modal page avec persistance directe instantanée SQLite
+  const handleSavePageMeta = async () => {
     if (!editingPageMeta) return;
 
     const isHomePage = editingPageMeta.id === "page_home";
@@ -282,20 +282,38 @@ export default function PagesManager() {
       updatedAt: new Date().toISOString(),
     };
 
-    setPages((prev) => {
-      const idx = prev.findIndex((p) => p.id === newPage.id);
+    const nextPages = (() => {
+      const idx = pages.findIndex((p) => p.id === newPage.id);
       if (idx >= 0) {
-        const next = [...prev];
+        const next = [...pages];
         next[idx] = newPage;
         return next;
       }
-      return [...prev, newPage];
-    });
+      return [...pages, newPage];
+    })();
 
-    setIsDirty(true);
-    setPageModalOpen(false);
+    setPages(nextPages);
     setSelectedPageId(newPage.id);
-    toast.success(isHomePage ? "Vue d'Accueil configurée." : `Vue "/${newPage.slug}" configurée.`);
+    setPageModalOpen(false);
+
+    // ⚡ Persistance Directe Instantanée SQLite
+    try {
+      await updateSiteContent({ customPages: nextPages });
+      setIsDirty(false);
+      toast.success(
+        isHomePage
+          ? "Vue d'Accueil configurée et enregistrée en base."
+          : `Vue "/${newPage.slug}" configurée et enregistrée en base.`,
+      );
+    } catch (err) {
+      console.error("Erreur de persistance directe SQLite:", err);
+      setIsDirty(true);
+      toast.warning(
+        isHomePage
+          ? "Vue d'Accueil configurée localement."
+          : `Vue "/${newPage.slug}" configurée localement.`,
+      );
+    }
   };
 
   // Suppression d'une page
@@ -742,7 +760,7 @@ export default function PagesManager() {
             {/* Colonne Centrale : Live Canvas WYSYWIG (portée dynamique 6, 9 ou 12 colonnes) */}
             <div
               className={cn(
-                "h-[740px] w-full",
+                "h-[calc(100vh-13rem)] min-h-[520px] max-h-[850px] w-full",
                 canvasColsClass,
                 mobileStudioView !== "canvas" && "hidden lg:block",
               )}
@@ -769,7 +787,7 @@ export default function PagesManager() {
             {!rightCollapsed && (
               <div
                 className={cn(
-                  "lg:col-span-3",
+                  "lg:col-span-3 h-[calc(100vh-13rem)] min-h-[520px] max-h-[850px]",
                   mobileStudioView !== "inspector" && "hidden lg:block",
                 )}
               >
@@ -830,7 +848,7 @@ export default function PagesManager() {
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-3 overflow-y-auto max-h-[640px]">
+                    <CardContent className="p-3 overflow-y-auto flex-1 min-h-0">
                       <BlockPropsEditor
                         block={selectedBlock}
                         onChange={(newProps) => handleUpdateBlockProps(selectedBlockIdx, newProps)}

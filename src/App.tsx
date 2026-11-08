@@ -190,6 +190,7 @@ export default function App() {
   const hideFooter = Boolean(dynamicPage?.layout?.hideFooter);
   const hideTicker = Boolean(dynamicPage?.layout?.hideTicker);
   const hideFloatingContact = Boolean(dynamicPage?.layout?.hideFloatingContact);
+  const transparentHeader = Boolean(dynamicPage?.layout?.transparentHeader);
 
   // Maintenance gate: full-screen for public visitors; admins & auth routes stay accessible.
   if (siteSettings.maintenance && !isAdmin && !isAuthRoute) {
@@ -206,7 +207,7 @@ export default function App() {
       <ScrollToTop />
       {!isAdmin && !hideTicker && <PromoBanner />}
       {!isAdmin && !hideTicker && <Ticker />}
-      {!isAdmin && !hideHeader && <Header />}
+      {!isAdmin && !hideHeader && <Header transparent={transparentHeader} />}
       <main className="pb-16 md:pb-0">
         <PageTransition>
           {/* `key={pathname}` : une navigation réinitialise le filet, sinon une

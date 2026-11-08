@@ -33,7 +33,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function Header() {
+export interface HeaderProps {
+  transparent?: boolean;
+}
+
+export function Header({ transparent = false }: HeaderProps = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -99,7 +103,11 @@ export function Header() {
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all ${
-        scrolled ? "bg-background/75 backdrop-blur-xl border-b border-border" : "bg-transparent"
+        transparent
+          ? "bg-transparent border-none"
+          : scrolled
+            ? "bg-background/75 backdrop-blur-xl border-b border-border"
+            : "bg-transparent"
       }`}
     >
       {/* Visible du seul exploitant connecté : dit que la base est vide, sans

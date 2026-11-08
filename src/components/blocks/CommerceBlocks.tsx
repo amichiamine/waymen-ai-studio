@@ -12,7 +12,7 @@ import { ContactCTA } from "@/components/ContactCTA";
 import { Ticker } from "@/components/Ticker";
 import { PromoBanner } from "@/components/PromoBanner";
 import { useSiteContent, useSiteSettings, useProductList } from "@/data-provider";
-import { useLocalize } from "@/lib/i18n";
+import { useLocalize, type Localized } from "@/lib/i18n";
 import type { BlockConfig } from "@/types/pages";
 import type { SiteContent } from "@/lib/site-content";
 
@@ -36,19 +36,29 @@ export function CategoryCardsBlock({ config }: { config: BlockConfig }) {
   return <CategoryCards max={max} />;
 }
 
-export function UseChipsBlock({ config: _config }: { config: BlockConfig }) {
+export function UseChipsBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   const { data: products } = useProductList();
   const L = useLocalize();
-  if (siteContent.useChips?.enabled === false) return null;
+  if (siteContent.useChips?.enabled === false && !config.props?.title) return null;
   const hasProductsWithUse = (products || []).some((p) => Array.isArray(p.use) && p.use.length > 0);
   if (!hasProductsWithUse) return null;
 
+  const rawTitle = config.props?.title;
+  let displayTitle = "";
+  if (typeof rawTitle === "string") {
+    displayTitle = rawTitle;
+  } else if (rawTitle && typeof rawTitle === "object") {
+    displayTitle = L(rawTitle as Localized<string>) || "";
+  } else if (siteContent.useChips?.title) {
+    displayTitle = L(siteContent.useChips.title) || "";
+  }
+
   return (
     <section className="container-page pb-4">
-      {siteContent.useChips?.title && (
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4">{L(siteContent.useChips.title)}</h2>
-      )}
+      {displayTitle ? (
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4">{displayTitle}</h2>
+      ) : null}
       <UseChips />
     </section>
   );
@@ -66,10 +76,26 @@ export function FeaturedTabsBlock({ config }: { config: BlockConfig }) {
   return <FeaturedTabs override={config.props as Partial<SiteContent["featuredTabs"]>} />;
 }
 
-export function BrandsMarqueeBlock({ config: _config }: { config: BlockConfig }) {
+export function BrandsMarqueeBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
-  if (siteContent.brandsMarquee?.enabled === false) return null;
-  return <BrandsMarquee />;
+  const L = useLocalize();
+  if (siteContent.brandsMarquee?.enabled === false && !config.props?.title) return null;
+  const rawTitle = config.props?.title;
+  let displayTitle: string | undefined;
+  if (typeof rawTitle === "string") {
+    displayTitle = rawTitle;
+  } else if (rawTitle && typeof rawTitle === "object") {
+    displayTitle = L(rawTitle as Localized<string>);
+  }
+
+  const speed =
+    config.props?.speed === "slow" ||
+    config.props?.speed === "normal" ||
+    config.props?.speed === "fast"
+      ? config.props.speed
+      : undefined;
+
+  return <BrandsMarquee override={{ title: displayTitle, speed }} />;
 }
 
 export function WhyUsBlock({ config }: { config: BlockConfig }) {

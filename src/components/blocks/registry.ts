@@ -49,6 +49,9 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شريحات تصفية سريعة (ألعاب، بحث وتطوير، أعمال...).",
     },
     icon: "Cpu",
+    defaultProps: {
+      title: "",
+    },
   },
   {
     type: "best_sellers",
@@ -86,6 +89,10 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شريط متحرك سلس لشعارات الشركاء والعلامات التجارية.",
     },
     icon: "Boxes",
+    defaultProps: {
+      title: "",
+      speed: "fast",
+    },
   },
   {
     type: "why_us",

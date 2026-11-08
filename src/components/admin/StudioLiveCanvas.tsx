@@ -62,6 +62,17 @@ export function StudioLiveCanvas({
   const [device, setDevice] = useState<DeviceMode>("desktop");
   const L = useLocalize();
 
+  // 📱 Auto-détection intelligente du terminal au montage selon la largeur d'écran
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const w = window.innerWidth;
+    if (w < 640) {
+      setDevice("mobile");
+    } else if (w < 1024) {
+      setDevice("tablet");
+    }
+  }, []);
+
   // 🎯 Auto-scroll focalisé : fait défiler le visualiseur directement vers le bloc sélectionné
   useEffect(() => {
     if (!selectedBlockId) return;
@@ -80,6 +91,12 @@ export function StudioLiveCanvas({
       default:
         return "w-full";
     }
+  };
+
+  const getDeviceSimulationClass = () => {
+    if (device === "mobile") return "simulate-mobile";
+    if (device === "tablet") return "simulate-tablet";
+    return "";
   };
 
   return (
@@ -208,6 +225,7 @@ export function StudioLiveCanvas({
           className={cn(
             "w-full transition-all duration-300 ease-out bg-background min-h-[500px] box-border max-w-full",
             getViewportWidth(),
+            getDeviceSimulationClass(),
             device !== "desktop" &&
               "rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-slate-700/80 shadow-2xl overflow-hidden my-2",
           )}

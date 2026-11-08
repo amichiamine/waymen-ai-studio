@@ -2301,6 +2301,62 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               </div>
             </div>
           )}
+
+          {/* 21. USE CHIPS (SOUS-PHASE 43.1) */}
+          {block.type === "use_chips" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre de la section d'usages :</Label>
+                <Input
+                  value={getPropStr(p.title) || L(siteContent.useChips?.title) || ""}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Trouvez l'équipement adapté à votre métier"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground italic">
+                Ce bloc affiche automatiquement les puces filtrables de cas d'usage (Gaming, R&D,
+                Bureautique, Création) associées aux produits du catalogue.
+              </p>
+            </div>
+          )}
+
+          {/* 22. BRANDS MARQUEE (SOUS-PHASE 43.1) */}
+          {block.type === "brands_marquee" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre du bandeau de défilement :</Label>
+                <Input
+                  value={getPropStr(p.title) || L(siteContent.brandsMarquee?.title) || ""}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Marques & Partenaires Officiels"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Vitesse de défilement :</Label>
+                <Select
+                  value={String(p.speed || "fast")}
+                  onValueChange={(val) => updateProp("speed", val)}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Vitesse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="slow" className="text-xs">
+                      Lente (fluide & posée)
+                    </SelectItem>
+                    <SelectItem value="normal" className="text-xs">
+                      Normale (standard vitrine)
+                    </SelectItem>
+                    <SelectItem value="fast" className="text-xs">
+                      Rapide (dynamique)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

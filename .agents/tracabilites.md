@@ -2270,6 +2270,62 @@
   - Archive application horodatée : 📦 [katech-site-08112026-1707.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1707.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1708.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1708.zip) (42 Ko)
 
+---
+
+### Sous-Phase 43.1 : Éradication Forensique des Angles Morts (Responsivité Réelle Live Canvas, Cockpit Fluide, Complétude 30/30 Blocs, Persistance Directe SQLite Modal & Header Transparent)
+
+- **Date :** 08/11/2026
+- **Contexte & Constat Initial :**
+  1. Défaut de responsivité du simulateur Live Canvas sur desktop : les media queries CSS globales (`md:`, `lg:`) évaluaient la fenêtre hôte de 1920px et maintenaient des grilles multi-colonnes compressées dans la boîte 375px au lieu d'un affichage unicolonne mobile fluide.
+  2. Démarrage statique sur "desktop" ne s'adaptant pas aux terminaux réels tactiles ou tablettes.
+  3. Hauteur rigide de 740px générant des ascenseurs imbriqués et tronquant la partie inférieure de l'aperçu.
+  4. Complétude 30/30 : 2 blocs (`use_chips` et `brands_marquee`) manquaient encore de formulaires inspecteurs dédiés.
+  5. Risque de perte au F5 dans le modal de vue si l'administrateur n'appuyait pas sur le bouton global de sauvegarde.
+  6. Propriété `transparentHeader` déclarée dans les types de layout mais non relayée au composant `Header`.
+- **Décisions d'ArchiSys3.0 :**  
+  Validation intégrale du Plan d'Implémentation enrichi de la Sous-Phase 43.1 (artéfact interactif validé et miroir dans `43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`).
+- **Actions Réalisées :**
+  - **Étape 43.1.1 (Moteur de Responsivité Profonde StudioLiveCanvas) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) : auto-détection initiale du terminal au montage via `window.innerWidth` (`<640px` $\rightarrow$ mobile, `<1024px` $\rightarrow$ tablette, sinon desktop).
+    - Application des classes de simulation profonde `.simulate-mobile` et `.simulate-tablet`.
+    - Définition dans [`src/styles.css`](file:///c:/xampp/htdocs/ka-tech/src/styles.css) des règles CSS de forçage : grilles unicolonnes (`grid-template-columns: repeat(1, minmax(0, 1fr)) !important`), marges internes réduites à 0.75rem, typographie de titres proportionnée, élimination absolue de tout overflow horizontal résiduel.
+  - **Étape 43.1.2 (Hauteur Réactive du Cockpit Studio) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) : remplacement de `h-[740px]` par `h-[calc(100vh-13rem)] min-h-[520px] max-h-[850px] w-full` sur le conteneur du Canvas et sur la colonne de l'Inspecteur avec `overflow-y-auto flex-1 min-h-0`.
+  - **Étape 43.1.3 (Complétude Absolue 30/30 Blocs) :**
+    - Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) : création des formulaires inspecteurs pour `use_chips` (titre personnalisé trilingue) et `brands_marquee` (titre personnalisé trilingue et sélecteur de vitesse lente/normale/rapide).
+    - Modification de [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts) : injection des `defaultProps` pour `use_chips` et `brands_marquee`.
+    - Modification de [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) : passage des props surchargées dans `UseChipsBlock` et `BrandsMarqueeBlock`.
+    - Modification de [`src/components/BrandsMarquee.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BrandsMarquee.tsx) : acceptation de la prop `override` (`title`, `speed` dynamique entre `animate-marquee-slow`, `animate-marquee` et `animate-marquee-fast`).
+  - **Étape 43.1.4 (Persistance Directe Instantanée SQLite dans le Modal de Page) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) : transformation de `handleSavePageMeta` en fonction asynchrone appelant directement `await updateSiteContent({ customPages: nextPages })`. Écriture ACID garantie dans la base SQLite locale dès la validation du modal.
+  - **Étape 43.1.5 (Relai Effectif de `transparentHeader`) :**
+    - Modification de [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) : ajout de la prop `transparent?: boolean` forçant `bg-transparent border-none`.
+    - Modification de [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx) : extraction de `transparentHeader` depuis le layout de la vue active et passage à `<Header transparent={transparentHeader} />`.
+  - **Étape 43.1.6 (Validation CI, Traçabilité & Packaging) :**
+    - Nettoyage du script d'audit temporaire `.agents/scratch/audit-blocks.mjs`.
+    - `bun run verifier-i18n` : 100% cohérent, parité fr/en/ar absolue.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et prérendu 100% réussis (10 pages prérendues).
+    - `bun run paqueter:data` : archive `katech-data-08112026-1728.zip` générée avec succès.
+- **Résultats de Recette :**
+  - Live Canvas parfaitement réactif sur mobile (375px) et tablette (768px) sur PC et sur terminaux tactiles, grilles authentiquement unicolonnes sans écrasement ni overflow horizontal.
+  - Cockpit Studio adaptatif en hauteur sans ascenseurs imbriqués.
+  - 100% des 30 blocs du catalogue universel disposent d'un inspecteur graphique dédié, zéro bloc en JSON brut.
+  - Sauvegarde immédiate en base SQLite dès l'enregistrement du modal de vue, zéro perte au F5.
+  - `transparentHeader` opérationnel sur les vues personnalisées.
+- **Livrables :**
+  - Moteur Live Canvas Responsive : 📄 [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
+  - Styles de Simulation Profonde : 📄 [`src/styles.css`](file:///c:/xampp/htdocs/ka-tech/src/styles.css)
+  - Hauteur Cockpit & Persistance SQLite Modal : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Inspecteurs 30/30 Blocs : 📄 [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) & [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts)
+  - Raccordement Marquee & Chips : 📄 [`src/components/BrandsMarquee.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BrandsMarquee.tsx) & [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx)
+  - Header Transparent : 📄 [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) & [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx)
+  - Plan d'Implémentation Miroir : 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md)
+  - Archive application horodatée : 📦 [katech-site-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1728.zip) (4.15 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1728.zip) (42 Ko)
+
 #### Sous-Phase 41.1 : Audit Forensique, Éradication des 4 Angles Morts & Consolidation Intégrale de la Persistance BD Directe
 
 - **Contexte & Enjeux :**  
@@ -2451,3 +2507,59 @@
   - Plan d'Implémentation Miroir : 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md)
   - Archive application horodatée : 📦 [katech-site-08112026-1707.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1707.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1708.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1708.zip) (42 Ko)
+
+---
+
+### Sous-Phase 43.1 : Éradication Forensique des Angles Morts (Responsivité Réelle Live Canvas, Cockpit Fluide, Complétude 30/30 Blocs, Persistance Directe SQLite Modal & Header Transparent)
+
+- **Date :** 08/11/2026
+- **Contexte & Constat Initial :**
+  1. Défaut de responsivité du simulateur Live Canvas sur desktop : les media queries CSS globales (`md:`, `lg:`) évaluaient la fenêtre hôte de 1920px et maintenaient des grilles multi-colonnes compressées dans la boîte 375px au lieu d'un affichage unicolonne mobile fluide.
+  2. Démarrage statique sur "desktop" ne s'adaptant pas aux terminaux réels tactiles ou tablettes.
+  3. Hauteur rigide de 740px générant des ascenseurs imbriqués et tronquant la partie inférieure de l'aperçu.
+  4. Complétude 30/30 : 2 blocs (`use_chips` et `brands_marquee`) manquaient encore de formulaires inspecteurs dédiés.
+  5. Risque de perte au F5 dans le modal de vue si l'administrateur n'appuyait pas sur le bouton global de sauvegarde.
+  6. Propriété `transparentHeader` déclarée dans les types de layout mais non relayée au composant `Header`.
+- **Décisions d'ArchiSys3.0 :**  
+  Validation intégrale du Plan d'Implémentation enrichi de la Sous-Phase 43.1 (artéfact interactif validé et miroir dans `43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`).
+- **Actions Réalisées :**
+  - **Étape 43.1.1 (Moteur de Responsivité Profonde StudioLiveCanvas) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) : auto-détection initiale du terminal au montage via `window.innerWidth` (`<640px` $\rightarrow$ mobile, `<1024px` $\rightarrow$ tablette, sinon desktop).
+    - Application des classes de simulation profonde `.simulate-mobile` et `.simulate-tablet`.
+    - Définition dans [`src/styles.css`](file:///c:/xampp/htdocs/ka-tech/src/styles.css) des règles CSS de forçage : grilles unicolonnes (`grid-template-columns: repeat(1, minmax(0, 1fr)) !important`), marges internes réduites à 0.75rem, typographie de titres proportionnée, élimination absolue de tout overflow horizontal résiduel.
+  - **Étape 43.1.2 (Hauteur Réactive du Cockpit Studio) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) : remplacement de `h-[740px]` par `h-[calc(100vh-13rem)] min-h-[520px] max-h-[850px] w-full` sur le conteneur du Canvas et sur la colonne de l'Inspecteur avec `overflow-y-auto flex-1 min-h-0`.
+  - **Étape 43.1.3 (Complétude Absolue 30/30 Blocs) :**
+    - Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) : création des formulaires inspecteurs pour `use_chips` (titre personnalisé trilingue) et `brands_marquee` (titre personnalisé trilingue et sélecteur de vitesse lente/normale/rapide).
+    - Modification de [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts) : injection des `defaultProps` pour `use_chips` et `brands_marquee`.
+    - Modification de [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) : passage des props surchargées dans `UseChipsBlock` et `BrandsMarqueeBlock`.
+    - Modification de [`src/components/BrandsMarquee.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BrandsMarquee.tsx) : acceptation de la prop `override` (`title`, `speed` dynamique entre `animate-marquee-slow`, `animate-marquee` et `animate-marquee-fast`).
+  - **Étape 43.1.4 (Persistance Directe Instantanée SQLite dans le Modal de Page) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) : transformation de `handleSavePageMeta` en fonction asynchrone appelant directement `await updateSiteContent({ customPages: nextPages })`. Écriture ACID garantie dans la base SQLite locale dès la validation du modal.
+  - **Étape 43.1.5 (Relai Effectif de `transparentHeader`) :**
+    - Modification de [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) : ajout de la prop `transparent?: boolean` forçant `bg-transparent border-none`.
+    - Modification de [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx) : extraction de `transparentHeader` depuis le layout de la vue active et passage à `<Header transparent={transparentHeader} />`.
+  - **Étape 43.1.6 (Validation CI, Traçabilité & Packaging) :**
+    - Nettoyage du script d'audit temporaire `.agents/scratch/audit-blocks.mjs`.
+    - `bun run verifier-i18n` : 100% cohérent, parité fr/en/ar absolue.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et prérendu 100% réussis (10 pages prérendues).
+    - `bun run paqueter:data` : archive `katech-data-08112026-1728.zip` générée avec succès.
+- **Résultats de Recette :**
+  - Live Canvas parfaitement réactif sur mobile (375px) et tablette (768px) sur PC et sur terminaux tactiles, grilles authentiquement unicolonnes sans écrasement ni overflow horizontal.
+  - Cockpit Studio adaptatif en hauteur sans ascenseurs imbriqués.
+  - 100% des 30 blocs du catalogue universel disposent d'un inspecteur graphique dédié, zéro bloc en JSON brut.
+  - Sauvegarde immédiate en base SQLite dès l'enregistrement du modal de vue, zéro perte au F5.
+  - `transparentHeader` opérationnel sur les vues personnalisées.
+- **Livrables :**
+  - Moteur Live Canvas Responsive : 📄 [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
+  - Styles de Simulation Profonde : 📄 [`src/styles.css`](file:///c:/xampp/htdocs/ka-tech/src/styles.css)
+  - Hauteur Cockpit & Persistance SQLite Modal : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Inspecteurs 30/30 Blocs : 📄 [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) & [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts)
+  - Raccordement Marquee & Chips : 📄 [`src/components/BrandsMarquee.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BrandsMarquee.tsx) & [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx)
+  - Header Transparent : 📄 [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) & [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx)
+  - Plan d'Implémentation Miroir : 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md)
+  - Archive application horodatée : 📦 [katech-site-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1728.zip) (4.15 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1728.zip) (42 Ko)

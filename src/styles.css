@@ -782,3 +782,53 @@ body {
     filter: none !important;
   }
 }
+
+/* Simulation responsive profonde pour le Studio Visualiseur Live Canvas */
+.simulate-mobile {
+  max-width: 375px !important;
+  width: 100% !important;
+}
+.simulate-mobile .grid,
+.simulate-mobile [class*="grid-cols-"],
+.simulate-mobile [class*="md:grid-cols-"],
+.simulate-mobile [class*="lg:grid-cols-"],
+.simulate-mobile [class*="sm:grid-cols-"],
+.simulate-mobile [class*="xl:grid-cols-"] {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+.simulate-mobile .container,
+.simulate-mobile .container-page {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  max-width: 100% !important;
+}
+.simulate-mobile section {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+.simulate-mobile h1 {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+.simulate-mobile h2 {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
+
+.simulate-tablet {
+  max-width: 768px !important;
+  width: 100% !important;
+}
+.simulate-tablet [class*="lg:grid-cols-3"],
+.simulate-tablet [class*="lg:grid-cols-4"],
+.simulate-tablet [class*="xl:grid-cols-4"],
+.simulate-tablet [class*="md:grid-cols-3"],
+.simulate-tablet [class*="md:grid-cols-4"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+.simulate-tablet .container,
+.simulate-tablet .container-page {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  max-width: 100% !important;
+}

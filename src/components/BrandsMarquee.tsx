@@ -2,7 +2,14 @@ import { useMarqueeBrandList, useBrandList, useSiteContent } from "@/data-provid
 import { useLocalize } from "@/lib/i18n";
 import { resoudreUrlMedia } from "@/components/media-url";
 
-export function BrandsMarquee() {
+export interface BrandsMarqueeProps {
+  override?: {
+    title?: string;
+    speed?: "fast" | "normal" | "slow";
+  };
+}
+
+export function BrandsMarquee({ override }: BrandsMarqueeProps = {}) {
   const { data: marqueeBrands } = useMarqueeBrandList();
   const { data: allBrands } = useBrandList();
   const { data: siteContent } = useSiteContent();
@@ -18,16 +25,26 @@ export function BrandsMarquee() {
 
   const brandsMap = new Map(allBrands.map((b) => [b.name.toLowerCase(), b]));
 
+  const speedClass =
+    override?.speed === "slow"
+      ? "animate-marquee-slow"
+      : override?.speed === "normal"
+        ? "animate-marquee"
+        : "animate-marquee-fast";
+
+  const displayTitle =
+    override?.title || L(siteContent.brandsMarquee?.title) || "Marques & Partenaires Officiels";
+
   return (
     <section className="border-y border-border bg-card/30 overflow-hidden py-8">
       <div className="container-page mb-6">
         <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          {L(siteContent.brandsMarquee?.title) || "Marques & Partenaires Officiels"}
+          {displayTitle}
         </p>
       </div>
       <div
         dir="ltr"
-        className="group relative flex w-max animate-marquee-fast whitespace-nowrap pause-on-hover motion-reduce:animate-none"
+        className={`group relative flex w-max ${speedClass} whitespace-nowrap pause-on-hover motion-reduce:animate-none`}
       >
         {[0, 1].map((half) => (
           <ul key={half} aria-hidden={half === 1} className="flex shrink-0 items-center">
