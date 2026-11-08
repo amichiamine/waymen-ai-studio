@@ -85,19 +85,41 @@ export default function About() {
     aboutCustomPage.blocks.length > 0
   ) {
     const enabledBlocks = aboutCustomPage.blocks.filter((b) => b.enabled);
-    const metaTitle = `${L(aboutCustomPage.title) || title} — ${storeName}`;
-    const metaDesc = L(aboutCustomPage.description) || intro;
+    const metaTitle =
+      (aboutCustomPage.seo?.metaTitle && L(aboutCustomPage.seo.metaTitle)) ||
+      `${L(aboutCustomPage.title) || title} — ${storeName}`;
+    const metaDesc =
+      (aboutCustomPage.seo?.metaDescription && L(aboutCustomPage.seo.metaDescription)) ||
+      L(aboutCustomPage.description) ||
+      intro;
+    const ogImage = aboutCustomPage.seo?.ogImage;
+    const canonicalUrl = aboutCustomPage.seo?.canonicalUrl || `${window.location.origin}/about`;
+    const noIndex = Boolean(aboutCustomPage.seo?.noIndex);
+
+    const pageBgClass =
+      aboutCustomPage.layout?.pageBg === "dark"
+        ? "bg-[#0a0f1d] text-white min-h-[80vh]"
+        : aboutCustomPage.layout?.pageBg === "surface"
+          ? "bg-card min-h-[80vh]"
+          : aboutCustomPage.layout?.pageBg === "muted"
+            ? "bg-muted/30 min-h-[80vh]"
+            : aboutCustomPage.layout?.pageBg === "gradient"
+              ? "bg-gradient-to-b from-background via-muted/20 to-background min-h-[80vh]"
+              : "min-h-[80vh]";
+
     return (
-      <>
+      <div className={pageBgClass}>
         <Helmet>
           <title>{metaTitle}</title>
           <meta name="description" content={metaDesc} />
-          <link rel="canonical" href={`${window.location.origin}/about`} />
+          {ogImage && <meta property="og:image" content={ogImage} />}
+          <link rel="canonical" href={canonicalUrl} />
+          {noIndex && <meta name="robots" content="noindex, nofollow" />}
         </Helmet>
         <div className="flex flex-col space-y-2">
           {enabledBlocks.map((block) => renderBlock(block))}
         </div>
-      </>
+      </div>
     );
   }
 

@@ -15,7 +15,10 @@ import {
   PanelRightOpen,
   Maximize2,
   Minimize2,
+  PanelsTopLeft,
 } from "lucide-react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { BlockConfig } from "@/types/pages";
@@ -60,6 +63,7 @@ export function StudioLiveCanvas({
   onToggleZen,
 }: StudioLiveCanvasProps) {
   const [device, setDevice] = useState<DeviceMode>("desktop");
+  const [showSiteFrame, setShowSiteFrame] = useState(false);
   const L = useLocalize();
 
   // 📱 Auto-détection intelligente du terminal au montage selon la largeur d'écran
@@ -182,8 +186,23 @@ export function StudioLiveCanvas({
           </button>
         </div>
 
-        {/* Contrôles droits : Mode Zen & Volet Inspecteur */}
+        {/* Contrôles droits : Cadre Site, Mode Zen & Volet Inspecteur */}
         <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant={showSiteFrame ? "default" : "outline"}
+            className="h-7 px-2 text-xs font-semibold gap-1 rounded-md"
+            onClick={() => setShowSiteFrame((prev) => !prev)}
+            title={
+              showSiteFrame
+                ? "Masquer le Header et Footer réels du site"
+                : "Afficher le Header et Footer réels du site (immersion globale)"
+            }
+          >
+            <PanelsTopLeft className="size-3.5" />
+            <span className="hidden sm:inline">Cadre Site</span>
+          </Button>
+
           {onToggleZen && (
             <Button
               size="sm"
@@ -234,6 +253,12 @@ export function StudioLiveCanvas({
             <div className="bg-slate-800 text-slate-300 text-[10px] font-mono py-1 px-4 flex items-center justify-between border-b border-slate-700 select-none">
               <span>{device === "mobile" ? "375 × 812 (iPhone)" : "768 × 1024 (iPad)"}</span>
               <div className="size-2 rounded-full bg-slate-500" />
+            </div>
+          )}
+
+          {showSiteFrame && (
+            <div className="border-b border-border pointer-events-none select-none opacity-90 scale-[0.99] origin-top bg-background shadow-xs">
+              <Header />
             </div>
           )}
 
@@ -371,6 +396,12 @@ export function StudioLiveCanvas({
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {showSiteFrame && (
+            <div className="border-t border-border pointer-events-none select-none opacity-90 scale-[0.99] origin-bottom mt-8 bg-background shadow-xs">
+              <Footer />
             </div>
           )}
         </div>

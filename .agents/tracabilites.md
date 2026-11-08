@@ -2738,3 +2738,51 @@
   - Calculateur sécurisé : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
   - 6 Fichiers HTML verrouillés : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
   - Plan Miroir Consolidé : 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)
+
+---
+
+## Phase 46 : Universalisation Totale du Studio 360° : Enrôlement des Vues Systèmes, Parcours de Commande, Hub Blog, Pages Institutionnelles & Éradication des Dépendances Statiques
+
+- **Date :** 08/11/2026
+- **Contexte & Constat Initial :**
+  1. Seules 5 vues (25% du site) étaient composables dans le Studio 360° (`/`, `/about`, `/contact`, `/cv`, `/projets`).
+  2. 15 vues majeures (75% du site) étaient exclues du Studio, codées en dur sans possibilité d'ajouter des bannières, réassurances, FAQs ou CTA WhatsApp.
+  3. Les liens du footer relatifs à la Garantie, la Livraison et les CGV redirigeaient artificiellement vers `/about`.
+  4. Le Live Canvas du Studio n'affichait pas le Header et Footer réels du site pour juger de l'immersion globale.
+- **Décisions d'ArchiSys3.0 :**
+  Validation intégrale du Plan d'Implémentation Phase 46 (`46_plan_universalisation_totale_studio_vues_systemes_conversion_et_institutionnelles.md`) :
+  1. Instanciation des 4 vraies pages légales et institutionnelles dans `seedCustomPages()` (`/livraison-retours`, `/garantie`, `/mentions-legales`, `/conditions-generales`), avec mise à jour des colonnes du Footer.
+  2. Enrôlement des 6 vues systèmes clés (`system_track`, `system_blog`, `system_builder`, `system_cart`, `system_checkout_success`, `system_not_found`) dans le sélecteur du Studio, hiérarchisé par groupes (`Vitrine & Institutionnel`, `Vues Systèmes & Parcours`, `Vues Personnalisées`).
+  3. Préservation à 100% du moteur fonctionnel natif de chaque vue système, tout en permettant l'injection composable de blocs en haut (`top`) ou en bas (`bottom`) via l'attribut `placement` configurable dans l'inspecteur de style.
+  4. Éradication du dédoublement hybride dans `About.tsx` et `Contact.tsx` en convergeant vers les capacités dynamiques complètes de `DynamicPage.tsx` (`pageBg`, SEO OpenGraph complet, `noIndex`, canonical).
+  5. Bouton d'immersion visuelle dans la barre d'outils du Live Canvas ("Cadre Site") permettant d'afficher le Header et Footer réels autour de la vue en cours d'édition.
+  6. Maintien strict de la chaîne de validation qualité CI (i18n trilingue FR/EN/AR, tsc, lint, build et packaging data/site).
+- **Actions Réalisées :**
+  - **Étape 46.1 (Instanciation Souveraine des 4 Vues Légales Dédiées) :**
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) : ajout de `page_shipping_returns`, `page_warranty`, `page_terms_conditions`, `page_legal_notices` dans `seedCustomPages()` avec blocs riches trilingues (bannières héro, grilles de valeurs, accordéons FAQ, cartes de contact).
+    - Mise à jour des liens du footer vers `/livraison-retours`, `/garantie`, `/conditions-generales`, `/mentions-legales` et `/track`.
+  - **Étape 46.2 (Enrôlement des Vues Systèmes & Sélecteur Hiérarchisé) :**
+    - Modification de [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) : ajout de `placement?: "top" | "bottom"` dans `BlockStyleConfig`, type `SystemViewKey` et attributs `isSystem` et `systemKey` sur `CustomPageDefinition`.
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) : intégration de `seedCustomPages()` pour fusionner les vues par défaut manquantes, protection contre la suppression accidentelle des vues institutionnelles/systèmes, et regroupement par catégories (`SelectGroup` / `SelectLabel`).
+  - **Étape 46.3 (Raccordement des Zones Composables dans les 6 Vues Systèmes) :**
+    - Raccordement réactif dans [`src/pages/TrackOrder.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/TrackOrder.tsx), [`src/pages/Blog.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Blog.tsx), [`src/pages/Builder.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Builder.tsx), [`src/pages/Cart.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Cart.tsx), [`src/pages/CheckoutSuccess.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CheckoutSuccess.tsx) et [`src/pages/NotFound.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/NotFound.tsx).
+    - Rendu dynamique de `topBlocks` avant le cœur applicatif et de `bottomBlocks` après le cœur applicatif, avec support du `pageBg` dynamique.
+    - Ajout du sélecteur d'emplacement ("En haut (avant le contenu)" / "En bas (après le contenu)") dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx).
+  - **Étape 46.4 (Harmonisation About.tsx & Contact.tsx) :**
+    - Modification de [`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx) et [`src/pages/Contact.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Contact.tsx) avec intégration complète de `pageBgClass`, balises OpenGraph dynamiques, canonicalUrl et `noIndex`.
+  - **Étape 46.5 (Immersion Visuelle dans le Live Canvas) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) : ajout du bouton "Cadre Site" et injection du vrai `<Header />` et vrai `<Footer />` autour du canevas en mode simulation.
+  - **Étape 46.6 (Validation CI, Traçabilité & Packaging) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue validée.
+    - `bunx tsc --noEmit` : 0 erreur de typage.
+    - `bun run format` : Prettier validé.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : Compilation Vite réussie avec bundle de production et prérendu.
+    - `bun run paqueter:data` : Nouvelle archive SQLite horodatée produite (`katech-data-08112026-2007.zip`).
+- **Résultats de Recette :**
+  - Le Studio 360° permet désormais de concevoir et personnaliser 100% des vues du site.
+  - Les tunnels de conversion (Panier, Confirmation de commande, Suivi colis, Configurateur, Blog) accueillent les blocs composables sans aucune altération de leur logique native.
+  - Le bouton "Cadre Site" offre un aperçu réaliste de la page complète au sein de l'environnement du site.
+- **Livrables :**
+  - Plan validé : 📄 [`46_plan_universalisation_totale_studio_vues_systemes_conversion_et_institutionnelles.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/46_plan_universalisation_totale_studio_vues_systemes_conversion_et_institutionnelles.md)
+  - Archives horodatées : 📦 [katech-site-08112026-2007.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2007.zip) & 📦 [katech-data-08112026-2007.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2007.zip)

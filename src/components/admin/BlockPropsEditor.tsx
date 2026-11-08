@@ -147,6 +147,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Arrière-plan de la section */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold">Arrière-plan de section :</Label>
@@ -165,6 +190,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1.5 px-2 text-xs font-semibold rounded-md border text-center transition-all truncate",
                     (s.bg || "transparent") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -258,6 +308,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Ombres portées & Élévation */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold">Ombre portée (Élévation) :</Label>
@@ -274,6 +349,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
                     (s.shadow || "none") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -310,6 +410,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Largeur maximale du conteneur */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold">Largeur max du contenu :</Label>
@@ -326,6 +451,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
                     (s.maxWidth || "full") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -362,6 +512,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Ancre HTML fluide */}
           <div className="space-y-1.5 pt-2 border-t border-border/40">
             <Label className="text-xs font-bold">Ancre HTML (Lien direct #) :</Label>
@@ -387,6 +562,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             />
           </div>
 
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 🎛️ Sous-éléments Atomiques : Cartes & Grille (Phase 43) */}
           <div className="space-y-1.5 pt-2 border-t border-border/40">
             <Label className="text-xs font-bold">Style des Cartes internes :</Label>
@@ -406,6 +606,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
                     (s.cardStyle || "default") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -444,6 +669,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Boutons d'Action (CTAs) */}
           <div className="space-y-1.5 pt-2 border-t border-border/40">
             <Label className="text-xs font-bold">Variante des Boutons (CTAs) :</Label>
@@ -462,6 +712,31 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
                     (s.ctaVariant || "default") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { key: "top", label: "En Haut (Avant le contenu)" },
+                { key: "bottom", label: "En Bas (Après le contenu)" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("placement", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}

@@ -48,12 +48,16 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { useSiteContent, useSiteContentMutations } from "@/data-provider";
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
+import { seedCustomPages } from "@/lib/site-content";
 import type {
   BlockConfig,
   BlockType,
@@ -84,7 +88,12 @@ export default function PagesManager() {
   const L = useLocalize();
 
   const customPages = useMemo(() => {
-    return siteContent?.customPages || [];
+    const existing = siteContent?.customPages || [];
+    const defaults = seedCustomPages();
+    const existingIds = new Set(existing.map((p) => p.id));
+    const missingDefaults = defaults.filter((d) => !existingIds.has(d.id));
+    if (missingDefaults.length === 0) return existing;
+    return [...existing, ...missingDefaults];
   }, [siteContent]);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -154,6 +163,42 @@ export default function PagesManager() {
   }, [siteContent?.customPages, isDirty, selectedPageId]);
 
   const selectedPage = pages.find((p) => p.id === selectedPageId) || null;
+
+  // 🏛️ Groupement hiérarchique des vues du Studio (Phase 46)
+  const institutionalIds = useMemo(
+    () =>
+      new Set([
+        "page_home",
+        "page_about",
+        "page_contact",
+        "page_cv_default",
+        "page_projets_default",
+        "page_shipping_returns",
+        "page_warranty",
+        "page_terms_conditions",
+        "page_legal_notices",
+      ]),
+    [],
+  );
+
+  const institutionalPages = useMemo(
+    () => pages.filter((p) => institutionalIds.has(p.id)),
+    [pages, institutionalIds],
+  );
+
+  const systemPages = useMemo(
+    () => pages.filter((p) => p.isSystem || p.systemKey || p.id.startsWith("system_")),
+    [pages],
+  );
+
+  const customPagesList = useMemo(
+    () =>
+      pages.filter(
+        (p) =>
+          !institutionalIds.has(p.id) && !p.isSystem && !p.systemKey && !p.id.startsWith("system_"),
+      ),
+    [pages, institutionalIds],
+  );
 
   // Synchronisation du bloc sélectionné
   useEffect(() => {
@@ -324,9 +369,14 @@ export default function PagesManager() {
     if (
       pageToDelete.id === "page_home" ||
       pageToDelete.slug === "" ||
-      pageToDelete.slug === "home"
+      pageToDelete.slug === "home" ||
+      pageToDelete.isSystem ||
+      pageToDelete.id.startsWith("system_") ||
+      institutionalIds.has(pageToDelete.id)
     ) {
-      toast.error("La page d'accueil est une vue racine du système et ne peut pas être supprimée.");
+      toast.error(
+        "Cette vue est une vue officielle ou système de la plateforme et ne peut pas être supprimée.",
+      );
       return;
     }
 
@@ -632,16 +682,58 @@ export default function PagesManager() {
                       <SelectTrigger className="w-full h-9 font-semibold text-xs">
                         <SelectValue placeholder="Choisir une vue..." />
                       </SelectTrigger>
-                      <SelectContent>
-                        {pages.map((p) => {
-                          const isHome = p.id === "page_home" || p.slug === "" || p.slug === "home";
-                          const title = L(p.title) || (isHome ? "Accueil" : p.slug);
-                          return (
-                            <SelectItem key={p.id} value={p.id} className="text-xs">
-                              {isHome ? "🏠 Accueil Vitrine (/)" : `/${p.slug} (${title})`}
-                            </SelectItem>
-                          );
-                        })}
+                      <SelectContent className="max-h-80">
+                        {institutionalPages.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-2 py-1">
+                              🏛️ Vitrine & Institutionnel ({institutionalPages.length})
+                            </SelectLabel>
+                            {institutionalPages.map((p) => {
+                              const isHome =
+                                p.id === "page_home" || p.slug === "" || p.slug === "home";
+                              const title = L(p.title) || (isHome ? "Accueil" : p.slug);
+                              return (
+                                <SelectItem key={p.id} value={p.id} className="text-xs">
+                                  {isHome ? "🏠 Accueil Vitrine (/)" : `/${p.slug} (${title})`}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
+                        )}
+
+                        {systemPages.length > 0 && (
+                          <SelectGroup>
+                            <SelectSeparator className="my-1" />
+                            <SelectLabel className="text-[10px] uppercase tracking-wider text-primary font-bold px-2 py-1">
+                              ⚙️ Vues Systèmes & Parcours ({systemPages.length})
+                            </SelectLabel>
+                            {systemPages.map((p) => {
+                              const title = L(p.title) || p.slug;
+                              return (
+                                <SelectItem key={p.id} value={p.id} className="text-xs font-medium">
+                                  {`/${p.slug} (${title})`}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
+                        )}
+
+                        {customPagesList.length > 0 && (
+                          <SelectGroup>
+                            <SelectSeparator className="my-1" />
+                            <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-2 py-1">
+                              📄 Vues Personnalisées ({customPagesList.length})
+                            </SelectLabel>
+                            {customPagesList.map((p) => {
+                              const title = L(p.title) || p.slug;
+                              return (
+                                <SelectItem key={p.id} value={p.id} className="text-xs">
+                                  {`/${p.slug} (${title})`}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectGroup>
+                        )}
                       </SelectContent>
                     </Select>
 

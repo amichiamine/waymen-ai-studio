@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useCouponMutations, useProductDetail } from "@/data-provider";
+import { useCouponMutations, useProductDetail, useSiteContent } from "@/data-provider";
+import { renderBlock } from "@/components/blocks";
 import type { CouponCheckResult } from "@/api/types";
 import type { Product } from "@/data/products";
 import { useI18n, useLocalize } from "@/lib/i18n";
@@ -147,6 +148,14 @@ export default function Cart() {
   const { t } = useI18n();
   const { cart, updateQty, removeFromCart } = useStore();
   const { validate: validateCoupon } = useCouponMutations();
+  const { data: siteContent } = useSiteContent();
+
+  const systemPage = siteContent?.customPages?.find(
+    (p) => p.isSystem && (p.systemKey === "cart" || p.slug === "cart"),
+  );
+  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
+  const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 
   const [couponInput, setCouponInput] = useState("");
   const [applied, setApplied] = useState<AppliedCoupon | null>(null);
@@ -264,112 +273,127 @@ export default function Cart() {
   const discount = applied?.discount ?? 0;
   const total = Math.max(0, subtotal - discount);
 
+  const pageBgClass =
+    systemPage?.layout?.pageBg === "dark"
+      ? "bg-[#0a0f1d] text-white min-h-[80vh]"
+      : systemPage?.layout?.pageBg === "surface"
+        ? "bg-card min-h-[80vh]"
+        : systemPage?.layout?.pageBg === "muted"
+          ? "bg-muted/30 min-h-[80vh]"
+          : systemPage?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background min-h-[80vh]"
+            : undefined;
+
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-10">
-      <Helmet>
-        <title>{t("cart.page.title")}</title>
-        <meta name="description" content={t("cart.page.desc")} />
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-      <h1 className="mb-6 text-2xl font-bold">{t("cart.title")}</h1>
+    <div className={pageBgClass}>
+      {topBlocks.map(renderBlock)}
+      <div className="container mx-auto max-w-5xl px-4 py-10">
+        <Helmet>
+          <title>{t("cart.page.title")}</title>
+          <meta name="description" content={t("cart.page.desc")} />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <h1 className="mb-6 text-2xl font-bold">{t("cart.title")}</h1>
 
-      {cart.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-md border border-dashed p-12 text-center">
-          <ShoppingBag className="h-10 w-10 text-muted-foreground" />
-          <p className="text-muted-foreground">{t("cart.empty")}</p>
-          <Link to="/category" className="text-primary hover:underline">
-            {t("cart.discover")}
-          </Link>
-        </div>
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="space-y-3">
-            {cart.map((entry) => (
-              <CartLine
-                key={entry.product_id}
-                product_id={entry.product_id}
-                quantity={entry.quantity}
-                onContribution={handleContribution}
-                onQtyChange={updateQty}
-                onRemove={removeFromCart}
-              />
-            ))}
+        {cart.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-md border border-dashed p-12 text-center">
+            <ShoppingBag className="h-10 w-10 text-muted-foreground" />
+            <p className="text-muted-foreground">{t("cart.empty")}</p>
+            <Link to="/category" className="text-primary hover:underline">
+              {t("cart.discover")}
+            </Link>
           </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            <div className="space-y-3">
+              {cart.map((entry) => (
+                <CartLine
+                  key={entry.product_id}
+                  product_id={entry.product_id}
+                  quantity={entry.quantity}
+                  onContribution={handleContribution}
+                  onQtyChange={updateQty}
+                  onRemove={removeFromCart}
+                />
+              ))}
+            </div>
 
-          <Card className="h-fit">
-            <CardContent className="space-y-4 p-6">
-              {applied ? (
-                <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-primary" />
-                    <span className="font-mono font-medium">{applied.code}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {`−${fmt(applied.discount)}`}
-                    </span>
-                  </div>
-                  <Button size="icon" variant="ghost" onClick={removeCoupon}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    {t("cart.coupon.label")}
-                  </label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                      placeholder="BIENVENUE10"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          void apply();
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="outline" onClick={() => void apply()}>
-                      {t("cart.coupon.apply")}
+            <Card className="h-fit">
+              <CardContent className="space-y-4 p-6">
+                {applied ? (
+                  <div className="flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-4 w-4 text-primary" />
+                      <span className="font-mono font-medium">{applied.code}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {`−${fmt(applied.discount)}`}
+                      </span>
+                    </div>
+                    <Button size="icon" variant="ghost" onClick={removeCoupon}>
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      {t("cart.coupon.label")}
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        placeholder="BIENVENUE10"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            void apply();
+                          }
+                        }}
+                      />
+                      <Button type="button" variant="outline" onClick={() => void apply()}>
+                        {t("cart.coupon.apply")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("cart.subtotal")}</span>
-                <span>{fmt(subtotal)}</span>
-              </div>
-              {discount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t("cart.discount")}</span>
-                  <span className="text-primary">− {fmt(discount)}</span>
+                  <span className="text-muted-foreground">{t("cart.subtotal")}</span>
+                  <span>{fmt(subtotal)}</span>
                 </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("cart.shipping")}</span>
-                <span>{t("cart.shipping.calc")}</span>
-              </div>
-              <div className="flex justify-between border-t pt-3 text-base font-semibold">
-                <span>{t("cart.total")}</span>
-                <span className="text-primary">{fmt(total)}</span>
-              </div>
-
-              {hasOutOfStock && (
-                <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span>{t("cart.oos.warn")}</span>
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t("cart.discount")}</span>
+                    <span className="text-primary">− {fmt(discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t("cart.shipping")}</span>
+                  <span>{t("cart.shipping.calc")}</span>
                 </div>
-              )}
+                <div className="flex justify-between border-t pt-3 text-base font-semibold">
+                  <span>{t("cart.total")}</span>
+                  <span className="text-primary">{fmt(total)}</span>
+                </div>
 
-              <Link to="/checkout" className={hasOutOfStock ? "pointer-events-none" : ""}>
-                <Button className="w-full" disabled={hasOutOfStock}>
-                  {t("cart.checkout")}
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                {hasOutOfStock && (
+                  <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>{t("cart.oos.warn")}</span>
+                  </div>
+                )}
+
+                <Link to="/checkout" className={hasOutOfStock ? "pointer-events-none" : ""}>
+                  <Button className="w-full" disabled={hasOutOfStock}>
+                    {t("cart.checkout")}
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+      {bottomBlocks.map(renderBlock)}
     </div>
   );
 }

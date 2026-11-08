@@ -84,19 +84,41 @@ export default function Contact() {
     contactCustomPage.blocks.length > 0
   ) {
     const enabledBlocks = contactCustomPage.blocks.filter((b) => b.enabled);
-    const metaTitle = `${L(contactCustomPage.title) || title} — ${storeName}`;
-    const metaDesc = L(contactCustomPage.description) || subtitle;
+    const metaTitle =
+      (contactCustomPage.seo?.metaTitle && L(contactCustomPage.seo.metaTitle)) ||
+      `${L(contactCustomPage.title) || title} — ${storeName}`;
+    const metaDesc =
+      (contactCustomPage.seo?.metaDescription && L(contactCustomPage.seo.metaDescription)) ||
+      L(contactCustomPage.description) ||
+      subtitle;
+    const ogImage = contactCustomPage.seo?.ogImage;
+    const canonicalUrl = contactCustomPage.seo?.canonicalUrl || `${window.location.origin}/contact`;
+    const noIndex = Boolean(contactCustomPage.seo?.noIndex);
+
+    const pageBgClass =
+      contactCustomPage.layout?.pageBg === "dark"
+        ? "bg-[#0a0f1d] text-white min-h-[80vh]"
+        : contactCustomPage.layout?.pageBg === "surface"
+          ? "bg-card min-h-[80vh]"
+          : contactCustomPage.layout?.pageBg === "muted"
+            ? "bg-muted/30 min-h-[80vh]"
+            : contactCustomPage.layout?.pageBg === "gradient"
+              ? "bg-gradient-to-b from-background via-muted/20 to-background min-h-[80vh]"
+              : "min-h-[80vh]";
+
     return (
-      <>
+      <div className={pageBgClass}>
         <Helmet>
           <title>{metaTitle}</title>
           <meta name="description" content={metaDesc} />
-          <link rel="canonical" href={`${window.location.origin}/contact`} />
+          {ogImage && <meta property="og:image" content={ogImage} />}
+          <link rel="canonical" href={canonicalUrl} />
+          {noIndex && <meta name="robots" content="noindex, nofollow" />}
         </Helmet>
         <div className="flex flex-col space-y-2">
           {enabledBlocks.map((block) => renderBlock(block))}
         </div>
-      </>
+      </div>
     );
   }
 

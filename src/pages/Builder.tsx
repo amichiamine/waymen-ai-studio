@@ -28,7 +28,9 @@ import {
   runMutation,
   useBuilderStepList,
   useSiteSettings,
+  useSiteContent,
 } from "@/data-provider";
+import { renderBlock } from "@/components/blocks";
 // Import direct de la ressource, à défaut de hook de fournisseur : `POST /builds`
 // n'a pas d'entité propre (elle écrit dans `products`) et le périmètre de cette
 // vague n'ouvre pas `src/data-provider`. L'invalidation du cache — le seul
@@ -254,6 +256,14 @@ export default function Builder() {
   // Lectures via le provider — trois états traités, inertes en mode mock.
   const { data: STEPS } = useBuilderStepList();
   const { data: siteSettingsData } = useSiteSettings();
+  const { data: siteContent } = useSiteContent();
+
+  const systemPage = siteContent?.customPages?.find(
+    (p) => p.isSystem && (p.systemKey === "builder" || p.slug === "builder"),
+  );
+  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
+  const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 
   const [picks, setPicks] = useState<Record<string, BuilderPart>>({});
   /** Vrai pendant l'aller-retour d'enregistrement : le bouton doit le montrer. */
@@ -362,183 +372,200 @@ export default function Builder() {
     );
   }
 
+  const pageBgClass =
+    systemPage?.layout?.pageBg === "dark"
+      ? "bg-[#0a0f1d] text-white min-h-[80vh]"
+      : systemPage?.layout?.pageBg === "surface"
+        ? "bg-card min-h-[80vh]"
+        : systemPage?.layout?.pageBg === "muted"
+          ? "bg-muted/30 min-h-[80vh]"
+          : systemPage?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background min-h-[80vh]"
+            : undefined;
+
   return (
-    <div className="container-page py-8 lg:py-12">
-      <Helmet>
-        <title>{t("bp.page.title")}</title>
-        <meta name="description" content={t("bp.page.desc")} />
-        <link rel="canonical" href={`${window.location.origin}/builder`} />
-      </Helmet>
+    <div className={pageBgClass}>
+      {topBlocks.map(renderBlock)}
+      <div className="container-page py-8 lg:py-12">
+        <Helmet>
+          <title>{t("bp.page.title")}</title>
+          <meta name="description" content={t("bp.page.desc")} />
+          <link rel="canonical" href={`${window.location.origin}/builder`} />
+        </Helmet>
 
-      <header className="mb-8 max-w-2xl">
-        <span className="text-xs uppercase tracking-[0.25em] text-primary">{t("bp.kicker")}</span>
-        <h1 className="text-3xl lg:text-4xl font-bold mt-2">{t("bp.title")}</h1>
-        <p className="text-muted-foreground mt-2">{t("bp.sub")}</p>
-      </header>
+        <header className="mb-8 max-w-2xl">
+          <span className="text-xs uppercase tracking-[0.25em] text-primary">{t("bp.kicker")}</span>
+          <h1 className="text-3xl lg:text-4xl font-bold mt-2">{t("bp.title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("bp.sub")}</p>
+        </header>
 
-      {STEPS.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
-          {t("bp.empty")}
-        </div>
-      ) : (
-        <div className="grid lg:grid-cols-[1fr_320px] gap-8">
-          <div className="space-y-4">
-            {STEPS.map((step, i) => {
-              const picked = picks[step.id];
-              const Icon = ICONS[step.icon] ?? Cpu;
-              const flagged = issues.some((issue) => issue.steps.includes(step.label));
-              return (
-                <section
-                  key={step.id}
-                  className={`rounded-xl border bg-card overflow-hidden ${flagged ? "border-destructive" : "border-border"}`}
-                >
-                  <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-                    <span className="size-8 rounded-md bg-primary/15 text-primary inline-flex items-center justify-center text-sm font-bold">
-                      {i + 1}
-                    </span>
-                    <Icon className="size-5 text-muted-foreground" />
-                    <h2 className="text-base font-semibold flex-1">{step.label}</h2>
-                    {flagged && <AlertTriangle className="size-4 text-destructive" />}
-                    {picked && (
-                      <span className="text-xs text-success inline-flex items-center gap-1">
-                        <Check className="size-3.5" /> {t("bp.picked")}
-                      </span>
-                    )}
-                  </div>
-                  <div className="grid sm:grid-cols-3 gap-px bg-border">
-                    {step.options.map((opt) => {
-                      const active = picked?.id === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          onClick={() => setPicks((s) => ({ ...s, [step.id]: opt }))}
-                          className={`bg-card text-start p-4 transition-colors hover:bg-card/60 ${active ? "ring-2 ring-primary -ring-offset-1 bg-primary/5" : ""}`}
-                        >
-                          <div className="text-sm font-medium">{opt.name}</div>
-                          <div className="text-sm font-bold text-primary mt-1">
-                            {formatDZD(opt.price)}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
+        {STEPS.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
+            {t("bp.empty")}
           </div>
+        ) : (
+          <div className="grid lg:grid-cols-[1fr_320px] gap-8">
+            <div className="space-y-4">
+              {STEPS.map((step, i) => {
+                const picked = picks[step.id];
+                const Icon = ICONS[step.icon] ?? Cpu;
+                const flagged = issues.some((issue) => issue.steps.includes(step.label));
+                return (
+                  <section
+                    key={step.id}
+                    className={`rounded-xl border bg-card overflow-hidden ${flagged ? "border-destructive" : "border-border"}`}
+                  >
+                    <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
+                      <span className="size-8 rounded-md bg-primary/15 text-primary inline-flex items-center justify-center text-sm font-bold">
+                        {i + 1}
+                      </span>
+                      <Icon className="size-5 text-muted-foreground" />
+                      <h2 className="text-base font-semibold flex-1">{step.label}</h2>
+                      {flagged && <AlertTriangle className="size-4 text-destructive" />}
+                      {picked && (
+                        <span className="text-xs text-success inline-flex items-center gap-1">
+                          <Check className="size-3.5" /> {t("bp.picked")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid sm:grid-cols-3 gap-px bg-border">
+                      {step.options.map((opt) => {
+                        const active = picked?.id === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            onClick={() => setPicks((s) => ({ ...s, [step.id]: opt }))}
+                            className={`bg-card text-start p-4 transition-colors hover:bg-card/60 ${active ? "ring-2 ring-primary -ring-offset-1 bg-primary/5" : ""}`}
+                          >
+                            <div className="text-sm font-medium">{opt.name}</div>
+                            <div className="text-sm font-bold text-primary mt-1">
+                              {formatDZD(opt.price)}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
 
-          <aside className="sticky top-4 lg:top-20 self-start space-y-4 z-20">
-            <div className="rounded-xl border border-border bg-card p-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">{t("bp.summary")}</h3>
-                <span className="text-xs text-muted-foreground">{completion}%</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-border overflow-hidden mb-5">
-                <div
-                  className="h-full transition-all"
-                  style={{ width: `${completion}%`, background: "var(--gradient-glow)" }}
-                />
-              </div>
-              <ul className="space-y-2 text-sm">
-                {STEPS.map((s) => (
-                  <li key={s.id} className="flex items-start justify-between gap-3">
-                    <span className="text-muted-foreground">{s.label}</span>
-                    <span className="text-foreground line-clamp-1 text-end">
-                      {picks[s.id]?.name ?? "—"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {issues.length > 0 && (
-                <div className="mt-5 space-y-2">
-                  <p className="text-xs font-semibold text-foreground">{t("bp.compat.title")}</p>
-                  <ul className="space-y-2">
-                    {errors.concat(warnings).map((issue) => {
-                      const compatLabel =
-                        issue.id === "socket"
-                          ? t("bp.compat.socket")
-                          : issue.id === "memory"
-                            ? t("bp.compat.memory")
-                            : t("bp.compat.psu");
-                      return (
-                        <li
-                          key={issue.id}
-                          className={`rounded-md border p-3 text-xs leading-relaxed ${
-                            issue.severity === "error"
-                              ? "border-destructive/50 bg-destructive/10 text-destructive"
-                              : "border-warning/50 bg-warning/10 text-warning"
-                          }`}
-                        >
-                          <span className="flex items-center gap-1.5 font-semibold">
-                            {issue.severity === "error" ? (
-                              <AlertCircle className="size-3.5 shrink-0" />
-                            ) : (
-                              <AlertTriangle className="size-3.5 shrink-0" />
-                            )}
-                            {compatLabel}
-                          </span>
-                          <span className="mt-1 block text-foreground/80">{issue.detail}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {blocked && (
-                    <p className="text-xs text-destructive font-medium">{t("bp.compat.blocked")}</p>
-                  )}
+            <aside className="sticky top-4 lg:top-20 self-start space-y-4 z-20">
+              <div className="rounded-xl border border-border bg-card p-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">{t("bp.summary")}</h3>
+                  <span className="text-xs text-muted-foreground">{completion}%</span>
                 </div>
-              )}
-
-              <div className="border-t border-border mt-5 pt-5 space-y-1">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm text-muted-foreground">{t("bp.total")}</span>
-                  <span className="text-2xl font-bold">{formatDZD(total)}</span>
+                <div className="h-1.5 rounded-full bg-border overflow-hidden mb-5">
+                  <div
+                    className="h-full transition-all"
+                    style={{ width: `${completion}%`, background: "var(--gradient-glow)" }}
+                  />
                 </div>
-                {!complete && (
-                  <div className="flex items-baseline justify-between text-xs text-muted-foreground">
-                    <span>{t("bp.remaining")}</span>
-                    <span>
-                      {missing.length} / {STEPS.length}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={!complete || blocked || saving}
-                className="mt-5 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors bg-primary text-primary-foreground hover:opacity-90 disabled:bg-card disabled:border disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:hover:opacity-100"
-              >
-                <ShoppingCart className="size-4" />
-                {saving ? t("bp.adding") : complete ? t("bp.addCart") : t("bp.complete")}
-              </button>
-
-              <a
-                href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`mt-3 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors ${complete && siteSettingsData.whatsapp ? "bg-success text-background hover:opacity-90" : "bg-card border border-border text-muted-foreground pointer-events-none"}`}
-              >
-                <MessageCircle className="size-4" />
-                {remainingLabel}
-              </a>
-
-              {missing.length > 0 && (
-                <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-                  <li className="font-medium text-foreground">{t("bp.complete")}</li>
-                  {missing.map((s) => (
-                    <li key={s.id}>• {s.label}</li>
+                <ul className="space-y-2 text-sm">
+                  {STEPS.map((s) => (
+                    <li key={s.id} className="flex items-start justify-between gap-3">
+                      <span className="text-muted-foreground">{s.label}</span>
+                      <span className="text-foreground line-clamp-1 text-end">
+                        {picks[s.id]?.name ?? "—"}
+                      </span>
+                    </li>
                   ))}
                 </ul>
-              )}
-              <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-                {t("bp.note")}
-              </p>
-            </div>
-          </aside>
-        </div>
-      )}
+
+                {issues.length > 0 && (
+                  <div className="mt-5 space-y-2">
+                    <p className="text-xs font-semibold text-foreground">{t("bp.compat.title")}</p>
+                    <ul className="space-y-2">
+                      {errors.concat(warnings).map((issue) => {
+                        const compatLabel =
+                          issue.id === "socket"
+                            ? t("bp.compat.socket")
+                            : issue.id === "memory"
+                              ? t("bp.compat.memory")
+                              : t("bp.compat.psu");
+                        return (
+                          <li
+                            key={issue.id}
+                            className={`rounded-md border p-3 text-xs leading-relaxed ${
+                              issue.severity === "error"
+                                ? "border-destructive/50 bg-destructive/10 text-destructive"
+                                : "border-warning/50 bg-warning/10 text-warning"
+                            }`}
+                          >
+                            <span className="flex items-center gap-1.5 font-semibold">
+                              {issue.severity === "error" ? (
+                                <AlertCircle className="size-3.5 shrink-0" />
+                              ) : (
+                                <AlertTriangle className="size-3.5 shrink-0" />
+                              )}
+                              {compatLabel}
+                            </span>
+                            <span className="mt-1 block text-foreground/80">{issue.detail}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {blocked && (
+                      <p className="text-xs text-destructive font-medium">
+                        {t("bp.compat.blocked")}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="border-t border-border mt-5 pt-5 space-y-1">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm text-muted-foreground">{t("bp.total")}</span>
+                    <span className="text-2xl font-bold">{formatDZD(total)}</span>
+                  </div>
+                  {!complete && (
+                    <div className="flex items-baseline justify-between text-xs text-muted-foreground">
+                      <span>{t("bp.remaining")}</span>
+                      <span>
+                        {missing.length} / {STEPS.length}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={!complete || blocked || saving}
+                  className="mt-5 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors bg-primary text-primary-foreground hover:opacity-90 disabled:bg-card disabled:border disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:hover:opacity-100"
+                >
+                  <ShoppingCart className="size-4" />
+                  {saving ? t("bp.adding") : complete ? t("bp.addCart") : t("bp.complete")}
+                </button>
+
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`mt-3 w-full inline-flex items-center justify-center gap-2 h-12 rounded-md font-semibold transition-colors ${complete && siteSettingsData.whatsapp ? "bg-success text-background hover:opacity-90" : "bg-card border border-border text-muted-foreground pointer-events-none"}`}
+                >
+                  <MessageCircle className="size-4" />
+                  {remainingLabel}
+                </a>
+
+                {missing.length > 0 && (
+                  <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    <li className="font-medium text-foreground">{t("bp.complete")}</li>
+                    {missing.map((s) => (
+                      <li key={s.id}>• {s.label}</li>
+                    ))}
+                  </ul>
+                )}
+                <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                  {t("bp.note")}
+                </p>
+              </div>
+            </aside>
+          </div>
+        )}
+      </div>
+      {bottomBlocks.map(renderBlock)}
     </div>
   );
 }

@@ -56,6 +56,8 @@ export interface BlockStyleConfig {
   margin?: "none" | "compact" | "normal" | "ample";
   anchorId?: string;
   customClassName?: string;
+  // ⚙️ Emplacement pour Vues Systèmes (Phase 46)
+  placement?: "top" | "bottom";
   // 🎛️ Sous-éléments Atomiques (Phase 43)
   cardStyle?: "default" | "flat" | "elevated" | "bordered" | "glass" | "gradient";
   cardHover?: "none" | "lift" | "glow" | "zoom" | "border-accent";
@@ -95,6 +97,14 @@ export interface PageSeoConfig {
   noIndex?: boolean;
 }
 
+export type SystemViewKey =
+  | "blog"
+  | "track"
+  | "builder"
+  | "cart"
+  | "checkout_success"
+  | "not_found";
+
 export interface CustomPageDefinition {
   id: string;
   slug: string; // e.g. "cv", "projets", "solutions"
@@ -109,6 +119,9 @@ export interface CustomPageDefinition {
   seo?: PageSeoConfig;
   createdAt: string;
   updatedAt: string;
+  // ⚙️ Vues Systèmes & Fonctionnelles (Phase 46)
+  isSystem?: boolean;
+  systemKey?: SystemViewKey;
 }
 
 export interface BlockMeta {
