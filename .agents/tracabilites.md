@@ -1937,3 +1937,34 @@
   - Studio Backstage : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
   - Archive application horodatée : 📦 [katech-site-08112026-1313.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1313.zip) (4.13 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1313.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1313.zip) (38 Ko)
+
+#### Sous-Phase 39.1 : Sécurisation Atomique de la Persistance Backend SQLite & Raccordement Extracteur Installateur
+
+- **Date :** 08 Novembre 2026
+- **Validation ArchiSys3.0 :** Accord explicite pour l'éradication des angles noirs de persistance SQLite et l'enrichissement consolidé de la Phase 39.
+- **Actions Réalisées :**
+  - **Étape 39.1.A (Remplacement Atomique des Listes dans `ControleurContenu.php`) :**
+    - Modification de [`api/src/Controllers/ControleurContenu.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurContenu.php) : détection de `$estListeRacine = is_array($payloadEntrant) && (empty($payloadEntrant) || array_is_list($payloadEntrant))`.
+    - Substitution intégrale (`$fusionne = $payloadEntrant;`) plutôt qu'une fusion récursive par index numérique, garantissant que les réordonnancements et suppressions de pages en base ne provoquent aucune collision ni résidu fantôme.
+    - Sécurisation de `lireContenu` pour toujours garantir un tableau `[]` sur `customPages`.
+  - **Étape 39.1.B (Raccordement de l'Extracteur & Données Installateur) :**
+    - Modification de [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/extraire-donnees-front.ts) : inclusion de `customPages` et `contact` dans le dictionnaire `siteContent`.
+    - Adaptation multiplateforme Windows du validateur d'images absolues (`/^[a-zA-Z]:[\\/]/.test(source)`).
+    - Correction du chemin relatif d'image dans [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) (`media/stacgate-archisys-combined.webp`).
+    - Exécution de l'extracteur : génération intègre de `api/tools/donnees-front.json` embarquant les 22 sections de `site_content`.
+  - **Étape 39.1.C (Injection Physique Directe & Vérification en Base SQLite) :**
+    - Exécution de `api/tools/importer-donnees-front.php` : injection physique de la ligne `customPages` (7 324 octets) dans la base de données active [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/ka-tech/katech-data/dev-a97b6b98a368.sqlite).
+    - Validation par banc de test PHP réel : `GET /content` retourne bien les 5 vues maîtres (`page_home`, `page_about`, `page_contact`, `page_cv_default`, `page_projets_default`) et `PATCH /content` réordonne atomiquement les pages sans friction.
+  - **Étape 39.1.D (Batterie Qualité CI & Livrables Horodatés) :**
+    - `bun run verifier-i18n` : 100% de cohérence trilingue.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run build ; bun run paqueter:data` : compilation et nouvelles archives prêtes pour la production.
+- **Livrables :**
+  - Contrôleur Backend : 📄 [`api/src/Controllers/ControleurContenu.php`](file:///c:/xampp/htdocs/ka-tech/api/src/Controllers/ControleurContenu.php)
+  - Outil Extracteur : 📄 [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/extraire-donnees-front.ts)
+  - Données d'installation : 📄 [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/ka-tech/api/tools/donnees-front.json)
+  - Base SQLite mise à jour : 🗄️ [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/ka-tech/katech-data/dev-a97b6b98a368.sqlite)
+  - Archive application horodatée : 📦 [katech-site-08112026-1324.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1324.zip) (4.13 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1324.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1324.zip) (42 Ko)

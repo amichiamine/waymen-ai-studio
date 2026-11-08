@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T21:53:40.166Z",
+  "generatedAt": "2026-11-08T12:20:12.940Z",
   "categories": [
     {
       "slug": "laptops",
@@ -7,8 +7,8 @@
       "description": "Laptops pour le travail, les études et le gaming.",
       "cover": "media/p-rog.webp",
       "position": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "slug": "desktops",
@@ -16,8 +16,8 @@
       "description": "Tours et mini-PC de bureau.",
       "cover": "media/p-optiplex.webp",
       "position": 1,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "slug": "builds",
@@ -25,8 +25,8 @@
       "description": "Configurations sur-mesure KA Build.",
       "cover": "media/p-build-mid.webp",
       "position": 2,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "slug": "phones",
@@ -34,8 +34,8 @@
       "description": "Smartphones Android et iOS.",
       "cover": "media/p-galaxy.webp",
       "position": 3,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     }
   ],
   "brands": [
@@ -44,64 +44,64 @@
       "name": "ASUS",
       "description": "Marque ASUS distribuée par KA Tech.",
       "country": "Taïwan",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "hp",
       "name": "HP",
       "description": "Marque HP distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "lenovo",
       "name": "Lenovo",
       "description": "Marque Lenovo distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "apple",
       "name": "Apple",
       "description": "Marque Apple distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "dell",
       "name": "Dell",
       "description": "Marque Dell distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "ka-build",
       "name": "KA Build",
       "description": "Marque KA Build distribuée par KA Tech.",
       "country": "Algérie",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "samsung",
       "name": "Samsung",
       "description": "Marque Samsung distribuée par KA Tech.",
       "country": "Corée du Sud",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "xiaomi",
       "name": "Xiaomi",
       "description": "Marque Xiaomi distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     }
   ],
   "products": [
@@ -130,8 +130,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "hp-pavilion-15",
@@ -158,8 +158,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "thinkpad-x1-carbon",
@@ -186,8 +186,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "macbook-air-m3",
@@ -218,8 +218,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "dell-optiplex-5000",
@@ -244,8 +244,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "hp-omen-45l",
@@ -270,8 +270,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "build-mid-gaming",
@@ -300,8 +300,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "build-pro-editing",
@@ -330,8 +330,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "galaxy-s25-ultra",
@@ -357,8 +357,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "iphone-16-pro-max",
@@ -388,8 +388,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "xiaomi-14t-pro",
@@ -415,8 +415,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "redmi-note-13-pro",
@@ -442,8 +442,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-08-06T21:53:40.166Z",
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "created_at": "2026-11-08T12:20:12.940Z",
+      "updated_at": "2026-11-08T12:20:12.940Z"
     }
   ],
   "blogPosts": [
@@ -469,9 +469,9 @@
       "author": "Équipe KA Tech",
       "tags": ["laptop", "guide"],
       "status": "published",
-      "published_at": "2026-07-07T21:53:40.167Z",
-      "created_at": "2026-07-07T21:53:40.167Z",
-      "updated_at": "2026-07-07T21:53:40.167Z"
+      "published_at": "2026-10-09T12:20:12.953Z",
+      "created_at": "2026-10-09T12:20:12.953Z",
+      "updated_at": "2026-10-09T12:20:12.953Z"
     },
     {
       "id": "blog_101",
@@ -495,9 +495,9 @@
       "author": "Yacine B.",
       "tags": ["gaming", "comparatif"],
       "status": "published",
-      "published_at": "2026-07-11T21:53:40.167Z",
-      "created_at": "2026-07-11T21:53:40.167Z",
-      "updated_at": "2026-07-11T21:53:40.167Z"
+      "published_at": "2026-10-13T12:20:12.953Z",
+      "created_at": "2026-10-13T12:20:12.953Z",
+      "updated_at": "2026-10-13T12:20:12.953Z"
     },
     {
       "id": "blog_102",
@@ -521,9 +521,9 @@
       "author": "Équipe KA Tech",
       "tags": ["smartphone", "photo", "top"],
       "status": "published",
-      "published_at": "2026-07-15T21:53:40.167Z",
-      "created_at": "2026-07-15T21:53:40.167Z",
-      "updated_at": "2026-07-15T21:53:40.167Z"
+      "published_at": "2026-10-17T12:20:12.953Z",
+      "created_at": "2026-10-17T12:20:12.953Z",
+      "updated_at": "2026-10-17T12:20:12.953Z"
     },
     {
       "id": "blog_103",
@@ -547,9 +547,9 @@
       "author": "Yacine B.",
       "tags": ["pc-sur-mesure", "conseil"],
       "status": "published",
-      "published_at": "2026-07-19T21:53:40.167Z",
-      "created_at": "2026-07-19T21:53:40.167Z",
-      "updated_at": "2026-07-19T21:53:40.167Z"
+      "published_at": "2026-10-21T12:20:12.953Z",
+      "created_at": "2026-10-21T12:20:12.953Z",
+      "updated_at": "2026-10-21T12:20:12.953Z"
     },
     {
       "id": "blog_104",
@@ -573,9 +573,9 @@
       "author": "Équipe KA Tech",
       "tags": ["livraison", "faq"],
       "status": "published",
-      "published_at": "2026-07-23T21:53:40.167Z",
-      "created_at": "2026-07-23T21:53:40.167Z",
-      "updated_at": "2026-07-23T21:53:40.167Z"
+      "published_at": "2026-10-25T12:20:12.953Z",
+      "created_at": "2026-10-25T12:20:12.953Z",
+      "updated_at": "2026-10-25T12:20:12.953Z"
     }
   ],
   "shippingRates": [
@@ -583,355 +583,355 @@
       "wilaya_code": "*",
       "home": 800,
       "desk": 400,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "01",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "02",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "03",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "04",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "05",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "06",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "07",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "08",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "09",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "10",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "11",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "12",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "13",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "14",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "15",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "16",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "17",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "18",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "19",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "20",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "21",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "22",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "23",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "24",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "25",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "26",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "27",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "28",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "29",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "30",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "31",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "32",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "33",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "34",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "35",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "36",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "37",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "38",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "39",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "40",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "41",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "42",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "43",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "44",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "45",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "46",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "47",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "48",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "49",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "50",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "51",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "52",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "53",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "54",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "55",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "56",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "57",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "wilaya_code": "58",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     }
   ],
   "paymentMethods": [
@@ -941,7 +941,7 @@
       "instructions": "Réglez votre commande en espèces au livreur.",
       "active": 1,
       "position": 0,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "bank",
@@ -949,7 +949,7 @@
       "instructions": "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.",
       "active": 1,
       "position": 1,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "card",
@@ -957,7 +957,7 @@
       "instructions": "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).",
       "active": 1,
       "position": 2,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     },
     {
       "id": "store",
@@ -965,7 +965,7 @@
       "instructions": "Retirez et réglez votre commande à notre point de vente d'Alger.",
       "active": 0,
       "position": 3,
-      "updated_at": "2026-08-06T21:53:40.166Z"
+      "updated_at": "2026-11-08T12:20:12.940Z"
     }
   ],
   "siteContent": {
@@ -1087,14 +1087,14 @@
     },
     "footer": {
       "tagline": {
-        "fr": "Boutique en ligne spécialisée dans la vente d'ordinateurs, de téléphones et d'accessoires — livraison dans toute l'Algérie avec garantie officielle.",
-        "en": "Online store specialized in computers, phones and accessories — delivery across Algeria with official warranty.",
-        "ar": "متجر إلكتروني متخصص في بيع الحواسيب والهواتف والملحقات — توصيل لكل أنحاء الجزائر مع ضمان رسمي."
+        "fr": "Boutique en ligne officielle — sélection de produits de qualité, service client dédié et livraison fiable dans toute l'Algérie.",
+        "en": "Official online store — curated quality products, dedicated customer service, and reliable delivery across Algeria.",
+        "ar": "المتجر الإلكتروني الرسمي — تشكيلة من المنتجات عالية الجودة، خدمة عملاء متميزة وتوصيل موثوق لجميع أنحاء الجزائر."
       },
       "copyright": {
-        "fr": "© 2026 KA Tech — Tous droits réservés",
-        "en": "© 2026 KA Tech — All rights reserved",
-        "ar": "© 2026 KA Tech — جميع الحقوق محفوظة"
+        "fr": "© 2026 {storeName} — Tous droits réservés",
+        "en": "© 2026 {storeName} — All rights reserved",
+        "ar": "© 2026 {storeName} — جميع الحقوق محفوظة"
       },
       "madeIn": {
         "fr": "Fait avec passion en Algérie",
@@ -1464,14 +1464,14 @@
     },
     "whyUs": {
       "kicker": {
-        "fr": "Pourquoi KA Tech",
-        "en": "Why KA Tech",
-        "ar": "لماذا KA Tech"
+        "fr": "Pourquoi nous choisir",
+        "en": "Why choose us",
+        "ar": "لماذا تختارنا"
       },
       "title1": {
-        "fr": "Parce que la tech mérite",
-        "en": "Because tech deserves",
-        "ar": "لأن التكنولوجيا تستحق"
+        "fr": "Parce que vos projets méritent",
+        "en": "Because your projects deserve",
+        "ar": "لأن مشاريعكم تستحق"
       },
       "title2": {
         "fr": "un partenaire de confiance",
@@ -1704,6 +1704,429 @@
           },
           "href": "/account",
           "requiresAuth": true
+        }
+      ]
+    },
+    "customPages": [
+      {
+        "id": "page_home",
+        "slug": "",
+        "title": {
+          "fr": "Page d'Accueil",
+          "en": "Home Page",
+          "ar": "الصفحة الرئيسية"
+        },
+        "description": {
+          "fr": "Vitrine principale, catalogue et sections phares de la plateforme.",
+          "en": "Main storefront, catalog and featured platform sections.",
+          "ar": "الواجهة الرئيسية والكتالوج والأقسام المميزة للمنصة."
+        },
+        "blocks": [
+          {
+            "id": "b_home_hero",
+            "type": "hero_banner",
+            "enabled": true
+          },
+          {
+            "id": "b_home_flash",
+            "type": "flash_sale",
+            "enabled": true
+          },
+          {
+            "id": "b_home_categories",
+            "type": "category_cards",
+            "enabled": true,
+            "props": {
+              "max": 4
+            }
+          },
+          {
+            "id": "b_home_use_chips",
+            "type": "use_chips",
+            "enabled": true
+          },
+          {
+            "id": "b_home_best_sellers",
+            "type": "best_sellers",
+            "enabled": true
+          },
+          {
+            "id": "b_home_featured",
+            "type": "featured_tabs",
+            "enabled": true
+          },
+          {
+            "id": "b_home_marquee",
+            "type": "brands_marquee",
+            "enabled": true
+          },
+          {
+            "id": "b_home_why_us",
+            "type": "why_us",
+            "enabled": true
+          },
+          {
+            "id": "b_home_builder",
+            "type": "builder_teaser",
+            "enabled": true
+          },
+          {
+            "id": "b_home_reviews",
+            "type": "reviews_grid",
+            "enabled": true
+          },
+          {
+            "id": "b_home_cta",
+            "type": "contact_cta",
+            "enabled": true
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 1,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_about",
+        "slug": "about",
+        "title": {
+          "fr": "À propos & Histoire",
+          "en": "About & Story",
+          "ar": "من نحن وقصتنا"
+        },
+        "description": {
+          "fr": "Histoire de l'enseigne, valeurs fondatrices et vision d'excellence.",
+          "en": "Company history, core values and vision for excellence.",
+          "ar": "قصة العلامة التجارية، القيم الأساسية ورؤية التميز."
+        },
+        "blocks": [
+          {
+            "id": "b_about_banner",
+            "type": "brand_banner",
+            "enabled": true
+          },
+          {
+            "id": "b_about_history",
+            "type": "company_history",
+            "enabled": true
+          },
+          {
+            "id": "b_about_values",
+            "type": "values_grid",
+            "enabled": true
+          },
+          {
+            "id": "b_about_cta",
+            "type": "contact_cta",
+            "enabled": true
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": true,
+        "inFooter": true,
+        "navOrder": 2,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_contact",
+        "slug": "contact",
+        "title": {
+          "fr": "Contact & FAQ",
+          "en": "Contact & FAQ",
+          "ar": "اتصل بنا والأسئلة الشائعة"
+        },
+        "description": {
+          "fr": "Coordonnées directes, formulaire de messagerie et réponses aux questions.",
+          "en": "Direct contact info, message form and answered questions.",
+          "ar": "بيانات التواصل المباشر، نموذج الرسائل والإجابات على الأسئلة."
+        },
+        "blocks": [
+          {
+            "id": "b_contact_direct",
+            "type": "direct_contact_cards",
+            "enabled": true
+          },
+          {
+            "id": "b_contact_form",
+            "type": "contact_form",
+            "enabled": true
+          },
+          {
+            "id": "b_contact_faq",
+            "type": "faq_accordion",
+            "enabled": true
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": true,
+        "inFooter": true,
+        "navOrder": 3,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_cv_default",
+        "slug": "cv",
+        "title": {
+          "fr": "Profil & CV",
+          "en": "Profile & Resume",
+          "ar": "الملف والسيرة الذاتية"
+        },
+        "description": {
+          "fr": "Profil exécutif, parcours d'ingénierie, compétences et réalisations.",
+          "en": "Executive profile, engineering background, skills and achievements.",
+          "ar": "الملف التنفيذي، المسار الهندسي، المهارات والإنجازات."
+        },
+        "blocks": [
+          {
+            "id": "b_cv_hero",
+            "type": "profile_hero",
+            "enabled": true,
+            "props": {
+              "name": "ArchiSys3.0",
+              "role": {
+                "fr": "Architecte Logiciel & Consultant R&D",
+                "en": "Software Architect & R&D Consultant",
+                "ar": "مهندس معماري برمجيات ومستشار بحث وتطوير"
+              },
+              "bio": {
+                "fr": "Expertise en architectures logicielles souveraines, cloud, web moderne et systèmes distribués à haute performance.",
+                "en": "Expertise in sovereign software architectures, cloud, modern web and high-performance distributed systems.",
+                "ar": "خبرة في المعماريات البرمجية السيادية، السحابية، الويب الحديث والأنظمة الموزعة عالية الأداء."
+              },
+              "availability": {
+                "fr": "Disponible pour missions d'architecture & R&D",
+                "en": "Available for Architecture & R&D missions",
+                "ar": "متاح لمشاريع المعمارية البرمجية والبحث والتطوير"
+              },
+              "showDownloadPdf": true
+            }
+          },
+          {
+            "id": "b_cv_timeline",
+            "type": "timeline",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Parcours Professionnel & Jalons",
+                "en": "Career & Milestones",
+                "ar": "المسار المهني والمحطات"
+              },
+              "subtitle": {
+                "fr": "Historique des réalisations et projets d'ingénierie.",
+                "en": "History of engineering achievements and projects.",
+                "ar": "سجل الإنجازات والمشاريع الهندسية."
+              },
+              "items": [
+                {
+                  "id": "exp-1",
+                  "period": "2024 — Présent",
+                  "role": {
+                    "fr": "Architecte & Directeur Technique R&D",
+                    "en": "Lead Architect & R&D Director",
+                    "ar": "مهندس معماري ومدير تقني للبحث والتطوير"
+                  },
+                  "company": "StacGate Systems",
+                  "description": {
+                    "fr": "Conception et direction d'architectures logicielles d'élite, moteurs composables et solutions souveraines.",
+                    "en": "Design and direction of elite software architectures, composable engines and sovereign solutions.",
+                    "ar": "تصميم وإدارة معماريات برمجية سيادية ومحركات قابلة للتجميع وحلول متقدمة."
+                  },
+                  "tags": ["Architecture", "React 19", "TypeScript", "Performance"]
+                }
+              ]
+            }
+          },
+          {
+            "id": "b_cv_skills",
+            "type": "skills_matrix",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Compétences Clés & Technologies",
+                "en": "Core Skills & Technologies",
+                "ar": "المهارات الأساسية والتقنيات"
+              },
+              "subtitle": {
+                "fr": "Savoir-faire éprouvé sur les stacks et architectures modernes.",
+                "en": "Proven expertise across modern stacks and architectures.",
+                "ar": "خبرة عملية مثبتة في أحدث أطر العمل والمعماريات."
+              },
+              "categories": [
+                {
+                  "id": "cat-1",
+                  "name": {
+                    "fr": "Architecture & Systèmes",
+                    "en": "Architecture & Systems",
+                    "ar": "المعمارية والأنظمة"
+                  },
+                  "skills": [
+                    "Clean Architecture",
+                    "API Design",
+                    "Haute Disponibilité",
+                    "Sécurité & Audit"
+                  ]
+                },
+                {
+                  "id": "cat-2",
+                  "name": {
+                    "fr": "Développement & Web",
+                    "en": "Development & Web",
+                    "ar": "التطوير والويب"
+                  },
+                  "skills": ["TypeScript", "React 19", "PHP / Node.js", "Tailwind CSS"]
+                }
+              ]
+            }
+          },
+          {
+            "id": "b_cv_contact",
+            "type": "contact_form",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Échanger sur une opportunité ou un projet",
+                "en": "Discuss an opportunity or project",
+                "ar": "تواصل لمناقشة مشروع أو فرصة"
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": true,
+        "inFooter": true,
+        "navOrder": 4,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_projets_default",
+        "slug": "projets",
+        "title": {
+          "fr": "Réalisations",
+          "en": "Projects",
+          "ar": "المشاريع"
+        },
+        "description": {
+          "fr": "Études de cas, prototypes et solutions technologiques.",
+          "en": "Case studies, prototypes and technological solutions.",
+          "ar": "دراسات حالة ونماذج أولية وحلول تكنولوجية."
+        },
+        "blocks": [
+          {
+            "id": "b_proj_grid",
+            "type": "projects_grid",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Réalisations & Projets Phares",
+                "en": "Featured Projects & Case Studies",
+                "ar": "أبرز المشاريع والإنجازات"
+              },
+              "subtitle": {
+                "fr": "Sélection de travaux d'ingénierie, prototypes et architectures en production.",
+                "en": "Selection of engineering works, prototypes and production architectures.",
+                "ar": "مجموعة مختارة من الأعمال الهندسية والنماذج والمعماريات قيد التشغيل."
+              },
+              "items": [
+                {
+                  "id": "p-stacgate",
+                  "title": {
+                    "fr": "StacGate Platform",
+                    "en": "StacGate Platform",
+                    "ar": "منصة StacGate"
+                  },
+                  "description": {
+                    "fr": "Plateforme souveraine modulaire combinant e-commerce haute performance et vitrine de solutions.",
+                    "en": "Sovereign modular platform combining high-performance e-commerce and solutions showcase.",
+                    "ar": "منصة سيادية معيارية تجمع بين التجارة الإلكترونية عالية الأداء ومعرض الحلول."
+                  },
+                  "category": "Software Architecture",
+                  "tags": ["React 19", "Vite", "TypeScript", "SQLite"],
+                  "demoUrl": "#",
+                  "codeUrl": "#",
+                  "image": "media/stacgate-archisys-combined.webp"
+                }
+              ]
+            }
+          },
+          {
+            "id": "b_proj_brand",
+            "type": "brand_banner",
+            "enabled": true
+          },
+          {
+            "id": "b_proj_cta",
+            "type": "contact_cta",
+            "enabled": true
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": true,
+        "inFooter": true,
+        "navOrder": 5,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      }
+    ],
+    "contact": {
+      "kicker": {
+        "fr": "Contact & Support",
+        "en": "Contact & Support",
+        "ar": "الاتصال والدعم"
+      },
+      "title": {
+        "fr": "Une question ? Écrivez-nous !",
+        "en": "Any question? Write to us!",
+        "ar": "هل لديك سؤال؟ راسلنا!"
+      },
+      "subtitle": {
+        "fr": "Notre équipe vous répond sous 24h ouvrées. Retrouvez aussi les réponses aux questions les plus fréquentes.",
+        "en": "Our team responds within 24 business hours. You can also find answers to frequent questions below.",
+        "ar": "فريقنا يجيبكم خلال 24 ساعة عمل. كما يمكنكم الاطلاع على إجابات الأسئلة الشائعة أدناه."
+      },
+      "faqs": [
+        {
+          "id": "faq_1",
+          "question": {
+            "fr": "Quels sont les délais et modalités de livraison ?",
+            "en": "What are the delivery times and methods?",
+            "ar": "ما هي آجال وطرق التوصيل؟"
+          },
+          "answer": {
+            "fr": "Nous livrons sur l'ensemble des 58 wilayas d'Algérie en 24h à 72h ouvrées selon votre localisation, avec suivi en direct et paiement à la livraison.",
+            "en": "We deliver across all 58 wilayas in Algeria within 24h to 72h depending on your location, with tracking and cash on delivery.",
+            "ar": "نقوم بالتوصيل إلى جميع ولايات الجزائر الـ 58 خلال 24 إلى 72 ساعة عمل حسب موقعكم، مع تتبع مباشر والدفع عند الاستلام."
+          }
+        },
+        {
+          "id": "faq_2",
+          "question": {
+            "fr": "Les produits bénéficient-ils d'une garantie ?",
+            "en": "Do products come with a warranty?",
+            "ar": "هل المنتجات مشمولة بضمان؟"
+          },
+          "answer": {
+            "fr": "Tous nos articles sont 100% authentiques et couverts par une garantie officielle revendeur agréé avec service après-vente dédié.",
+            "en": "All our products are 100% authentic and covered by an official authorized dealer warranty with dedicated after-sales support.",
+            "ar": "جميع منتجاتنا أصلية 100% ومغطاة بضمان رسمي من الموزع المعتمد مع خدمة ما بعد البيع."
+          }
+        },
+        {
+          "id": "faq_3",
+          "question": {
+            "fr": "Puis-je commander directement via WhatsApp ?",
+            "en": "Can I order directly via WhatsApp?",
+            "ar": "هل يمكنني الطلب مباشرة عبر واتساب؟"
+          },
+          "answer": {
+            "fr": "Absolument ! Cliquez sur le bouton WhatsApp sur n'importe quelle fiche produit ou dans notre en-tête pour échanger directement avec un conseiller commercial.",
+            "en": "Absolutely! Click the WhatsApp button on any product page or in our header to chat directly with a sales advisor.",
+            "ar": "بالتأكيد! اضغط على زر واتساب في أي صفحة منتج أو في أعلى الموقع للتواصل مباشرة مع مستشار المبيعات."
+          }
         }
       ]
     },
@@ -1988,8 +2411,8 @@
     }
   },
   "siteSettings": {
-    "storeName": "KA Tech",
-    "contactEmail": "contact@katech.dz",
+    "storeName": "StacGate Platform",
+    "contactEmail": "contact@stacgate.com",
     "contactPhone": "+213 555 00 00 00",
     "whatsapp": "213555000000",
     "address": "Alger, Algérie",
@@ -2006,9 +2429,8 @@
     "currencySymbol": "DA",
     "currencyPosition": "suffix",
     "currencyThousandSeparator": " ",
-    "languageSelectorEnabled": true,
-    "hideRatingWhenNoReviews": true,
-    "onboardingCompleted": false
+    "languageSelectorEnabled": false,
+    "hideRatingWhenNoReviews": true
   },
   "shippingSettings": {
     "freeShippingThreshold": 150000,

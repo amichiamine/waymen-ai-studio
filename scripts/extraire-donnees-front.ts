@@ -115,10 +115,9 @@ function publierMedia(source: string, contexte: string): string {
     throw new Error(`${contexte} : aucune image source. Rien ne sera stocké en base à l'aveugle.`);
   }
 
-  // Sous bun, un import de .webp vaut le chemin absolu du fichier. Toute autre
-  // forme (URL, chemin déjà relatif) signale un changement de résolution des
-  // imports : on refuse de deviner.
-  if (!source.startsWith("/") || !/\.(webp|png|jpe?g|avif|gif|svg)$/i.test(source)) {
+  // Sous bun, un import de .webp vaut le chemin absolu du fichier (POSIX /... ou Windows C:\...).
+  const estAbsolu = source.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(source);
+  if (!estAbsolu || !/\.(webp|png|jpe?g|avif|gif|svg)$/i.test(source)) {
     throw new Error(
       `${contexte} : « ${source} » n'est pas un chemin de fichier image absolu. ` +
         `Ce script doit être lancé avec bun (« bun run scripts/extraire-donnees-front.ts ») : ` +
@@ -713,6 +712,8 @@ const siteContent = {
   contactCta: siteContentSeed.contactCta,
   floatingWhatsApp: siteContentSeed.floatingWhatsApp,
   mobileBottomBar: siteContentSeed.mobileBottomBar,
+  customPages: siteContentSeed.customPages,
+  contact: siteContentSeed.contact,
   // 5 sections éditoriales (listes gérées séparément par l'admin)
   "home-reviews": homeReviewsSection,
   ticker: tickerSection,

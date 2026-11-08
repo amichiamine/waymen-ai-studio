@@ -65,6 +65,9 @@ final class ControleurContenu
             if ((string) $l['section'] === 'about' && (is_array($val) && (empty($val) || array_is_list($val)))) {
                 $val = (object) ['values' => $val];
             }
+            if ((string) $l['section'] === 'customPages' && !is_array($val)) {
+                $val = [];
+            }
             $resultat[(string) $l['section']] = $val;
         }
 
@@ -106,11 +109,18 @@ final class ControleurContenu
                 $existant = ['values' => $existant];
             }
 
-            // Fusion profonde : les clés absentes du payload entrant sont conservées.
-            $fusionne = $this->fusionnerPayload(
-                is_array($existant) ? $existant : [],
-                is_array($payloadEntrant) ? $payloadEntrant : (array) $payloadEntrant,
-            );
+            // Si la section entrante est une liste ordonnée indexée (ex: customPages), elle remplace
+            // intégralement l'existante pour garantir les suppressions et le réordonnancement sans collision.
+            $estListeRacine = is_array($payloadEntrant) && (empty($payloadEntrant) || array_is_list($payloadEntrant));
+            if ($estListeRacine) {
+                $fusionne = $payloadEntrant;
+            } else {
+                // Fusion profonde : les clés absentes du payload entrant sont conservées.
+                $fusionne = $this->fusionnerPayload(
+                    is_array($existant) ? $existant : [],
+                    is_array($payloadEntrant) ? $payloadEntrant : (array) $payloadEntrant,
+                );
+            }
 
             $this->db->upsert(
                 'site_content',

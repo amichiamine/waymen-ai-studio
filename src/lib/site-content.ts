@@ -507,7 +507,7 @@ export function seedCustomPages(): CustomPageDefinition[] {
                 tags: ["React 19", "Vite", "TypeScript", "SQLite"],
                 demoUrl: "#",
                 codeUrl: "#",
-                image: "/media/stacgate-archisys-combined.webp",
+                image: "media/stacgate-archisys-combined.webp",
               },
             ],
           },
