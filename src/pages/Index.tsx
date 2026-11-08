@@ -13,6 +13,7 @@ import { Reviews } from "@/components/Reviews";
 import { ContactCTA } from "@/components/ContactCTA";
 import { useSiteContent, useSiteSettings, useProductList } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
+import { renderBlock } from "@/components/blocks";
 
 export default function Index() {
   const { data: siteContent } = useSiteContent();
@@ -29,10 +30,36 @@ export default function Index() {
     ? `${storeName} — ${title1} ${title2}`.trim()
     : `${title1} ${title2}`.trim() || "Boutique officielle";
 
+  const homeCustomPage = useMemo(() => {
+    return (siteContent?.customPages || []).find(
+      (p) =>
+        (p.id === "page_home" || p.slug === "" || p.slug === "home") && p.isPublished !== false,
+    );
+  }, [siteContent?.customPages]);
+
   const hasProductsWithUse = useMemo(() => {
     return products.some((p) => Array.isArray(p.use) && p.use.length > 0);
   }, [products]);
 
+  // Si la vue d'accueil composable est configurée avec des blocs, restituer l'ordonnancement souverain
+  if (homeCustomPage && Array.isArray(homeCustomPage.blocks) && homeCustomPage.blocks.length > 0) {
+    const enabledBlocks = homeCustomPage.blocks.filter((b) => b.enabled);
+    return (
+      <>
+        <Helmet>
+          <title>{metaTitle}</title>
+          <meta name="description" content={tagline} />
+          <link rel="canonical" href={window.location.origin} />
+          <meta property="og:url" content={window.location.origin} />
+        </Helmet>
+        <div className="flex flex-col space-y-2">
+          {enabledBlocks.map((block) => renderBlock(block))}
+        </div>
+      </>
+    );
+  }
+
+  // Repli gracieux : layout historique inchangé
   return (
     <>
       <Helmet>

@@ -11,6 +11,8 @@ import { Reviews } from "@/components/Reviews";
 import { ContactCTA } from "@/components/ContactCTA";
 import { Ticker } from "@/components/Ticker";
 import { PromoBanner } from "@/components/PromoBanner";
+import { useSiteContent, useSiteSettings, useProductList } from "@/data-provider";
+import { useLocalize } from "@/lib/i18n";
 import type { BlockConfig } from "@/types/pages";
 
 export function HeroBannerBlock({ config }: { config: BlockConfig }) {
@@ -28,8 +30,17 @@ export function CategoryCardsBlock({ config }: { config: BlockConfig }) {
 }
 
 export function UseChipsBlock({ config }: { config: BlockConfig }) {
+  const { data: siteContent } = useSiteContent();
+  const { data: products } = useProductList();
+  const L = useLocalize();
+  const hasProductsWithUse = (products || []).some((p) => Array.isArray(p.use) && p.use.length > 0);
+  if (!hasProductsWithUse) return null;
+
   return (
     <section className="container-page pb-4">
+      {siteContent.useChips?.title && (
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4">{L(siteContent.useChips.title)}</h2>
+      )}
       <UseChips />
     </section>
   );
@@ -52,6 +63,8 @@ export function WhyUsBlock({ config }: { config: BlockConfig }) {
 }
 
 export function BuilderTeaserBlock({ config }: { config: BlockConfig }) {
+  const { data: siteSettings } = useSiteSettings();
+  if (siteSettings.builderEnabled === false) return null;
   return <BuilderTeaser />;
 }
 

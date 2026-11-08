@@ -147,21 +147,28 @@ export default function PagesManager() {
 
   // Enregistrement modal page
   const handleSavePageMeta = () => {
-    if (!editingPageMeta || !editingPageMeta.slug?.trim()) {
-      toast.error("Veuillez spécifier un slug valide (ex: cv, projets).");
-      return;
-    }
+    if (!editingPageMeta) return;
 
-    const cleanSlug = editingPageMeta.slug
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, "-")
-      .replace(/^-+|-+$/g, "");
+    const isHomePage = editingPageMeta.id === "page_home";
+    let cleanSlug = "";
 
-    const exists = pages.some((p) => p.slug === cleanSlug && p.id !== editingPageMeta.id);
-    if (exists) {
-      toast.error(`Le slug "/${cleanSlug}" est déjà utilisé par une autre vue.`);
-      return;
+    if (!isHomePage) {
+      if (!editingPageMeta.slug?.trim()) {
+        toast.error("Veuillez spécifier un slug valide (ex: cv, projets).");
+        return;
+      }
+
+      cleanSlug = editingPageMeta.slug
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      const exists = pages.some((p) => p.slug === cleanSlug && p.id !== editingPageMeta.id);
+      if (exists) {
+        toast.error(`Le slug "/${cleanSlug}" est déjà utilisé par une autre vue.`);
+        return;
+      }
     }
 
     const newPage: CustomPageDefinition = {
@@ -169,13 +176,17 @@ export default function PagesManager() {
       slug: cleanSlug,
       title: editingPageMeta.title
         ? toLocObj(editingPageMeta.title)
-        : { fr: cleanSlug, en: cleanSlug, ar: cleanSlug },
+        : {
+            fr: isHomePage ? "Accueil" : cleanSlug,
+            en: isHomePage ? "Home" : cleanSlug,
+            ar: isHomePage ? "الرئيسية" : cleanSlug,
+          },
       description: editingPageMeta.description
         ? toLocObj(editingPageMeta.description)
         : { fr: "", en: "", ar: "" },
       isPublished: editingPageMeta.isPublished ?? true,
-      inNavbar: editingPageMeta.inNavbar ?? false,
-      inFooter: editingPageMeta.inFooter ?? false,
+      inNavbar: isHomePage ? false : (editingPageMeta.inNavbar ?? false),
+      inFooter: isHomePage ? false : (editingPageMeta.inFooter ?? false),
       navOrder: editingPageMeta.navOrder ?? pages.length + 1,
       blocks: editingPageMeta.blocks || [],
       createdAt: editingPageMeta.createdAt || new Date().toISOString(),
@@ -195,13 +206,22 @@ export default function PagesManager() {
     setIsDirty(true);
     setPageModalOpen(false);
     setSelectedPageId(newPage.id);
-    toast.success(`Vue "/${newPage.slug}" configurée.`);
+    toast.success(isHomePage ? "Vue d'Accueil configurée." : `Vue "/${newPage.slug}" configurée.`);
   };
 
   // Suppression d'une page
   const handleDeletePage = (id: string) => {
     const pageToDelete = pages.find((p) => p.id === id);
     if (!pageToDelete) return;
+
+    if (
+      pageToDelete.id === "page_home" ||
+      pageToDelete.slug === "" ||
+      pageToDelete.slug === "home"
+    ) {
+      toast.error("La page d'accueil est une vue racine du système et ne peut pas être supprimée.");
+      return;
+    }
 
     if (confirm(`Confirmez-vous la suppression définitive de la vue "/${pageToDelete.slug}" ?`)) {
       setPages((prev) => prev.filter((p) => p.id !== id));
@@ -419,7 +439,9 @@ export default function PagesManager() {
                 ) : (
                   pages.map((p) => {
                     const isSelected = p.id === selectedPageId;
-                    const title = L(p.title) || p.slug;
+                    const isHome = p.id === "page_home" || p.slug === "" || p.slug === "home";
+                    const isSystem = isHome || p.slug === "about" || p.slug === "contact";
+                    const title = L(p.title) || (isHome ? "Accueil" : p.slug);
                     const activeBlocksCount = (p.blocks || []).filter((b) => b.enabled).length;
 
                     return (
@@ -435,12 +457,36 @@ export default function PagesManager() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <div className="flex items-center gap-1.5 font-bold text-sm">
+                              {isHome && <Home className="h-3.5 w-3.5 text-primary" />}
                               <span className="text-foreground">{title}</span>
                               <span className="text-xs text-muted-foreground font-mono">
-                                /{p.slug}
+                                {isHome ? "/ (racine)" : `/${p.slug}`}
                               </span>
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                              {isHome ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-primary/30 font-semibold"
+                                >
+                                  Accueil Vitrine
+                                </Badge>
+                              ) : isSystem ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30"
+                                >
+                                  Système
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] py-0 px-1.5 bg-muted text-muted-foreground border-border/50"
+                                >
+                                  Sur-mesure
+                                </Badge>
+                              )}
+
                               <Badge
                                 variant="secondary"
                                 className={`text-[10px] py-0 px-1.5 ${
@@ -489,15 +535,17 @@ export default function PagesManager() {
                             >
                               <Copy className="h-3.5 w-3.5" />
                             </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeletePage(p.id)}
-                              title="Supprimer la vue"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
+                            {!isHome && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeletePage(p.id)}
+                                title="Supprimer la vue"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -516,11 +564,17 @@ export default function PagesManager() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
+                        {selectedPage.id === "page_home" && (
+                          <Home className="h-4 w-4 text-primary" />
+                        )}
                         <CardTitle className="text-xl font-bold">
-                          {L(selectedPage.title) || selectedPage.slug}
+                          {L(selectedPage.title) ||
+                            (selectedPage.id === "page_home" ? "Accueil" : selectedPage.slug)}
                         </CardTitle>
                         <Badge variant="outline" className="font-mono text-xs">
-                          /{selectedPage.slug}
+                          {selectedPage.id === "page_home" || selectedPage.slug === ""
+                            ? "/ (racine)"
+                            : `/${selectedPage.slug}`}
                         </Badge>
                       </div>
                       <CardDescription className="text-xs mt-1">
@@ -535,7 +589,10 @@ export default function PagesManager() {
                         asChild
                         className="gap-1.5 text-xs font-semibold"
                       >
-                        <Link to={`/${selectedPage.slug}`} target="_blank">
+                        <Link
+                          to={selectedPage.slug ? `/${selectedPage.slug}` : "/"}
+                          target="_blank"
+                        >
                           <ExternalLink className="h-3.5 w-3.5" />
                           <span>Prévisualiser</span>
                         </Link>
@@ -734,14 +791,24 @@ export default function PagesManager() {
                   <span className="text-xs text-muted-foreground font-mono">/</span>
                   <Input
                     id="page_slug"
-                    value={editingPageMeta.slug || ""}
+                    value={editingPageMeta.id === "page_home" ? "" : editingPageMeta.slug || ""}
+                    disabled={editingPageMeta.id === "page_home"}
                     onChange={(e) =>
                       setEditingPageMeta({ ...editingPageMeta, slug: e.target.value })
                     }
-                    placeholder="cv, projets, solutions..."
+                    placeholder={
+                      editingPageMeta.id === "page_home"
+                        ? "(Racine Accueil /)"
+                        : "cv, projets, solutions..."
+                    }
                     className="border-0 bg-transparent focus-visible:ring-0 text-sm font-mono"
                   />
                 </div>
+                {editingPageMeta.id === "page_home" && (
+                  <p className="text-[11px] text-muted-foreground">
+                    La page d'accueil est fixée sur la racine principale (/) du site.
+                  </p>
+                )}
               </div>
 
               {/* Sélecteur de langue trilingue FR / EN / AR */}

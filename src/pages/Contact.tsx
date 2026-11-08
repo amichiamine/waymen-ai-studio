@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Mail, Phone, MapPin, MessageCircle, Send, Clock, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useContactMessageMutations, useSiteSettings, useSiteContent } from "@/data-provider";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { getIcon } from "@/lib/site-content";
+import { renderBlock } from "@/components/blocks";
 import {
   Accordion,
   AccordionContent,
@@ -69,6 +70,35 @@ export default function Contact() {
     .replace(/\bStacGate Platform\b/g, storeName);
   const subtitle = L(contact?.subtitle) || t("contact.sub");
   const faqs = contact?.faqs && contact.faqs.length > 0 ? contact.faqs : [];
+
+  const contactCustomPage = useMemo(() => {
+    return (siteContent?.customPages || []).find(
+      (p) => p.slug.toLowerCase() === "contact" && p.isPublished !== false,
+    );
+  }, [siteContent?.customPages]);
+
+  // Si la vue composable Contact est configurée, rendre ses blocs dynamiques
+  if (
+    contactCustomPage &&
+    Array.isArray(contactCustomPage.blocks) &&
+    contactCustomPage.blocks.length > 0
+  ) {
+    const enabledBlocks = contactCustomPage.blocks.filter((b) => b.enabled);
+    const metaTitle = `${L(contactCustomPage.title) || title} — ${storeName}`;
+    const metaDesc = L(contactCustomPage.description) || subtitle;
+    return (
+      <>
+        <Helmet>
+          <title>{metaTitle}</title>
+          <meta name="description" content={metaDesc} />
+          <link rel="canonical" href={`${window.location.origin}/contact`} />
+        </Helmet>
+        <div className="flex flex-col space-y-2">
+          {enabledBlocks.map((block) => renderBlock(block))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="container-page py-12 lg:py-16">

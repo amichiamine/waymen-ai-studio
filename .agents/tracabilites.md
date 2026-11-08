@@ -58,6 +58,7 @@
 | **Phase 36** | 07/11/2026 | Refonte Épurée Logo Combiné en Anglais (Référence Directe Signature) & Déploiement Multi-Formats | 📄 [`36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md`](Implementations_Plans/36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md)                                 | 🟢 **Livré & Validé** |
 | **Phase 37** | 08/11/2026 | Moteur Universel de Pages Dynamiques & Catalogue de 24 Blocs Composables (Zéro Régression)       | 📄 [`37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md`](Implementations_Plans/37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md)           | 🟢 **Livré & Validé** |
 | **Phase 38** | 08/11/2026 | Studio de Conception Visuelle Unifié & Harmonisation Ergonomique Backstage 360°                  | 📄 [`38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md`](Implementations_Plans/38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md)                               | 🟢 **Livré & Validé** |
+| **Phase 39** | 08/11/2026 | Universalisation des Vues Composables 360° (Accueil, À propos, Contact & Catalogue Global)       | 📄 [`39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md`](Implementations_Plans/39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md)                   | 🟢 **Livré & Validé** |
 
 ---
 
@@ -1890,3 +1891,49 @@
   - Dictionnaires i18n : 📄 [`src/lib/i18n/admin/socle/fr.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/socle/fr.ts), 📄 [`src/lib/i18n/admin/socle/en.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/socle/en.ts), 📄 [`src/lib/i18n/admin/socle/ar.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/admin/socle/ar.ts)
   - Archive application horodatée : 📦 [katech-site-08112026-1301.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1301.zip) (4.12 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1301.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1301.zip) (38 Ko)
+
+---
+
+## Phase 39 : Universalisation des Vues Composables 360° (Accueil, À Propos, Contact & Catalogue Global)
+
+- **Date :** 08 Novembre 2026
+- **Contexte & Constat Initial :**
+  - ArchiSys3.0 a identifié un manque d'uniformité majeur : dans l'onglet `[📄 Pages & Vues Composables]`, seules deux vues (`cv` et `projets`) étaient présentes.
+  - La Page d'Accueil (`/`), À propos (`/about`) et Contact (`/contact`) restaient figées dans leur séquence de rendu sans bénéficier de la flexibilité du moteur de 24 blocs (réordonnancement, suppression/ajout libre, insertion de blocs tiers).
+  - Nécessité d'intégrer l'Accueil et les pages institutionnelles comme des vues souveraines composables avec repli gracieux et zéro régression.
+- **Décisions d'ArchiSys3.0 :**
+  - Validation intégrale de l'Option C et du Plan d'Implémentation Phase 39 :
+    1. La Page d'Accueil (`/`) devient la vue composable racine `page_home` (slug: `""`), pré-chargée avec ses 11 blocs vitrines réordonnables.
+    2. Les pages institutionnelles `page_about` (`/about`) et `page_contact` (`/contact`) sont intégrées dans le catalogue de vues avec leurs blocs natifs.
+    3. Préservation des instances existantes via une fusion intelligente dans `mergeSiteContent()` qui injecte les vues système manquantes sans toucher aux pages personnalisées.
+    4. Amélioration ergonomique de `PagesManager.tsx` avec badges visuels distinctifs (`Accueil`, `Système`, `Sur-mesure`), sanctuarisation de la suppression pour l'accueil, et bouton de prévisualisation en direct.
+- **Actions Réalisées :**
+  - **Étape 39.1 (Enrichissement du Référentiel des Vues dans `site-content.ts`) :**
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) :
+      - Ajout dans `seedCustomPages()` de `page_home` (11 blocs vitrines), `page_about` (4 blocs institutionnels) et `page_contact` (3 blocs de support).
+      - Renforcement de `mergeSiteContent()` : si des données persistées existent déjà, injection transparente des vues système manquantes en garantissant la préservation intégrale des vues personnalisées.
+  - **Étape 39.2 (Passerelle Composable sur l'Accueil dans `Index.tsx` & `CommerceBlocks.tsx`) :**
+    - Modification de [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) : encapsulation autonome de `UseChipsBlock` et `BuilderTeaserBlock`.
+    - Modification de [`src/pages/Index.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Index.tsx) : détection de `homeCustomPage` et restitution via `renderBlock(block)`. En cas d'absence de configuration, repli gracieux vers le layout historique (zéro rupture).
+  - **Étape 39.3 (Passerelles Composables sur `About.tsx` & `Contact.tsx`) :**
+    - Modification de [`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx) : détection de `aboutCustomPage` et rendu dynamique des blocs composables avec repli gracieux.
+    - Modification de [`src/pages/Contact.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Contact.tsx) : détection de `contactCustomPage` et rendu dynamique des blocs composables avec repli gracieux.
+  - **Étape 39.4 (Ergonomie & Sécurité Backstage dans `PagesManager.tsx`) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Badges dédiés : `[Accueil Vitrine]` avec icône `Home`, `[Système]` pour les routes institutionnelles, `[Sur-mesure]` pour les pages libres.
+      - Sécurisation absolue : interdiction de suppression de la page d'accueil racine.
+      - Gestion du slug : pour la page d'accueil, le slug est fixé à la racine (`/`) et protégé dans le formulaire.
+      - Prévisualisation directe : le bouton ouvre `/` pour l'accueil et `/${slug}` pour les autres vues.
+  - **Étape 39.5 (Contrôles Qualité CI & Livrables) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue (FR, EN, AR).
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run build ; bun run paqueter:data` : compilation et packaging réussis.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md)
+  - Vues vitrines raccordées : 📄 [`src/pages/Index.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Index.tsx), 📄 [`src/pages/About.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/About.tsx), 📄 [`src/pages/Contact.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Contact.tsx)
+  - Blocs & Référentiel : 📄 [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts), 📄 [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx)
+  - Studio Backstage : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1313.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1313.zip) (4.13 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1313.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1313.zip) (38 Ko)

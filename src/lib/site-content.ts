@@ -243,6 +243,90 @@ export type SiteContent = {
 export function seedCustomPages(): CustomPageDefinition[] {
   return [
     {
+      id: "page_home",
+      slug: "",
+      title: {
+        fr: "Page d'Accueil",
+        en: "Home Page",
+        ar: "الصفحة الرئيسية",
+      },
+      description: {
+        fr: "Vitrine principale, catalogue et sections phares de la plateforme.",
+        en: "Main storefront, catalog and featured platform sections.",
+        ar: "الواجهة الرئيسية والكتالوج والأقسام المميزة للمنصة.",
+      },
+      blocks: [
+        { id: "b_home_hero", type: "hero_banner", enabled: true },
+        { id: "b_home_flash", type: "flash_sale", enabled: true },
+        { id: "b_home_categories", type: "category_cards", enabled: true, props: { max: 4 } },
+        { id: "b_home_use_chips", type: "use_chips", enabled: true },
+        { id: "b_home_best_sellers", type: "best_sellers", enabled: true },
+        { id: "b_home_featured", type: "featured_tabs", enabled: true },
+        { id: "b_home_marquee", type: "brands_marquee", enabled: true },
+        { id: "b_home_why_us", type: "why_us", enabled: true },
+        { id: "b_home_builder", type: "builder_teaser", enabled: true },
+        { id: "b_home_reviews", type: "reviews_grid", enabled: true },
+        { id: "b_home_cta", type: "contact_cta", enabled: true },
+      ],
+      isPublished: true,
+      inNavbar: false,
+      inFooter: false,
+      navOrder: 1,
+      createdAt: "2026-11-08T00:00:00.000Z",
+      updatedAt: "2026-11-08T00:00:00.000Z",
+    },
+    {
+      id: "page_about",
+      slug: "about",
+      title: {
+        fr: "À propos & Histoire",
+        en: "About & Story",
+        ar: "من نحن وقصتنا",
+      },
+      description: {
+        fr: "Histoire de l'enseigne, valeurs fondatrices et vision d'excellence.",
+        en: "Company history, core values and vision for excellence.",
+        ar: "قصة العلامة التجارية، القيم الأساسية ورؤية التميز.",
+      },
+      blocks: [
+        { id: "b_about_banner", type: "brand_banner", enabled: true },
+        { id: "b_about_history", type: "company_history", enabled: true },
+        { id: "b_about_values", type: "values_grid", enabled: true },
+        { id: "b_about_cta", type: "contact_cta", enabled: true },
+      ],
+      isPublished: true,
+      inNavbar: true,
+      inFooter: true,
+      navOrder: 2,
+      createdAt: "2026-11-08T00:00:00.000Z",
+      updatedAt: "2026-11-08T00:00:00.000Z",
+    },
+    {
+      id: "page_contact",
+      slug: "contact",
+      title: {
+        fr: "Contact & FAQ",
+        en: "Contact & FAQ",
+        ar: "اتصل بنا والأسئلة الشائعة",
+      },
+      description: {
+        fr: "Coordonnées directes, formulaire de messagerie et réponses aux questions.",
+        en: "Direct contact info, message form and answered questions.",
+        ar: "بيانات التواصل المباشر، نموذج الرسائل والإجابات على الأسئلة.",
+      },
+      blocks: [
+        { id: "b_contact_direct", type: "direct_contact_cards", enabled: true },
+        { id: "b_contact_form", type: "contact_form", enabled: true },
+        { id: "b_contact_faq", type: "faq_accordion", enabled: true },
+      ],
+      isPublished: true,
+      inNavbar: true,
+      inFooter: true,
+      navOrder: 3,
+      createdAt: "2026-11-08T00:00:00.000Z",
+      updatedAt: "2026-11-08T00:00:00.000Z",
+    },
+    {
       id: "page_cv_default",
       slug: "cv",
       title: {
@@ -1075,8 +1159,26 @@ export function mergeSiteContent(seed: SiteContent, partial?: Partial<SiteConten
     ) {
       (out as Record<string, unknown>)[k] = { ...(s as object), ...(p as object) };
     } else if (p !== undefined) {
-      // Protection d'incompatibilité de type : si seed attend un objet mais que le persistant fournit un tableau (ex: about = [])
-      if (typeof s === "object" && s && !Array.isArray(s) && Array.isArray(p)) {
+      if (k === "customPages" && Array.isArray(p) && Array.isArray(s)) {
+        const persistedPages = p as CustomPageDefinition[];
+        const seedPages = s as CustomPageDefinition[];
+        // On préserve toutes les modifications de l'utilisateur, et on injecte les pages système manquantes
+        const missingSeedPages = seedPages.filter(
+          (sp) =>
+            !persistedPages.some(
+              (pp) =>
+                pp.id === sp.id ||
+                (sp.slug === "" && (pp.slug === "" || pp.slug === "home")) ||
+                (sp.slug !== "" && pp.slug.toLowerCase() === sp.slug.toLowerCase()),
+            ),
+        );
+        const homeInMissing = missingSeedPages.find((sp) => sp.id === "page_home");
+        const otherMissing = missingSeedPages.filter((sp) => sp.id !== "page_home");
+        const merged = homeInMissing
+          ? [homeInMissing, ...persistedPages, ...otherMissing]
+          : [...persistedPages, ...missingSeedPages];
+        (out as Record<string, unknown>)[k] = merged;
+      } else if (typeof s === "object" && s && !Array.isArray(s) && Array.isArray(p)) {
         if (k === "about") {
           const values = p.length > 0 ? p : (s as { values?: unknown[] }).values;
           (out as Record<string, unknown>)[k] = { ...(s as object), values };

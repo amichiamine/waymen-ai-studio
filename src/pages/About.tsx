@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ShieldCheck, Truck, Headphones, Award, Star, Heart, AlertTriangle } from "lucide-react";
@@ -5,6 +6,7 @@ import archisysBannerSrc from "@/assets/stacgate-archisys-banner.webp";
 import { useAboutValueList, useSiteSettings, useSiteContent } from "@/data-provider";
 import type { AboutValue } from "@/lib/admin-store";
 import { useI18n, useLocalize } from "@/lib/i18n";
+import { renderBlock } from "@/components/blocks";
 
 const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
   shield: ShieldCheck,
@@ -69,6 +71,35 @@ export default function About() {
   // Les valeurs : si définies dans siteContent.about.values on les utilise, sinon repli sur aboutValues
   const displayedValues = about?.values && about.values.length > 0 ? about.values : aboutValues;
   const loading = loadingValues && loadingContent;
+
+  const aboutCustomPage = useMemo(() => {
+    return (siteContent?.customPages || []).find(
+      (p) => p.slug.toLowerCase() === "about" && p.isPublished !== false,
+    );
+  }, [siteContent?.customPages]);
+
+  // Si la vue composable À propos est configurée, rendre ses blocs dynamiques
+  if (
+    aboutCustomPage &&
+    Array.isArray(aboutCustomPage.blocks) &&
+    aboutCustomPage.blocks.length > 0
+  ) {
+    const enabledBlocks = aboutCustomPage.blocks.filter((b) => b.enabled);
+    const metaTitle = `${L(aboutCustomPage.title) || title} — ${storeName}`;
+    const metaDesc = L(aboutCustomPage.description) || intro;
+    return (
+      <>
+        <Helmet>
+          <title>{metaTitle}</title>
+          <meta name="description" content={metaDesc} />
+          <link rel="canonical" href={`${window.location.origin}/about`} />
+        </Helmet>
+        <div className="flex flex-col space-y-2">
+          {enabledBlocks.map((block) => renderBlock(block))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="container-page py-12 lg:py-16">
