@@ -63,6 +63,7 @@
 | **Phase 41** | 08/11/2026 | Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, 5 Nouveaux Blocs                                                                                  | 📄 [`41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md`](Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md)                     | 🟢 **Livré & Validé** |
 | **Phase 42** | 08/11/2026 | Ergonomie & Réactivité 360° du Studio Visuel : Sidebar Rétractable, Mode Mobile/Tablette, Auto-Scroll & Inspecteur Ultra-Fin                                                      | 📄 [`42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md`](Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)       | 🟢 **Livré & Validé** |
 | **Phase 43** | 08/11/2026 | Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments, Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite | 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md) | 🟢 **Livré & Validé** |
+| **Phase 44** | 08/11/2026 | Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)                                                                                                     | 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)                                                                                                       | 🟢 **Livré & Validé** |
 
 ---
 
@@ -2326,6 +2327,47 @@
   - Archive application horodatée : 📦 [katech-site-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1728.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1728.zip) (42 Ko)
 
+---
+
+### Phase 44 : Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)
+
+- **Contexte & Enjeux :**  
+  ArchiSys3.0 a requis la formalisation d'une suite commerciale autonome et détachable du projet, hébergée dans un répertoire [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis) à la racine du dépôt. Cette suite doit proposer des devis chiffrés et des calculateurs interactifs sur-mesure pour chaque typologie de clients algériens (produits digitaux, commerce retail, entreprise B2B, services/indépendants, configurateur intégral), en garantissant une discrétion commerciale absolue (zéro mention de "paliers") et un étalonnage proportionnel des options par profil.
+- **Décisions d'ArchiSys3.0 :**  
+  - Approbation intégrale de la grille d'estimation révisée basée sur les 4 piliers du marché algérien (TJM, benchmark sur-mesure React, complexité technique, ROI client).
+  - Validation du principe d'étalonnage proportionnel des calculateurs (barèmes d'options contextualisés par devis).
+  - Approbation formelle du plan d'implémentation [`.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md).
+- **Actions Réalisées :**
+  - **Étape 1 (Socle CSS & Moteur JS Autonome) :**
+    - Création de [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) : design sobre et moderne sans dépendance externe, typographie soignée, cartes d'options cliquables, panneau récapitulatif sticky et règles `@media print` pour génération de PDF A4 irréprochable.
+    - Création de [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js) : moteur dynamique universel lisant `window.DEVIS_CONFIG`, recalculant en temps réel le montant en Dinars Algériens (DZD) et en Millions de centimes, générant le lien WhatsApp pré-rempli et persistant les choix en `localStorage`.
+  - **Étape 2 (Devis Ciblés Métiers) :**
+    - Création de [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html) : devis et compositeur pour revendeurs de clés IA, abonnements streaming, licences logicielles et recharges (base 60 000 DZD).
+    - Création de [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html) : devis et compositeur pour commerces de détail, mode, parfumerie et artisanat avec logistique 58 Wilayas en Cash-on-Delivery (base 90 000 DZD).
+    - Création de [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html) : devis et compositeur pour PME, magasins tech, pièces détachées et grossistes B2B avec stocks atomiques et dashboard KPI (base 160 000 DZD).
+    - Création de [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html) : devis et compositeur pour formateurs, consultants, bureaux d'études et experts avec portfolio et blog d'autorité (base 85 000 DZD).
+  - **Étape 3 (Grand Compositeur Sur-Mesure) :**
+    - Création de [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html) : compositeur intégral tout-en-un exposant les modules applicatifs et les 29 blocs du Visual Page Builder par familles (base 50 000 DZD).
+  - **Étape 4 (Cockpit Hub Exécutif) :**
+    - Création de [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html) : portail confidentiel réservé à ArchiSys3.0 centralisant l'ensemble des 5 offres, leurs descriptions cibles, fourchettes de prix et instructions de portabilité.
+- **Résultats de Recette :**
+  - Dossier `devis/` 100% autonome : zéro dépendance Node.js, zéro dépendance PHP en exécution, s'ouvre par simple double-clic hors-ligne.
+  - Calcul dynamique instantané en DZD et en Millions de centimes avec mise à jour en direct du lien WhatsApp.
+  - Impression `Ctrl + P` propre au format PDF A4 masquant les boutons interactifs.
+  - Absence totale de mention hiérarchique ("palier") dans les 4 devis clients.
+- **Livrables :**
+  - Répertoire autonome : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
+  - Hub Confidentiel ArchiSys3.0 : 📄 [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html)
+  - Devis Digital & Clés : 📄 [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html)
+  - Devis Boutique Retail 58 Wilayas : 📄 [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html)
+  - Devis Entreprise & Grossiste B2B : 📄 [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html)
+  - Devis Présence Pro & Services : 📄 [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html)
+  - Grand Compositeur Sur-Mesure : 📄 [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html)
+  - Feuille de Styles & Print PDF : 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
+  - Moteur Universel de Calcul : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
+  - Plan Miroir Validé : 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)
+
+
 #### Sous-Phase 41.1 : Audit Forensique, Éradication des 4 Angles Morts & Consolidation Intégrale de la Persistance BD Directe
 
 - **Contexte & Enjeux :**  
@@ -2563,3 +2605,44 @@
   - Plan d'Implémentation Miroir : 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md)
   - Archive application horodatée : 📦 [katech-site-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1728.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1728.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1728.zip) (42 Ko)
+
+---
+
+### Phase 44 : Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)
+
+- **Contexte & Enjeux :**  
+  ArchiSys3.0 a requis la formalisation d'une suite commerciale autonome et détachable du projet, hébergée dans un répertoire [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis) à la racine du dépôt. Cette suite doit proposer des devis chiffrés et des calculateurs interactifs sur-mesure pour chaque typologie de clients algériens (produits digitaux, commerce retail, entreprise B2B, services/indépendants, configurateur intégral), en garantissant une discrétion commerciale absolue (zéro mention de "paliers") et un étalonnage proportionnel des options par profil.
+- **Décisions d'ArchiSys3.0 :**  
+  - Approbation intégrale de la grille d'estimation révisée basée sur les 4 piliers du marché algérien (TJM, benchmark sur-mesure React, complexité technique, ROI client).
+  - Validation du principe d'étalonnage proportionnel des calculateurs (barèmes d'options contextualisés par devis).
+  - Approbation formelle du plan d'implémentation [`.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md).
+- **Actions Réalisées :**
+  - **Étape 1 (Socle CSS & Moteur JS Autonome) :**
+    - Création de [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) : design sobre et moderne sans dépendance externe, typographie soignée, cartes d'options cliquables, panneau récapitulatif sticky et règles `@media print` pour génération de PDF A4 irréprochable.
+    - Création de [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js) : moteur dynamique universel lisant `window.DEVIS_CONFIG`, recalculant en temps réel le montant en Dinars Algériens (DZD) et en Millions de centimes, générant le lien WhatsApp pré-rempli et persistant les choix en `localStorage`.
+  - **Étape 2 (Devis Ciblés Métiers) :**
+    - Création de [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html) : devis et compositeur pour revendeurs de clés IA, abonnements streaming, licences logicielles et recharges (base 60 000 DZD).
+    - Création de [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html) : devis et compositeur pour commerces de détail, mode, parfumerie et artisanat avec logistique 58 Wilayas en Cash-on-Delivery (base 90 000 DZD).
+    - Création de [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html) : devis et compositeur pour PME, magasins tech, pièces détachées et grossistes B2B avec stocks atomiques et dashboard KPI (base 160 000 DZD).
+    - Création de [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html) : devis et compositeur pour formateurs, consultants, bureaux d'études et experts avec portfolio et blog d'autorité (base 85 000 DZD).
+  - **Étape 3 (Grand Compositeur Sur-Mesure) :**
+    - Création de [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html) : compositeur intégral tout-en-un exposant les modules applicatifs et les 29 blocs du Visual Page Builder par familles (base 50 000 DZD).
+  - **Étape 4 (Cockpit Hub Exécutif) :**
+    - Création de [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html) : portail confidentiel réservé à ArchiSys3.0 centralisant l'ensemble des 5 offres, leurs descriptions cibles, fourchettes de prix et instructions de portabilité.
+- **Résultats de Recette :**
+  - Dossier `devis/` 100% autonome : zéro dépendance Node.js, zéro dépendance PHP en exécution, s'ouvre par simple double-clic hors-ligne.
+  - Calcul dynamique instantané en DZD et en Millions de centimes avec mise à jour en direct du lien WhatsApp.
+  - Impression `Ctrl + P` propre au format PDF A4 masquant les boutons interactifs.
+  - Absence totale de mention hiérarchique ("palier") dans les 4 devis clients.
+- **Livrables :**
+  - Répertoire autonome : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
+  - Hub Confidentiel ArchiSys3.0 : 📄 [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html)
+  - Devis Digital & Clés : 📄 [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html)
+  - Devis Boutique Retail 58 Wilayas : 📄 [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html)
+  - Devis Entreprise & Grossiste B2B : 📄 [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html)
+  - Devis Présence Pro & Services : 📄 [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html)
+  - Grand Compositeur Sur-Mesure : 📄 [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html)
+  - Feuille de Styles & Print PDF : 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
+  - Moteur Universel de Calcul : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
+  - Plan Miroir Validé : 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)
+

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hub de Pilotage des Devis & Calculateurs — StacGate / ArchiSys3.0</title>
+  <link rel="stylesheet" href="assets/css/devis-style.css">
+  <style>
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .hub-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease-in-out;
+      box-shadow: var(--shadow-sm);
+    }
+    .hub-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .hub-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+    .hub-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .hub-card h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--secondary);
+      margin-bottom: 0.5rem;
+    }
+    .hub-card p.target {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 1.25rem;
+    }
+    .hub-price-box {
+      background: var(--bg-page);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .hub-price-box .price-dzd {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--primary);
+    }
+    .hub-price-box .price-cts {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #065f46;
+    }
+    .hub-features-list {
+      list-style: none;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .hub-features-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .hub-features-list li svg {
+      color: var(--success);
+      flex-shrink: 0;
+    }
+    .hub-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .hub-actions .btn {
+      font-size: 0.85rem;
+      padding: 0.65rem 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="devis-container">
+
+    <!-- En-tête officiel du Hub -->
+    <header class="devis-header">
+      <div class="devis-header-top">
+        <div class="devis-brand">
+          <h1>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+            Cockpit Exécutif des Devis & Offres Commerciales
+          </h1>
+          <p>Tableau de bord de pilotage des propositions et calculateurs sur-mesure (Réservé à ArchiSys3.0)</p>
+        </div>
+        <div>
+          <span class="devis-badge-type" style="background:#fef2f2; color:#b91c1c; border-color:#fecaca;">Usage Interne Confidentiel</span>
+        </div>
+      </div>
+
+      <div class="devis-meta-grid">
+        <div class="devis-meta-item">
+          <span class="label">Architecture</span>
+          <span class="val">Suite HTML/CSS/JS 100% Autonome & Déplaçable</span>
+        </div>
+        <div class="devis-meta-item">
+          <span class="label">Portabilité</span>
+          <span class="val">Fonctionne hors-ligne par double-clic ou hébergé</span>
+        </div>
+        <div class="devis-meta-item">
+          <span class="label">Discrétion Commerciale</span>
+          <span class="val">Zéro fuite de palier dans les pages transmises aux clients</span>
+        </div>
+        <div class="devis-meta-item">
+          <span class="label">Calculateurs Intégrés</span>
+          <span class="val">Barèmes proportionnels contextualisés par secteur</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Grille des Offres -->
+    <section>
+      <h2 style="font-size:1.35rem; font-weight:800; color:var(--secondary); margin-bottom:0.25rem;">
+        Vos Propositions Commerciales Prêtes à l'Emploi
+      </h2>
+      <p style="color:var(--text-muted); font-size:0.92rem;">
+        Transmettez directement le fichier ou l'URL correspondante à votre prospect selon son activité :
+      </p>
+
+      <div class="hub-grid">
+
+        <!-- Carte 1 : Produits Digitaux -->
+        <div class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <span class="hub-badge">Micro-Activité & Digital</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Fichier : solution-digitale.html</span>
+            </div>
+            <h3>1. Solution Digitale & Abonnements</h3>
+            <p class="target">
+              <strong>Cible :</strong> Vendeurs d'abonnements streaming, clés logicielles, crédits IA (ChatGPT, Claude, Midjourney), licences, recharges, e-books.
+            </p>
+
+            <div class="hub-price-box">
+              <div>
+                <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Fourchette Tarifaire</span>
+                <span class="price-dzd">60 000 – 85 000 DZD</span>
+              </div>
+              <div class="price-cts">6,0 à 8,5 Millions cts</div>
+            </div>
+
+            <ul class="hub-features-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Catalogue numérique sans frais de port</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Commande rapide 1-clic BaridiMob / CCP</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Back-office de validation et délivrance</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Bouton WhatsApp direct avec message pré-rempli</li>
+            </ul>
+          </div>
+
+          <div class="hub-actions">
+            <a href="solution-digitale.html" class="btn btn-primary" target="_blank">Ouvrir le Devis Client</a>
+          </div>
+        </div>
+
+        <!-- Carte 2 : Boutique Retail COD -->
+        <div class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <span class="hub-badge">Commerce Physique</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Fichier : boutique-commerce.html</span>
+            </div>
+            <h3>2. Boutique Retail & 58 Wilayas</h3>
+            <p class="target">
+              <strong>Cible :</strong> Boutiques de mode, prêt-à-porter, cosmétiques, bijoux, parfumerie, artisanat, commerces de proximité avec expédition.
+            </p>
+
+            <div class="hub-price-box">
+              <div>
+                <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Fourchette Tarifaire</span>
+                <span class="price-dzd">90 000 – 140 000 DZD</span>
+              </div>
+              <div class="price-cts">9,0 à 14,0 Millions cts</div>
+            </div>
+
+            <ul class="hub-features-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> E-Commerce React 19 complet + Panier</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Logistique 58 Wilayas (COD à la livraison)</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Suivi colis en direct par téléphone</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Gestion des variantes (tailles/couleurs)</li>
+            </ul>
+          </div>
+
+          <div class="hub-actions">
+            <a href="boutique-commerce.html" class="btn btn-primary" target="_blank">Ouvrir le Devis Client</a>
+          </div>
+        </div>
+
+        <!-- Carte 3 : Plateforme Entreprise & B2B -->
+        <div class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <span class="hub-badge">PME, Tech & Grossiste</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Fichier : plateforme-entreprise.html</span>
+            </div>
+            <h3>3. Plateforme Entreprise & B2B</h3>
+            <p class="target">
+              <strong>Cible :</strong> Magasins tech/informatique, pièces auto, quincaillerie industrielle, grossistes et importateurs avec flux important.
+            </p>
+
+            <div class="hub-price-box">
+              <div>
+                <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Fourchette Tarifaire</span>
+                <span class="price-dzd">160 000 – 240 000 DZD</span>
+              </div>
+              <div class="price-cts">16,0 à 24,0 Millions cts</div>
+            </div>
+
+            <ul class="hub-features-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Dashboard KPI exécutif (CA, paniers, LTV)</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Stocks atomiques avec alertes de rupture</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Sauvegarde/restauration BDD en 1 clic</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Sécurité Argon2id + Sessions HttpOnly</li>
+            </ul>
+          </div>
+
+          <div class="hub-actions">
+            <a href="plateforme-entreprise.html" class="btn btn-primary" target="_blank">Ouvrir le Devis Client</a>
+          </div>
+        </div>
+
+        <!-- Carte 4 : Présence Pro & Services -->
+        <div class="hub-card">
+          <div>
+            <div class="hub-card-header">
+              <span class="hub-badge">Services & Experts</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Fichier : presence-professionnelle.html</span>
+            </div>
+            <h3>4. Présence Pro & Services</h3>
+            <p class="target">
+              <strong>Cible :</strong> Formateurs, consultants, bureaux d'études, architectes, cabinets de conseil, prestataires de services professionnels.
+            </p>
+
+            <div class="hub-price-box">
+              <div>
+                <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Fourchette Tarifaire</span>
+                <span class="price-dzd">85 000 – 135 000 DZD</span>
+              </div>
+              <div class="price-cts">8,5 à 13,5 Millions cts</div>
+            </div>
+
+            <ul class="hub-features-list">
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Vitrine de réalisations & Portfolio interactif</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Blog d'autorité Markdown & Vidéos R&D</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Témoignages & Avis clients vérifiés</li>
+              <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Vente optionnelle de packs de formation</li>
+            </ul>
+          </div>
+
+          <div class="hub-actions">
+            <a href="presence-professionnelle.html" class="btn btn-primary" target="_blank">Ouvrir le Devis Client</a>
+          </div>
+        </div>
+
+        <!-- Carte 5 : Grand Compositeur Sur-Mesure -->
+        <div class="hub-card" style="grid-column: 1 / -1; border-color:var(--primary); background:linear-gradient(to right, #ffffff, #f0f7ff);">
+          <div>
+            <div class="hub-card-header">
+              <span class="hub-badge" style="background:var(--primary); color:#ffffff;">Outil Maître ArchiSys3.0</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Fichier : configurateur-sur-mesure.html</span>
+            </div>
+            <h3>5. Grand Compositeur Sur-Mesure (Catalogue 29 Blocs & Toutes Options)</h3>
+            <p class="target">
+              <strong>Usage :</strong> Idéal pour composer une offre en direct avec un client exigeant, en session de cadrage technique ou lors d'un appel d'offres spécifique. Permet d'activer/désactiver n'importe quel bloc ou module de la plateforme StacGate.
+            </p>
+
+            <div class="hub-price-box" style="background:#ffffff;">
+              <div>
+                <span style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Plage de Composition</span>
+                <span class="price-dzd">50 000 à 250 000+ DZD</span>
+              </div>
+              <div class="price-cts">5,0 à 25,0+ Millions de centimes</div>
+            </div>
+          </div>
+
+          <div class="hub-actions">
+            <a href="configurateur-sur-mesure.html" class="btn btn-primary" style="max-width:300px;" target="_blank">Lancer le Grand Compositeur</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Guide d'Exploitation -->
+    <section class="section-card" style="margin-top:2.5rem;">
+      <h2>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        Instructions de Déploiement & Portabilité du Dossier `devis/`
+      </h2>
+      <div style="font-size:0.9rem; color:var(--text-muted); line-height:1.6; display:flex; flex-direction:column; gap:0.75rem;">
+        <p>1. <strong>Détachement total :</strong> Vous pouvez copier le dossier <code>devis/</code> n'importe où (sur une clé USB, dans vos documents, sur un sous-domaine ou un hébergement distant). Il ne dépend d'aucun fichier extérieur.</p>
+        <p>2. <strong>Envoi direct par lien ou PDF :</strong> Ouvrez le devis voulu dans votre navigateur (ex: Chrome ou Edge), configurez les options selon la discussion avec votre client, puis cliquez sur <strong>« Imprimer / Enregistrer en PDF »</strong> pour lui envoyer un document propre et prêt à signer.</p>
+        <p>3. <strong>Partage interactif :</strong> Vous pouvez également envoyer directement le fichier HTML ou le lien web au client pour le laisser composer lui-même sa solution. Il pourra cliquer sur <strong>« Valider & Échanger sur WhatsApp »</strong> pour vous renvoyer sa configuration exacte.</p>
+      </div>
+    </section>
+
+    <!-- Pied de Page -->
+    <footer class="devis-footer">
+      <p>StacGate Platform • Cockpit Exécutif des Ventes • Conçu et Validé par ArchiSys3.0</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
