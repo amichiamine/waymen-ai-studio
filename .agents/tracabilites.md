@@ -3021,3 +3021,52 @@
 - **Livrables :**
   - Plan validé : 📄 [`50_plan_deploiement_plein_ecran_inspecteur_desktop_et_focalisation_360.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/50_plan_deploiement_plein_ecran_inspecteur_desktop_et_focalisation_360.md)
   - Archives horodatées : 📦 [katech-site-08112026-2131.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2131.zip) & 📦 [katech-data-08112026-2131.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2131.zip)
+
+
+---
+
+## Phase 51 : Grand Verrouillage Souverain de Persistance SQLite 360°, Hydratation Intégrale des Blocs & Synchronisation Universelle
+
+- **Date :** 08 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** Livré, testé et validé sur main
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 51 (`51_plan_grand_verrouillage_persistance_sqlite_360_et_synchronisation_blocs.md`).
+- **Contexte & Enjeux :**
+  L'audit chirurgical de la persistance SQLite demandé par ArchiSys3.0 a mis en lumière 5 angles morts critiques :
+  1. Seules 15 vues sur 24 étaient présentes en base SQLite physique (`katech-data/dev-*.sqlite`), les 9 autres ne vivant qu'en mémoire frontend.
+  2. Les blocs enregistrés dans SQLite étaient des coquilles vides (`props: {}` et `style: {}`).
+  3. L'effet d'auto-sauvegarde initiale était court-circuité par la pré-injection mémoire de `mergeSiteContent`.
+  4. Absence de synchronisation bidirectionnelle entre sections individuelles et `customPages`.
+  5. `donnees-front.json` datait de la Phase 41 et n'embarquait ni les 24 vues ni les propriétés riches des blocs.
+- **Actions Réalisées :**
+  - **Étape 51.1 (Hydratation Exhaustive 100% Blocs & Vues dans le Registre) :**
+    - Modification de [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts) : enrichissement de 100% des blocs avec des `defaultProps` complètes trilingues FR/EN/AR et des chemins d'actifs relatifs conformes.
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) : création de `hydrateBlock` qui injecte systématiquement `props` et `style` dans les 24 vues de `seedCustomPages()`.
+    - Durcissement de `mergeSiteContent()` : réconciliation unitaire profonde par bloc ID, préservant les modifications utilisateur tout en complétant les propriétés manquantes.
+  - **Étape 51.2 (Cockpit Studio & Bouton Souverain `[ ⚡ Synchro BD SQLite 360° ]`) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout de la commande manuelle souveraine `handleForceSqliteSync` et de son bouton dans la barre d'outils avec animation d'état et toast détaillé.
+      - Ajout de l'effet de persistance initiale garantie (`autoPersistedRef`) écrivant immédiatement les 24 vues complètes dans SQLite au montage.
+      - Sécurisation des limites de tableau (`index < 0 || index >= blocks.length`) dans `handleUpdateBlockProps` et `handleUpdateBlockStyle`.
+  - **Étape 51.3 (Régénération de l'Extracteur & Ré-injection Directe SQLite) :**
+    - Exécution de [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/ka-tech/scripts/extraire-donnees-front.ts) : génération de [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/ka-tech/api/tools/donnees-front.json) avec les 24 vues et leurs blocs hydratés (50 779 octets).
+    - Exécution de `importer-donnees-front.php` gravant directement les 22 sections et 24 vues dans [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/ka-tech/katech-data).
+  - **Étape 51.4 (Banc de Vérification & Recette Automatisée SQLite) :**
+    - Création et exécution de [`.agents/scratch/verifier_persistance_sqlite.php`](file:///c:/xampp/htdocs/ka-tech/.agents/scratch/verifier_persistance_sqlite.php) : inspection PDO confirmant 24/24 vues présentes, 57 blocs totaux, 0 bloc sans props, 0 bloc sans style.
+  - **Étape 51.5 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme, 0 anomalie.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et pré-rendu réussis.
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-08112026-2200.zip`](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2200.zip) produite.
+- **Résultats de Recette :**
+  - **24 vues sur 24** sont désormais physiquement gravées dans SQLite (`dev-*.sqlite`), occupant 50 779 octets.
+  - **57 blocs sur 57** disposent de `props` complètes et de `style` structuré, éliminant toute coquille vide.
+  - Le Studio offre un bouton de synchronisation directe `[ ⚡ Synchro BD SQLite 360° ]` avec retour toast chiffré en temps réel.
+- **Livrables :**
+  - Plan validé : 📄 [`51_plan_grand_verrouillage_persistance_sqlite_360_et_synchronisation_blocs.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/51_plan_grand_verrouillage_persistance_sqlite_360_et_synchronisation_blocs.md)
+  - Données d'installation régénérées : 📄 [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/ka-tech/api/tools/donnees-front.json)
+  - Base SQLite physique consolidée : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/ka-tech/katech-data)
+  - Archives horodatées : 📦 [katech-site-08112026-2200.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2200.zip) & 📦 [katech-data-08112026-2200.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2200.zip)

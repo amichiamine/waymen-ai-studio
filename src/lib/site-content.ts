@@ -38,7 +38,8 @@ import {
 } from "lucide-react";
 import type { Category } from "@/data/products";
 import type { Localized } from "@/lib/i18n";
-import type { CustomPageDefinition } from "@/types/pages";
+import type { CustomPageDefinition, BlockConfig, BlockStyleConfig } from "@/types/pages";
+import { getBlockMeta } from "@/components/blocks/registry";
 
 export type IconName =
   | "shield"
@@ -240,8 +241,19 @@ export type SiteContent = {
   customPages?: CustomPageDefinition[];
 };
 
+function hydrateBlock(block: BlockConfig): BlockConfig {
+  const meta = getBlockMeta(block.type);
+  const defaultProps = meta?.defaultProps ? JSON.parse(JSON.stringify(meta.defaultProps)) : {};
+  const defaultStyle: BlockStyleConfig = { padding: "normal", bg: "transparent", align: "start" };
+  return {
+    ...block,
+    props: { ...defaultProps, ...(block.props || {}) },
+    style: { ...defaultStyle, ...(block.style || {}) },
+  };
+}
+
 export function seedCustomPages(): CustomPageDefinition[] {
-  return [
+  const rawPages: CustomPageDefinition[] = [
     {
       id: "page_home",
       slug: "",
@@ -1124,6 +1136,10 @@ export function seedCustomPages(): CustomPageDefinition[] {
       updatedAt: "2026-11-08T00:00:00.000Z",
     },
   ];
+  return rawPages.map((page) => ({
+    ...page,
+    blocks: (page.blocks || []).map(hydrateBlock),
+  }));
 }
 
 export function seedSiteContent(): SiteContent {
@@ -1800,9 +1816,41 @@ export function mergeSiteContent(seed: SiteContent, partial?: Partial<SiteConten
         );
         const homeInMissing = missingSeedPages.find((sp) => sp.id === "page_home");
         const otherMissing = missingSeedPages.filter((sp) => sp.id !== "page_home");
-        const merged = homeInMissing
+        const rawMerged = homeInMissing
           ? [homeInMissing, ...persistedPages, ...otherMissing]
           : [...persistedPages, ...missingSeedPages];
+
+        // 🛡️ Réconciliation profonde par bloc : préserve les modifications utilisateur tout en hydratant les props & styles
+        const merged = rawMerged.map((page) => {
+          const matchingSeedPage = seedPages.find(
+            (sp) =>
+              sp.id === page.id ||
+              (sp.slug === "" && (page.slug === "" || page.slug === "home")) ||
+              (sp.slug !== "" && page.slug.toLowerCase() === sp.slug.toLowerCase()),
+          );
+          const blocks = (page.blocks || []).map((b) => {
+            const seedBlock = matchingSeedPage?.blocks?.find(
+              (sb) => sb.id === b.id || sb.type === b.type,
+            );
+            const defaultProps = seedBlock?.props || {};
+            const defaultStyle: BlockStyleConfig = seedBlock?.style || {
+              padding: "normal",
+              bg: "transparent",
+              align: "start",
+            };
+            return {
+              ...b,
+              props: { ...defaultProps, ...(b.props || {}) },
+              style: { ...defaultStyle, ...(b.style || {}) },
+            };
+          });
+          return {
+            ...matchingSeedPage,
+            ...page,
+            blocks,
+          };
+        });
+
         (out as Record<string, unknown>)[k] = merged;
       } else if (typeof s === "object" && s && !Array.isArray(s) && Array.isArray(p)) {
         if (k === "about") {

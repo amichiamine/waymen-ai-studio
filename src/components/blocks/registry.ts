@@ -16,6 +16,41 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "بانر جذاب مع عنوان كبير وشعار وصورة وأزرار دعوة لاتخاذ إجراء.",
     },
     icon: "Monitor",
+    defaultProps: {
+      badge: {
+        fr: "Plateforme Informatique Officielle",
+        en: "Official Computing Platform",
+        ar: "المنصة التقنية الرسمية",
+      },
+      title1: {
+        fr: "L'Excellence Technologique",
+        en: "Technological Excellence",
+        ar: "التميز التكنولوجي",
+      },
+      title2: {
+        fr: "Sur Mesure",
+        en: "Tailor-Made",
+        ar: "حسب الطلب",
+      },
+      subtitle: {
+        fr: "Composants certifiés, stations de travail d'élite et livraison sécurisée 58 Wilayas.",
+        en: "Certified hardware, high-end workstations and secure delivery 58 Wilayas.",
+        ar: "مكونات معتمدة ومحطات عمل احترافية وتوصيل آمن لـ 58 ولاية.",
+      },
+      primaryCtaText: {
+        fr: "Explorer le Catalogue",
+        en: "Explore Catalog",
+        ar: "استكشف الكتالوج",
+      },
+      primaryCtaHref: "/category/laptops",
+      secondaryCtaText: {
+        fr: "Configurateur PC",
+        en: "PC Builder",
+        ar: "تجميع حاسوب",
+      },
+      secondaryCtaHref: "/builder",
+      imageSrc: "media/hero-laptop.webp",
+    },
   },
   {
     type: "flash_sale",
@@ -27,6 +62,24 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "قسم ترويجي مع عد تنازلي وتخفيضات.",
     },
     icon: "Flame",
+    defaultProps: {
+      badge: {
+        fr: "Vente Flash Limitée",
+        en: "Limited Flash Sale",
+        ar: "تخفيضات خاطفة محدودة",
+      },
+      title: {
+        fr: "Offres Exceptionnelles",
+        en: "Special Offers",
+        ar: "عروض استثنائية",
+      },
+      subtitle: {
+        fr: "Remises immédiates sur une sélection de machines prêtes à l'emploi.",
+        en: "Instant discounts on selected ready-to-ship machines.",
+        ar: "خصومات فورية على أجهزة مختارة جاهزة للتسليم.",
+      },
+      endsAt: "2026-12-31T23:59:59Z",
+    },
   },
   {
     type: "category_cards",
@@ -38,6 +91,19 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شبكة الفئات مع صور الغلاف وروابط مباشرة.",
     },
     icon: "Grid",
+    defaultProps: {
+      max: 4,
+      title: {
+        fr: "Nos Catégories Phares",
+        en: "Featured Categories",
+        ar: "أبرز الفئات",
+      },
+      subtitle: {
+        fr: "Explorez notre catalogue par famille d'équipements informatiques.",
+        en: "Browse our catalog by computing hardware family.",
+        ar: "تصفح الكتالوج حسب عائلات العتاد.",
+      },
+    },
   },
   {
     type: "use_chips",
@@ -50,7 +116,11 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
     },
     icon: "Cpu",
     defaultProps: {
-      title: "",
+      title: {
+        fr: "Trouvez Votre Matériel par Usage",
+        en: "Find Gear by Use",
+        ar: "اختر عتادك حسب الاستخدام",
+      },
     },
   },
   {
@@ -63,6 +133,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شريط عرض لأكثر المنتجات والحلول طلباً.",
     },
     icon: "Award",
+    defaultProps: {
+      title: {
+        fr: "Meilleures Ventes & Nouveautés",
+        en: "Best Sellers & New Arrivals",
+        ar: "الأكثر مبيعاً والجديد",
+      },
+      subtitle: {
+        fr: "Les configurations les plus plébiscitées par nos clients et professionnels.",
+        en: "Top rated setups by our clients and tech professionals.",
+        ar: "العتاد الأكثر طلباً من قبل عملائنا والمحترفين.",
+      },
+    },
   },
   {
     type: "featured_tabs",
@@ -74,6 +156,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "تصفح حسب التبويبات لعرض المنتجات حسب الفئة.",
     },
     icon: "Layers",
+    defaultProps: {
+      title: {
+        fr: "Sélection Recommandée",
+        en: "Featured Selection",
+        ar: "مختارات مميزة",
+      },
+      subtitle: {
+        fr: "Nos experts sélectionnent les meilleurs composants du moment.",
+        en: "Our experts select the finest current components.",
+        ar: "خبراؤنا يختارون أفضل العتاد المتاح حالياً.",
+      },
+    },
   },
   {
     type: "brands_marquee",
@@ -90,7 +184,11 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
     },
     icon: "Boxes",
     defaultProps: {
-      title: "",
+      title: {
+        fr: "Marques & Partenaires Officiels",
+        en: "Official Partner Brands",
+        ar: "العلامات التجارية الشريكة",
+      },
       speed: "fast",
     },
   },
@@ -104,6 +202,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شبكة الالتزامات والضمانات (توصيل، ضمان، دعم، جودة).",
     },
     icon: "ShieldCheck",
+    defaultProps: {
+      title: {
+        fr: "Pourquoi Choisir StacGate",
+        en: "Why Choose StacGate",
+        ar: "لماذا تختار StacGate",
+      },
+      subtitle: {
+        fr: "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
+        en: "Four core pillars for a seamless and secure shopping experience.",
+        ar: "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة.",
+      },
+    },
   },
   {
     type: "builder_teaser",
@@ -119,6 +229,28 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "بانر تفاعلي لتجميع الحواسيب والحلول المخصصة.",
     },
     icon: "Wrench",
+    defaultProps: {
+      badge: {
+        fr: "Studio Sur Mesure",
+        en: "Custom Studio",
+        ar: "استوديو التجميع",
+      },
+      title: {
+        fr: "Concevez le PC de Vos Rêves",
+        en: "Build Your Dream PC",
+        ar: "جمّع حاسوب أحلامك",
+      },
+      description: {
+        fr: "Notre configurateur en direct vérifie la compatibilité de chaque composant et calcule votre devis en temps réel.",
+        en: "Our live builder verifies component compatibility and computes your quote in real time.",
+        ar: "أداة التجميع المباشر تتحقق من التوافق وتحسب السعر فورياً.",
+      },
+      ctaText: {
+        fr: "Lancer le Configurateur",
+        en: "Launch Builder",
+        ar: "ابدأ التجميع",
+      },
+    },
   },
 
   // 👤 Famille Identité, Projets & CV
@@ -281,7 +413,7 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
           tags: ["React 19", "Vite", "TypeScript", "SQLite"],
           demoUrl: "#",
           codeUrl: "#",
-          image: "/media/stacgate-archisys-combined.webp",
+          image: "media/stacgate-archisys-combined.webp",
         },
       ],
     },
@@ -296,6 +428,28 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "قسم سردي من عمودين يعرض النشأة والرسالة المؤسسية.",
     },
     icon: "BookOpen",
+    defaultProps: {
+      historyTitle: {
+        fr: "Notre Histoire & Philosophie",
+        en: "Our Story & Philosophy",
+        ar: "قصتنا وفلسفتنا",
+      },
+      historyBody: {
+        fr: "Fondée avec la volonté d'offrir une infrastructure informatique sans compromis, StacGate réunit le meilleur du matériel certifié et des architectures logicielles modernes.",
+        en: "Founded with the vision to deliver uncompromising computing infrastructure, StacGate combines the best certified hardware with modern software architectures.",
+        ar: "تأسست بهدف تقديم بنية تحتية تقنية لا تقبل المساومة، تجمع StacGate بين العتاد المعتمد والهندسة البرمجية الحديثة.",
+      },
+      missionTitle: {
+        fr: "Notre Mission Métier",
+        en: "Our Core Mission",
+        ar: "مهمتنا المهنية",
+      },
+      missionBody: {
+        fr: "Accompagner les créateurs, développeurs, gamers et entreprises dans le choix d'outils de travail puissants, durables et pérennes.",
+        en: "Empower creators, developers, gamers and enterprises with durable, scalable high-performance tools.",
+        ar: "مرافقة المبدعين والمطورين والشركات في اختيار أدوات عمل قوية ومستدامة.",
+      },
+    },
   },
   {
     type: "values_grid",
@@ -307,6 +461,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شبكة القيم الأساسية مع أيقونات قابلة للتخصيص.",
     },
     icon: "Star",
+    defaultProps: {
+      title: {
+        fr: "Nos Valeurs Cardinales",
+        en: "Our Core Values",
+        ar: "قيمنا الأساسية",
+      },
+      subtitle: {
+        fr: "Rigueur, transparence et passion de l'ingénierie au service de nos utilisateurs.",
+        en: "Rigor, transparency and engineering passion for our users.",
+        ar: "الدقة والشفافية وشغف الهندسة في خدمة مستخدمينا.",
+      },
+    },
   },
   {
     type: "brand_banner",
@@ -322,6 +488,19 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "بانر رسمي عالي الدقة يبرز شراكة StacGate و ArchiSys3.0.",
     },
     icon: "Image",
+    defaultProps: {
+      title: {
+        fr: "StacGate Platform — L'Ingénierie du Numérique",
+        en: "StacGate Platform — Digital Engineering",
+        ar: "منصة StacGate — هندسة الرقميات",
+      },
+      subtitle: {
+        fr: "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
+        en: "High performance modular platform for hardware and software solutions.",
+        ar: "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية.",
+      },
+      bannerSrc: "media/stacgate-archisys-banner.webp",
+    },
   },
   {
     type: "markdown_section",
@@ -361,6 +540,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شبكة التقييمات والشهادات الحقيقية مع النجوم والآراء.",
     },
     icon: "Star",
+    defaultProps: {
+      title: {
+        fr: "Avis Clients Certifiés",
+        en: "Verified Customer Reviews",
+        ar: "آراء العملاء الموثقة",
+      },
+      subtitle: {
+        fr: "Découvrez les retours authentiques de notre communauté d'utilisateurs.",
+        en: "Authentic feedback from our community.",
+        ar: "تقييمات وتجارب حقيقية من مجتمع مستخدمينا.",
+      },
+    },
   },
   {
     type: "latest_blog_posts",
@@ -376,6 +567,19 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "عرض لأحدث المقالات المنشورة مع الصور والنصوص المختصرة والكتّاب.",
     },
     icon: "Newspaper",
+    defaultProps: {
+      max: 3,
+      title: {
+        fr: "Derniers Articles & Guides",
+        en: "Latest Articles & Guides",
+        ar: "أحدث المقالات والأدلة",
+      },
+      subtitle: {
+        fr: "Actualités technologiques, benchmarks et conseils de notre équipe.",
+        en: "Tech news, benchmarks and advice from our team.",
+        ar: "أخبار التكنولوجيا، اختبارات الأداء ونصائح فريقنا.",
+      },
+    },
   },
 
   // 💬 Famille Interaction & Contact
@@ -393,6 +597,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "نموذج متكامل (اسم، بريد، هاتف، موضوع، رسالة) متصل بقاعدة الرسائل مباشرة.",
     },
     icon: "Mail",
+    defaultProps: {
+      title: {
+        fr: "Envoyez-nous un Message",
+        en: "Send Us a Message",
+        ar: "أرسل لنا رسالة",
+      },
+      subtitle: {
+        fr: "Nous vous répondrons dans les plus brefs délais sous 24h ouvrées.",
+        en: "We will get back to you within 24 business hours.",
+        ar: "سنجيبك خلال 24 ساعة عمل.",
+      },
+    },
   },
   {
     type: "contact_cta",
@@ -408,6 +624,29 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "بانر تفاعلي مباشر مع زر للمحادثة أو التواصل عبر واتساب.",
     },
     icon: "PhoneCall",
+    defaultProps: {
+      badge: {
+        fr: "Conseil & Accompagnement",
+        en: "Advice & Support",
+        ar: "استشارة ومرافقة",
+      },
+      title: {
+        fr: "Besoin d'un Conseil Technique Spécifique ?",
+        en: "Need Specific Technical Advice?",
+        ar: "هل تحتاج إلى استشارة تقنية مخصصة؟",
+      },
+      subtitle: {
+        fr: "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+        en: "Our engineers and specialists reply directly via WhatsApp or message.",
+        ar: "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل.",
+      },
+      buttonText: {
+        fr: "Contacter un Expert",
+        en: "Contact an Expert",
+        ar: "تواصل مع خبير",
+      },
+      buttonHref: "/contact",
+    },
   },
   {
     type: "direct_contact_cards",
@@ -423,6 +662,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "بطاقات تفاعلية للهاتف، واتساب، البريد، أوقات العمل والموقع.",
     },
     icon: "Phone",
+    defaultProps: {
+      title: {
+        fr: "Canaux de Contact Direct",
+        en: "Direct Contact Channels",
+        ar: "قنوات الاتصال المباشر",
+      },
+      subtitle: {
+        fr: "Joignez notre équipe par le canal qui vous convient le mieux.",
+        en: "Reach our team through your preferred channel.",
+        ar: "تواصل مع فريقنا عبر القناة الأنسب لك.",
+      },
+    },
   },
   {
     type: "faq_accordion",
@@ -434,6 +685,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "قوائم منسدلة تفاعلية للإجابة على الأسئلة الشائعة والمتكررة.",
     },
     icon: "HelpCircle",
+    defaultProps: {
+      title: {
+        fr: "Foire Aux Questions (FAQ)",
+        en: "Frequently Asked Questions",
+        ar: "الأسئلة الشائعة (FAQ)",
+      },
+      subtitle: {
+        fr: "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+        en: "Get immediate answers to common questions.",
+        ar: "إجابات فورية على أكثر الاستفسارات شيوعاً.",
+      },
+    },
   },
   {
     type: "ticker_bar",
@@ -445,6 +708,14 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شريط متحرك مستمر للإعلانات والتنبيهات المباشرة.",
     },
     icon: "Zap",
+    defaultProps: {
+      text: {
+        fr: "Livraison 58 Wilayas en Cash-on-Delivery • Garantie officielle 100% matérielle",
+        en: "58 Wilayas Delivery with Cash-on-Delivery • 100% Official Hardware Warranty",
+        ar: "توصيل لـ 58 ولاية مع الدفع عند الاستلام • ضمان رسمي 100% على العتاد",
+      },
+      speed: "normal",
+    },
   },
   {
     type: "promo_banner",
@@ -456,6 +727,11 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شريط ترويجي علوي مع رسالة تحفيزية أو كود خصم.",
     },
     icon: "Tag",
+    defaultProps: {
+      text: "Découvrez nos guides d'achat et comparatifs matériel 2026",
+      label: "Explorer",
+      href: "/category/laptops",
+    },
   },
   // 🌟 Nouveaux Blocs Majuscules Phase 41
   {
@@ -708,7 +984,7 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
         en: "A sovereign, composable and modular technological solution designed for excellence and longevity.",
         ar: "حل برمجي سيادي وتكاملي مصمم لتحقيق أعلى معايير الجودة والاستدامة.",
       },
-      bannerSrc: "/media/stacgate-archisys-combined.webp",
+      bannerSrc: "media/stacgate-archisys-combined.webp",
       height: "normal",
       primaryCtaText: {
         fr: "Découvrir la Plateforme",

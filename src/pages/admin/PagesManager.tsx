@@ -45,6 +45,7 @@ import {
   Maximize2,
   Minimize2,
   Sliders,
+  Database,
 } from "lucide-react";
 import {
   Select,
@@ -529,18 +530,38 @@ export default function PagesManager() {
     }
   }, [customPages, isDirty, selectedPageId]);
 
-  // Auto-persistance SQLite directe des nouvelles vues par défaut dans katech-data
-  useEffect(() => {
-    if (!siteContent?.customPages) return;
-    const existingIds = new Set(siteContent.customPages.map((p) => p.id));
-    const defaults = seedCustomPages();
-    const hasMissing = defaults.some((d) => !existingIds.has(d.id));
-    if (hasMissing && !isDirty) {
-      updateSiteContent({ customPages }).catch(() => {
-        // En cas d'indisponibilité temporaire, repli gracieux sans erreur bloquante
-      });
+  // ⚡ Synchronisation Souveraine Forcée SQLite (Phase 51)
+  const [syncingSqlite, setSyncingSqlite] = useState(false);
+  const handleForceSqliteSync = async (silent = false) => {
+    setSyncingSqlite(true);
+    try {
+      await updateSiteContent({ customPages: pages });
+      setIsDirty(false);
+      setSaveStatus("saved");
+      if (!silent) {
+        const totalBlocks = pages.reduce((acc, p) => acc + (p.blocks?.length || 0), 0);
+        toast.success(
+          `⚡ Base SQLite synchronisée avec succès : ${pages.length} vues et ${totalBlocks} blocs gravés sur le disque local !`,
+        );
+      }
+    } catch {
+      if (!silent) {
+        toast.error("Échec de la synchronisation SQLite directe.");
+      }
+    } finally {
+      setSyncingSqlite(false);
     }
-  }, [siteContent?.customPages, customPages, isDirty, updateSiteContent]);
+  };
+
+  // 🛡️ Auto-persistance initiale de garantie : grave immédiatement les 24 vues et leurs blocs hydratés dans SQLite
+  const autoPersistedRef = useRef(false);
+  useEffect(() => {
+    if (autoPersistedRef.current || isDirty || pages.length === 0) return;
+    autoPersistedRef.current = true;
+    updateSiteContent({ customPages: pages }).catch(() => {
+      // Repli gracieux silencieux
+    });
+  }, [pages, isDirty, updateSiteContent]);
 
   const selectedPage = pages.find((p) => p.id === selectedPageId) || null;
 
@@ -870,7 +891,7 @@ export default function PagesManager() {
 
   // Mise à jour des props d'un bloc
   const handleUpdateBlockProps = (index: number, newProps: Record<string, unknown>) => {
-    if (!selectedPage) return;
+    if (!selectedPage || index < 0 || index >= selectedPage.blocks.length) return;
     const next = [...selectedPage.blocks];
     next[index] = { ...next[index], props: newProps };
     updateSelectedPageBlocks(next);
@@ -878,7 +899,7 @@ export default function PagesManager() {
 
   // Mise à jour du style d'un bloc
   const handleUpdateBlockStyle = (index: number, newStyle: BlockStyleConfig) => {
-    if (!selectedPage) return;
+    if (!selectedPage || index < 0 || index >= selectedPage.blocks.length) return;
     const next = [...selectedPage.blocks];
     next[index] = { ...next[index], style: newStyle };
     updateSelectedPageBlocks(next);
@@ -939,6 +960,17 @@ export default function PagesManager() {
                 <span>Synchronisé SQLite (katech-data)</span>
               </Badge>
             )}
+            <Button
+              type="button"
+              onClick={() => handleForceSqliteSync(false)}
+              disabled={syncingSqlite || saving}
+              variant="outline"
+              className="gap-2 font-semibold shadow-xs border-primary/30 hover:bg-primary/10 text-primary text-xs"
+              title="Forcer la réconciliation et l'écriture complète des 24 vues et de tous leurs blocs dans SQLite"
+            >
+              <Database className={cn("h-4 w-4", syncingSqlite && "animate-spin")} />
+              <span>{syncingSqlite ? "Écriture SQLite..." : "Synchro BD SQLite 360°"}</span>
+            </Button>
             <Button
               onClick={handleSave}
               disabled={saving || !isDirty}

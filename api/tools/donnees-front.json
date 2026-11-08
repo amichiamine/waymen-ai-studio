@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T12:20:12.940Z",
+  "generatedAt": "2026-11-08T20:57:50.372Z",
   "categories": [
     {
       "slug": "laptops",
@@ -7,8 +7,8 @@
       "description": "Laptops pour le travail, les études et le gaming.",
       "cover": "media/p-rog.webp",
       "position": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "slug": "desktops",
@@ -16,8 +16,8 @@
       "description": "Tours et mini-PC de bureau.",
       "cover": "media/p-optiplex.webp",
       "position": 1,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "slug": "builds",
@@ -25,8 +25,8 @@
       "description": "Configurations sur-mesure KA Build.",
       "cover": "media/p-build-mid.webp",
       "position": 2,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "slug": "phones",
@@ -34,8 +34,8 @@
       "description": "Smartphones Android et iOS.",
       "cover": "media/p-galaxy.webp",
       "position": 3,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     }
   ],
   "brands": [
@@ -44,64 +44,64 @@
       "name": "ASUS",
       "description": "Marque ASUS distribuée par KA Tech.",
       "country": "Taïwan",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "hp",
       "name": "HP",
       "description": "Marque HP distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "lenovo",
       "name": "Lenovo",
       "description": "Marque Lenovo distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "apple",
       "name": "Apple",
       "description": "Marque Apple distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "dell",
       "name": "Dell",
       "description": "Marque Dell distribuée par KA Tech.",
       "country": "États-Unis",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "ka-build",
       "name": "KA Build",
       "description": "Marque KA Build distribuée par KA Tech.",
       "country": "Algérie",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "samsung",
       "name": "Samsung",
       "description": "Marque Samsung distribuée par KA Tech.",
       "country": "Corée du Sud",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "xiaomi",
       "name": "Xiaomi",
       "description": "Marque Xiaomi distribuée par KA Tech.",
       "country": "Chine",
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     }
   ],
   "products": [
@@ -130,8 +130,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "hp-pavilion-15",
@@ -158,8 +158,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "thinkpad-x1-carbon",
@@ -186,8 +186,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "macbook-air-m3",
@@ -218,8 +218,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "dell-optiplex-5000",
@@ -244,8 +244,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "hp-omen-45l",
@@ -270,8 +270,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "build-mid-gaming",
@@ -300,8 +300,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "build-pro-editing",
@@ -330,8 +330,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "galaxy-s25-ultra",
@@ -357,8 +357,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "iphone-16-pro-max",
@@ -388,8 +388,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "xiaomi-14t-pro",
@@ -415,8 +415,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "redmi-note-13-pro",
@@ -442,8 +442,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-08T12:20:12.940Z",
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "created_at": "2026-11-08T20:57:50.372Z",
+      "updated_at": "2026-11-08T20:57:50.372Z"
     }
   ],
   "blogPosts": [
@@ -469,9 +469,9 @@
       "author": "Équipe KA Tech",
       "tags": ["laptop", "guide"],
       "status": "published",
-      "published_at": "2026-10-09T12:20:12.953Z",
-      "created_at": "2026-10-09T12:20:12.953Z",
-      "updated_at": "2026-10-09T12:20:12.953Z"
+      "published_at": "2026-10-09T20:57:50.385Z",
+      "created_at": "2026-10-09T20:57:50.385Z",
+      "updated_at": "2026-10-09T20:57:50.385Z"
     },
     {
       "id": "blog_101",
@@ -495,9 +495,9 @@
       "author": "Yacine B.",
       "tags": ["gaming", "comparatif"],
       "status": "published",
-      "published_at": "2026-10-13T12:20:12.953Z",
-      "created_at": "2026-10-13T12:20:12.953Z",
-      "updated_at": "2026-10-13T12:20:12.953Z"
+      "published_at": "2026-10-13T20:57:50.385Z",
+      "created_at": "2026-10-13T20:57:50.385Z",
+      "updated_at": "2026-10-13T20:57:50.385Z"
     },
     {
       "id": "blog_102",
@@ -521,9 +521,9 @@
       "author": "Équipe KA Tech",
       "tags": ["smartphone", "photo", "top"],
       "status": "published",
-      "published_at": "2026-10-17T12:20:12.953Z",
-      "created_at": "2026-10-17T12:20:12.953Z",
-      "updated_at": "2026-10-17T12:20:12.953Z"
+      "published_at": "2026-10-17T20:57:50.385Z",
+      "created_at": "2026-10-17T20:57:50.385Z",
+      "updated_at": "2026-10-17T20:57:50.385Z"
     },
     {
       "id": "blog_103",
@@ -547,9 +547,9 @@
       "author": "Yacine B.",
       "tags": ["pc-sur-mesure", "conseil"],
       "status": "published",
-      "published_at": "2026-10-21T12:20:12.953Z",
-      "created_at": "2026-10-21T12:20:12.953Z",
-      "updated_at": "2026-10-21T12:20:12.953Z"
+      "published_at": "2026-10-21T20:57:50.385Z",
+      "created_at": "2026-10-21T20:57:50.385Z",
+      "updated_at": "2026-10-21T20:57:50.385Z"
     },
     {
       "id": "blog_104",
@@ -573,9 +573,9 @@
       "author": "Équipe KA Tech",
       "tags": ["livraison", "faq"],
       "status": "published",
-      "published_at": "2026-10-25T12:20:12.953Z",
-      "created_at": "2026-10-25T12:20:12.953Z",
-      "updated_at": "2026-10-25T12:20:12.953Z"
+      "published_at": "2026-10-25T20:57:50.385Z",
+      "created_at": "2026-10-25T20:57:50.385Z",
+      "updated_at": "2026-10-25T20:57:50.385Z"
     }
   ],
   "shippingRates": [
@@ -583,355 +583,355 @@
       "wilaya_code": "*",
       "home": 800,
       "desk": 400,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "01",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "02",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "03",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "04",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "05",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "06",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "07",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "08",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "09",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "10",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "11",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "12",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "13",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "14",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "15",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "16",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "17",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "18",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "19",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "20",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "21",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "22",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "23",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "24",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "25",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "26",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "27",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "28",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "29",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "30",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "31",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "32",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "33",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "34",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "35",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "36",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "37",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "38",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "39",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "40",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "41",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "42",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "43",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "44",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "45",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "46",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "47",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "48",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "49",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "50",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "51",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "52",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "53",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "54",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "55",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "56",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "57",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "wilaya_code": "58",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     }
   ],
   "paymentMethods": [
@@ -941,7 +941,7 @@
       "instructions": "Réglez votre commande en espèces au livreur.",
       "active": 1,
       "position": 0,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "bank",
@@ -949,7 +949,7 @@
       "instructions": "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.",
       "active": 1,
       "position": 1,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "card",
@@ -957,7 +957,7 @@
       "instructions": "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).",
       "active": 1,
       "position": 2,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     },
     {
       "id": "store",
@@ -965,7 +965,7 @@
       "instructions": "Retirez et réglez votre commande à notre point de vente d'Alger.",
       "active": 0,
       "position": 3,
-      "updated_at": "2026-11-08T12:20:12.940Z"
+      "updated_at": "2026-11-08T20:57:50.372Z"
     }
   ],
   "siteContent": {
@@ -1230,9 +1230,9 @@
         {
           "id": "fc_sup",
           "title": {
-            "fr": "Support",
-            "en": "Support",
-            "ar": "الدعم"
+            "fr": "Support & Suivi",
+            "en": "Support & Tracking",
+            "ar": "الدعم والتتبع"
           },
           "links": [
             {
@@ -1245,29 +1245,66 @@
               "href": "/contact"
             },
             {
+              "id": "fl_track",
+              "label": {
+                "fr": "Suivi de commande",
+                "en": "Order tracking",
+                "ar": "تتبع الطلبات"
+              },
+              "href": "/track"
+            },
+            {
               "id": "fl_9",
               "label": {
-                "fr": "Garantie",
-                "en": "Warranty",
-                "ar": "الضمان"
+                "fr": "Garantie & SAV",
+                "en": "Warranty & Support",
+                "ar": "الضمان والدعم"
               },
-              "href": "/about"
+              "href": "/garantie"
             },
             {
               "id": "fl_10",
               "label": {
-                "fr": "Livraison",
-                "en": "Shipping",
-                "ar": "التوصيل"
+                "fr": "Livraison 58 Wilayas",
+                "en": "58 Wilayas Shipping",
+                "ar": "التوصيل لـ 58 ولاية"
               },
-              "href": "/about"
+              "href": "/livraison-retours"
+            }
+          ]
+        },
+        {
+          "id": "fc_legal",
+          "title": {
+            "fr": "Informations Légales",
+            "en": "Legal & Terms",
+            "ar": "المعلومات القانونية"
+          },
+          "links": [
+            {
+              "id": "fl_cgv",
+              "label": {
+                "fr": "Conditions Générales",
+                "en": "Terms & Conditions",
+                "ar": "الشروط العامة"
+              },
+              "href": "/conditions-generales"
             },
             {
-              "id": "fl_11",
+              "id": "fl_mentions",
               "label": {
-                "fr": "FAQ",
-                "en": "FAQ",
-                "ar": "الأسئلة الشائعة"
+                "fr": "Mentions Légales",
+                "en": "Legal Notices",
+                "ar": "الإشعارات القانونية"
+              },
+              "href": "/mentions-legales"
+            },
+            {
+              "id": "fl_about",
+              "label": {
+                "fr": "À propos & Histoire",
+                "en": "About & Story",
+                "ar": "من نحن وقصتنا"
               },
               "href": "/about"
             }
@@ -1725,60 +1762,286 @@
           {
             "id": "b_home_hero",
             "type": "hero_banner",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Plateforme Informatique Officielle",
+                "en": "Official Computing Platform",
+                "ar": "المنصة التقنية الرسمية"
+              },
+              "title1": {
+                "fr": "L'Excellence Technologique",
+                "en": "Technological Excellence",
+                "ar": "التميز التكنولوجي"
+              },
+              "title2": {
+                "fr": "Sur Mesure",
+                "en": "Tailor-Made",
+                "ar": "حسب الطلب"
+              },
+              "subtitle": {
+                "fr": "Composants certifiés, stations de travail d'élite et livraison sécurisée 58 Wilayas.",
+                "en": "Certified hardware, high-end workstations and secure delivery 58 Wilayas.",
+                "ar": "مكونات معتمدة ومحطات عمل احترافية وتوصيل آمن لـ 58 ولاية."
+              },
+              "primaryCtaText": {
+                "fr": "Explorer le Catalogue",
+                "en": "Explore Catalog",
+                "ar": "استكشف الكتالوج"
+              },
+              "primaryCtaHref": "/category/laptops",
+              "secondaryCtaText": {
+                "fr": "Configurateur PC",
+                "en": "PC Builder",
+                "ar": "تجميع حاسوب"
+              },
+              "secondaryCtaHref": "/builder",
+              "imageSrc": "media/hero-laptop.webp"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_flash",
             "type": "flash_sale",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Vente Flash Limitée",
+                "en": "Limited Flash Sale",
+                "ar": "تخفيضات خاطفة محدودة"
+              },
+              "title": {
+                "fr": "Offres Exceptionnelles",
+                "en": "Special Offers",
+                "ar": "عروض استثنائية"
+              },
+              "subtitle": {
+                "fr": "Remises immédiates sur une sélection de machines prêtes à l'emploi.",
+                "en": "Instant discounts on selected ready-to-ship machines.",
+                "ar": "خصومات فورية على أجهزة مختارة جاهزة للتسليم."
+              },
+              "endsAt": "2026-12-31T23:59:59Z"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_categories",
             "type": "category_cards",
             "enabled": true,
             "props": {
-              "max": 4
+              "max": 4,
+              "title": {
+                "fr": "Nos Catégories Phares",
+                "en": "Featured Categories",
+                "ar": "أبرز الفئات"
+              },
+              "subtitle": {
+                "fr": "Explorez notre catalogue par famille d'équipements informatiques.",
+                "en": "Browse our catalog by computing hardware family.",
+                "ar": "تصفح الكتالوج حسب عائلات العتاد."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
             }
           },
           {
             "id": "b_home_use_chips",
             "type": "use_chips",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Trouvez Votre Matériel par Usage",
+                "en": "Find Gear by Use",
+                "ar": "اختر عتادك حسب الاستخدام"
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_best_sellers",
             "type": "best_sellers",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Meilleures Ventes & Nouveautés",
+                "en": "Best Sellers & New Arrivals",
+                "ar": "الأكثر مبيعاً والجديد"
+              },
+              "subtitle": {
+                "fr": "Les configurations les plus plébiscitées par nos clients et professionnels.",
+                "en": "Top rated setups by our clients and tech professionals.",
+                "ar": "العتاد الأكثر طلباً من قبل عملائنا والمحترفين."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_featured",
             "type": "featured_tabs",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Sélection Recommandée",
+                "en": "Featured Selection",
+                "ar": "مختارات مميزة"
+              },
+              "subtitle": {
+                "fr": "Nos experts sélectionnent les meilleurs composants du moment.",
+                "en": "Our experts select the finest current components.",
+                "ar": "خبراؤنا يختارون أفضل العتاد المتاح حالياً."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_marquee",
             "type": "brands_marquee",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Marques & Partenaires Officiels",
+                "en": "Official Partner Brands",
+                "ar": "العلامات التجارية الشريكة"
+              },
+              "speed": "fast"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_why_us",
             "type": "why_us",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Pourquoi Choisir StacGate",
+                "en": "Why Choose StacGate",
+                "ar": "لماذا تختار StacGate"
+              },
+              "subtitle": {
+                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
+                "en": "Four core pillars for a seamless and secure shopping experience.",
+                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_builder",
             "type": "builder_teaser",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Studio Sur Mesure",
+                "en": "Custom Studio",
+                "ar": "استوديو التجميع"
+              },
+              "title": {
+                "fr": "Concevez le PC de Vos Rêves",
+                "en": "Build Your Dream PC",
+                "ar": "جمّع حاسوب أحلامك"
+              },
+              "description": {
+                "fr": "Notre configurateur en direct vérifie la compatibilité de chaque composant et calcule votre devis en temps réel.",
+                "en": "Our live builder verifies component compatibility and computes your quote in real time.",
+                "ar": "أداة التجميع المباشر تتحقق من التوافق وتحسب السعر فورياً."
+              },
+              "ctaText": {
+                "fr": "Lancer le Configurateur",
+                "en": "Launch Builder",
+                "ar": "ابدأ التجميع"
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_reviews",
             "type": "reviews_grid",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Avis Clients Certifiés",
+                "en": "Verified Customer Reviews",
+                "ar": "آراء العملاء الموثقة"
+              },
+              "subtitle": {
+                "fr": "Découvrez les retours authentiques de notre communauté d'utilisateurs.",
+                "en": "Authentic feedback from our community.",
+                "ar": "تقييمات وتجارب حقيقية من مجتمع مستخدمينا."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_home_cta",
             "type": "contact_cta",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Conseil & Accompagnement",
+                "en": "Advice & Support",
+                "ar": "استشارة ومرافقة"
+              },
+              "title": {
+                "fr": "Besoin d'un Conseil Technique Spécifique ?",
+                "en": "Need Specific Technical Advice?",
+                "ar": "هل تحتاج إلى استشارة تقنية مخصصة؟"
+              },
+              "subtitle": {
+                "fr": "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+                "en": "Our engineers and specialists reply directly via WhatsApp or message.",
+                "ar": "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل."
+              },
+              "buttonText": {
+                "fr": "Contacter un Expert",
+                "en": "Contact an Expert",
+                "ar": "تواصل مع خبير"
+              },
+              "buttonHref": "/contact"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           }
         ],
         "isPublished": true,
@@ -1805,22 +2068,112 @@
           {
             "id": "b_about_banner",
             "type": "brand_banner",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "StacGate Platform — L'Ingénierie du Numérique",
+                "en": "StacGate Platform — Digital Engineering",
+                "ar": "منصة StacGate — هندسة الرقميات"
+              },
+              "subtitle": {
+                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
+                "en": "High performance modular platform for hardware and software solutions.",
+                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+              },
+              "bannerSrc": "media/stacgate-archisys-banner.webp"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_about_history",
             "type": "company_history",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "historyTitle": {
+                "fr": "Notre Histoire & Philosophie",
+                "en": "Our Story & Philosophy",
+                "ar": "قصتنا وفلسفتنا"
+              },
+              "historyBody": {
+                "fr": "Fondée avec la volonté d'offrir une infrastructure informatique sans compromis, StacGate réunit le meilleur du matériel certifié et des architectures logicielles modernes.",
+                "en": "Founded with the vision to deliver uncompromising computing infrastructure, StacGate combines the best certified hardware with modern software architectures.",
+                "ar": "تأسست بهدف تقديم بنية تحتية تقنية لا تقبل المساومة، تجمع StacGate بين العتاد المعتمد والهندسة البرمجية الحديثة."
+              },
+              "missionTitle": {
+                "fr": "Notre Mission Métier",
+                "en": "Our Core Mission",
+                "ar": "مهمتنا المهنية"
+              },
+              "missionBody": {
+                "fr": "Accompagner les créateurs, développeurs, gamers et entreprises dans le choix d'outils de travail puissants, durables et pérennes.",
+                "en": "Empower creators, developers, gamers and enterprises with durable, scalable high-performance tools.",
+                "ar": "مرافقة المبدعين والمطورين والشركات في اختيار أدوات عمل قوية ومستدامة."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_about_values",
             "type": "values_grid",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Nos Valeurs Cardinales",
+                "en": "Our Core Values",
+                "ar": "قيمنا الأساسية"
+              },
+              "subtitle": {
+                "fr": "Rigueur, transparence et passion de l'ingénierie au service de nos utilisateurs.",
+                "en": "Rigor, transparency and engineering passion for our users.",
+                "ar": "الدقة والشفافية وشغف الهندسة في خدمة مستخدمينا."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_about_cta",
             "type": "contact_cta",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Conseil & Accompagnement",
+                "en": "Advice & Support",
+                "ar": "استشارة ومرافقة"
+              },
+              "title": {
+                "fr": "Besoin d'un Conseil Technique Spécifique ?",
+                "en": "Need Specific Technical Advice?",
+                "ar": "هل تحتاج إلى استشارة تقنية مخصصة؟"
+              },
+              "subtitle": {
+                "fr": "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+                "en": "Our engineers and specialists reply directly via WhatsApp or message.",
+                "ar": "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل."
+              },
+              "buttonText": {
+                "fr": "Contacter un Expert",
+                "en": "Contact an Expert",
+                "ar": "تواصل مع خبير"
+              },
+              "buttonHref": "/contact"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           }
         ],
         "isPublished": true,
@@ -1847,17 +2200,68 @@
           {
             "id": "b_contact_direct",
             "type": "direct_contact_cards",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Canaux de Contact Direct",
+                "en": "Direct Contact Channels",
+                "ar": "قنوات الاتصال المباشر"
+              },
+              "subtitle": {
+                "fr": "Joignez notre équipe par le canal qui vous convient le mieux.",
+                "en": "Reach our team through your preferred channel.",
+                "ar": "تواصل مع فريقنا عبر القناة الأنسب لك."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_contact_form",
             "type": "contact_form",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Envoyez-nous un Message",
+                "en": "Send Us a Message",
+                "ar": "أرسل لنا رسالة"
+              },
+              "subtitle": {
+                "fr": "Nous vous répondrons dans les plus brefs délais sous 24h ouvrées.",
+                "en": "We will get back to you within 24 business hours.",
+                "ar": "سنجيبك خلال 24 ساعة عمل."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_contact_faq",
             "type": "faq_accordion",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           }
         ],
         "isPublished": true,
@@ -1902,7 +2306,15 @@
                 "en": "Available for Architecture & R&D missions",
                 "ar": "متاح لمشاريع المعمارية البرمجية والبحث والتطوير"
               },
-              "showDownloadPdf": true
+              "showDownloadPdf": true,
+              "githubUrl": "",
+              "linkedinUrl": "",
+              "email": ""
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
             }
           },
           {
@@ -1938,6 +2350,11 @@
                   "tags": ["Architecture", "React 19", "TypeScript", "Performance"]
                 }
               ]
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
             }
           },
           {
@@ -1980,6 +2397,11 @@
                   "skills": ["TypeScript", "React 19", "PHP / Node.js", "Tailwind CSS"]
                 }
               ]
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
             }
           },
           {
@@ -1991,7 +2413,17 @@
                 "fr": "Échanger sur une opportunité ou un projet",
                 "en": "Discuss an opportunity or project",
                 "ar": "تواصل لمناقشة مشروع أو فرصة"
+              },
+              "subtitle": {
+                "fr": "Nous vous répondrons dans les plus brefs délais sous 24h ouvrées.",
+                "en": "We will get back to you within 24 business hours.",
+                "ar": "سنجيبك خلال 24 ساعة عمل."
               }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
             }
           }
         ],
@@ -2051,23 +2483,1315 @@
                   "image": "media/stacgate-archisys-combined.webp"
                 }
               ]
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
             }
           },
           {
             "id": "b_proj_brand",
             "type": "brand_banner",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "StacGate Platform — L'Ingénierie du Numérique",
+                "en": "StacGate Platform — Digital Engineering",
+                "ar": "منصة StacGate — هندسة الرقميات"
+              },
+              "subtitle": {
+                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
+                "en": "High performance modular platform for hardware and software solutions.",
+                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+              },
+              "bannerSrc": "media/stacgate-archisys-banner.webp"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           },
           {
             "id": "b_proj_cta",
             "type": "contact_cta",
-            "enabled": true
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Conseil & Accompagnement",
+                "en": "Advice & Support",
+                "ar": "استشارة ومرافقة"
+              },
+              "title": {
+                "fr": "Besoin d'un Conseil Technique Spécifique ?",
+                "en": "Need Specific Technical Advice?",
+                "ar": "هل تحتاج إلى استشارة تقنية مخصصة؟"
+              },
+              "subtitle": {
+                "fr": "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+                "en": "Our engineers and specialists reply directly via WhatsApp or message.",
+                "ar": "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل."
+              },
+              "buttonText": {
+                "fr": "Contacter un Expert",
+                "en": "Contact an Expert",
+                "ar": "تواصل مع خبير"
+              },
+              "buttonHref": "/contact"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
           }
         ],
         "isPublished": true,
         "inNavbar": true,
         "inFooter": true,
         "navOrder": 5,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_shipping_returns",
+        "slug": "livraison-retours",
+        "title": {
+          "fr": "Livraison 58 Wilayas & Retours",
+          "en": "58 Wilayas Delivery & Returns",
+          "ar": "التوصيل لـ 58 ولاية والإرجاع"
+        },
+        "description": {
+          "fr": "Délais, modalités de livraison en Cash-on-Delivery et politique de retour sous 48h.",
+          "en": "Deadlines, Cash-on-Delivery shipping terms and 48h return policy.",
+          "ar": "مواعيد وشروط التوصيل مع الدفع عند الاستلام وسياسة الإرجاع خلال 48 ساعة."
+        },
+        "blocks": [
+          {
+            "id": "b_ship_banner",
+            "type": "brand_banner",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "StacGate Platform — L'Ingénierie du Numérique",
+                "en": "StacGate Platform — Digital Engineering",
+                "ar": "منصة StacGate — هندسة الرقميات"
+              },
+              "subtitle": {
+                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
+                "en": "High performance modular platform for hardware and software solutions.",
+                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+              },
+              "bannerSrc": "media/stacgate-archisys-banner.webp"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_ship_values",
+            "type": "values_grid",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Nos Valeurs Cardinales",
+                "en": "Our Core Values",
+                "ar": "قيمنا الأساسية"
+              },
+              "subtitle": {
+                "fr": "Rigueur, transparence et passion de l'ingénierie au service de nos utilisateurs.",
+                "en": "Rigor, transparency and engineering passion for our users.",
+                "ar": "الدقة والشفافية وشغف الهندسة في خدمة مستخدمينا."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_ship_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_ship_cta",
+            "type": "contact_cta",
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Conseil & Accompagnement",
+                "en": "Advice & Support",
+                "ar": "استشارة ومرافقة"
+              },
+              "title": {
+                "fr": "Besoin d'un Conseil Technique Spécifique ?",
+                "en": "Need Specific Technical Advice?",
+                "ar": "هل تحتاج إلى استشارة تقنية مخصصة؟"
+              },
+              "subtitle": {
+                "fr": "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+                "en": "Our engineers and specialists reply directly via WhatsApp or message.",
+                "ar": "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل."
+              },
+              "buttonText": {
+                "fr": "Contacter un Expert",
+                "en": "Contact an Expert",
+                "ar": "تواصل مع خبير"
+              },
+              "buttonHref": "/contact"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": true,
+        "navOrder": 6,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_warranty",
+        "slug": "garantie",
+        "title": {
+          "fr": "Garantie & Service Après-Vente",
+          "en": "Warranty & After-Sales Service",
+          "ar": "الضمان وخدمة ما بعد البيع"
+        },
+        "description": {
+          "fr": "Garantie matérielle officielle 100% authentique et support technique réactif.",
+          "en": "100% genuine official hardware warranty and responsive tech support.",
+          "ar": "ضمان عتاد رسمي أصلي 100% ودعم فني متميز."
+        },
+        "blocks": [
+          {
+            "id": "b_war_banner",
+            "type": "brand_banner",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "StacGate Platform — L'Ingénierie du Numérique",
+                "en": "StacGate Platform — Digital Engineering",
+                "ar": "منصة StacGate — هندسة الرقميات"
+              },
+              "subtitle": {
+                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
+                "en": "High performance modular platform for hardware and software solutions.",
+                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+              },
+              "bannerSrc": "media/stacgate-archisys-banner.webp"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_war_features",
+            "type": "features_grid",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Nos Atouts & Piliers Technologiques",
+                "en": "Our Key Strengths & Tech Pillars",
+                "ar": "أبرز مميزاتنا وركائزنا التقنية"
+              },
+              "subtitle": {
+                "fr": "Une architecture optimisée garantissant performance, souveraineté et évolutivité.",
+                "en": "An optimized architecture guaranteeing performance, sovereignty and scalability.",
+                "ar": "بنية محسّنة تضمن الأداء العالي، السيادة البرمجية والقابلية للتطوير."
+              },
+              "columns": 3,
+              "items": [
+                {
+                  "id": "f1",
+                  "icon": "rocket",
+                  "title": {
+                    "fr": "Haute Performance & Vélocité",
+                    "en": "High Performance & Speed",
+                    "ar": "أداء عالٍ وسرعة فائقة"
+                  },
+                  "description": {
+                    "fr": "Une architecture optimisée garantissant des temps de réponse instantanés.",
+                    "en": "Optimized architecture ensuring instantaneous response times.",
+                    "ar": "بنية برمجية محسّنة تضمن سرعة استجابة فورية."
+                  }
+                },
+                {
+                  "id": "f2",
+                  "icon": "shield",
+                  "title": {
+                    "fr": "Sécurité & Souveraineté",
+                    "en": "Security & Sovereignty",
+                    "ar": "أمان وسيادة تقنية"
+                  },
+                  "description": {
+                    "fr": "Isolation stricte, chiffrement avancé et hébergement sous votre contrôle total.",
+                    "en": "Strict isolation, advanced encryption and hosting under your total control.",
+                    "ar": "عزل محكم، تشفير متقدم واستضافة تحت سيطرتك الكاملة."
+                  }
+                },
+                {
+                  "id": "f3",
+                  "icon": "cpu",
+                  "title": {
+                    "fr": "Technologies de Pointe",
+                    "en": "Cutting-Edge Technologies",
+                    "ar": "تقنيات متقدمة وحديثة"
+                  },
+                  "description": {
+                    "fr": "Composants modernes, scalables et interopérables sans compromis technique.",
+                    "en": "Modern, scalable and interoperable components without technical compromise.",
+                    "ar": "مكونات عصرية، قابلة للتطوير ومتكاملة بدون أي تنازل تقني."
+                  }
+                }
+              ]
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_war_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_war_contact",
+            "type": "direct_contact_cards",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Canaux de Contact Direct",
+                "en": "Direct Contact Channels",
+                "ar": "قنوات الاتصال المباشر"
+              },
+              "subtitle": {
+                "fr": "Joignez notre équipe par le canal qui vous convient le mieux.",
+                "en": "Reach our team through your preferred channel.",
+                "ar": "تواصل مع فريقنا عبر القناة الأنسب لك."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": true,
+        "navOrder": 7,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_terms_conditions",
+        "slug": "conditions-generales",
+        "title": {
+          "fr": "Conditions Générales de Vente",
+          "en": "Terms & Conditions",
+          "ar": "الشروط العامة للبيع"
+        },
+        "description": {
+          "fr": "Règles applicables aux commandes, paiements, livraisons et garanties sur la plateforme.",
+          "en": "Rules applicable to orders, payments, deliveries and warranties on the platform.",
+          "ar": "القواعد المطبقة على الطلبات والدفع والتوصيل والضمانات على المنصة."
+        },
+        "blocks": [
+          {
+            "id": "b_terms_content",
+            "type": "markdown_section",
+            "enabled": true,
+            "props": {
+              "content": {
+                "fr": "### Titre de la Section\n\nRédigez ici votre contenu au format Markdown.\n\n- Point clé 1\n- Point clé 2\n- Point clé 3\n\nVous pouvez intégrer des images ou des vidéos en toute liberté.",
+                "en": "### Section Title\n\nWrite your Markdown content here.\n\n- Key point 1\n- Key point 2\n- Key point 3\n\nYou can embed images and videos freely.",
+                "ar": "### عنوان القسم\n\nاكتب محتواك هنا بتنسيق ماركداون.\n\n- نقطة أساسية 1\n- نقطة أساسية 2\n- نقطة أساسية 3\n\nيمكنك إضافة صور وفيديوهات بكل حرية."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_terms_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": true,
+        "navOrder": 8,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "page_legal_notices",
+        "slug": "mentions-legales",
+        "title": {
+          "fr": "Mentions Légales",
+          "en": "Legal Notices",
+          "ar": "الإشعارات القانونية"
+        },
+        "description": {
+          "fr": "Informations légales relatives à l'éditeur de la plateforme StacGate et hébergement.",
+          "en": "Legal information regarding StacGate platform publisher and hosting.",
+          "ar": "المعلومات القانونية الخاصة بالناشر واستضافة منصة StacGate."
+        },
+        "blocks": [
+          {
+            "id": "b_legal_content",
+            "type": "markdown_section",
+            "enabled": true,
+            "props": {
+              "content": {
+                "fr": "### Titre de la Section\n\nRédigez ici votre contenu au format Markdown.\n\n- Point clé 1\n- Point clé 2\n- Point clé 3\n\nVous pouvez intégrer des images ou des vidéos en toute liberté.",
+                "en": "### Section Title\n\nWrite your Markdown content here.\n\n- Key point 1\n- Key point 2\n- Key point 3\n\nYou can embed images and videos freely.",
+                "ar": "### عنوان القسم\n\nاكتب محتواك هنا بتنسيق ماركداون.\n\n- نقطة أساسية 1\n- نقطة أساسية 2\n- نقطة أساسية 3\n\nيمكنك إضافة صور وفيديوهات بكل حرية."
+              }
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          },
+          {
+            "id": "b_legal_cta",
+            "type": "contact_cta",
+            "enabled": true,
+            "props": {
+              "badge": {
+                "fr": "Conseil & Accompagnement",
+                "en": "Advice & Support",
+                "ar": "استشارة ومرافقة"
+              },
+              "title": {
+                "fr": "Besoin d'un Conseil Technique Spécifique ?",
+                "en": "Need Specific Technical Advice?",
+                "ar": "هل تحتاج إلى استشارة تقنية مخصصة؟"
+              },
+              "subtitle": {
+                "fr": "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+                "en": "Our engineers and specialists reply directly via WhatsApp or message.",
+                "ar": "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل."
+              },
+              "buttonText": {
+                "fr": "Contacter un Expert",
+                "en": "Contact an Expert",
+                "ar": "تواصل مع خبير"
+              },
+              "buttonHref": "/contact"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start"
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": true,
+        "navOrder": 9,
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_track",
+        "slug": "track",
+        "title": {
+          "fr": "Suivi de Commande en Direct",
+          "en": "Live Order Tracking",
+          "ar": "تتبع الطلبات المباشر"
+        },
+        "description": {
+          "fr": "Suivez l'état d'acheminement de votre colis dans les 58 Wilayas.",
+          "en": "Track your parcel delivery across all 58 Wilayas.",
+          "ar": "تتبع مسار شحنتك عبر 58 ولاية."
+        },
+        "blocks": [
+          {
+            "id": "b_track_contact",
+            "type": "direct_contact_cards",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Canaux de Contact Direct",
+                "en": "Direct Contact Channels",
+                "ar": "قنوات الاتصال المباشر"
+              },
+              "subtitle": {
+                "fr": "Joignez notre équipe par le canal qui vous convient le mieux.",
+                "en": "Reach our team through your preferred channel.",
+                "ar": "تواصل مع فريقنا عبر القناة الأنسب لك."
+              }
+            }
+          },
+          {
+            "id": "b_track_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 10,
+        "isSystem": true,
+        "systemKey": "track",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_blog",
+        "slug": "blog",
+        "title": {
+          "fr": "Actualités & Blog Tech",
+          "en": "Tech News & Blog",
+          "ar": "الأخبار والمدونة التقنية"
+        },
+        "description": {
+          "fr": "Guides d'achat, comparatifs matériels et actualités informatiques.",
+          "en": "Buying guides, hardware comparisons and tech news.",
+          "ar": "أدلة الشراء والمقارنات التقنية وآخر الأخبار."
+        },
+        "blocks": [
+          {
+            "id": "b_blog_promo",
+            "type": "promo_banner",
+            "enabled": true,
+            "props": {
+              "text": "Découvrez nos guides d'achat et comparatifs matériel 2026",
+              "label": "Explorer",
+              "href": "/category/laptops"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "top"
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 11,
+        "isSystem": true,
+        "systemKey": "blog",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_builder",
+        "slug": "builder",
+        "title": {
+          "fr": "Configurateur PC Sur Mesure",
+          "en": "Custom PC Builder",
+          "ar": "مجمّع الحواسيب المخصص"
+        },
+        "description": {
+          "fr": "Assemblez votre station de travail ou machine gaming composant par composant.",
+          "en": "Build your workstation or gaming PC component by component.",
+          "ar": "جمّع حاسوبك المكتبي أو المخصص للألعاب خطوة بخطوة."
+        },
+        "blocks": [
+          {
+            "id": "b_builder_why",
+            "type": "why_us",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Pourquoi Choisir StacGate",
+                "en": "Why Choose StacGate",
+                "ar": "لماذا تختار StacGate"
+              },
+              "subtitle": {
+                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
+                "en": "Four core pillars for a seamless and secure shopping experience.",
+                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+              }
+            }
+          },
+          {
+            "id": "b_builder_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 12,
+        "isSystem": true,
+        "systemKey": "builder",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_cart",
+        "slug": "cart",
+        "title": {
+          "fr": "Panier d'Achats & Réassurance",
+          "en": "Shopping Cart & Trust",
+          "ar": "سلة المشتريات والثقة"
+        },
+        "description": {
+          "fr": "Récapitulatif de vos articles, réassurance et cross-selling.",
+          "en": "Review your items, trust guarantees and cross-selling.",
+          "ar": "مراجعة المنتجات وضمانات الثقة والمقترحات."
+        },
+        "blocks": [
+          {
+            "id": "b_cart_best_sellers",
+            "type": "best_sellers",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Meilleures Ventes & Nouveautés",
+                "en": "Best Sellers & New Arrivals",
+                "ar": "الأكثر مبيعاً والجديد"
+              },
+              "subtitle": {
+                "fr": "Les configurations les plus plébiscitées par nos clients et professionnels.",
+                "en": "Top rated setups by our clients and tech professionals.",
+                "ar": "العتاد الأكثر طلباً من قبل عملائنا والمحترفين."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 13,
+        "isSystem": true,
+        "systemKey": "cart",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_checkout_success",
+        "slug": "checkout-success",
+        "title": {
+          "fr": "Confirmation de Commande & Remerciements",
+          "en": "Order Confirmation & Thanks",
+          "ar": "تأكيد الطلب والشكر"
+        },
+        "description": {
+          "fr": "Votre commande est enregistrée avec succès avec suivi WhatsApp direct.",
+          "en": "Your order has been placed successfully with direct WhatsApp follow-up.",
+          "ar": "تم تسجيل طلبك بنجاح مع متابعة مباشرة عبر الواتساب."
+        },
+        "blocks": [
+          {
+            "id": "b_success_contact",
+            "type": "contact_cta",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "badge": {
+                "fr": "Conseil & Accompagnement",
+                "en": "Advice & Support",
+                "ar": "استشارة ومرافقة"
+              },
+              "title": {
+                "fr": "Besoin d'un Conseil Technique Spécifique ?",
+                "en": "Need Specific Technical Advice?",
+                "ar": "هل تحتاج إلى استشارة تقنية مخصصة؟"
+              },
+              "subtitle": {
+                "fr": "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+                "en": "Our engineers and specialists reply directly via WhatsApp or message.",
+                "ar": "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل."
+              },
+              "buttonText": {
+                "fr": "Contacter un Expert",
+                "en": "Contact an Expert",
+                "ar": "تواصل مع خبير"
+              },
+              "buttonHref": "/contact"
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 14,
+        "isSystem": true,
+        "systemKey": "checkout_success",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_not_found",
+        "slug": "404",
+        "title": {
+          "fr": "Page Introuvable (404)",
+          "en": "Page Not Found (404)",
+          "ar": "الصفحة غير موجودة (404)"
+        },
+        "description": {
+          "fr": "La page demandée n'existe pas ou a été déplacée.",
+          "en": "The requested page does not exist or has been moved.",
+          "ar": "الصفحة المطلوبة غير موجودة أو تم نقلها."
+        },
+        "blocks": [
+          {
+            "id": "b_404_categories",
+            "type": "category_cards",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "max": 4,
+              "title": {
+                "fr": "Nos Catégories Phares",
+                "en": "Featured Categories",
+                "ar": "أبرز الفئات"
+              },
+              "subtitle": {
+                "fr": "Explorez notre catalogue par famille d'équipements informatiques.",
+                "en": "Browse our catalog by computing hardware family.",
+                "ar": "تصفح الكتالوج حسب عائلات العتاد."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 15,
+        "isSystem": true,
+        "systemKey": "not_found",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_product",
+        "slug": "product/:id",
+        "title": {
+          "fr": "Fiche Produit Catalogue",
+          "en": "Product Detail",
+          "ar": "تفاصيل المنتج"
+        },
+        "description": {
+          "fr": "Présentation détaillée du produit, caractéristiques techniques, avis et commande.",
+          "en": "Detailed product presentation, technical specifications, reviews and purchase.",
+          "ar": "عرض تفصيلي للمنتج، المواصفات التقنية، التقييمات والشراء."
+        },
+        "blocks": [
+          {
+            "id": "b_prod_why",
+            "type": "why_us",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Pourquoi Choisir StacGate",
+                "en": "Why Choose StacGate",
+                "ar": "لماذا تختار StacGate"
+              },
+              "subtitle": {
+                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
+                "en": "Four core pillars for a seamless and secure shopping experience.",
+                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+              }
+            }
+          },
+          {
+            "id": "b_prod_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 16,
+        "isSystem": true,
+        "systemKey": "product",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_category_index",
+        "slug": "category",
+        "title": {
+          "fr": "Hub des Catégories",
+          "en": "Categories Hub",
+          "ar": "دليل الفئات"
+        },
+        "description": {
+          "fr": "Explorez l'ensemble des départements et univers technologiques.",
+          "en": "Explore all tech categories and departments.",
+          "ar": "استكشف كافة أقسام ومجالات التكنولوجيا."
+        },
+        "blocks": [
+          {
+            "id": "b_cat_banner",
+            "type": "brand_banner",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "top"
+            },
+            "props": {
+              "title": {
+                "fr": "StacGate Platform — L'Ingénierie du Numérique",
+                "en": "StacGate Platform — Digital Engineering",
+                "ar": "منصة StacGate — هندسة الرقميات"
+              },
+              "subtitle": {
+                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
+                "en": "High performance modular platform for hardware and software solutions.",
+                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+              },
+              "bannerSrc": "media/stacgate-archisys-banner.webp"
+            }
+          },
+          {
+            "id": "b_cat_why",
+            "type": "why_us",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Pourquoi Choisir StacGate",
+                "en": "Why Choose StacGate",
+                "ar": "لماذا تختار StacGate"
+              },
+              "subtitle": {
+                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
+                "en": "Four core pillars for a seamless and secure shopping experience.",
+                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 17,
+        "isSystem": true,
+        "systemKey": "category",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_category_detail",
+        "slug": "category/:slug",
+        "title": {
+          "fr": "Listing Catégorie & Filtres",
+          "en": "Category Listing & Filters",
+          "ar": "قائمة الفئة والتصفية"
+        },
+        "description": {
+          "fr": "Catalogue filtrable par marque, usage et tranche tarifaire.",
+          "en": "Filterable catalog by brand, use case and price range.",
+          "ar": "كتالوج قابل للتصفية حسب العلامة والاستخدام والسعر."
+        },
+        "blocks": [
+          {
+            "id": "b_catdet_banner",
+            "type": "promo_banner",
+            "enabled": true,
+            "props": {
+              "text": "Livraison express 58 wilayas disponible sur tout le catalogue",
+              "label": "Voir conditions",
+              "href": "/livraison-retours"
+            },
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "top"
+            }
+          },
+          {
+            "id": "b_catdet_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 18,
+        "isSystem": true,
+        "systemKey": "category_detail",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_search",
+        "slug": "search",
+        "title": {
+          "fr": "Recherche & Filtres Avancés",
+          "en": "Catalog Search & Filters",
+          "ar": "البحث والتصفية المتقدمة"
+        },
+        "description": {
+          "fr": "Moteur de recherche multicritère en temps réel sur l'ensemble du catalogue.",
+          "en": "Real-time multi-criteria search engine across the whole catalog.",
+          "ar": "محرك بحث متعدد المعايير وفوري لكافة المنتجات."
+        },
+        "blocks": [
+          {
+            "id": "b_search_why",
+            "type": "why_us",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Pourquoi Choisir StacGate",
+                "en": "Why Choose StacGate",
+                "ar": "لماذا تختار StacGate"
+              },
+              "subtitle": {
+                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
+                "en": "Four core pillars for a seamless and secure shopping experience.",
+                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 19,
+        "isSystem": true,
+        "systemKey": "search",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_checkout",
+        "slug": "checkout",
+        "title": {
+          "fr": "Tunnel de Caisse & Paiement",
+          "en": "Checkout & Payment",
+          "ar": "إتمام الطلب والدفع"
+        },
+        "description": {
+          "fr": "Validation de commande, coordonnées de livraison et choix du mode de paiement.",
+          "en": "Order validation, delivery address and payment method selection.",
+          "ar": "تأكيد الطلب وعنوان التوصيل واختيار طريقة الدفع."
+        },
+        "blocks": [
+          {
+            "id": "b_chk_cards",
+            "type": "direct_contact_cards",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Canaux de Contact Direct",
+                "en": "Direct Contact Channels",
+                "ar": "قنوات الاتصال المباشر"
+              },
+              "subtitle": {
+                "fr": "Joignez notre équipe par le canal qui vous convient le mieux.",
+                "en": "Reach our team through your preferred channel.",
+                "ar": "تواصل مع فريقنا عبر القناة الأنسب لك."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 20,
+        "isSystem": true,
+        "systemKey": "checkout",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_account",
+        "slug": "account",
+        "title": {
+          "fr": "Espace Client & Commandes",
+          "en": "Customer Account & Orders",
+          "ar": "حساب العميل والطلبات"
+        },
+        "description": {
+          "fr": "Gestion du profil, carnet d'adresses et historique des commandes.",
+          "en": "Profile management, address book and order history.",
+          "ar": "إدارة الملف الشخصي ودفتر العناوين وسجل الطلبات."
+        },
+        "blocks": [
+          {
+            "id": "b_acc_faq",
+            "type": "faq_accordion",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Foire Aux Questions (FAQ)",
+                "en": "Frequently Asked Questions",
+                "ar": "الأسئلة الشائعة (FAQ)"
+              },
+              "subtitle": {
+                "fr": "Trouvez immédiatement les réponses aux interrogations les plus fréquentes.",
+                "en": "Get immediate answers to common questions.",
+                "ar": "إجابات فورية على أكثر الاستفسارات شيوعاً."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 21,
+        "isSystem": true,
+        "systemKey": "account",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_favorites",
+        "slug": "favorites",
+        "title": {
+          "fr": "Coups de Cœur & Favoris",
+          "en": "Wishlist & Favorites",
+          "ar": "قائمة المفضلة"
+        },
+        "description": {
+          "fr": "Vos articles sauvegardés pour consultation ou achat ultérieur.",
+          "en": "Your saved items for later review or purchase.",
+          "ar": "منتجاتك المفضلة المحفوظة للمراجعة أو الشراء لاحقاً."
+        },
+        "blocks": [
+          {
+            "id": "b_fav_bestsellers",
+            "type": "best_sellers",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Meilleures Ventes & Nouveautés",
+                "en": "Best Sellers & New Arrivals",
+                "ar": "الأكثر مبيعاً والجديد"
+              },
+              "subtitle": {
+                "fr": "Les configurations les plus plébiscitées par nos clients et professionnels.",
+                "en": "Top rated setups by our clients and tech professionals.",
+                "ar": "العتاد الأكثر طلباً من قبل عملائنا والمحترفين."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 22,
+        "isSystem": true,
+        "systemKey": "favorites",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_blog_article",
+        "slug": "blog/:slug",
+        "title": {
+          "fr": "Lecture Article de Blog",
+          "en": "Blog Article Reader",
+          "ar": "قراءة مقال المدونة"
+        },
+        "description": {
+          "fr": "Contenu éditorial, analyses matérielles et guides d'experts.",
+          "en": "Editorial content, hardware analysis and expert guides.",
+          "ar": "محتوى تحريري وتحليلات للعتاد وأدلة الخبراء."
+        },
+        "blocks": [
+          {
+            "id": "b_art_cta",
+            "type": "contact_cta",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "badge": {
+                "fr": "Conseil & Accompagnement",
+                "en": "Advice & Support",
+                "ar": "استشارة ومرافقة"
+              },
+              "title": {
+                "fr": "Besoin d'un Conseil Technique Spécifique ?",
+                "en": "Need Specific Technical Advice?",
+                "ar": "هل تحتاج إلى استشارة تقنية مخصصة؟"
+              },
+              "subtitle": {
+                "fr": "Nos ingénieurs et spécialistes vous répondent immédiatement par WhatsApp ou messagerie.",
+                "en": "Our engineers and specialists reply directly via WhatsApp or message.",
+                "ar": "مهندسونا ومختصونا يجيبونك فوراً عبر واتساب أو الرسائل."
+              },
+              "buttonText": {
+                "fr": "Contacter un Expert",
+                "en": "Contact an Expert",
+                "ar": "تواصل مع خبير"
+              },
+              "buttonHref": "/contact"
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 23,
+        "isSystem": true,
+        "systemKey": "blog_article",
+        "createdAt": "2026-11-08T00:00:00.000Z",
+        "updatedAt": "2026-11-08T00:00:00.000Z"
+      },
+      {
+        "id": "system_auth",
+        "slug": "auth",
+        "title": {
+          "fr": "Portail Authentification",
+          "en": "Authentication Portal",
+          "ar": "بوابة تسجيل الدخول"
+        },
+        "description": {
+          "fr": "Connexion sécurisée et création de compte client.",
+          "en": "Secure login and customer account creation.",
+          "ar": "تسجيل دخول آمن وإنشاء حساب عميل."
+        },
+        "blocks": [
+          {
+            "id": "b_auth_why",
+            "type": "why_us",
+            "enabled": true,
+            "style": {
+              "padding": "normal",
+              "bg": "transparent",
+              "align": "start",
+              "placement": "bottom"
+            },
+            "props": {
+              "title": {
+                "fr": "Pourquoi Choisir StacGate",
+                "en": "Why Choose StacGate",
+                "ar": "لماذا تختار StacGate"
+              },
+              "subtitle": {
+                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
+                "en": "Four core pillars for a seamless and secure shopping experience.",
+                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+              }
+            }
+          }
+        ],
+        "isPublished": true,
+        "inNavbar": false,
+        "inFooter": false,
+        "navOrder": 24,
+        "isSystem": true,
+        "systemKey": "auth",
         "createdAt": "2026-11-08T00:00:00.000Z",
         "updatedAt": "2026-11-08T00:00:00.000Z"
       }
