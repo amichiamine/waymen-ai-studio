@@ -119,7 +119,7 @@ export function BlockWrapper({ config, children, className }: BlockWrapperProps)
             : "";
 
   return (
-    <div
+    <section
       id={style.anchorId || undefined}
       data-block-id={config.id}
       data-block-type={config.type}
@@ -127,18 +127,19 @@ export function BlockWrapper({ config, children, className }: BlockWrapperProps)
         "w-full transition-all duration-200",
         paddingClass,
         bgClass,
-        alignClass,
         visibilityClass,
         roundedClass,
         shadowClass,
         borderClass,
         marginClass,
-        maxWidthClass,
         style.customClassName,
-        className,
       )}
     >
-      {children}
-    </div>
+      <div
+        className={cn("w-full transition-all duration-200", maxWidthClass, alignClass, className)}
+      >
+        {children}
+      </div>
+    </section>
   );
 }

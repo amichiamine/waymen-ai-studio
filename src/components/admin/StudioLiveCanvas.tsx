@@ -203,13 +203,13 @@ export function StudioLiveCanvas({
       </div>
 
       {/* Surface de rendu WYSYWIG avec scrolling dédié */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center items-start bg-muted/15">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-6 flex justify-center items-start bg-muted/15 max-w-full overflow-x-hidden">
         <div
           className={cn(
-            "w-full transition-all duration-300 ease-out bg-background min-h-[500px]",
+            "w-full transition-all duration-300 ease-out bg-background min-h-[500px] box-border max-w-full",
             getViewportWidth(),
             device !== "desktop" &&
-              "rounded-3xl border-4 border-slate-700/80 shadow-2xl overflow-hidden my-2",
+              "rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-slate-700/80 shadow-2xl overflow-hidden my-2",
           )}
         >
           {device !== "desktop" && (

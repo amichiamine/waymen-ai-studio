@@ -42,7 +42,7 @@ Suite au retour d'expérience terrain d'**ArchiSys3.0**, cinq dysfonctionnements
   - Création d'un état persistant de repli de la sidebar (`admin_sidebar_collapsed` dans `localStorage`).
   - Implémentation du mode compact `w-16` :
     - Masquage des libellés textuels et maintien des icônes centrées.
-    - Ajout d'infobulles natives ou Tooltip pour préserver l'accessibilité et la lisibilité des 25 entrées du menu.
+    - Ajout d'infobulles natives pour préserver l'accessibilité et la lisibilité des 25 entrées du menu.
     - Bouton de repli/dépli avec icône `PanelLeftClose` / `PanelLeftOpen` dans le pied de la barre latérale.
     - Ajout d'un déclencheur de bascule dans l'en-tête général du Backstage pour un accès immédiat.
   - Animation de transition fluide `transition-all duration-200 ease-in-out`.
@@ -107,3 +107,32 @@ Suite au retour d'expérience terrain d'**ArchiSys3.0**, cinq dysfonctionnements
 | **Auto-Scroll du Visualiseur**    | Clic sur un bloc dans l'arborescence                 |         Le visualiseur défile instantanément et centre le bloc sélectionné          |
 | **Inspecteur Graphique Étendu**   | Modification arrondis, ombres, largeur max, bordure  |      Répercussion immédiate dans le visualiseur et persistance en base SQLite       |
 | **Zéro Régression & Build**       | `bun run lint && bunx tsc --noEmit && bun run build` |                    Code 0, dist/ généré, archives zip produites                     |
+
+---
+
+## Sous-Phase 42.1 : Éradication Forensique des 4 Angles Morts (Découplage Fond/Conteneur, Sécurisation JSON, Ergonomie Mobile & Anti-Débordement 360px)
+
+### 1. Contexte & Enjeux
+
+Suite à l'audit forensique validé par ArchiSys3.0, quatre angles morts identifiés doivent être éradiqués sans délai :
+
+1. **Angle Mort 1 (Découplage Fond / Conteneur) :** [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) applique `bgClass` et `maxWidthClass` sur le même élément `<div>`, ce qui rogne les fonds pleine largeur lorsque le contenu est centré (7xl/5xl).
+2. **Angle Noir 2 (Sécurisation JSON) :** [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) initialise `rawJson` sans `useEffect` lors du changement de bloc, risquant d'écraser les propriétés d'un bloc avec celles d'un autre en cas de passage en mode codeur.
+3. **Angle Mort 3 (Raccourci Tactile Mobile) :** Dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx), absence d'un bouton contextuel de retour « Voir l'Aperçu Live » directement dans l'en-tête de la carte d'inspecteur sur mobile (< 1024px).
+4. **Angle Mort 4 (Anti-débordement Simulateur) :** Dans [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx), sécurisation contre tout débordement horizontal de la simulation mobile sur petits smartphones (360px).
+
+### 2. Actions Chirurgicales Prévues
+
+- **Étape 42.1.1 (`BlockWrapper.tsx`) :**
+  - Refonte du conteneur en 2 paliers :
+    - Balise externe pleine largeur (100%) : porte `bgClass`, `paddingClass`, `marginClass`, `borderClass`, `roundedClass`, `shadowClass`, `visibilityClass`, `style.anchorId`, `style.customClassName`.
+    - Balise interne centrée : porte `maxWidthClass` (`max-w-7xl mx-auto`, etc.) et `alignClass`.
+- **Étape 42.1.2 (`BlockPropsEditor.tsx`) :**
+  - Ajout d'un écouteur `useEffect` synchronisant automatiquement `rawJson` (`JSON.stringify(block.props || {}, null, 2)`) et réinitialisant `jsonError` dès que `block.id` change.
+- **Étape 42.1.3 (`PagesManager.tsx`) :**
+  - Ajout d'un bouton contextuel « Voir l'Aperçu » (`Eye`) dans l'en-tête de la carte inspecteur (`CardHeader`) affiché uniquement sur mobile/tablette (`lg:hidden`) pour un retour en 1 tap.
+- **Étape 42.1.4 (`StudioLiveCanvas.tsx`) :**
+  - Sécurisation du conteneur du simulateur avec `w-full max-w-[375px]` et contrainte `box-border` pour éviter tout débordement au-delà de 360px.
+- **Étape 42.1.5 (CI & Certification) :**
+  - `bun run verifier-i18n && bunx tsc --noEmit && bun run format && bun run lint && bun run build && bun run paqueter:data`.
+  - Mise à jour du journal [`.agents/tracabilites.md`](file:///c:/xampp/htdocs/ka-tech/.agents/tracabilites.md).

@@ -768,6 +768,17 @@ export default function PagesManager() {
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-1">
+                        {/* Raccourci tactile direct vers l'aperçu Live sur Mobile/Tablette */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs font-semibold gap-1 px-2 lg:hidden text-primary"
+                          onClick={() => setMobileStudioView("canvas")}
+                          title="Voir l'aperçu en direct"
+                        >
+                          <Eye className="size-3.5" />
+                          <span>Aperçu</span>
+                        </Button>
                         <Button
                           size="icon"
                           variant="ghost"

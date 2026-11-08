@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, Code, Check, Palette, FileText, Smartphone, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
   const [activeTab, setActiveTab] = useState<"content" | "style" | "json">("content");
   const [rawJson, setRawJson] = useState(() => JSON.stringify(p, null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
+
+  // 🛡️ Synchronisation réactive immédiate du JSON lors du changement de bloc (éradication écrasement accidentel)
+  useEffect(() => {
+    setRawJson(JSON.stringify(block.props || {}, null, 2));
+    setJsonError(null);
+  }, [block.id, block.props]);
 
   const { data: siteContent } = useSiteContent();
   const L = useLocalize();
