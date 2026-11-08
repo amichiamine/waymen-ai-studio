@@ -59,6 +59,8 @@
 | **Phase 37** | 08/11/2026 | Moteur Universel de Pages Dynamiques & Catalogue de 24 Blocs Composables (Zéro Régression)       | 📄 [`37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md`](Implementations_Plans/37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md)           | 🟢 **Livré & Validé** |
 | **Phase 38** | 08/11/2026 | Studio de Conception Visuelle Unifié & Harmonisation Ergonomique Backstage 360°                  | 📄 [`38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md`](Implementations_Plans/38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md)                               | 🟢 **Livré & Validé** |
 | **Phase 39** | 08/11/2026 | Universalisation des Vues Composables 360° (Accueil, À propos, Contact & Catalogue Global)       | 📄 [`39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md`](Implementations_Plans/39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md)                   | 🟢 **Livré & Validé** |
+| **Phase 40** | 08/11/2026 | Grand Studio Visuel Interactif (Live Canvas WYSYWIG, Inspecteur Fin & Styles)                    | 📄 [`40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md`](Implementations_Plans/40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md)                               | 🟢 **Livré & Validé** |
+| **Phase 41** | 08/11/2026 | Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, 5 Nouveaux Blocs | 📄 [`41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md`](Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md) | 🟢 **Livré & Validé** |
 
 ---
 
@@ -2005,7 +2007,7 @@
 - **Tech Lead, Architecte & Consultant R&D :** AImi
 - **Contexte & Constat Initial :**
   1. L'administration des blocs s'effectuait auparavant à l'aveugle dans une simple liste de cartes sans prévisualisation en direct.
-  2. Les blocs e-commerce (`hero_banner`, `flash_sale`, `best_sellers`, etc.) n'offraient aucun moyen de personnaliser leur contenu textuel/visuel depuis l'Onglet 1 (*Pages & Vues Composables*), obligeant à basculer vers l'Onglet 2.
+  2. Les blocs e-commerce (`hero_banner`, `flash_sale`, `best_sellers`, etc.) n'offraient aucun moyen de personnaliser leur contenu textuel/visuel depuis l'Onglet 1 (_Pages & Vues Composables_), obligeant à basculer vers l'Onglet 2.
   3. Absence de contrôles fins d'espacement (padding), d'arrière-plan, d'alignement et de masquage responsive (mobile vs bureau).
   4. Manque de moyens visuels de contrôle avant, pendant et après édition directement depuis le Studio.
 - **Décisions d'ArchiSys3.0 :**
@@ -2055,3 +2057,64 @@
   - Studio Backstage Refondu : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
   - Archive application horodatée : 📦 [katech-site-08112026-1353.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1353.zip) (4.13 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1353.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1353.zip) (42 Ko)
+
+---
+
+### Phase 41 : Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, Correction Écrans Mobile/Tablette, Inspecteurs Ultra-Fins, Nouveaux Blocs Majeurs & Persistance Souveraine en BD
+
+- **Contexte & Enjeux :**  
+  Suite au diagnostic partagé avec ArchiSys3.0, l'expérience d'administration du Studio Visuel nécessitait une consolidation majeure sur 5 axes : désencombrement de l'interface par des volets rétractables, résolution du bug de simulation d'écran Mobile & Tablette, enrichissement drastique des inspecteurs de blocs (intégration du MediaPicker), création de 5 nouveaux blocs indispensables (`features_grid`, `pricing_table`, `quote_star`, `full_width_banner`, `visual_spacer`), et réunification complète au sein d'un Cockpit Unique adossé à une persistance souveraine SQLite directe (`PATCH /content`, zéro dépendance à `localStorage`).
+- **Décisions d'ArchiSys3.0 :**  
+  Validation de l'Option A avec exigence ferme : ne pas traiter uniquement le côté frontend et UI/UX, mais garantir et consolider la persistance souveraine des données directement dans la base SQLite (`site_content`) via l'API serveur, sans aucune régression fonctionnelle ni perte de données.
+- **Actions Réalisées :**
+  - **Étape 41.1 (Création des 5 Nouveaux Blocs Majeurs & Enregistrement) :**
+    - Modification de [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) : extension du type souverain `BlockType` avec `features_grid`, `pricing_table`, `quote_star`, `full_width_banner`, `visual_spacer`.
+    - Création de [`src/components/blocks/FeaturesGridBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/FeaturesGridBlock.tsx) : grille de 2, 3 ou 4 colonnes d'atouts avec icônes Lucide, titres, descriptions et liens d'action.
+    - Création de [`src/components/blocks/PricingTableBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/PricingTableBlock.tsx) : tableau comparatif des offres avec prix, périodes, badge populaire mis en avant, liste de puces d'avantages et boutons CTA.
+    - Création de [`src/components/blocks/QuoteStarBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/QuoteStarBlock.tsx) : témoignage client VIP grand format avec filigrane, notation 1 à 5 étoiles, citation stylisée, nom, fonction et avatar.
+    - Création de [`src/components/blocks/FullWidthBannerBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/FullWidthBannerBlock.tsx) : grande bannière d'accroche avec image de fond, dégradé de lisibilité, titre percutant, sous-titre et double bouton CTA (primaire et secondaire).
+    - Création de [`src/components/blocks/VisualSpacerBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/VisualSpacerBlock.tsx) : espaceur réglable de 20px à 240px avec filet de séparation optionnel (discret, accent ou pointillés).
+    - Enregistrement des composants dans [`src/components/blocks/index.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/index.ts) et des métadonnées trilingues dans [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts).
+  - **Étape 41.2 (Débogage Physique du Visualiseur Mobile & Tablette) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Éradication de `my-auto` qui écrasait le conteneur dans le Flex parent contraint.
+      - Ajout de `items-start` et `my-2` avec défilement fluide vertical `overflow-y-auto`.
+      - Le simulateur Mobile (375px) et Tablette (768px) défile parfaitement et s'affiche sans coupure ni masquage de composants.
+  - **Étape 41.3 (Conception des Volets Rétractables & Mode Plein Écran Zen) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout des états `leftCollapsed` et `rightCollapsed`.
+      - Ajout de boutons de rétractation à chevrons (`PanelLeftClose`, `PanelRightClose`) directement sur les en-têtes des cartes latérales.
+      - Redistribution dynamique de la grille : 3-6-3 (normal), 0-9-3 ou 3-9-0 (un volet masqué), et 0-12-0 (Plein Écran Zen 100%).
+      - Raccourci "Zen" dans la barre d'outils du Live Canvas permettant de basculer en un clic sur une surface de travail maximale.
+  - **Étape 41.4 (Inspecteurs Ultra-Fins avec MediaPicker & Formulaires Granulaires) :**
+    - Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) :
+      - Intégration de `MediaPickerField` pour les images du Hero, de la bannière marque, de la bannière pleine largeur et de l'avatar du témoignage VIP.
+      - Formulaires d'édition modulaires pour `features_grid` (ajout/suppression/édition de cartes), `pricing_table` (gestion fine des plans et listes de points forts), `quote_star` (sélection d'étoiles et rôles), `full_width_banner` (double CTA et sélecteur de hauteur), `visual_spacer` (slider de pixels et séparateur).
+  - **Étape 41.5 (Unification Cockpit 360° & Persistance Souveraine SQLite Directe) :**
+    - Raccordement immédiat de la sauvegarde sur l'API backend (`PATCH /content`) injectant les pages et blocs dans la table SQLite `site_content`. Zéro stockage volatile dans `localStorage`.
+    - Intégration des commutateurs d'accès directs aux pôles globaux (Sections Accueil, En-tête/Footer/Ticker, Flottants Mobile) au sein de la même interface de bord.
+  - **Étape 41.6 (Contrôles Qualité CI, Compilation & Livrables) :**
+    - `bun run verifier-i18n` : 100% cohérent (parité trilingue FR, EN, AR, zéro valeur vide).
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run build ; bun run paqueter:data` : compilation et empaquetage réussis.
+- **Résultats de Recette :**
+  - Volets rétractables fluides : libèrent instantanément 100% de la largeur de l'écran en Mode Zen.
+  - Visualiseur Mobile & Tablette 100% opérationnel : défilement continu sans écrasement vertical ni masquage de texte.
+  - 5 nouveaux blocs opérationnels et visualisables immédiatement dans le Live Canvas.
+  - Persistance vérifiée : les mises à jour s'enregistrent physiquement dans `dev-a97b6b98a368.sqlite` via `updateSiteContent`.
+- **Livrables :**
+  - Plan d'implémentation miroir : 📄 [41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md)
+  - 5 Nouveaux Composants de Blocs :
+    - 📄 [`src/components/blocks/FeaturesGridBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/FeaturesGridBlock.tsx)
+    - 📄 [`src/components/blocks/PricingTableBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/PricingTableBlock.tsx)
+    - 📄 [`src/components/blocks/QuoteStarBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/QuoteStarBlock.tsx)
+    - 📄 [`src/components/blocks/FullWidthBannerBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/FullWidthBannerBlock.tsx)
+    - 📄 [`src/components/blocks/VisualSpacerBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/VisualSpacerBlock.tsx)
+  - Studio Live Canvas avec Contrôles Rétractables & Mode Zen : 📄 [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
+  - Inspecteur Enrichi avec MediaPicker : 📄 [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx)
+  - Studio Cockpit Réunifié : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1416.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1416.zip) (4.14 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1416.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1416.zip) (42 Ko)
+

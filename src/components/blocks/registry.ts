@@ -450,6 +450,82 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
     },
     icon: "Tag",
   },
+  // 🌟 Nouveaux Blocs Majuscules Phase 41
+  {
+    type: "features_grid",
+    family: "identity",
+    label: {
+      fr: "Grille de Fonctionnalités & Services",
+      en: "Features & Services Grid",
+      ar: "شبكة الميزات والخدمات",
+    },
+    description: {
+      fr: "Grille moderne de 2, 3 ou 4 colonnes d'atouts avec icônes, titres et descriptions.",
+      en: "Modern 2, 3 or 4-column grid of features with icons, titles and descriptions.",
+      ar: "شبكة عصرية من 2، 3 أو 4 أعمدة لعرض الميزات مع أيقونات وعناوين وشروحات.",
+    },
+    icon: "Sparkles",
+  },
+  {
+    type: "pricing_table",
+    family: "commerce",
+    label: {
+      fr: "Grille Tarifaire & Plans d'Offres",
+      en: "Pricing Table & Plans",
+      ar: "جدول الأسعار وباقات العروض",
+    },
+    description: {
+      fr: "Tableau comparatif des offres avec tarifs, badge populaire, liste d'avantages et boutons d'action.",
+      en: "Comparative offer table with prices, popular badge, feature checklist and action buttons.",
+      ar: "جدول مقارنة الباقات مع الأسعار، شارة الأكثر طلباً، قائمة الميزات وأزرار الطلب.",
+    },
+    icon: "CreditCard",
+  },
+  {
+    type: "quote_star",
+    family: "social",
+    label: {
+      fr: "Témoignage Vedette & Citation Star",
+      en: "Featured VIP Quote & Review",
+      ar: "شهادة مميزة واقتباس بارز",
+    },
+    description: {
+      fr: "Témoignage percutant en pleine largeur avec citation marquante, notation étoiles et profil auteur.",
+      en: "Impactful full-width testimonial with quote, star rating and author profile.",
+      ar: "شهادة عميل مميزة مع اقتباس بارز، تقييم بالنجوم وملف تعريفي بالكاتب.",
+    },
+    icon: "Quote",
+  },
+  {
+    type: "full_width_banner",
+    family: "commerce",
+    label: {
+      fr: "Grande Bannière Visuelle d'Impact",
+      en: "Full-Width Impact Banner",
+      ar: "بانر بصري عريض فائق التأثير",
+    },
+    description: {
+      fr: "Hero secondaire grand format avec image d'arrière-plan, dégradé protecteur et double CTA.",
+      en: "Secondary large-format hero with background image, gradient overlay and dual CTAs.",
+      ar: "بانر رئيسي عريض مع صورة خلفية وتدرج متباين وأزرار عمل مزدوجة.",
+    },
+    icon: "Maximize",
+  },
+  {
+    type: "visual_spacer",
+    family: "interaction",
+    label: {
+      fr: "Espaceur & Séparateur Visuel",
+      en: "Visual Spacer & Divider",
+      ar: "فاصل ومسافة بصرية",
+    },
+    description: {
+      fr: "Espaceur vertical réglable (20px à 160px) avec ligne de séparation discrète ou stylisée.",
+      en: "Adjustable vertical spacer (20px to 160px) with subtle or stylized divider line.",
+      ar: "فاصل رأسي قابل للتعديل (20 إلى 160 بكسل) مع خط فاصل أنيق اختياري.",
+    },
+    icon: "Minus",
+  },
 ];
 
 export function getBlockMeta(type: string): BlockMeta | undefined {

@@ -6,6 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import type { BlockConfig, BlockStyleConfig } from "@/types/pages";
 import type { Localized } from "@/lib/i18n";
 import { useSiteContent } from "@/data-provider";
@@ -288,6 +296,14 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   onChange={(e) => updateProp("badge", e.target.value)}
                   placeholder="Offre spéciale"
                   className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1 pt-1">
+                <MediaPickerField
+                  label="Image personnalisée du Hero"
+                  description="Visuel principal d'illustration (laisser vide pour l'image officielle par défaut)"
+                  value={typeof p.imageSrc === "string" ? p.imageSrc : ""}
+                  onChange={(url) => updateProp("imageSrc", url)}
                 />
               </div>
             </div>
@@ -864,6 +880,537 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                 placeholder="### Titre de votre section&#10;&#10;Votre contenu rédigé en Markdown..."
                 className="font-mono text-xs"
               />
+            </div>
+          )}
+
+          {/* 8. BRAND BANNER (AVEC MEDIAPICKER) */}
+          {block.type === "brand_banner" && (
+            <div className="space-y-3">
+              <MediaPickerField
+                label="Visuel de la Bannière Marque"
+                description="Sélectionnez l'image de bannière grand format (laisser vide pour la bannière officielle)"
+                value={typeof p.bannerSrc === "string" ? p.bannerSrc : ""}
+                onChange={(url) => updateProp("bannerSrc", url)}
+              />
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">
+                  Texte alternatif (Accessibilité & SEO) :
+                </Label>
+                <Input
+                  value={
+                    getPropStr(p.altText) || "StacGate Platform — Conçu et Validé par ArchiSys3.0"
+                  }
+                  onChange={(e) => updateProp("altText", e.target.value)}
+                  placeholder="Description textuelle du visuel"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 9. FEATURES GRID (NOUVEAU BLOC PHASE 41) */}
+          {block.type === "features_grid" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre de la section :</Label>
+                <Input
+                  value={getPropStr(p.title)}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Nos Atouts & Piliers Technologiques"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre d'accompagnement :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.subtitle)}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Une vision d'ingénierie sans compromis..."
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Nombre de colonnes :</Label>
+                <Select
+                  value={String(p.columns || "3")}
+                  onValueChange={(val) => updateProp("columns", Number(val))}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="3 colonnes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">2 Colonnes</SelectItem>
+                    <SelectItem value="3">3 Colonnes (Standard)</SelectItem>
+                    <SelectItem value="4">4 Colonnes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Cartes de fonctionnalités :</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const items = Array.isArray(p.items) ? [...p.items] : [];
+                      items.push({
+                        id: "f_" + Date.now(),
+                        icon: "rocket",
+                        title: "Nouvelle fonctionnalité",
+                        description: "Description concise de l'atout...",
+                        link: "",
+                      });
+                      updateProp("items", items);
+                    }}
+                    className="h-7 text-xs gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Ajouter une carte</span>
+                  </Button>
+                </div>
+
+                {(Array.isArray(p.items) ? p.items : []).map(
+                  (item: Record<string, unknown>, idx: number) => (
+                    <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Select
+                          value={String(item.icon || "rocket")}
+                          onValueChange={(val) => {
+                            const items = [...(p.items as Record<string, unknown>[])];
+                            items[idx] = { ...items[idx], icon: val };
+                            updateProp("items", items);
+                          }}
+                        >
+                          <SelectTrigger className="h-7 text-[11px] w-28">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="rocket">Fusée</SelectItem>
+                            <SelectItem value="shield">Bouclier</SelectItem>
+                            <SelectItem value="cpu">Processeur</SelectItem>
+                            <SelectItem value="zap">Éclair</SelectItem>
+                            <SelectItem value="sparkles">Étoiles</SelectItem>
+                            <SelectItem value="globe">Globe</SelectItem>
+                            <SelectItem value="code">Code</SelectItem>
+                            <SelectItem value="check">Validation</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Input
+                          placeholder="Titre de la carte"
+                          value={getPropStr(item.title)}
+                          onChange={(e) => {
+                            const items = [...(p.items as Record<string, unknown>[])];
+                            items[idx] = { ...items[idx], title: e.target.value };
+                            updateProp("items", items);
+                          }}
+                          className="h-7 text-xs font-semibold flex-1"
+                        />
+
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => {
+                            const items = [...(p.items as Record<string, unknown>[])];
+                            items.splice(idx, 1);
+                            updateProp("items", items);
+                          }}
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+
+                      <Textarea
+                        rows={2}
+                        placeholder="Description de la fonctionnalité..."
+                        value={getPropStr(item.description)}
+                        onChange={(e) => {
+                          const items = [...(p.items as Record<string, unknown>[])];
+                          items[idx] = { ...items[idx], description: e.target.value };
+                          updateProp("items", items);
+                        }}
+                        className="text-xs"
+                      />
+
+                      <Input
+                        placeholder="Lien d'action (optionnel, ex: /catalogue)"
+                        value={String(item.link || "")}
+                        onChange={(e) => {
+                          const items = [...(p.items as Record<string, unknown>[])];
+                          items[idx] = { ...items[idx], link: e.target.value };
+                          updateProp("items", items);
+                        }}
+                        className="h-7 text-xs font-mono"
+                      />
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 10. PRICING TABLE (NOUVEAU BLOC PHASE 41) */}
+          {block.type === "pricing_table" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre de la section tarifs :</Label>
+                <Input
+                  value={getPropStr(p.title)}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Nos Offres & Solutions"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre descriptif :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.subtitle)}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Formules transparentes adaptées à vos objectifs"
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Plans tarifaires :</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const plans = Array.isArray(p.plans) ? [...p.plans] : [];
+                      plans.push({
+                        id: "p_" + Date.now(),
+                        name: "Nouveau Plan",
+                        price: "99 000 DZD",
+                        period: "/ projet",
+                        popular: false,
+                        features: ["Fonctionnalité 1", "Fonctionnalité 2"],
+                        ctaText: "Choisir",
+                        ctaLink: "/contact",
+                      });
+                      updateProp("plans", plans);
+                    }}
+                    className="h-7 text-xs gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Ajouter un plan</span>
+                  </Button>
+                </div>
+
+                {(Array.isArray(p.plans) ? p.plans : []).map(
+                  (plan: Record<string, unknown>, idx: number) => (
+                    <div key={idx} className="p-3 border rounded-xl bg-card/60 space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <Input
+                          placeholder="Nom de l'offre (ex: Starter)"
+                          value={getPropStr(plan.name)}
+                          onChange={(e) => {
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans[idx] = { ...plans[idx], name: e.target.value };
+                            updateProp("plans", plans);
+                          }}
+                          className="h-7 text-xs font-bold"
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => {
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans.splice(idx, 1);
+                            updateProp("plans", plans);
+                          }}
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Prix (ex: 49 000 DZD)"
+                          value={String(plan.price || "")}
+                          onChange={(e) => {
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans[idx] = { ...plans[idx], price: e.target.value };
+                            updateProp("plans", plans);
+                          }}
+                          className="h-7 text-xs font-semibold"
+                        />
+                        <Input
+                          placeholder="Période (ex: / projet)"
+                          value={getPropStr(plan.period)}
+                          onChange={(e) => {
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans[idx] = { ...plans[idx], period: e.target.value };
+                            updateProp("plans", plans);
+                          }}
+                          className="h-7 text-xs"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          Mettre en avant (Recommandé) :
+                        </span>
+                        <Switch
+                          checked={Boolean(plan.popular)}
+                          onCheckedChange={(val) => {
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans[idx] = { ...plans[idx], popular: val };
+                            updateProp("plans", plans);
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-[11px] text-muted-foreground">
+                          Liste des avantages (1 ligne par point fort) :
+                        </Label>
+                        <Textarea
+                          rows={3}
+                          value={
+                            Array.isArray(plan.features)
+                              ? plan.features.map((f) => getPropStr(f)).join("\n")
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const lines = e.target.value
+                              .split("\n")
+                              .filter((l) => l.trim().length > 0);
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans[idx] = { ...plans[idx], features: lines };
+                            updateProp("plans", plans);
+                          }}
+                          placeholder="Architecture optimisée&#10;Support garanti&#10;Mises à jour..."
+                          className="text-xs"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Libellé bouton (ex: Commander)"
+                          value={getPropStr(plan.ctaText)}
+                          onChange={(e) => {
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans[idx] = { ...plans[idx], ctaText: e.target.value };
+                            updateProp("plans", plans);
+                          }}
+                          className="h-7 text-xs"
+                        />
+                        <Input
+                          placeholder="Lien (ex: /contact)"
+                          value={String(plan.ctaLink || "")}
+                          onChange={(e) => {
+                            const plans = [...(p.plans as Record<string, unknown>[])];
+                            plans[idx] = { ...plans[idx], ctaLink: e.target.value };
+                            updateProp("plans", plans);
+                          }}
+                          className="h-7 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 11. QUOTE STAR (NOUVEAU BLOC PHASE 41) */}
+          {block.type === "quote_star" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Texte du témoignage / Citation :</Label>
+                <Textarea
+                  rows={3}
+                  value={getPropStr(p.quote)}
+                  onChange={(e) => updateProp("quote", e.target.value)}
+                  placeholder="« Un travail d'ingénierie exemplaire et une fiabilité totale. »"
+                  className="text-xs italic"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Nom de l'auteur :</Label>
+                  <Input
+                    value={String(p.author || "")}
+                    onChange={(e) => updateProp("author", e.target.value)}
+                    placeholder="Dr. Salim B."
+                    className="h-8 text-xs font-semibold"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Note Étoiles (1-5) :</Label>
+                  <Select
+                    value={String(p.rating || "5")}
+                    onValueChange={(val) => updateProp("rating", Number(val))}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="5 étoiles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">⭐⭐⭐⭐⭐ (5/5)</SelectItem>
+                      <SelectItem value="4">⭐⭐⭐⭐ (4/5)</SelectItem>
+                      <SelectItem value="3">⭐⭐⭐ (3/5)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Fonction & Entreprise :</Label>
+                <Input
+                  value={getPropStr(p.role)}
+                  onChange={(e) => updateProp("role", e.target.value)}
+                  placeholder="Directeur des Systèmes d'Information"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <MediaPickerField
+                label="Photo ou Avatar de l'auteur"
+                description="Visuel de portrait (laisser vide pour les initiales)"
+                value={typeof p.avatarSrc === "string" ? p.avatarSrc : ""}
+                onChange={(url) => updateProp("avatarSrc", url)}
+                aspectRatio="square"
+              />
+            </div>
+          )}
+
+          {/* 12. FULL WIDTH BANNER (NOUVEAU BLOC PHASE 41) */}
+          {block.type === "full_width_banner" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre de la bannière :</Label>
+                <Input
+                  value={getPropStr(p.title)}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Construisez votre Écosystème Haute Performance"
+                  className="h-8 text-xs font-bold"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre descriptif :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.subtitle)}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Une solution technologique souveraine et modulaire..."
+                  className="text-xs"
+                />
+              </div>
+
+              <MediaPickerField
+                label="Image d'arrière-plan de la bannière"
+                description="Image panoramique haute définition"
+                value={typeof p.bannerSrc === "string" ? p.bannerSrc : ""}
+                onChange={(url) => updateProp("bannerSrc", url)}
+              />
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Hauteur de la bannière :</Label>
+                <Select
+                  value={String(p.height || "normal")}
+                  onValueChange={(val) => updateProp("height", val)}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Normale" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="compact">Compacte (280px)</SelectItem>
+                    <SelectItem value="normal">Standard (360px)</SelectItem>
+                    <SelectItem value="ample">Ample & Majestueuse (480px)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Bouton CTA Principal :</Label>
+                  <Input
+                    value={getPropStr(p.primaryCtaText)}
+                    onChange={(e) => updateProp("primaryCtaText", e.target.value)}
+                    placeholder="Découvrir"
+                    className="h-7 text-xs"
+                  />
+                  <Input
+                    value={String(p.primaryCtaLink || "")}
+                    onChange={(e) => updateProp("primaryCtaLink", e.target.value)}
+                    placeholder="/catalogue"
+                    className="h-7 text-xs font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Bouton CTA Secondaire :</Label>
+                  <Input
+                    value={getPropStr(p.secondaryCtaText)}
+                    onChange={(e) => updateProp("secondaryCtaText", e.target.value)}
+                    placeholder="Nous contacter"
+                    className="h-7 text-xs"
+                  />
+                  <Input
+                    value={String(p.secondaryCtaLink || "")}
+                    onChange={(e) => updateProp("secondaryCtaLink", e.target.value)}
+                    placeholder="/contact"
+                    className="h-7 text-xs font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 13. VISUAL SPACER (NOUVEAU BLOC PHASE 41) */}
+          {block.type === "visual_spacer" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Hauteur d'espacement (en pixels) :</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={12}
+                    max={240}
+                    step={4}
+                    value={Number(p.height) || 48}
+                    onChange={(e) => updateProp("height", Number(e.target.value))}
+                    className="h-8 text-xs w-28 font-mono"
+                  />
+                  <span className="text-xs text-muted-foreground">pixels</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-semibold">Ligne de séparation visuelle</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Trace un filet décoratif au centre de l'espace
+                  </p>
+                </div>
+                <Switch
+                  checked={Boolean(p.showDivider)}
+                  onCheckedChange={(val) => updateProp("showDivider", val)}
+                />
+              </div>
+
+              {Boolean(p.showDivider) && (
+                <div className="space-y-1 pt-1">
+                  <Label className="text-xs font-semibold">Style du séparateur :</Label>
+                  <Select
+                    value={String(p.dividerStyle || "subtle")}
+                    onValueChange={(val) => updateProp("dividerStyle", val)}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Discret" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="subtle">Discret (Gris doux)</SelectItem>
+                      <SelectItem value="accent">Accent (Couleur primaire)</SelectItem>
+                      <SelectItem value="dashed">Pointillés (Tirets)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
         </div>

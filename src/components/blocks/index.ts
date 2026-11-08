@@ -27,6 +27,11 @@ import { LatestBlogPostsBlock } from "./LatestBlogPostsBlock";
 import { ContactFormBlock } from "./ContactFormBlock";
 import { DirectContactCardsBlock } from "./DirectContactCardsBlock";
 import { FaqAccordionBlock } from "./FaqAccordionBlock";
+import { FeaturesGridBlock } from "./FeaturesGridBlock";
+import { PricingTableBlock } from "./PricingTableBlock";
+import { QuoteStarBlock } from "./QuoteStarBlock";
+import { FullWidthBannerBlock } from "./FullWidthBannerBlock";
+import { VisualSpacerBlock } from "./VisualSpacerBlock";
 import { BlockWrapper } from "./BlockWrapper";
 
 export { BlockWrapper } from "./BlockWrapper";
@@ -65,6 +70,13 @@ export const BLOCK_COMPONENTS: Record<BlockType, React.ComponentType<{ config: B
   faq_accordion: FaqAccordionBlock,
   ticker_bar: TickerBarBlock,
   promo_banner: PromoBannerBlock,
+
+  // 🌟 Nouveaux Blocs Majuscules Phase 41
+  features_grid: FeaturesGridBlock,
+  pricing_table: PricingTableBlock,
+  quote_star: QuoteStarBlock,
+  full_width_banner: FullWidthBannerBlock,
+  visual_spacer: VisualSpacerBlock,
 };
 
 export function renderBlock(config: BlockConfig) {

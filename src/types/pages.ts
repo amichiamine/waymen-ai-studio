@@ -35,7 +35,13 @@ export type BlockType =
   | "direct_contact_cards"
   | "faq_accordion"
   | "ticker_bar"
-  | "promo_banner";
+  | "promo_banner"
+  // 🌟 Nouveaux Blocs Majuscules Phase 41
+  | "features_grid"
+  | "pricing_table"
+  | "quote_star"
+  | "full_width_banner"
+  | "visual_spacer";
 
 export interface BlockStyleConfig {
   padding?: "compact" | "normal" | "ample";

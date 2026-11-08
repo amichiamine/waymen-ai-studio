@@ -9,6 +9,12 @@ import {
   Trash2,
   Settings,
   Plus,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +35,12 @@ interface StudioLiveCanvasProps {
   onToggleBlock?: (index: number) => void;
   onDeleteBlock?: (index: number) => void;
   onOpenAddModal?: () => void;
+  leftCollapsed?: boolean;
+  onToggleLeft?: () => void;
+  rightCollapsed?: boolean;
+  onToggleRight?: () => void;
+  isZenMode?: boolean;
+  onToggleZen?: () => void;
 }
 
 export function StudioLiveCanvas({
@@ -40,6 +52,12 @@ export function StudioLiveCanvas({
   onToggleBlock: _onToggleBlock,
   onDeleteBlock,
   onOpenAddModal,
+  leftCollapsed,
+  onToggleLeft,
+  rightCollapsed,
+  onToggleRight,
+  isZenMode,
+  onToggleZen,
 }: StudioLiveCanvasProps) {
   const [device, setDevice] = useState<DeviceMode>("desktop");
   const L = useLocalize();
@@ -57,19 +75,39 @@ export function StudioLiveCanvas({
 
   return (
     <div className="flex flex-col h-full rounded-2xl border border-border bg-muted/20 overflow-hidden shadow-xs">
-      {/* Barre d'outils du Canvas */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-card/90 border-b border-border backdrop-blur-md">
-        <div className="flex items-center gap-1.5">
-          <Eye className="size-4 text-primary shrink-0" />
-          <span className="text-xs font-bold text-foreground">
-            Prévisualisation en Direct (Live Canvas)
-          </span>
-          <Badge
-            variant="outline"
-            className="text-[10px] py-0 px-1.5 font-semibold bg-primary/10 text-primary border-primary/30"
-          >
-            WYSYWIG 360°
-          </Badge>
+      {/* Barre d'outils du Canvas avec volets rétractables & Zen Mode */}
+      <div className="flex items-center justify-between px-3 py-2 bg-card/90 border-b border-border backdrop-blur-md gap-2">
+        <div className="flex items-center gap-2">
+          {onToggleLeft && (
+            <Button
+              size="icon"
+              variant="outline"
+              className="size-7 rounded-md shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={onToggleLeft}
+              title={
+                leftCollapsed
+                  ? "Ouvrir le volet d'arborescence (gauche)"
+                  : "Replier le volet gauche"
+              }
+            >
+              {leftCollapsed ? (
+                <PanelLeftOpen className="size-3.5" />
+              ) : (
+                <PanelLeftClose className="size-3.5" />
+              )}
+            </Button>
+          )}
+
+          <div className="flex items-center gap-1.5 hidden sm:flex">
+            <Eye className="size-4 text-primary shrink-0" />
+            <span className="text-xs font-bold text-foreground">Live Canvas</span>
+            <Badge
+              variant="outline"
+              className="text-[10px] py-0 px-1.5 font-semibold bg-primary/10 text-primary border-primary/30"
+            >
+              WYSYWIG 360°
+            </Badge>
+          </div>
         </div>
 
         {/* Sélecteur de résolutions d'écran */}
@@ -86,7 +124,7 @@ export function StudioLiveCanvas({
             title="Résolution Bureau (100%)"
           >
             <Monitor className="size-3.5" />
-            <span className="hidden sm:inline">Bureau</span>
+            <span className="hidden md:inline">Bureau</span>
           </button>
           <button
             type="button"
@@ -100,7 +138,7 @@ export function StudioLiveCanvas({
             title="Résolution Tablette (768px)"
           >
             <Tablet className="size-3.5" />
-            <span className="hidden sm:inline">Tablette</span>
+            <span className="hidden md:inline">Tablette</span>
           </button>
           <button
             type="button"
@@ -114,19 +152,55 @@ export function StudioLiveCanvas({
             title="Résolution Mobile (375px)"
           >
             <Smartphone className="size-3.5" />
-            <span className="hidden sm:inline">Mobile</span>
+            <span className="hidden md:inline">Mobile</span>
           </button>
+        </div>
+
+        {/* Contrôles droits : Mode Zen & Volet Inspecteur */}
+        <div className="flex items-center gap-1.5">
+          {onToggleZen && (
+            <Button
+              size="sm"
+              variant={isZenMode ? "default" : "outline"}
+              className="h-7 px-2 text-xs font-semibold gap-1 rounded-md"
+              onClick={onToggleZen}
+              title={
+                isZenMode
+                  ? "Quitter le Plein Écran Zen"
+                  : "Activer le Plein Écran Zen (100% Canvas)"
+              }
+            >
+              {isZenMode ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+              <span className="hidden lg:inline">{isZenMode ? "Normal" : "Zen"}</span>
+            </Button>
+          )}
+
+          {onToggleRight && (
+            <Button
+              size="icon"
+              variant="outline"
+              className="size-7 rounded-md shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={onToggleRight}
+              title={rightCollapsed ? "Ouvrir l'inspecteur (droite)" : "Replier le volet droit"}
+            >
+              {rightCollapsed ? (
+                <PanelRightOpen className="size-3.5" />
+              ) : (
+                <PanelRightClose className="size-3.5" />
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Surface de rendu WYSYWIG avec scrolling dédié */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center bg-muted/15">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center items-start bg-muted/15">
         <div
           className={cn(
             "w-full transition-all duration-300 ease-out bg-background min-h-[500px]",
             getViewportWidth(),
             device !== "desktop" &&
-              "rounded-3xl border-4 border-slate-700/80 shadow-2xl overflow-hidden my-auto",
+              "rounded-3xl border-4 border-slate-700/80 shadow-2xl overflow-hidden my-2",
           )}
         >
           {device !== "desktop" && (
