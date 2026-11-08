@@ -915,12 +915,26 @@ export default function PagesManager() {
                     Lien dans le menu supérieur (Navbar) :
                   </Label>
                   <p className="text-[11px] text-muted-foreground">
-                    Insère automatiquement l'onglet dans la barre de navigation.
+                    Insère un lien dans la barre de navigation et le menu mobile (dédoublonné si
+                    déjà présent).
                   </p>
                 </div>
                 <Switch
                   checked={editingPageMeta.inNavbar ?? false}
                   onCheckedChange={(c) => setEditingPageMeta({ ...editingPageMeta, inNavbar: c })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <div>
+                  <Label className="text-xs font-bold">Lien dans le pied de page (Footer) :</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Insère un lien dans la colonne institutionnelle du pied de page.
+                  </p>
+                </div>
+                <Switch
+                  checked={editingPageMeta.inFooter ?? false}
+                  onCheckedChange={(c) => setEditingPageMeta({ ...editingPageMeta, inFooter: c })}
                 />
               </div>
             </div>

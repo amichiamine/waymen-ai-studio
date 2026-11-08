@@ -66,15 +66,28 @@ export function Header() {
 
   const customNavItems = useMemo(() => {
     const pages = siteContent?.customPages || [];
+    const existingHrefs = new Set(
+      (H.primaryNav || []).map(
+        (n) => (n.href || "").trim().toLowerCase().replace(/\/+$/, "") || "/",
+      ),
+    );
     return pages
-      .filter((p) => p.isPublished && p.inNavbar)
+      .filter((p) => {
+        if (!p.isPublished || !p.inNavbar) return false;
+        const slug = (p.slug || "").trim().toLowerCase();
+        // Exclure la racine "/" (gérée par le logo)
+        if (!slug || slug === "home") return false;
+        const targetHref = `/${slug}`.replace(/\/+$/, "");
+        // Exclure tout lien déjà présent dans primaryNav pour éviter les doublons
+        return !existingHrefs.has(targetHref);
+      })
       .sort((a, b) => (a.navOrder || 0) - (b.navOrder || 0))
       .map((p) => ({
         id: `cp_${p.id}`,
         label: p.title,
         href: `/${p.slug}`,
       }));
-  }, [siteContent?.customPages]);
+  }, [siteContent?.customPages, H.primaryNav]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);

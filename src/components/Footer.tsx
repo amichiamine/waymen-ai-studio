@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, Clock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -22,6 +22,18 @@ export function Footer() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const { subscribe } = useSubscriberMutations();
+
+  const customFooterLinks = useMemo(() => {
+    const pages = siteContent?.customPages || [];
+    return pages
+      .filter((p) => p.isPublished && p.inFooter)
+      .sort((a, b) => (a.navOrder || 0) - (b.navOrder || 0))
+      .map((p) => ({
+        id: `fl_cp_${p.id}`,
+        label: p.title,
+        href: p.slug ? `/${p.slug}` : "/",
+      }));
+  }, [siteContent?.customPages]);
 
   async function handleSubscribe(e: React.FormEvent) {
     e.preventDefault();
@@ -145,7 +157,7 @@ export function Footer() {
           </form>
         </div>
         {f.columns.map((col) => {
-          const links =
+          let links =
             col.id === "fc_cats" && categories.length > 0
               ? categories.slice(0, 6).map((c) => ({
                   id: `fl_dyn_${c.slug}`,
@@ -155,6 +167,19 @@ export function Footer() {
               : col.links.filter(
                   (l) => l.href !== "/builder" || siteSettings.builderEnabled !== false,
                 );
+
+          // Injection dynamique des pages composables marquées "inFooter" dans la colonne institutionnelle
+          if (col.id === "fc_company" && customFooterLinks.length > 0) {
+            const existingHrefs = new Set(
+              links.map((l) => (l.href || "").trim().toLowerCase().replace(/\/+$/, "") || "/"),
+            );
+            const extra = customFooterLinks.filter(
+              (cl) =>
+                !existingHrefs.has((cl.href || "").trim().toLowerCase().replace(/\/+$/, "") || "/"),
+            );
+            links = [...links, ...extra];
+          }
+
           return (
             <div key={col.id}>
               <h3 className="text-sm font-semibold text-foreground mb-4">{L(col.title)}</h3>

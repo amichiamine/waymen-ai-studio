@@ -1968,3 +1968,32 @@
   - Base SQLite mise à jour : 🗄️ [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/ka-tech/katech-data/dev-a97b6b98a368.sqlite)
   - Archive application horodatée : 📦 [katech-site-08112026-1324.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1324.zip) (4.13 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1324.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1324.zip) (42 Ko)
+
+#### Sous-Phase 39.2 : Blindage Intégral de la Cohérence Inter-Onglets du Studio & Éradication des 4 Angles Morts
+
+- **Date :** 08 Novembre 2026
+- **Validation ArchiSys3.0 :** Accord explicite pour le plan de Sous-Phase 39.2 éradiquant les 4 angles morts de synchronisation entre onglets du Studio Visuel.
+- **Actions Réalisées :**
+  - **Étape 39.2.A (Dédoublonnage Navigational Header & Drawer Mobile) :**
+    - Modification de [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) : filtrage de `customNavItems` pour exclure la racine `/` (`slug === ""` ou `"home"`) et tout chemin déjà présent dans `H.primaryNav` (insensible à la casse et aux slashes).
+    - Suppression radicale des doublons d'affichage pour `/about` et `/contact` dans la barre desktop et dans le menu mobile.
+  - **Étape 39.2.B (Conjonction des Toggles d'Accueil dans `CommerceBlocks.tsx`) :**
+    - Modification de [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) : injection de la condition `siteContent[sectionKey]?.enabled !== false` sur tous les blocs commerciaux (`HeroBannerBlock`, `FlashSaleBlock`, `CategoryCardsBlock`, `UseChipsBlock`, `BestSellersBlock`, `FeaturedTabsBlock`, `BrandsMarqueeBlock`, `WhyUsBlock`, `BuilderTeaserBlock`, `ReviewsGridBlock`, `ContactCtaBlock`, `PromoBannerBlock`).
+    - Respect absolu de la double règle : désactiver une section dans l'Onglet 2 ("Sections de l'Accueil") masque immédiatement le bloc correspondant sur la vitrine.
+  - **Étape 39.2.C (Intégration Dynamique des Pages dans le Footer) :**
+    - Modification de [`src/components/Footer.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Footer.tsx) : extraction réactive des `customPages` publiées ayant `inFooter: true` et injection dédoublonnée dans la colonne institutionnelle (`fc_company`).
+    - Cocher `inFooter: true` sur n'importe quelle vue fait apparaître son lien de manière fluide dans le pied de page sans collision.
+  - **Étape 39.2.D (Précisions Ergonomiques & Commutateur `inFooter` dans le Studio) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) : ajout du commutateur `inFooter` dans la modale de configuration de vue et insertion de descriptions explicatives sous `inNavbar` et `inFooter`.
+  - **Étape 39.2.E (Batterie Qualité CI, Compilation & Nouvelles Archives) :**
+    - `bun run verifier-i18n` : 100% cohérent.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run build ; bun run paqueter:data` : compilation et packaging réussis.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md)
+  - Composants vitrine blindés : 📄 [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx), 📄 [`src/components/Footer.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Footer.tsx), 📄 [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx)
+  - Studio Backstage : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1335.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1335.zip) (4.13 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1335.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1335.zip) (42 Ko)
