@@ -4,13 +4,15 @@ import { useProducts } from "@/lib/useProducts";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
-export function Reviews() {
+import type { SiteContent } from "@/lib/site-content";
+
+export function Reviews({ override }: { override?: Partial<SiteContent["reviews"]> } = {}) {
   const { data: homeReviews } = useHomeReviewList();
   const products = useProducts();
   const { data: siteContent } = useSiteContent();
   const L = useLocalize();
   if (homeReviews.length === 0) return null;
-  const cfg = siteContent.reviews;
+  const cfg = override ? { ...siteContent.reviews, ...override } : siteContent.reviews;
   return (
     <section className="container-page py-16">
       <Reveal variant="up">

@@ -3,10 +3,12 @@ import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
-export function ContactCTA() {
+import type { SiteContent } from "@/lib/site-content";
+
+export function ContactCTA({ override }: { override?: Partial<SiteContent["contactCta"]> } = {}) {
   const { data: siteSettings } = useSiteSettings();
   const { data: siteContent } = useSiteContent();
-  const c = siteContent.contactCta;
+  const c = override ? { ...siteContent.contactCta, ...override } : siteContent.contactCta;
   const L = useLocalize();
   return (
     <section className="container-page py-16">

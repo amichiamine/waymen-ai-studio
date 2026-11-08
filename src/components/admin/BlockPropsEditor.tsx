@@ -1,17 +1,21 @@
 import { useState } from "react";
-import { Plus, Trash2, Code, Check } from "lucide-react";
+import { Plus, Trash2, Code, Check, Palette, FileText, Smartphone, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import type { BlockConfig } from "@/types/pages";
+import type { BlockConfig, BlockStyleConfig } from "@/types/pages";
 import type { Localized } from "@/lib/i18n";
+import { useSiteContent } from "@/data-provider";
+import { useLocalize } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 interface BlockPropsEditorProps {
   block: BlockConfig;
   onChange: (newProps: Record<string, unknown>) => void;
+  onStyleChange?: (newStyle: BlockStyleConfig) => void;
 }
 
 function getPropStr(val: unknown): string {
@@ -23,16 +27,26 @@ function getPropStr(val: unknown): string {
   return "";
 }
 
-export function BlockPropsEditor({ block, onChange }: BlockPropsEditorProps) {
+export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsEditorProps) {
   const p = block.props || {};
-  const [showJson, setShowJson] = useState(false);
+  const s = block.style || {};
+  const [activeTab, setActiveTab] = useState<"content" | "style" | "json">("content");
   const [rawJson, setRawJson] = useState(() => JSON.stringify(p, null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
+
+  const { data: siteContent } = useSiteContent();
+  const L = useLocalize();
 
   const updateProp = (key: string, value: unknown) => {
     const updated = { ...p, [key]: value };
     onChange(updated);
     setRawJson(JSON.stringify(updated, null, 2));
+  };
+
+  const updateStyle = (key: keyof BlockStyleConfig, value: unknown) => {
+    if (!onStyleChange) return;
+    const nextStyle: BlockStyleConfig = { ...s, [key]: value };
+    onStyleChange(nextStyle);
   };
 
   const handleApplyJson = () => {
@@ -53,728 +67,807 @@ export function BlockPropsEditor({ block, onChange }: BlockPropsEditorProps) {
 
   return (
     <div className="mt-4 pt-4 border-t border-border/50 space-y-4 text-start">
-      {/* 1. PROFILE HERO */}
-      {block.type === "profile_hero" && (
-        <div className="space-y-3.5">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Nom complet affiché :</Label>
-              <Input
-                value={getPropStr(p.name)}
-                onChange={(e) => updateProp("name", e.target.value)}
-                placeholder="ArchiSys3.0"
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Rôle professionnel / Titre :</Label>
-              <Input
-                value={getPropStr(p.role)}
-                onChange={(e) => updateProp("role", e.target.value)}
-                placeholder="Architecte Logiciel & Consultant R&D"
-                className="h-8 text-xs"
-              />
+      {/* Sélecteur d'onglets de l'inspecteur : Contenu | Style & Disposition | Mode JSON */}
+      <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border">
+        <Button
+          type="button"
+          size="sm"
+          variant={activeTab === "content" ? "default" : "ghost"}
+          className="flex-1 h-7 text-xs font-semibold gap-1.5"
+          onClick={() => setActiveTab("content")}
+        >
+          <FileText className="size-3.5" />
+          <span>Contenu</span>
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeTab === "style" ? "default" : "ghost"}
+          className="flex-1 h-7 text-xs font-semibold gap-1.5"
+          onClick={() => setActiveTab("style")}
+        >
+          <Palette className="size-3.5" />
+          <span>Style & Espacement</span>
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeTab === "json" ? "default" : "ghost"}
+          className="h-7 px-2 text-xs font-semibold gap-1"
+          onClick={() => setActiveTab("json")}
+          title="Mode Codeur / JSON brut"
+        >
+          <Code className="size-3.5" />
+        </Button>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 🎨 ONGLET STYLE & ESPACEMENT UNIVERSEL                    */}
+      {/* ========================================================= */}
+      {activeTab === "style" && (
+        <div className="space-y-4 animate-fade-in">
+          {/* Espacement vertical (Padding) */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Espacement vertical (Hauteur) :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "compact", label: "Compact" },
+                { key: "normal", label: "Standard" },
+                { key: "ample", label: "Aéré" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("padding", item.key)}
+                  className={cn(
+                    "py-1.5 px-2 text-xs font-semibold rounded-md border text-center transition-all",
+                    (s.padding || "normal") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold">Biographie / Présentation :</Label>
-            <Textarea
-              rows={2}
-              value={getPropStr(p.bio)}
-              onChange={(e) => updateProp("bio", e.target.value)}
-              placeholder="Expertise en architectures logicielles souveraines, cloud, web moderne..."
-              className="text-xs"
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Badge de Disponibilité :</Label>
-              <Input
-                value={getPropStr(p.availability)}
-                onChange={(e) => updateProp("availability", e.target.value)}
-                placeholder="Disponible pour missions d'architecture & R&D"
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">URL de l'avatar / photo :</Label>
-              <Input
-                value={getPropStr(p.avatarUrl)}
-                onChange={(e) => updateProp("avatarUrl", e.target.value)}
-                placeholder="/media/avatar.png ou URL distante"
-                className="h-8 text-xs font-mono"
-              />
+          {/* Arrière-plan de la section */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Arrière-plan de section :</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+              {[
+                { key: "transparent", label: "Transparent" },
+                { key: "surface", label: "Carte Surface" },
+                { key: "muted", label: "Gris Léger" },
+                { key: "accent", label: "Teinté Primaire" },
+                { key: "dark", label: "Sombre Profond" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("bg", item.key)}
+                  className={cn(
+                    "py-1.5 px-2 text-xs font-semibold rounded-md border text-center transition-all truncate",
+                    (s.bg || "transparent") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Lien GitHub :</Label>
-              <Input
-                value={getPropStr(p.githubUrl)}
-                onChange={(e) => updateProp("githubUrl", e.target.value)}
-                placeholder="https://github.com/..."
-                className="h-8 text-xs font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Lien LinkedIn :</Label>
-              <Input
-                value={getPropStr(p.linkedinUrl)}
-                onChange={(e) => updateProp("linkedinUrl", e.target.value)}
-                placeholder="https://linkedin.com/in/..."
-                className="h-8 text-xs font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Email de contact :</Label>
-              <Input
-                value={getPropStr(p.email)}
-                onChange={(e) => updateProp("email", e.target.value)}
-                placeholder="contact@domaine.com"
-                className="h-8 text-xs font-mono"
-              />
+          {/* Alignement du texte */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Alignement textuel :</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => updateStyle("align", "start")}
+                className={cn(
+                  "py-1.5 px-2 text-xs font-semibold rounded-md border text-center transition-all",
+                  (s.align || "start") === "start"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                )}
+              >
+                Début / Gauche
+              </button>
+              <button
+                type="button"
+                onClick={() => updateStyle("align", "center")}
+                className={cn(
+                  "py-1.5 px-2 text-xs font-semibold rounded-md border text-center transition-all",
+                  s.align === "center"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                )}
+              >
+                Centré
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-1">
-            <Label className="text-xs font-semibold">
-              Bouton Téléchargement CV PDF (window.print) :
-            </Label>
-            <Switch
-              checked={p.showDownloadPdf !== false}
-              onCheckedChange={(c) => updateProp("showDownloadPdf", c)}
-            />
+          {/* Visibilité responsive */}
+          <div className="space-y-2 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Visibilité Responsive :</Label>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Smartphone className="size-3.5 text-primary" />
+                <span>Masquer sur Mobile (&lt; 768px)</span>
+              </div>
+              <Switch
+                checked={s.hideOnMobile ?? false}
+                onCheckedChange={(v) => updateStyle("hideOnMobile", v)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Monitor className="size-3.5 text-primary" />
+                <span>Masquer sur Bureau (≥ 768px)</span>
+              </div>
+              <Switch
+                checked={s.hideOnDesktop ?? false}
+                onCheckedChange={(v) => updateStyle("hideOnDesktop", v)}
+              />
+            </div>
           </div>
         </div>
       )}
 
-      {/* 2. TIMELINE MILESTONES */}
-      {block.type === "timeline" && (
-        <div className="space-y-3.5">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Titre de la section :</Label>
-              <Input
-                value={getPropStr(p.title)}
-                onChange={(e) => updateProp("title", e.target.value)}
-                placeholder="Parcours Professionnel & R&D"
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Sous-titre :</Label>
-              <Input
-                value={getPropStr(p.subtitle)}
-                onChange={(e) => updateProp("subtitle", e.target.value)}
-                placeholder="Étapes d'ingénierie et réalisations..."
-                className="h-8 text-xs"
-              />
-            </div>
+      {/* ========================================================= */}
+      {/* 💻 ONGLET MODE DÉVELOPPEUR JSON                           */}
+      {/* ========================================================= */}
+      {activeTab === "json" && (
+        <div className="space-y-2 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-bold">Éditeur JSON des propriétés :</Label>
+            <Button size="sm" onClick={handleApplyJson} className="h-7 text-xs gap-1 font-semibold">
+              <Check className="size-3" />
+              <span>Appliquer</span>
+            </Button>
           </div>
+          <Textarea
+            rows={8}
+            value={rawJson}
+            onChange={(e) => {
+              setRawJson(e.target.value);
+              setJsonError(null);
+            }}
+            className="font-mono text-[11px] bg-muted/40"
+          />
+          {jsonError && <p className="text-[11px] text-destructive font-mono">{jsonError}</p>}
+        </div>
+      )}
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground">Jalons & Expériences :</Label>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1"
-                onClick={() => {
-                  const current = Array.isArray(p.items) ? [...p.items] : [];
-                  current.push({
-                    id: "tl_" + Date.now(),
-                    period: "2026 - Présent",
-                    title: "Nouveau Rôle / Jalon",
-                    organization: "Entreprise / Organisation",
-                    description: "Détails de la mission ou des accomplissements...",
-                  });
-                  updateProp("items", current);
-                }}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Ajouter un jalon</span>
-              </Button>
+      {/* ========================================================= */}
+      {/* 📝 ONGLET CONTENU DES 24 BLOCS                            */}
+      {/* ========================================================= */}
+      {activeTab === "content" && (
+        <div className="space-y-4 animate-fade-in">
+          {/* A. HERO BANNER */}
+          {block.type === "hero_banner" && (
+            <div className="space-y-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Titre Ligne 1 :</Label>
+                  <Input
+                    value={getPropStr(p.title1) || L(siteContent.hero.title1) || ""}
+                    onChange={(e) => updateProp("title1", e.target.value)}
+                    placeholder="Plateforme E-Commerce"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Titre Ligne 2 (Glow) :</Label>
+                  <Input
+                    value={getPropStr(p.title2) || L(siteContent.hero.title2) || ""}
+                    onChange={(e) => updateProp("title2", e.target.value)}
+                    placeholder="Nouvelle Génération"
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre / Slogan :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.subtitle) || L(siteContent.hero.subtitle) || ""}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Boutique officielle avec livraison 58 wilayas..."
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Badge d'accroche :</Label>
+                <Input
+                  value={getPropStr(p.badge) || L(siteContent.hero.badge) || ""}
+                  onChange={(e) => updateProp("badge", e.target.value)}
+                  placeholder="Offre spéciale"
+                  className="h-8 text-xs"
+                />
+              </div>
             </div>
+          )}
 
-            {Array.isArray(p.items) && p.items.length > 0 ? (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {p.items.map((item: Record<string, unknown>, itemIdx: number) => (
-                  <div
-                    key={String(item.id || itemIdx)}
-                    className="p-2.5 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs"
-                  >
+          {/* B. VENTE FLASH */}
+          {block.type === "flash_sale" && (
+            <div className="space-y-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Titre Promotionnel :</Label>
+                  <Input
+                    value={getPropStr(p.title) || L(siteContent.flashSale.title) || ""}
+                    onChange={(e) => updateProp("title", e.target.value)}
+                    placeholder="Offres de la semaine"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Badge Flamme :</Label>
+                  <Input
+                    value={getPropStr(p.badge) || L(siteContent.flashSale.badge) || ""}
+                    onChange={(e) => updateProp("badge", e.target.value)}
+                    placeholder="VENTE FLASH"
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1 max-w-xs">
+                <Label className="text-xs font-semibold">
+                  Durée du compte à rebours (heures) :
+                </Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={720}
+                  value={
+                    typeof p.countdownHours === "number"
+                      ? p.countdownHours
+                      : siteContent.flashSale.countdownHours || 72
+                  }
+                  onChange={(e) => updateProp("countdownHours", parseInt(e.target.value, 10) || 72)}
+                  className="h-8 text-xs w-28 font-mono"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* C. MEILLEURES VENTES & PRODUITS PHARES */}
+          {(block.type === "best_sellers" || block.type === "featured_tabs") && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre de la section :</Label>
+                <Input
+                  value={
+                    getPropStr(p.title) ||
+                    (block.type === "best_sellers"
+                      ? L(siteContent.bestSellers.title)
+                      : L(siteContent.featuredTabs.title)) ||
+                    ""
+                  }
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Nos Meilleurs Produits"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre explicatif :</Label>
+                <Input
+                  value={
+                    getPropStr(p.subtitle) ||
+                    (block.type === "best_sellers"
+                      ? L(siteContent.bestSellers.subtitle)
+                      : L(siteContent.featuredTabs.subtitle)) ||
+                    ""
+                  }
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Sélectionnés par nos experts"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* D. WHY US / RÉASSURANCE */}
+          {block.type === "why_us" && (
+            <div className="space-y-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Titre Ligne 1 :</Label>
+                  <Input
+                    value={getPropStr(p.title1) || L(siteContent.whyUs.title1) || ""}
+                    onChange={(e) => updateProp("title1", e.target.value)}
+                    placeholder="Pourquoi nous"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Titre Ligne 2 :</Label>
+                  <Input
+                    value={getPropStr(p.title2) || L(siteContent.whyUs.title2) || ""}
+                    onChange={(e) => updateProp("title2", e.target.value)}
+                    placeholder="faire confiance"
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre / Argumentaire :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.subtitle) || L(siteContent.whyUs.subtitle) || ""}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Garantie constructeur, livraison express, service client dédié..."
+                  className="text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* E. REVIEWS / AVIS CLIENTS */}
+          {block.type === "reviews_grid" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre de la section Avis :</Label>
+                <Input
+                  value={getPropStr(p.title) || L(siteContent.reviews.title) || ""}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Ce que disent nos clients"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre :</Label>
+                <Input
+                  value={getPropStr(p.subtitle) || L(siteContent.reviews.subtitle) || ""}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Avis vérifiés et retours d'expérience"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* F. CONTACT CTA */}
+          {block.type === "contact_cta" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre d'accroche :</Label>
+                <Input
+                  value={getPropStr(p.title) || L(siteContent.contactCta.title) || ""}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Besoin d'un conseil personnalisé ?"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Texte explicatif :</Label>
+                <Input
+                  value={getPropStr(p.subtitle) || L(siteContent.contactCta.subtitle) || ""}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Nos techniciens répondent directement sur WhatsApp"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 1. PROFILE HERO */}
+          {block.type === "profile_hero" && (
+            <div className="space-y-3.5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Nom complet affiché :</Label>
+                  <Input
+                    value={getPropStr(p.name)}
+                    onChange={(e) => updateProp("name", e.target.value)}
+                    placeholder="ArchiSys3.0"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Rôle professionnel / Titre :</Label>
+                  <Input
+                    value={getPropStr(p.role)}
+                    onChange={(e) => updateProp("role", e.target.value)}
+                    placeholder="Architecte Logiciel & Consultant R&D"
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Biographie / Présentation :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.bio)}
+                  onChange={(e) => updateProp("bio", e.target.value)}
+                  placeholder="Expertise en architectures logicielles souveraines, cloud, web moderne..."
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Badge de Disponibilité :</Label>
+                  <Input
+                    value={getPropStr(p.availability)}
+                    onChange={(e) => updateProp("availability", e.target.value)}
+                    placeholder="Disponible pour missions d'architecture & R&D"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Localisation :</Label>
+                  <Input
+                    value={getPropStr(p.location)}
+                    onChange={(e) => updateProp("location", e.target.value)}
+                    placeholder="Alger, Algérie / Remote"
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2. TIMELINE */}
+          {block.type === "timeline" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Étapes / Expériences :</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const items = Array.isArray(p.items) ? [...p.items] : [];
+                    items.push({
+                      period: "2026 - Présent",
+                      title: "Nouveau Rôle",
+                      company: "Organisation",
+                      desc: "Description de la mission...",
+                    });
+                    updateProp("items", items);
+                  }}
+                  className="h-7 text-xs gap-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Ajouter une étape</span>
+                </Button>
+              </div>
+
+              {(Array.isArray(p.items) ? p.items : []).map(
+                (item: Record<string, unknown>, idx: number) => (
+                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2 relative">
                     <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold text-primary">Étape #{idx + 1}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          const items = [...(p.items as Record<string, unknown>[])];
+                          items.splice(idx, 1);
+                          updateProp("items", items);
+                        }}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
                       <Input
+                        placeholder="Période (ex: 2024 - 2026)"
                         value={String(item.period || "")}
                         onChange={(e) => {
-                          const next = [...(p.items as Record<string, unknown>[])];
-                          next[itemIdx] = { ...next[itemIdx], period: e.target.value };
-                          updateProp("items", next);
+                          const items = [...(p.items as Record<string, unknown>[])];
+                          items[idx] = { ...items[idx], period: e.target.value };
+                          updateProp("items", items);
                         }}
-                        placeholder="Période (ex: 2024 - 2026)"
-                        className="h-7 text-xs w-36 font-semibold"
+                        className="h-7 text-xs"
                       />
                       <Input
-                        value={String(item.title || "")}
+                        placeholder="Entreprise / Cadre"
+                        value={String(item.company || "")}
                         onChange={(e) => {
-                          const next = [...(p.items as Record<string, unknown>[])];
-                          next[itemIdx] = { ...next[itemIdx], title: e.target.value };
-                          updateProp("items", next);
+                          const items = [...(p.items as Record<string, unknown>[])];
+                          items[idx] = { ...items[idx], company: e.target.value };
+                          updateProp("items", items);
                         }}
-                        placeholder="Intitulé du poste ou jalon"
-                        className="h-7 text-xs flex-1 font-bold"
+                        className="h-7 text-xs"
+                      />
+                    </div>
+                    <Input
+                      placeholder="Intitulé du poste / Mission"
+                      value={String(item.title || "")}
+                      onChange={(e) => {
+                        const items = [...(p.items as Record<string, unknown>[])];
+                        items[idx] = { ...items[idx], title: e.target.value };
+                        updateProp("items", items);
+                      }}
+                      className="h-7 text-xs font-semibold"
+                    />
+                    <Textarea
+                      rows={2}
+                      placeholder="Détails des réalisations..."
+                      value={String(item.desc || "")}
+                      onChange={(e) => {
+                        const items = [...(p.items as Record<string, unknown>[])];
+                        items[idx] = { ...items[idx], desc: e.target.value };
+                        updateProp("items", items);
+                      }}
+                      className="text-xs"
+                    />
+                  </div>
+                ),
+              )}
+            </div>
+          )}
+
+          {/* 3. SKILLS MATRIX */}
+          {block.type === "skills_matrix" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Groupes de compétences :</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const groups = Array.isArray(p.groups) ? [...p.groups] : [];
+                    groups.push({
+                      category: "Nouveau Domaine",
+                      skills: ["Compétence 1", "Compétence 2"],
+                    });
+                    updateProp("groups", groups);
+                  }}
+                  className="h-7 text-xs gap-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Ajouter un domaine</span>
+                </Button>
+              </div>
+
+              {(Array.isArray(p.groups) ? p.groups : []).map(
+                (group: Record<string, unknown>, idx: number) => (
+                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Input
+                        placeholder="Nom du domaine (ex: Architecture & Cloud)"
+                        value={String(group.category || "")}
+                        onChange={(e) => {
+                          const groups = [...(p.groups as Record<string, unknown>[])];
+                          groups[idx] = { ...groups[idx], category: e.target.value };
+                          updateProp("groups", groups);
+                        }}
+                        className="h-7 text-xs font-semibold"
                       />
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
                         onClick={() => {
-                          const next = [...(p.items as Record<string, unknown>[])];
-                          next.splice(itemIdx, 1);
-                          updateProp("items", next);
+                          const groups = [...(p.groups as Record<string, unknown>[])];
+                          groups.splice(idx, 1);
+                          updateProp("groups", groups);
                         }}
-                        title="Supprimer ce jalon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <Input
-                        value={String(item.organization || "")}
-                        onChange={(e) => {
-                          const next = [...(p.items as Record<string, unknown>[])];
-                          next[itemIdx] = { ...next[itemIdx], organization: e.target.value };
-                          updateProp("items", next);
-                        }}
-                        placeholder="Entreprise ou Projet"
-                        className="h-7 text-xs"
-                      />
-                      <Input
-                        value={String(item.description || "")}
-                        onChange={(e) => {
-                          const next = [...(p.items as Record<string, unknown>[])];
-                          next[itemIdx] = { ...next[itemIdx], description: e.target.value };
-                          updateProp("items", next);
-                        }}
-                        placeholder="Description succincte"
-                        className="h-7 text-xs"
-                      />
-                    </div>
+                    <Input
+                      placeholder="Compétences séparées par des virgules (ex: React, Node, Docker)"
+                      value={
+                        Array.isArray(group.skills)
+                          ? group.skills.join(", ")
+                          : String(group.skills || "")
+                      }
+                      onChange={(e) => {
+                        const groups = [...(p.groups as Record<string, unknown>[])];
+                        const arr = e.target.value.split(",").map((s) => s.trim());
+                        groups[idx] = { ...groups[idx], skills: arr };
+                        updateProp("groups", groups);
+                      }}
+                      className="h-7 text-xs"
+                    />
                   </div>
-                ))}
+                ),
+              )}
+            </div>
+          )}
+
+          {/* 4. PROJECTS GRID */}
+          {block.type === "projects_grid" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Projets & Réalisations :</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const projects = Array.isArray(p.projects) ? [...p.projects] : [];
+                    projects.push({
+                      title: "Nouveau Projet",
+                      category: "Architecture",
+                      desc: "Présentation des réalisations...",
+                      link: "#",
+                      tags: ["Cloud", "Souveraineté"],
+                    });
+                    updateProp("projects", projects);
+                  }}
+                  className="h-7 text-xs gap-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Ajouter un projet</span>
+                </Button>
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic">
-                Aucun jalon personnalisé (utilise les données de démonstration intégrées).
-              </p>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* 3. SKILLS MATRIX */}
-      {block.type === "skills_matrix" && (
-        <div className="space-y-3.5">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Titre de la section :</Label>
-              <Input
-                value={getPropStr(p.title)}
-                onChange={(e) => updateProp("title", e.target.value)}
-                placeholder="Matrice de Compétences & Technologies"
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Sous-titre :</Label>
-              <Input
-                value={getPropStr(p.subtitle)}
-                onChange={(e) => updateProp("subtitle", e.target.value)}
-                placeholder="Stack technologique et expertises..."
-                className="h-8 text-xs"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground">
-                Catégories & Compétences :
-              </Label>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1"
-                onClick={() => {
-                  const current = Array.isArray(p.categories) ? [...p.categories] : [];
-                  current.push({
-                    name: "Nouvelle Catégorie",
-                    skills: ["Compétence 1", "Compétence 2"],
-                  });
-                  updateProp("categories", current);
-                }}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Ajouter une catégorie</span>
-              </Button>
-            </div>
-
-            {Array.isArray(p.categories) && p.categories.length > 0 ? (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {p.categories.map((cat: Record<string, unknown>, catIdx: number) => (
-                  <div
-                    key={catIdx}
-                    className="p-2.5 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs"
-                  >
+              {(Array.isArray(p.projects) ? p.projects : []).map(
+                (proj: Record<string, unknown>, idx: number) => (
+                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <Input
-                        value={String(cat.name || "")}
-                        onChange={(e) => {
-                          const next = [...(p.categories as Record<string, unknown>[])];
-                          next[catIdx] = { ...next[catIdx], name: e.target.value };
-                          updateProp("categories", next);
-                        }}
-                        placeholder="Nom de la catégorie (ex: Frontend)"
-                        className="h-7 text-xs font-bold flex-1"
-                      />
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={() => {
-                          const next = [...(p.categories as Record<string, unknown>[])];
-                          next.splice(catIdx, 1);
-                          updateProp("categories", next);
-                        }}
-                        title="Supprimer cette catégorie"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    <div>
-                      <Label className="text-[11px] text-muted-foreground">
-                        Compétences (séparées par des virgules) :
-                      </Label>
-                      <Input
-                        value={Array.isArray(cat.skills) ? cat.skills.join(", ") : ""}
-                        onChange={(e) => {
-                          const next = [...(p.categories as Record<string, unknown>[])];
-                          const parsedSkills = e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean);
-                          next[catIdx] = { ...next[catIdx], skills: parsedSkills };
-                          updateProp("categories", next);
-                        }}
-                        placeholder="React, TypeScript, Vite, Tailwind..."
-                        className="h-7 text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic">
-                Aucune catégorie personnalisée (utilise la matrice par défaut).
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 4. PROJECTS GRID */}
-      {block.type === "projects_grid" && (
-        <div className="space-y-3.5">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Titre de la vitrine :</Label>
-              <Input
-                value={getPropStr(p.title)}
-                onChange={(e) => updateProp("title", e.target.value)}
-                placeholder="Vitrine de Projets & Solutions R&D"
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Sous-titre :</Label>
-              <Input
-                value={getPropStr(p.subtitle)}
-                onChange={(e) => updateProp("subtitle", e.target.value)}
-                placeholder="Sélection de réalisations et prototypes..."
-                className="h-8 text-xs"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground">Projets Affichés :</Label>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1"
-                onClick={() => {
-                  const current = Array.isArray(p.projects) ? [...p.projects] : [];
-                  current.push({
-                    id: "proj_" + Date.now(),
-                    title: "Nouveau Projet R&D",
-                    description: "Description de la solution, problématique et résultats...",
-                    tags: ["TypeScript", "Architecture"],
-                    demoUrl: "https://exemple.dz",
-                    githubUrl: "https://github.com/...",
-                  });
-                  updateProp("projects", current);
-                }}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Ajouter un projet</span>
-              </Button>
-            </div>
-
-            {Array.isArray(p.projects) && p.projects.length > 0 ? (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {p.projects.map((proj: Record<string, unknown>, projIdx: number) => (
-                  <div
-                    key={String(proj.id || projIdx)}
-                    className="p-2.5 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <Input
+                        placeholder="Nom du projet"
                         value={String(proj.title || "")}
                         onChange={(e) => {
-                          const next = [...(p.projects as Record<string, unknown>[])];
-                          next[projIdx] = { ...next[projIdx], title: e.target.value };
-                          updateProp("projects", next);
+                          const projects = [...(p.projects as Record<string, unknown>[])];
+                          projects[idx] = { ...projects[idx], title: e.target.value };
+                          updateProp("projects", projects);
                         }}
-                        placeholder="Titre du projet"
-                        className="h-7 text-xs font-bold flex-1"
+                        className="h-7 text-xs font-semibold"
                       />
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
                         onClick={() => {
-                          const next = [...(p.projects as Record<string, unknown>[])];
-                          next.splice(projIdx, 1);
-                          updateProp("projects", next);
+                          const projects = [...(p.projects as Record<string, unknown>[])];
+                          projects.splice(idx, 1);
+                          updateProp("projects", projects);
                         }}
-                        title="Supprimer ce projet"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                    <Textarea
-                      rows={2}
-                      value={String(proj.description || "")}
-                      onChange={(e) => {
-                        const next = [...(p.projects as Record<string, unknown>[])];
-                        next[projIdx] = { ...next[projIdx], description: e.target.value };
-                        updateProp("projects", next);
-                      }}
-                      placeholder="Description du projet..."
-                      className="text-xs"
-                    />
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Input
-                        value={String(proj.demoUrl || "")}
+                        placeholder="Catégorie (ex: E-Commerce, R&D)"
+                        value={String(proj.category || "")}
                         onChange={(e) => {
-                          const next = [...(p.projects as Record<string, unknown>[])];
-                          next[projIdx] = { ...next[projIdx], demoUrl: e.target.value };
-                          updateProp("projects", next);
+                          const projects = [...(p.projects as Record<string, unknown>[])];
+                          projects[idx] = { ...projects[idx], category: e.target.value };
+                          updateProp("projects", projects);
                         }}
-                        placeholder="Lien Démo (https://...)"
-                        className="h-7 text-xs font-mono"
+                        className="h-7 text-xs"
                       />
                       <Input
-                        value={String(proj.githubUrl || "")}
+                        placeholder="Lien / URL (ex: https://...)"
+                        value={String(proj.link || "")}
                         onChange={(e) => {
-                          const next = [...(p.projects as Record<string, unknown>[])];
-                          next[projIdx] = { ...next[projIdx], githubUrl: e.target.value };
-                          updateProp("projects", next);
+                          const projects = [...(p.projects as Record<string, unknown>[])];
+                          projects[idx] = { ...projects[idx], link: e.target.value };
+                          updateProp("projects", projects);
                         }}
-                        placeholder="Lien GitHub (https://...)"
-                        className="h-7 text-xs font-mono"
+                        className="h-7 text-xs"
                       />
                     </div>
+                    <Textarea
+                      rows={2}
+                      placeholder="Description du projet et résultats obtenus..."
+                      value={String(proj.desc || "")}
+                      onChange={(e) => {
+                        const projects = [...(p.projects as Record<string, unknown>[])];
+                        projects[idx] = { ...projects[idx], desc: e.target.value };
+                        updateProp("projects", projects);
+                      }}
+                      className="text-xs"
+                    />
                   </div>
-                ))}
+                ),
+              )}
+            </div>
+          )}
+
+          {/* 5. FAQ ACCORDION */}
+          {block.type === "faq_accordion" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Questions / Réponses de la FAQ :</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const items = Array.isArray(p.items) ? [...p.items] : [];
+                    items.push({
+                      q: "Nouvelle question ?",
+                      a: "Réponse détaillée...",
+                    });
+                    updateProp("items", items);
+                  }}
+                  className="h-7 text-xs gap-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Ajouter une question</span>
+                </Button>
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic">
-                Aucun projet spécifique (utilise les 4 projets R&D d'étalon).
-              </p>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* 5. FAQ ACCORDION */}
-      {block.type === "faq_accordion" && (
-        <div className="space-y-3.5">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Titre de la FAQ :</Label>
-              <Input
-                value={getPropStr(p.title)}
-                onChange={(e) => updateProp("title", e.target.value)}
-                placeholder="Foire Aux Questions"
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Sous-titre :</Label>
-              <Input
-                value={getPropStr(p.subtitle)}
-                onChange={(e) => updateProp("subtitle", e.target.value)}
-                placeholder="Retrouvez rapidement les réponses à vos questions..."
-                className="h-8 text-xs"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground">Questions / Réponses :</Label>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1"
-                onClick={() => {
-                  const current = Array.isArray(p.faqs) ? [...p.faqs] : [];
-                  current.push({
-                    id: "faq_" + Date.now(),
-                    question: "Nouvelle question posée ?",
-                    answer: "Réponse détaillée...",
-                  });
-                  updateProp("faqs", current);
-                }}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Ajouter une question</span>
-              </Button>
-            </div>
-
-            {Array.isArray(p.faqs) && p.faqs.length > 0 ? (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {p.faqs.map((faq: Record<string, unknown>, faqIdx: number) => (
-                  <div
-                    key={String(faq.id || faqIdx)}
-                    className="p-2.5 rounded-lg border border-border/60 bg-muted/20 space-y-2 text-xs"
-                  >
+              {(Array.isArray(p.items) ? p.items : []).map(
+                (faq: Record<string, unknown>, idx: number) => (
+                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <Input
-                        value={getPropStr(faq.question)}
+                        placeholder="Question posée par le client"
+                        value={String(faq.q || "")}
                         onChange={(e) => {
-                          const next = [...(p.faqs as Record<string, unknown>[])];
-                          next[faqIdx] = { ...next[faqIdx], question: e.target.value };
-                          updateProp("faqs", next);
+                          const items = [...(p.items as Record<string, unknown>[])];
+                          items[idx] = { ...items[idx], q: e.target.value };
+                          updateProp("items", items);
                         }}
-                        placeholder="Intitulé de la question"
-                        className="h-7 text-xs font-bold flex-1"
+                        className="h-7 text-xs font-semibold"
                       />
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
                         onClick={() => {
-                          const next = [...(p.faqs as Record<string, unknown>[])];
-                          next.splice(faqIdx, 1);
-                          updateProp("faqs", next);
+                          const items = [...(p.items as Record<string, unknown>[])];
+                          items.splice(idx, 1);
+                          updateProp("items", items);
                         }}
-                        title="Supprimer cette question"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                     <Textarea
                       rows={2}
-                      value={getPropStr(faq.answer)}
+                      placeholder="Réponse apportée..."
+                      value={String(faq.a || "")}
                       onChange={(e) => {
-                        const next = [...(p.faqs as Record<string, unknown>[])];
-                        next[faqIdx] = { ...next[faqIdx], answer: e.target.value };
-                        updateProp("faqs", next);
+                        const items = [...(p.items as Record<string, unknown>[])];
+                        items[idx] = { ...items[idx], a: e.target.value };
+                        updateProp("items", items);
                       }}
-                      placeholder="Réponse explicative..."
                       className="text-xs"
                     />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic">
-                Aucune FAQ personnalisée (utilise la FAQ générale du site).
-              </p>
-            )}
-          </div>
-        </div>
-      )}
+                ),
+              )}
+            </div>
+          )}
 
-      {/* 6. CONTACT FORM */}
-      {block.type === "contact_form" && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold">Titre du formulaire :</Label>
-            <Input
-              value={getPropStr(p.title)}
-              onChange={(e) => updateProp("title", e.target.value)}
-              placeholder="Envoyez-nous un message"
-              className="h-8 text-xs"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold">Sous-titre explicatif :</Label>
-            <Input
-              value={getPropStr(p.subtitle)}
-              onChange={(e) => updateProp("subtitle", e.target.value)}
-              placeholder="Une question, un devis ou un projet ?..."
-              className="h-8 text-xs"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* 7. BRAND BANNER */}
-      {block.type === "brand_banner" && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold">URL de la Bannière Image :</Label>
-            <Input
-              value={getPropStr(p.bannerSrc)}
-              onChange={(e) => updateProp("bannerSrc", e.target.value)}
-              placeholder="/media/banniere.webp ou URL absolue"
-              className="h-8 text-xs font-mono"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold">Texte alternatif (SEO / Alt) :</Label>
-            <Input
-              value={getPropStr(p.altText)}
-              onChange={(e) => updateProp("altText", e.target.value)}
-              placeholder="StacGate Platform — Conçu et Validé par ArchiSys3.0"
-              className="h-8 text-xs"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* 8. COMPANY HISTORY */}
-      {block.type === "company_history" && (
-        <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Titre Colonne Histoire :</Label>
+          {/* 6. CATEGORY CARDS / BLOG POSTS */}
+          {(block.type === "category_cards" || block.type === "latest_blog_posts") && (
+            <div className="space-y-1 max-w-xs">
+              <Label className="text-xs font-semibold">Nombre maximum d'éléments affichés :</Label>
               <Input
-                value={getPropStr(p.historyTitle)}
-                onChange={(e) => updateProp("historyTitle", e.target.value)}
-                placeholder="Notre Histoire"
-                className="h-8 text-xs"
+                type="number"
+                min={1}
+                max={24}
+                value={typeof p.max === "number" ? p.max : 4}
+                onChange={(e) => updateProp("max", parseInt(e.target.value, 10) || 4)}
+                className="h-8 text-xs w-28 font-mono"
               />
             </div>
+          )}
+
+          {/* 7. MARKDOWN SECTION */}
+          {block.type === "markdown_section" && (
             <div className="space-y-1">
-              <Label className="text-xs font-semibold">Titre Colonne Mission :</Label>
-              <Input
-                value={getPropStr(p.missionTitle)}
-                onChange={(e) => updateProp("missionTitle", e.target.value)}
-                placeholder="Notre Mission"
-                className="h-8 text-xs"
-              />
-            </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Corps Histoire :</Label>
+              <Label className="text-xs font-semibold">
+                Contenu Markdown (Titres, Images, Listes, Vidéos YouTube) :
+              </Label>
               <Textarea
-                rows={3}
-                value={getPropStr(p.historyBody)}
-                onChange={(e) => updateProp("historyBody", e.target.value)}
-                placeholder="Texte de l'histoire de l'entreprise..."
-                className="text-xs"
+                rows={5}
+                value={getPropStr(p.content)}
+                onChange={(e) => updateProp("content", e.target.value)}
+                placeholder="### Titre de votre section&#10;&#10;Votre contenu rédigé en Markdown..."
+                className="font-mono text-xs"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Corps Mission :</Label>
-              <Textarea
-                rows={3}
-                value={getPropStr(p.missionBody)}
-                onChange={(e) => updateProp("missionBody", e.target.value)}
-                placeholder="Texte de la mission de l'entreprise..."
-                className="text-xs"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 9. CATEGORY CARDS / BLOG POSTS (MAX ITEMS) */}
-      {(block.type === "category_cards" || block.type === "latest_blog_posts") && (
-        <div className="space-y-1 max-w-xs">
-          <Label className="text-xs font-semibold">Nombre maximum d'éléments affichés :</Label>
-          <Input
-            type="number"
-            min={1}
-            max={24}
-            value={typeof p.max === "number" ? p.max : 4}
-            onChange={(e) => updateProp("max", parseInt(e.target.value, 10) || 4)}
-            className="h-8 text-xs w-28 font-mono"
-          />
-        </div>
-      )}
-
-      {/* 10. MARKDOWN SECTION */}
-      {block.type === "markdown_section" && (
-        <div className="space-y-1">
-          <Label className="text-xs font-semibold">
-            Contenu Markdown (Supporte Titres, Images, Listes, Vidéos YouTube/Vimeo) :
-          </Label>
-          <Textarea
-            rows={5}
-            value={getPropStr(p.content)}
-            onChange={(e) => updateProp("content", e.target.value)}
-            placeholder="### Titre de votre section&#10;&#10;Votre contenu rédigé en Markdown...&#10;https://www.youtube.com/watch?v=..."
-            className="font-mono text-xs"
-          />
-        </div>
-      )}
-
-      {/* 11. MODE AVANCÉ JSON POUR TOUS LES BLOCS */}
-      <div className="pt-2 border-t border-border/40">
-        <div className="flex items-center justify-between">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowJson(!showJson)}
-            className="h-7 text-[11px] gap-1.5 text-muted-foreground hover:text-foreground"
-          >
-            <Code className="h-3 w-3" />
-            <span>{showJson ? "Masquer le JSON brut" : "Mode Développeur : JSON brut"}</span>
-          </Button>
-
-          {showJson && (
-            <Button size="sm" onClick={handleApplyJson} className="h-7 text-xs gap-1 font-semibold">
-              <Check className="h-3 w-3" />
-              <span>Appliquer le JSON</span>
-            </Button>
           )}
         </div>
-
-        {showJson && (
-          <div className="mt-2 space-y-2">
-            <Textarea
-              rows={6}
-              value={rawJson}
-              onChange={(e) => {
-                setRawJson(e.target.value);
-                setJsonError(null);
-              }}
-              className="font-mono text-[11px] bg-muted/40"
-            />
-            {jsonError && <p className="text-[11px] text-destructive font-mono">{jsonError}</p>}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

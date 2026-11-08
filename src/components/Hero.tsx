@@ -6,11 +6,13 @@ import { getIcon, type IconName } from "@/lib/site-content";
 import { useLocalize, type Localized } from "@/lib/i18n";
 import { resoudreUrlMedia } from "@/components/media-url";
 
-export function Hero() {
+import type { SiteContent } from "@/lib/site-content";
+
+export function Hero({ override }: { override?: Partial<SiteContent["hero"]> } = {}) {
   const { data: siteContent } = useSiteContent();
   const { data: siteSettings } = useSiteSettings();
   const storeName = siteSettings.storeName?.trim() || "Boutique";
-  const h = siteContent.hero;
+  const h = override ? { ...siteContent.hero, ...override } : siteContent.hero;
   const L = useLocalize();
   const heroImageSrc = h.imageSrc ? resoudreUrlMedia(h.imageSrc) : heroImg;
   return (

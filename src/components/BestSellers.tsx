@@ -7,10 +7,12 @@ import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 import { catalogProducts } from "@/data/products";
 
-export function BestSellers() {
+import type { SiteContent } from "@/lib/site-content";
+
+export function BestSellers({ override }: { override?: Partial<SiteContent["bestSellers"]> } = {}) {
   const products = useProducts();
   const { data: siteContent } = useSiteContent();
-  const cfg = siteContent.bestSellers;
+  const cfg = override ? { ...siteContent.bestSellers, ...override } : siteContent.bestSellers;
   const L = useLocalize();
   // Vitrine publique : jamais de configuration client (voir `catalogProducts`).
   const list = useMemo(

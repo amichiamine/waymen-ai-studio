@@ -37,11 +37,20 @@ export type BlockType =
   | "ticker_bar"
   | "promo_banner";
 
+export interface BlockStyleConfig {
+  padding?: "compact" | "normal" | "ample";
+  bg?: "transparent" | "surface" | "muted" | "accent" | "dark";
+  align?: "start" | "center";
+  hideOnMobile?: boolean;
+  hideOnDesktop?: boolean;
+}
+
 export interface BlockConfig {
   id: string;
   type: BlockType;
   enabled: boolean;
   props?: Record<string, unknown>;
+  style?: BlockStyleConfig;
 }
 
 export interface CustomPageDefinition {

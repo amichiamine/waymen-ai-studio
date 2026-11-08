@@ -6,11 +6,15 @@ import { useSiteContent, useCategoryList } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 import { catalogProducts } from "@/data/products";
 
-export function FeaturedTabs() {
+import type { SiteContent } from "@/lib/site-content";
+
+export function FeaturedTabs({
+  override,
+}: { override?: Partial<SiteContent["featuredTabs"]> } = {}) {
   const products = useProducts();
   const { data: siteContent } = useSiteContent();
   const { data: categories } = useCategoryList();
-  const cfg = siteContent.featuredTabs;
+  const cfg = override ? { ...siteContent.featuredTabs, ...override } : siteContent.featuredTabs;
   const L = useLocalize();
 
   const tabs = useMemo(() => {

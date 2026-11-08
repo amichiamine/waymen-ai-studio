@@ -14,17 +14,18 @@ import { PromoBanner } from "@/components/PromoBanner";
 import { useSiteContent, useSiteSettings, useProductList } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 import type { BlockConfig } from "@/types/pages";
+import type { SiteContent } from "@/lib/site-content";
 
-export function HeroBannerBlock({ config: _config }: { config: BlockConfig }) {
+export function HeroBannerBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.hero?.enabled === false) return null;
-  return <Hero />;
+  return <Hero override={config.props as Partial<SiteContent["hero"]>} />;
 }
 
-export function FlashSaleBlock({ config: _config }: { config: BlockConfig }) {
+export function FlashSaleBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.flashSale?.enabled === false) return null;
-  return <FlashSale />;
+  return <FlashSale override={config.props as Partial<SiteContent["flashSale"]>} />;
 }
 
 export function CategoryCardsBlock({ config }: { config: BlockConfig }) {
@@ -53,16 +54,16 @@ export function UseChipsBlock({ config: _config }: { config: BlockConfig }) {
   );
 }
 
-export function BestSellersBlock({ config: _config }: { config: BlockConfig }) {
+export function BestSellersBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.bestSellers?.enabled === false) return null;
-  return <BestSellers />;
+  return <BestSellers override={config.props as Partial<SiteContent["bestSellers"]>} />;
 }
 
-export function FeaturedTabsBlock({ config: _config }: { config: BlockConfig }) {
+export function FeaturedTabsBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.featuredTabs?.enabled === false) return null;
-  return <FeaturedTabs />;
+  return <FeaturedTabs override={config.props as Partial<SiteContent["featuredTabs"]>} />;
 }
 
 export function BrandsMarqueeBlock({ config: _config }: { config: BlockConfig }) {
@@ -71,10 +72,10 @@ export function BrandsMarqueeBlock({ config: _config }: { config: BlockConfig })
   return <BrandsMarquee />;
 }
 
-export function WhyUsBlock({ config: _config }: { config: BlockConfig }) {
+export function WhyUsBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.whyUs?.enabled === false) return null;
-  return <WhyUs />;
+  return <WhyUs override={config.props as Partial<SiteContent["whyUs"]>} />;
 }
 
 export function BuilderTeaserBlock({ config: _config }: { config: BlockConfig }) {
@@ -86,16 +87,16 @@ export function BuilderTeaserBlock({ config: _config }: { config: BlockConfig })
   return <BuilderTeaser />;
 }
 
-export function ReviewsGridBlock({ config: _config }: { config: BlockConfig }) {
+export function ReviewsGridBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.reviews?.enabled === false) return null;
-  return <Reviews />;
+  return <Reviews override={config.props as Partial<SiteContent["reviews"]>} />;
 }
 
-export function ContactCtaBlock({ config: _config }: { config: BlockConfig }) {
+export function ContactCtaBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.contactCta?.enabled === false) return null;
-  return <ContactCTA />;
+  return <ContactCTA override={config.props as Partial<SiteContent["contactCta"]>} />;
 }
 
 export function TickerBarBlock({ config: _config }: { config: BlockConfig }) {

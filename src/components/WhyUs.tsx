@@ -3,14 +3,16 @@ import { getIcon } from "@/lib/site-content";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
-export function WhyUs() {
+import type { SiteContent } from "@/lib/site-content";
+
+export function WhyUs({ override }: { override?: Partial<SiteContent["whyUs"]> } = {}) {
   // loading inerte en mode mock. En http, on rend la section avec les valeurs
   // de repli (tableau vide) le temps du premier aller-retour — pas de
   // squelette : la section est secondaire, l'absence de cartes est invisible.
   const { data: siteContent } = useSiteContent();
   const { data: siteSettings } = useSiteSettings();
   const storeName = siteSettings.storeName?.trim() || "Boutique";
-  const w = siteContent.whyUs;
+  const w = override ? { ...siteContent.whyUs, ...override } : siteContent.whyUs;
   const L = useLocalize();
 
   const interpolate = (txt?: string | null) =>

@@ -8,6 +8,8 @@ import { useSiteContent } from "@/data-provider";
 import { Reveal } from "@/components/Reveal";
 import { catalogProducts } from "@/data/products";
 
+import type { SiteContent } from "@/lib/site-content";
+
 function useCountdown(targetMs: number) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -23,9 +25,9 @@ function useCountdown(targetMs: number) {
   };
 }
 
-export function FlashSale() {
+export function FlashSale({ override }: { override?: Partial<SiteContent["flashSale"]> } = {}) {
   const { data: siteContent } = useSiteContent();
-  const cfg = siteContent.flashSale;
+  const cfg = override ? { ...siteContent.flashSale, ...override } : siteContent.flashSale;
   const [target] = useState(() => Date.now() + Math.max(1, cfg.countdownHours) * 3_600_000);
   const t = useCountdown(target);
   const { t: tr } = useI18n();

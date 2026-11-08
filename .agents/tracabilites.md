@@ -1997,3 +1997,61 @@
   - Studio Backstage : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
   - Archive application horodatée : 📦 [katech-site-08112026-1335.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1335.zip) (4.13 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1335.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1335.zip) (42 Ko)
+
+## Phase 40 : Grand Studio Visuel Interactif 360° : Live Canvas de Rendu Réactif, Inspecteurs de Contenus Réels & Contrôles Fins de Styles
+
+- **Date :** 08 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Contexte & Constat Initial :**
+  1. L'administration des blocs s'effectuait auparavant à l'aveugle dans une simple liste de cartes sans prévisualisation en direct.
+  2. Les blocs e-commerce (`hero_banner`, `flash_sale`, `best_sellers`, etc.) n'offraient aucun moyen de personnaliser leur contenu textuel/visuel depuis l'Onglet 1 (*Pages & Vues Composables*), obligeant à basculer vers l'Onglet 2.
+  3. Absence de contrôles fins d'espacement (padding), d'arrière-plan, d'alignement et de masquage responsive (mobile vs bureau).
+  4. Manque de moyens visuels de contrôle avant, pendant et après édition directement depuis le Studio.
+- **Décisions d'ArchiSys3.0 :**
+  Validation formelle de l'Option A et du Plan d'Implémentation Phase 40 (consigné dans `40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md`) :
+  1. Extension du modèle de blocs avec l'interface `BlockStyleConfig` (padding, arrière-plan, alignement, masquage responsive).
+  2. Création de l'enveloppe universelle `BlockWrapper` appliquant les styles sans altérer les composants internes.
+  3. Conception du simulateur visuel `StudioLiveCanvas` avec prévisualisation temps réel et sélecteur de résolutions physiques (Bureau 100%, Tablette 768px, Mobile 375px).
+  4. Raccordement bidirectionnel des inspecteurs de blocs dans `BlockPropsEditor` pour l'ensemble des blocs commerce, accueil et institutionnels avec injection de surcharges locales transparentes.
+  5. Refonte du Studio Backstage dans `PagesManager.tsx` en mode WYSYWIG split-screen à 3 colonnes (Arborescence, Canvas vivant, Inspecteur fin).
+- **Actions Réalisées :**
+  - **Étape 40.1 (Extension Typée & Wrapper Universel de Styles) :**
+    - Modification de [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) : création de `BlockStyleConfig` et ajout de `style?: BlockStyleConfig` sur `BlockConfig`.
+    - Création de [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) : enveloppe d'exécution appliquant padding, arrière-plan, alignement et visibilité responsive.
+    - Modification de [`src/components/blocks/index.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/index.ts) : `renderBlock` encapsule désormais systématiquement le bloc dans `BlockWrapper`.
+  - **Étape 40.2 (Composant Studio Live Canvas avec Sélecteur Responsive) :**
+    - Création de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Barre d'outils responsive avec boutons Bureau (100%), Tablette (768px), Mobile (375px).
+      - Cadre d'écran réaliste avec bordure et barre d'état.
+      - Badges au survol, contour d'accentuation du bloc actif et barre d'actions rapides (monter, descendre, supprimer).
+      - Sélection synchronisée au clic sur n'importe quel bloc du Canvas.
+  - **Étape 40.3 (Raccordement des Inspecteurs de Blocs E-Commerce & Contenus Réels) :**
+    - Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) :
+      - Ajout de l'onglet **Style & Espacement** (padding compact/normal/ample, 5 fonds de section, alignement, masquage responsive mobile/bureau).
+      - Inspecteurs de contenus dédiés pour `hero_banner`, `flash_sale`, `best_sellers`, `featured_tabs`, `why_us`, `reviews_grid`, `contact_cta`.
+    - Modification des composants vitrine pour accepter des surcharges directes : [`src/components/Hero.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Hero.tsx), [`src/components/FlashSale.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/FlashSale.tsx), [`src/components/WhyUs.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/WhyUs.tsx), [`src/components/Reviews.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Reviews.tsx), [`src/components/ContactCTA.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/ContactCTA.tsx), [`src/components/BestSellers.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BestSellers.tsx), [`src/components/FeaturedTabs.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/FeaturedTabs.tsx).
+    - Modification de [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) : injection des props de configuration comme surcharges réactives.
+  - **Étape 40.4 (Refonte Backstage Split-Screen & Mode WYSYWIG) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Commutateur de mode dans l'en-tête : **[🎨 Studio WYSYWIG]** $\leftrightarrow$ **[📋 Structure]**.
+      - Mode WYSYWIG à 3 colonnes : sélecteur de vue & liste ordonnable à gauche, Live Canvas responsive au centre, inspecteur fin à droite.
+      - Synchronisation réactive au clic : cliquer dans le Canvas ou dans l'arborescence sélectionne instantanément le bloc dans l'inspecteur.
+  - **Étape 40.5 (Contrôles Qualité CI, Compilation & Livrables) :**
+    - `bun run verifier-i18n` : 100% cohérent.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run build ; bun run paqueter:data` : compilation et empaquetage réussis.
+- **Résultats de Recette :**
+  - Fin du travail à l'aveugle : l'administrateur visualise en direct chaque modification sur mobile, tablette ou bureau.
+  - Contrôles fins opérationnels : réglage du padding, du fond et masquage mobile/desktop fonctionnels immédiatement.
+  - Édition des contenus réels directement depuis le Studio sans quitter l'onglet des blocs.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md)
+  - Studio Live Canvas : 📄 [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
+  - Wrapper de Styles Universel : 📄 [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx)
+  - Inspecteur Enrichi : 📄 [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx)
+  - Studio Backstage Refondu : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1353.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1353.zip) (4.13 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1353.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1353.zip) (42 Ko)

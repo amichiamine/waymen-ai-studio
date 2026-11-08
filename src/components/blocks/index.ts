@@ -27,7 +27,9 @@ import { LatestBlogPostsBlock } from "./LatestBlogPostsBlock";
 import { ContactFormBlock } from "./ContactFormBlock";
 import { DirectContactCardsBlock } from "./DirectContactCardsBlock";
 import { FaqAccordionBlock } from "./FaqAccordionBlock";
+import { BlockWrapper } from "./BlockWrapper";
 
+export { BlockWrapper } from "./BlockWrapper";
 export { BLOCK_REGISTRY, getBlockMeta } from "./registry";
 
 export const BLOCK_COMPONENTS: Record<BlockType, React.ComponentType<{ config: BlockConfig }>> = {
@@ -69,5 +71,9 @@ export function renderBlock(config: BlockConfig) {
   if (!config.enabled) return null;
   const Component = BLOCK_COMPONENTS[config.type];
   if (!Component) return null;
-  return React.createElement(Component, { key: config.id, config });
+  return React.createElement(
+    BlockWrapper,
+    { key: config.id, config },
+    React.createElement(Component, { config }),
+  );
 }
