@@ -56,6 +56,7 @@
 | **Phase 34** | 07/11/2026 | Composition Logo Combiné Horizontal Officiel StacGate × ArchiSys3.0 & Déploiement Maître 360°    | 📄 [`34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md`](Implementations_Plans/34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md) | 🟢 **Livré & Validé** |
 | **Phase 35** | 07/11/2026 | Blindage Médias Blog, Déblocage CSP Vidéos, Anti-Reflow & Déclinaisons Multi-Formats             | 📄 [`35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md`](Implementations_Plans/35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md)         | 🟢 **Livré & Validé** |
 | **Phase 36** | 07/11/2026 | Refonte Épurée Logo Combiné en Anglais (Référence Directe Signature) & Déploiement Multi-Formats | 📄 [`36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md`](Implementations_Plans/36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md)                                 | 🟢 **Livré & Validé** |
+| **Phase 37** | 08/11/2026 | Moteur Universel de Pages Dynamiques & Catalogue de 24 Blocs Composables (Zéro Régression)       | 📄 [`37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md`](Implementations_Plans/37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md)           | 🟢 **Livré & Validé** |
 
 ---
 
@@ -1731,3 +1732,69 @@
   - Actif combiné SVG : 🖼️ [`src/assets/stacgate-archisys-combined.svg`](file:///c:/xampp/htdocs/ka-tech/src/assets/stacgate-archisys-combined.svg) & [`public/media/stacgate-archisys-combined.svg`](file:///c:/xampp/htdocs/ka-tech/public/media/stacgate-archisys-combined.svg)
   - Archive application horodatée : 📦 [katech-site-07112026-1526.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-07112026-1526.zip) (4.10 Mo)
   - Archive données horodatée : 📦 [katech-data-07112026-1526.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-07112026-1526.zip) (38 Ko)
+
+---
+
+## Phase 37 : Moteur Universel de Pages Dynamiques & Catalogue de 24 Blocs Composables (Zéro Régression)
+
+- **Date :** 08 Novembre 2026
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation 37.
+- **Contexte & Enjeux :**
+  - ArchiSys3.0 a identifié un risque stratégique majeur : le cloisonnement de la plateforme par la multiplication de pages rigides et de "modes" artificiels distincts (mode vitrine, mode CV, etc.).
+  - L'ambition requise par ArchiSys3.0 est l'**universalisation véritable** :
+    1. Pouvoir créer, masquer, supprimer et personnaliser n'importe quelle vue ou page dynamiquement depuis le Backstage (`/admin/pages`).
+    2. Pouvoir ajouter, réordonner, activer/désactiver et supprimer n'importe quel bloc ou composant au sein de chaque vue.
+    3. Offrir un catalogue riche et universel de blocs prêts à l'emploi (E-commerce, Identité & CV, Réseaux & Médias, Interaction & Formulaires).
+    4. **Contrainte de sanctuarisation absolue :** Conservation intégrale de la persistance SQLite/MySQL existante, des modèles (`products`, `orders`, `customers`, `users`, `notifications`, `messages`), du panier, du passage en caisse 58 wilayas, du suivi de commandes et de l'authentification avec zéro régression runtime.
+- **Actions Réalisées :**
+  - **Étape 37.A (Typage & Registre Universel des 24 Blocs) :**
+    - Création de [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) : définition stricte des types `BlockType` (24 types), `BlockConfig`, `CustomPageDefinition`, `BlockMeta` et `BlockFamily`.
+    - Création de [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts) : registre exhaustif des 24 blocs avec libellés trilingues FR/EN/AR, descriptions, icônes Lucide et configurations par défaut :
+      - _Famille Commerce :_ `hero_banner`, `flash_sale`, `category_cards`, `use_chips`, `bestsellers_grid`, `featured_tabs`, `brands_marquee`, `why_us`, `builder_teaser`, `reviews_grid`, `contact_cta`, `ticker_bar`, `promo_banner`.
+      - _Famille Identité & Parcours :_ `profile_hero`, `timeline_milestones`, `skills_matrix`, `company_history`, `values_grid`.
+      - _Famille Vitrine & Médias :_ `projects_grid`, `brand_banner`, `latest_blog_posts`, `markdown_section`.
+      - _Famille Interaction & Conversion :_ `contact_form`, `direct_contact_cards`, `faq_accordion`.
+  - **Étape 37.B (Implémentation Modulaire des Composants Blocs) :**
+    - Création dans [`src/components/blocks/`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/) de tous les composants modulaires :
+      - `ProfileHeroBlock.tsx` : Présentation exécutive, badges d'accréditation, avatar/sceau ArchiSys3.0, liens sociaux, bouton de téléchargement de CV PDF (`window.print()`).
+      - `TimelineBlock.tsx` : Parcours professionnel, étapes d'ingénierie, dates et livrables.
+      - `SkillsMatrixBlock.tsx` : Matrice de compétences, stacks techniques et badges technologiques.
+      - `ProjectsGridBlock.tsx` : Grille de projets, études de cas R&D, liens de démo live et code source.
+      - `CompanyHistoryBlock.tsx` : Histoire et mission d'entreprise à 2 colonnes avec injection dynamique du storeName.
+      - `ValuesGridBlock.tsx` : Grille de valeurs fondamentales avec icônes Lucide.
+      - `BrandBannerBlock.tsx` : Bannière grand format StacGate × ArchiSys3.0.
+      - `MarkdownSectionBlock.tsx` : Section éditoriale riche en Markdown avec intégration multimédia (YouTube/Vimeo/HTML).
+      - `ContactFormBlock.tsx` : Formulaire de contact / devis sécurisé avec validation Zod et persistance dans `messages`.
+      - `DirectContactCardsBlock.tsx` : Cartes de coordonnées directes (téléphone, WhatsApp, e-mail, horaires, adresse).
+      - `FaqAccordionBlock.tsx` : Accordéon interactif de FAQ raccordé à la base de données.
+      - `LatestBlogPostsBlock.tsx` : Derniers articles de blog avec miniatures, date et auteur.
+      - `CommerceBlocks.tsx` : Wrappers modulaires et isolés pour tous les blocs marchands existants.
+      - `index.ts` : Dispatcher centralisé `renderBlock(config: BlockConfig)`.
+  - **Étape 37.C (Moteur de Restitution Dynamique & Routage Universel) :**
+    - Création de [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx) : résout les routes `/p/:slug` et `/:slug`, charge les pages personnalisées depuis `siteContent.customPages`, applique les métadonnées SEO (titre et description) via `<Helmet>`, séquence le rendu des blocs actifs selon leur ordre et filtre les blocs inactifs. Repli gracieux sur `<NotFound />` si la page n'existe pas ou n'est pas publiée.
+    - Ajout dans [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx) de la route d'administration `/admin/pages` et des routes dynamiques `/p/:slug` et `/:slug` (qui n'interfèrent aucunement avec les routes statiques prioritaires `/cart`, `/checkout`, `/about`, `/contact`, `/admin/*`).
+  - **Étape 37.D (Gestionnaire Backstage des Pages & Vues) :**
+    - Création de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) : interface d'administration complète :
+      - Tableau de bord des pages : titre trilingue, slug, nombre de blocs, statut publié/brouillon, présence dans le menu de navigation.
+      - Création et édition de métadonnées (titre FR/EN/AR, slug URL, description SEO, interrupteur de publication, interrupteur navbar).
+      - Compositeur visuel de blocs : ajout depuis la modale de sélection parmi les 24 blocs, réordonnancement par flèches haut/bas, interrupteur d'activation/désactivation, suppression, édition du contenu Markdown.
+      - Sauvegarde via `useSiteContentMutations().update({ customPages })` sanctuarisant 100% du schéma SQLite/MySQL sans aucune altération de table.
+    - Intégration dans [`src/components/admin/AdminLayout.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/AdminLayout.tsx) de l'entrée `"Pages & Vues"` sous la section `section_contenu`.
+  - **Étape 37.E (Navigation Dynamique Trilingue & Initialisation Seed) :**
+    - Mise à jour de [`src/components/Header.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Header.tsx) : injection automatique des pages publiées ayant l'option `showInNav: true` dans la barre de navigation desktop et dans le menu mobile Drawer.
+    - Mise à jour de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/ka-tech/src/lib/site-content.ts) avec `seedCustomPages()` fournissant par défaut les pages `/cv` (CV & Parcours ArchiSys3.0) et `/projets` (Vitrine de Projets & Solutions R&D).
+    - Alignement i18n dans [`src/lib/i18n/`](file:///c:/xampp/htdocs/ka-tech/src/lib/i18n/) pour les clés d'administration et les libellés communs (FR, EN, AR).
+  - **Étape 37.F (Contrôles Qualité CI & Validation Stricte) :**
+    - `bun run verifier-i18n` : 100% conforme, parité FR/EN/AR parfaite.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run build; bun run paqueter:data` : build complet et archives déployables générées avec succès.
+- **Livrables :**
+  - Plan interactif et miroir : 📄 [37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md)
+  - Types : 📄 [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts)
+  - Registre : 📄 [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/registry.ts)
+  - Catalogue de blocs : 📂 [`src/components/blocks/`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/) (14 fichiers)
+  - Vues : 📄 [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx), 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - Archive application horodatée : 📦 [katech-site-08112026-1231.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1231.zip) (4.12 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1231.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1231.zip) (38 Ko)

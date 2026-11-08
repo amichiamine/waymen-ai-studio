@@ -54,6 +54,14 @@ export type {
   Subscriber,
 };
 
+export type {
+  CustomPageDefinition,
+  BlockConfig,
+  BlockType,
+  BlockFamily,
+  BlockMeta,
+} from "@/types/pages";
+
 /** Enveloppe standard de réponse (succès). */
 export type ApiEnvelope<T> = { data: T; meta?: Record<string, unknown> };
 

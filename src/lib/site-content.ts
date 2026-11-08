@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import type { Category } from "@/data/products";
 import type { Localized } from "@/lib/i18n";
+import type { CustomPageDefinition } from "@/types/pages";
 
 export type IconName =
   | "shield"
@@ -236,7 +237,217 @@ export type SiteContent = {
     subtitle: LS;
     faqs: { id: string; question: LS; answer: LS }[];
   };
+  customPages?: CustomPageDefinition[];
 };
+
+export function seedCustomPages(): CustomPageDefinition[] {
+  return [
+    {
+      id: "page_cv_default",
+      slug: "cv",
+      title: {
+        fr: "Profil & CV",
+        en: "Profile & Resume",
+        ar: "الملف والسيرة الذاتية",
+      },
+      description: {
+        fr: "Profil exécutif, parcours d'ingénierie, compétences et réalisations.",
+        en: "Executive profile, engineering background, skills and achievements.",
+        ar: "الملف التنفيذي، المسار الهندسي، المهارات والإنجازات.",
+      },
+      blocks: [
+        {
+          id: "b_cv_hero",
+          type: "profile_hero",
+          enabled: true,
+          props: {
+            name: "ArchiSys3.0",
+            role: {
+              fr: "Architecte Logiciel & Consultant R&D",
+              en: "Software Architect & R&D Consultant",
+              ar: "مهندس معماري برمجيات ومستشار بحث وتطوير",
+            },
+            bio: {
+              fr: "Expertise en architectures logicielles souveraines, cloud, web moderne et systèmes distribués à haute performance.",
+              en: "Expertise in sovereign software architectures, cloud, modern web and high-performance distributed systems.",
+              ar: "خبرة في المعماريات البرمجية السيادية، السحابية، الويب الحديث والأنظمة الموزعة عالية الأداء.",
+            },
+            availability: {
+              fr: "Disponible pour missions d'architecture & R&D",
+              en: "Available for Architecture & R&D missions",
+              ar: "متاح لمشاريع المعمارية البرمجية والبحث والتطوير",
+            },
+            showDownloadPdf: true,
+          },
+        },
+        {
+          id: "b_cv_timeline",
+          type: "timeline",
+          enabled: true,
+          props: {
+            title: {
+              fr: "Parcours Professionnel & Jalons",
+              en: "Career & Milestones",
+              ar: "المسار المهني والمحطات",
+            },
+            subtitle: {
+              fr: "Historique des réalisations et projets d'ingénierie.",
+              en: "History of engineering achievements and projects.",
+              ar: "سجل الإنجازات والمشاريع الهندسية.",
+            },
+            items: [
+              {
+                id: "exp-1",
+                period: "2024 — Présent",
+                role: {
+                  fr: "Architecte & Directeur Technique R&D",
+                  en: "Lead Architect & R&D Director",
+                  ar: "مهندس معماري ومدير تقني للبحث والتطوير",
+                },
+                company: "StacGate Systems",
+                description: {
+                  fr: "Conception et direction d'architectures logicielles d'élite, moteurs composables et solutions souveraines.",
+                  en: "Design and direction of elite software architectures, composable engines and sovereign solutions.",
+                  ar: "تصميم وإدارة معماريات برمجية سيادية ومحركات قابلة للتجميع وحلول متقدمة.",
+                },
+                tags: ["Architecture", "React 19", "TypeScript", "Performance"],
+              },
+            ],
+          },
+        },
+        {
+          id: "b_cv_skills",
+          type: "skills_matrix",
+          enabled: true,
+          props: {
+            title: {
+              fr: "Compétences Clés & Technologies",
+              en: "Core Skills & Technologies",
+              ar: "المهارات الأساسية والتقنيات",
+            },
+            subtitle: {
+              fr: "Savoir-faire éprouvé sur les stacks et architectures modernes.",
+              en: "Proven expertise across modern stacks and architectures.",
+              ar: "خبرة عملية مثبتة في أحدث أطر العمل والمعماريات.",
+            },
+            categories: [
+              {
+                id: "cat-1",
+                name: {
+                  fr: "Architecture & Systèmes",
+                  en: "Architecture & Systems",
+                  ar: "المعمارية والأنظمة",
+                },
+                skills: [
+                  "Clean Architecture",
+                  "API Design",
+                  "Haute Disponibilité",
+                  "Sécurité & Audit",
+                ],
+              },
+              {
+                id: "cat-2",
+                name: {
+                  fr: "Développement & Web",
+                  en: "Development & Web",
+                  ar: "التطوير والويب",
+                },
+                skills: ["TypeScript", "React 19", "PHP / Node.js", "Tailwind CSS"],
+              },
+            ],
+          },
+        },
+        {
+          id: "b_cv_contact",
+          type: "contact_form",
+          enabled: true,
+          props: {
+            title: {
+              fr: "Échanger sur une opportunité ou un projet",
+              en: "Discuss an opportunity or project",
+              ar: "تواصل لمناقشة مشروع أو فرصة",
+            },
+          },
+        },
+      ],
+      isPublished: true,
+      inNavbar: true,
+      inFooter: true,
+      navOrder: 4,
+      createdAt: "2026-11-08T00:00:00.000Z",
+      updatedAt: "2026-11-08T00:00:00.000Z",
+    },
+    {
+      id: "page_projets_default",
+      slug: "projets",
+      title: {
+        fr: "Réalisations",
+        en: "Projects",
+        ar: "المشاريع",
+      },
+      description: {
+        fr: "Études de cas, prototypes et solutions technologiques.",
+        en: "Case studies, prototypes and technological solutions.",
+        ar: "دراسات حالة ونماذج أولية وحلول تكنولوجية.",
+      },
+      blocks: [
+        {
+          id: "b_proj_grid",
+          type: "projects_grid",
+          enabled: true,
+          props: {
+            title: {
+              fr: "Réalisations & Projets Phares",
+              en: "Featured Projects & Case Studies",
+              ar: "أبرز المشاريع والإنجازات",
+            },
+            subtitle: {
+              fr: "Sélection de travaux d'ingénierie, prototypes et architectures en production.",
+              en: "Selection of engineering works, prototypes and production architectures.",
+              ar: "مجموعة مختارة من الأعمال الهندسية والنماذج والمعماريات قيد التشغيل.",
+            },
+            items: [
+              {
+                id: "p-stacgate",
+                title: {
+                  fr: "StacGate Platform",
+                  en: "StacGate Platform",
+                  ar: "منصة StacGate",
+                },
+                description: {
+                  fr: "Plateforme souveraine modulaire combinant e-commerce haute performance et vitrine de solutions.",
+                  en: "Sovereign modular platform combining high-performance e-commerce and solutions showcase.",
+                  ar: "منصة سيادية معيارية تجمع بين التجارة الإلكترونية عالية الأداء ومعرض الحلول.",
+                },
+                category: "Software Architecture",
+                tags: ["React 19", "Vite", "TypeScript", "SQLite"],
+                demoUrl: "#",
+                codeUrl: "#",
+                image: "/media/stacgate-archisys-combined.webp",
+              },
+            ],
+          },
+        },
+        {
+          id: "b_proj_brand",
+          type: "brand_banner",
+          enabled: true,
+        },
+        {
+          id: "b_proj_cta",
+          type: "contact_cta",
+          enabled: true,
+        },
+      ],
+      isPublished: true,
+      inNavbar: true,
+      inFooter: true,
+      navOrder: 5,
+      createdAt: "2026-11-08T00:00:00.000Z",
+      updatedAt: "2026-11-08T00:00:00.000Z",
+    },
+  ];
+}
 
 export function seedSiteContent(): SiteContent {
   return {
@@ -843,6 +1054,7 @@ export function seedSiteContent(): SiteContent {
         },
       ],
     },
+    customPages: seedCustomPages(),
   };
 }
 

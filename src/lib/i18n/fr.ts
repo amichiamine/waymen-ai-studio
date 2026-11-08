@@ -232,6 +232,10 @@ const fr: Record<string, string> = {
   "common.edit": "Modifier",
   "common.free": "Offerte",
   "common.close": "Fermer",
+  "common.downloadPdf": "Télécharger CV (PDF)",
+  "common.viewAll": "Voir tout",
+  "common.sending": "Envoi en cours...",
+  "common.saved": "Enregistré avec succès",
   "about.kicker": "À propos",
   "about.title": "{storeName} — Votre plateforme d'excellence",
   "about.intro":

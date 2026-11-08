@@ -66,6 +66,7 @@ const socleFr: Record<string, string> = {
   "admin.socle.navigation.lien_paiements": "Paiements",
   "admin.socle.navigation.lien_messages": "Messages de contact",
   "admin.socle.navigation.lien_newsletter": "Newsletter",
+  "admin.socle.navigation.lien_pages": "Pages & Vues",
   "admin.socle.navigation.lien_contenu": "Contenu du site",
   "admin.socle.navigation.lien_blog": "Blog",
   "admin.socle.navigation.lien_avis": "Avis",

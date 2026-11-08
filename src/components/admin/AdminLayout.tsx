@@ -34,6 +34,7 @@ import {
   Terminal,
   BookOpen,
   Sparkles,
+  LayoutTemplate,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import {
@@ -162,6 +163,12 @@ export const ADMIN_SECTIONS: { titleKey: string; items: Item[] }[] = [
   {
     titleKey: "admin.socle.navigation.section_contenu",
     items: [
+      {
+        to: "/admin/pages",
+        labelKey: "admin.socle.navigation.lien_pages",
+        Icon: LayoutTemplate,
+        minRole: "editor",
+      },
       {
         to: "/admin/content",
         labelKey: "admin.socle.navigation.lien_contenu",

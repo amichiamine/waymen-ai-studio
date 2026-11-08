@@ -44,6 +44,7 @@ const CategoryIndex = lazy(() => import("@/pages/CategoryIndex"));
 const CategoryDetail = lazy(() => import("@/pages/CategoryDetail"));
 const Product = lazy(() => import("@/pages/Product"));
 const TrackOrder = lazy(() => import("@/pages/TrackOrder"));
+const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
 
 // Pages authentifiées
 const Account = lazy(() => import("@/pages/Account"));
@@ -91,6 +92,7 @@ const AdminReset = lazy(() => import("@/pages/admin/Reset"));
 const AdminDeveloppeur = lazy(() => import("@/pages/admin/Developpeur"));
 const AdminNotion = lazy(() => import("@/pages/admin/Notion"));
 const AdminContent = lazy(() => import("@/pages/admin/Content"));
+const AdminPages = lazy(() => import("@/pages/admin/PagesManager"));
 const AdminMessages = lazy(() => import("@/pages/admin/Messages"));
 const AdminSubscribers = lazy(() => import("@/pages/admin/Subscribers"));
 
@@ -258,6 +260,7 @@ export default function App() {
                     path="wizard"
                     element={<Navigate to="/admin/settings?wizard=1" replace />}
                   />
+                  <Route path="pages" element={<AdminPages />} />
                   <Route path="content" element={<AdminContent />} />
                   <Route path="messages" element={<AdminMessages />} />
                   <Route path="subscribers" element={<AdminSubscribers />} />
@@ -265,6 +268,8 @@ export default function App() {
                   <Route path="users" element={<AdminUsers />} />
                 </Route>
 
+                <Route path="/p/:slug" element={<DynamicPage />} />
+                <Route path="/:slug" element={<DynamicPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

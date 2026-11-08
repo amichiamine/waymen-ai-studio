@@ -64,6 +64,18 @@ export function Header() {
     return H.categoryMenu.items;
   }, [categories, H.categoryMenu.items]);
 
+  const customNavItems = useMemo(() => {
+    const pages = siteContent?.customPages || [];
+    return pages
+      .filter((p) => p.isPublished && p.inNavbar)
+      .sort((a, b) => (a.navOrder || 0) - (b.navOrder || 0))
+      .map((p) => ({
+        id: `cp_${p.id}`,
+        label: p.title,
+        href: `/${p.slug}`,
+      }));
+  }, [siteContent?.customPages]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
@@ -127,6 +139,15 @@ export function Header() {
               key={n.id}
               to={n.href}
               className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
+            >
+              {L(n.label)}
+            </Link>
+          ))}
+          {customNavItems.map((n) => (
+            <Link
+              key={n.id}
+              to={n.href}
+              className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-card transition-colors font-medium"
             >
               {L(n.label)}
             </Link>
@@ -287,6 +308,16 @@ export function Header() {
                     to={n.href}
                     onClick={() => setOpen(false)}
                     className="px-4 py-3 rounded-md text-foreground hover:bg-card text-base"
+                  >
+                    {L(n.label)}
+                  </Link>
+                ))}
+                {customNavItems.map((n) => (
+                  <Link
+                    key={n.id}
+                    to={n.href}
+                    onClick={() => setOpen(false)}
+                    className="px-4 py-3 rounded-md text-foreground hover:bg-card text-base font-medium"
                   >
                     {L(n.label)}
                   </Link>

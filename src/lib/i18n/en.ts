@@ -230,6 +230,10 @@ const en: Record<string, string> = {
   "common.edit": "Edit",
   "common.free": "Free",
   "common.close": "Close",
+  "common.downloadPdf": "Download CV (PDF)",
+  "common.viewAll": "View all",
+  "common.sending": "Sending...",
+  "common.saved": "Saved successfully",
   "about.kicker": "About",
   "about.title": "{storeName} — Your platform of excellence",
   "about.intro":

@@ -227,6 +227,10 @@ const ar: Record<string, string> = {
   "common.edit": "تعديل",
   "common.free": "مجاني",
   "common.close": "إغلاق",
+  "common.downloadPdf": "تحميل السيرة الذاتية (PDF)",
+  "common.viewAll": "عرض الكل",
+  "common.sending": "جارٍ الإرسال...",
+  "common.saved": "تم الحفظ بنجاح",
   "about.kicker": "من نحن",
   "about.title": "{storeName} — منصتكم المتميزة",
   "about.intro":
