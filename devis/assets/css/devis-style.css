@@ -514,6 +514,17 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+/* Isolation BiDi LTR universelle des montants et devises (Partie 2 & Récapitulatif) */
+.option-price,
+.price,
+.amount,
+.total-amount-dzd,
+.pricing-pill .amount {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  display: inline-block;
+}
+
 /* RÈGLES DE DIRECTION RTL (ARABE) */
 html[dir="rtl"] body {
   font-family:
@@ -526,28 +537,11 @@ html[dir="rtl"] body {
   text-align: right;
 }
 
-html[dir="rtl"] .devis-header-top,
-html[dir="rtl"] .option-header,
-html[dir="rtl"] .summary-row,
-html[dir="rtl"] .pricing-pill,
-html[dir="rtl"] .hub-card-header,
-html[dir="rtl"] .hub-price-box {
-  flex-direction: row-reverse;
-}
-
-html[dir="rtl"] .option-card {
-  flex-direction: row-reverse;
-  text-align: right;
-}
-
-html[dir="rtl"] .included-item {
-  flex-direction: row-reverse;
-  text-align: right;
-}
-
+/* Alignements textuels et directionnels naturels sous RTL */
+html[dir="rtl"] .option-card,
+html[dir="rtl"] .included-item,
 html[dir="rtl"] .feature-points li,
 html[dir="rtl"] .hub-features-list li {
-  flex-direction: row-reverse;
   text-align: right;
 }
 
@@ -561,17 +555,20 @@ html[dir="rtl"] .matrix-table td {
   text-align: right;
 }
 
-html[dir="rtl"] .btn {
-  flex-direction: row-reverse;
-}
-
+/* Maintien strict LTR pour les prix et montants sous RTL (Zéro inversion du signe + ou DZD) */
+html[dir="rtl"] .option-price,
+html[dir="rtl"] .summary-row .price,
+html[dir="rtl"] .pricing-pill .amount,
 html[dir="rtl"] .total-amount-dzd {
-  direction: ltr;
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
   display: inline-block;
+  text-align: left;
 }
 
-html[dir="rtl"] .pricing-pill .amount {
-  direction: ltr;
+html[dir="rtl"] .total-amount-centimes {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
   display: inline-block;
 }
 

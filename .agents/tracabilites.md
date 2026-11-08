@@ -2709,3 +2709,32 @@
   - Dictionnaire 276 clés : 📄 [`devis/assets/js/devis-i18n.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-i18n.js)
   - 6 Fichiers HTML 100% Localisés : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
   - Archive horodatée : 📦 [katech-site-08112026-1852.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1852.zip)
+
+---
+
+### Sous-Phase 45.2 : Résolution Définitive de la Casse des Montants en Arabe (Double Verrouillage CSS & HTML)
+
+- **Contexte & Audit Suite au Signalement d'ArchiSys3.0 :**  
+  ArchiSys3.0 a relevé que les montants et prix des options (notamment dans la Partie 2 du personnaliseur / configurateur) apparaissaient déformés en langue arabe, avec le signe `+` ou la devise `DZD` inversés par l'algorithme bidirectionnel et des décalages induits par des propriétés CSS contradictoires.
+- **Causes Racines Identifiées :**
+  1. Présence de déclarations `flex-direction: row-reverse` sur des conteneurs déjà sous `html[dir="rtl"]`, provoquant une double inversion erronée qui repoussait les cases à cocher à gauche et perturbait l'alignement naturel droite-gauche.
+  2. Absence de règle d'isolation bidirectionnelle LTR explicite sur `.option-price` dans la Partie 2 et dans le récapitulatif dynamique.
+- **Actions Réalisées :**
+  - **Élimination de la Double Inversion Flexbox :**
+    - Suppression de tous les `flex-direction: row-reverse` artificiels dans [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) pour laisser le moteur Flexbox W3C naturel opérer sous `dir="rtl"`.
+  - **Verrouillage CSS Universel de l'Isolation LTR :**
+    - Application de `direction: ltr !important; unicode-bidi: isolate !important; display: inline-block;` sur `.option-price`, `.price`, `.amount`, `.total-amount-dzd` et `.total-amount-centimes`.
+  - **Verrouillage HTML Natif :**
+    - Ajout de l'attribut `dir="ltr"` sur l'ensemble des balises `<div class="option-price" dir="ltr">` des 5 formulaires de devis (`solution-digitale.html`, `boutique-commerce.html`, `plateforme-entreprise.html`, `presence-professionnelle.html`, `configurateur-sur-mesure.html`) et sur les montants de la matrice d'accueil (`index.html`).
+  - **Sécurisation du Formateur des Centimes JS :**
+    - Modification de `formatCentimes()` dans [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js) avec encapsulation du chiffre dans `<bdi dir="ltr">${formatted}</bdi>` et rendu par `innerHTML`.
+    - Injection du tag `dir="ltr"` sur chaque ligne d'option active du récapitulatif.
+- **Résultats de Recette :**
+  - En langue arabe, les montants des options de la Partie 2 conservent un ordre LTR impeccable : le signe `+` reste fermement à gauche du chiffre et la devise `DZD` à droite (`+25 000 DZD`), sans aucune distorsion BiDi.
+  - La case à cocher se positionne naturellement à l'extrême droite, suivie du titre au centre et du montant à gauche.
+  - Les centimes en arabe s'affichent proprement sans inversion de la virgule décimale (`18,5 مليون سنتيم`).
+- **Livrables :**
+  - Feuille de styles corrigée : 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
+  - Calculateur sécurisé : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
+  - 6 Fichiers HTML verrouillés : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
+  - Plan Miroir Consolidé : 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)

@@ -49,7 +49,7 @@
         : millions.toFixed(1).replace(".", ",");
 
       if (lang === "ar") {
-        return formatted + " مليون سنتيم";
+        return `<bdi dir="ltr">${formatted}</bdi> مليون سنتيم`;
       } else if (lang === "en") {
         return formatted + " Million centimes";
       }
@@ -105,7 +105,7 @@
         // Ligne de base
         const baseRow = document.createElement("div");
         baseRow.className = "summary-row";
-        baseRow.innerHTML = `<span>${getBaseTitle()}</span><span class="price">${formatDZD(config.basePrice)}</span>`;
+        baseRow.innerHTML = `<span>${getBaseTitle()}</span><span class="price" dir="ltr">${formatDZD(config.basePrice)}</span>`;
         summaryRowsContainer.appendChild(baseRow);
 
         // Lignes options actives
@@ -114,7 +114,7 @@
           total += opt.price;
           const optRow = document.createElement("div");
           optRow.className = "summary-row item-active";
-          optRow.innerHTML = `<span>+ ${opt.name}</span><span class="price">${opt.price > 0 ? "+" + formatDZD(opt.price) : includedLabel}</span>`;
+          optRow.innerHTML = `<span>+ ${opt.name}</span><span class="price" dir="ltr">${opt.price > 0 ? "+" + formatDZD(opt.price) : includedLabel}</span>`;
           summaryRowsContainer.appendChild(optRow);
         });
       } else {
@@ -125,7 +125,7 @@
 
       // Mise à jour de l'affichage total
       if (totalDzdEl) totalDzdEl.textContent = formatDZD(total);
-      if (totalCentimesEl) totalCentimesEl.textContent = formatCentimes(total);
+      if (totalCentimesEl) totalCentimesEl.innerHTML = formatCentimes(total);
 
       // Sauvegarde dans le localStorage
       saveState(selected);

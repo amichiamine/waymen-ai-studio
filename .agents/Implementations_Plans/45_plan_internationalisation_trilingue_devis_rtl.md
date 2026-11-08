@@ -1,114 +1,112 @@
-# PLAN D'IMPLÉMENTATION — PHASE 45
+# PLAN D'IMPLÉMENTATION — PHASE 45 (CONSOLIDÉ)
 
-## Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`
+## Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/` & Résolution Définitive de l'Affichage des Montants
 
 **Directeur de Projet & Architecte Décideur :** ArchiSys3.0  
 **Tech Lead, Architecte & Consultant R&D :** AImi  
 **Date :** 08 Novembre 2026  
 **Branche :** `main`  
-**Statut :** 📋 **En attente de validation (Mode Plan)**  
-**Périmètre :** `c:\xampp\htdocs\ka-tech\devis/` (Moteur i18n Vanilla JS, Styles RTL & 6 Fichiers HTML)
+**Statut :** 📋 **En attente de validation par ArchiSys3.0 (Mode Plan)**  
+**Périmètre :** `c:\xampp\htdocs\ka-tech\devis/` (Moteur i18n Vanilla JS, Styles RTL, Isolation BiDi & Calculateurs)
 
 ---
 
-## 1. Contexte & Objectifs Stratégiques
+## 1. Contexte & Historique des Passes
 
-L'objectif est d'étendre la maturité de la suite commerciale autonome [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis) en lui conférant une **capacité trilingue intégrale et instantanée (Français, Anglais, Arabe avec support RTL natif)**, selon l'Option A validée par ArchiSys3.0.
-
-### Exigences Fondamentales Inviolables :
-
-1. **Autonomie & Zéro Dépendance :**
-   - Le moteur i18n doit être écrit en pur JavaScript Vanilla moderne (`devis/assets/js/devis-i18n.js`).
-   - Aucune bibliothèque externe (pas de React, pas d'i18next lourd, pas de serveur Node).
-2. **Fluidité Instantanée (0 ms) & Persistance :**
-   - Bascule de langue à la volée sur la page active sans rechargement de page.
-   - Mémorisation de la langue choisie dans `localStorage` (`devis_lang`).
-   - Inversion directionnelle native automatique : `dir="rtl"` et `lang="ar"` en Arabe, `dir="ltr"` en Français et Anglais.
-3. **Synchronisation avec le Calculateur Dynamique :**
-   - Le moteur `devis-calculator.js` doit être synchronisé avec la langue active :
-     - Les montants en lettres / centimes sont traduits (ex : _« 8,5 Millions de centimes »_ $\leftrightarrow$ _« 8.5 Million centimes »_ $\leftrightarrow$ _« 8.5 مليون سنتيم »_).
-     - Le message WhatsApp généré automatiquement est intégralement rédigé dans la langue sélectionnée.
-4. **Impression PDF A4 Localisée :**
-   - L'impression via `Ctrl + P` ou via le bouton dédié produit un devis propre dans la langue active avec mise en page RTL soignée en Arabe.
+1. **Passe Initiale (Livrable Phase 45) :** Mise en place du moteur Vanilla JS `devis-i18n.js`, injection du sélecteur `[ FR | EN | العربية ]`, bascule `dir="rtl"` et synchronisation de base.
+2. **Sous-Phase 45.1 (Complétude Exhaustive à 100%) :** Extension du dictionnaire à 276 clés uniques, couverture intégrale de chaque titre, description, puce, option et cellule de tableau sur les 6 fichiers HTML du dossier `devis/`.
+3. **Sous-Phase 45.2 (En Cours de Planification) :** Correction chirurgicale de la casse visuelle des montants en arabe constatée par ArchiSys3.0.
 
 ---
 
-## 2. Architecture Technique de l'Option A
+## 2. Diagnostic Technique & Cause Racine de la Casse des Montants en Arabe
 
+### Cause Racine N°1 : Double inversion Flexbox artificielle
+Dans [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) :
+```css
+html[dir="rtl"] .devis-header-top,
+html[dir="rtl"] .option-header,
+html[dir="rtl"] .summary-row,
+html[dir="rtl"] .pricing-pill,
+html[dir="rtl"] .option-card {
+  flex-direction: row-reverse; /* ❌ DOUBLE INVERSION */
+}
 ```
-devis/
-├── assets/
-│   ├── css/
-│   │   └── devis-style.css      ← Ajout des règles RTL, propriétés logiques & style du sélecteur de langue
-│   └── js/
-│       ├── devis-i18n.js        ← NOUVEAU : Dictionnaire trilingue (FR/EN/AR) + Moteur de traduction DOM
-│       └── devis-calculator.js  ← Enrichi : Support de la langue active pour le récapitulatif & WhatsApp
-└── [6 fichiers HTML]            ← Intégration du composant sélecteur [ FR | EN | العربية ] + attributs data-i18n
-```
+Sous `html[dir="rtl"]`, le moteur Flexbox standard inverse **déjà nativement** son axe de droite à gauche. L'ajout de `row-reverse` a causé une inversion redondante qui renvoie les cases à cocher à gauche et inverse les positions relatives des libellés et des prix.
+
+### Cause Racine N°2 : Conflit de l'algorithme Unicode BiDi (Bi-directional)
+En arabe, les phrases se lisent de droite à gauche, mais **les nombres et les montants s'écrivent et se lisent toujours de gauche à droite (LTR)**.  
+Sans isolation directionnelle stricte (`unicode-bidi: isolate;` et `<bdi dir="ltr">`), les chaînes mixtes (`+ 25 000 DZD`, `18,5 مليون سنتيم`) subissent des permutations anarchiques des caractères `+`, `,` et de la devise `DZD`.
 
 ---
 
-## 3. Découpage Chirurgical des Étapes d'Implémentation
+## 3. Découpage Chirurgical des Actions de la Sous-Phase 45.2
 
-### Étape 1 : Conception du Dictionnaire & Moteur `devis-i18n.js`
+### Action 1 : Purge des `row-reverse` Superflus dans `devis-style.css`
+- **Fichier :** 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
+- **Modifications :**
+  - Supprimer les déclarations `flex-direction: row-reverse` sur :
+    - `.devis-header-top`
+    - `.option-header`
+    - `.summary-row`
+    - `.pricing-pill`
+    - `.option-card`
+    - `.included-item`
+    - `.feature-points li`
+    - `.btn`
+  - Laisser le comportement natif Flexbox W3C opérer sous `dir="rtl"` : le point de départ (`start`) est naturellement à droite, la case à cocher est à droite, le texte se déroule vers la gauche, et les prix se calent proprement à l'extrémité gauche.
 
-- Création de [`devis/assets/js/devis-i18n.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-i18n.js) comprenant :
-  - Dictionnaire structuré couvrant l'ensemble du vocabulaire des 6 pages :
-    - Éléments transverses (en-têtes, boutons, mentions légales, récapitulatifs).
-    - Métadonnées des devis (titres, badges, descriptions).
-    - Libellés des options et modules additionnels.
-    - Libellés des 29 blocs du Grand Compositeur.
-  - Fonction `applyTranslations(lang)` :
-    - Balayage des éléments comportant l'attribut `data-i18n="cle"`.
-    - Mise à jour du texte (`textContent` ou `innerHTML` selon le besoin).
-    - Mise à jour des attributs `dir` et `lang` sur `<html>`.
-  - Émission d'un événement personnalisé `devis:langChanged` pour notifier le calculateur.
+### Action 2 : Verrouillage CSS de l'Isolation LTR sur les Montants & Prix
+- **Fichier :** 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
+- **Modifications :**
+  - Appliquer les règles d'isolation bidirectionnelle sur tous les sélecteurs de montants :
+    ```css
+    .price,
+    .option-price,
+    .amount,
+    .total-amount-dzd,
+    .total-amount-centimes {
+      direction: ltr;
+      unicode-bidi: isolate;
+      display: inline-block;
+      text-align: left;
+    }
+    ```
+  - En mode RTL, ces éléments conservent leur intégrité géométrique sans que le signe `+` ou la devise `DZD` ne soit déplacé à la fin.
 
-### Étape 2 : Adaptation CSS & Support RTL dans `devis-style.css`
-
-- Modification de [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) :
-  - Style du sélecteur de langue discret : conteneur pilule moderne avec boutons `FR | EN | العربية` et état actif.
-  - Support de la direction RTL :
-    - Inversion des marges et paddings directionnels (usage de `margin-inline-start/end`).
-    - Inversion de l'alignement des textes (`text-align: start`).
-    - Ajustement des cartes d'options et des cases à cocher en mode RTL.
-    - Prise en charge de l'impression PDF A4 en mode RTL.
-
-### Étape 3 : Synchronisation du Calculateur `devis-calculator.js`
-
-- Mise à jour de [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js) :
-  - Écoute de l'événement `devis:langChanged`.
-  - Formatage localisé des centimes en Français, Anglais et Arabe.
-  - Génération du message WhatsApp dans la langue active.
-
-### Étape 4 : Injection du Sélecteur et des Attributs dans les 6 Fichiers HTML
-
-- Intégration dans :
-  1. [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html) (Guide d'Orientation Client)
-  2. [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html)
-  3. [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html)
-  4. [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html)
-  5. [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html)
-  6. [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html)
-
----
-
-## 4. Matrice de Recette & Validation
-
-| Test                       | Critère de Succès                                                                             | Statut Attendu |
-| :------------------------- | :-------------------------------------------------------------------------------------------- | :------------: |
-| **Bascule Instantanée**    | Clic sur `العربية` ou `EN` traduit l'ensemble de la page sans recharger (0 ms).               |  🟢 Conforme   |
-| **Sens de Lecture RTL**    | En Arabe, `dir="rtl"` inverse les colonnes, boutons et cartes sans décalage visuel.           |  🟢 Conforme   |
-| **Persistance Langue**     | Rechargement de la page (`F5`) ou navigation entre devis conserve la langue choisie.          |  🟢 Conforme   |
-| **Calculateur & Centimes** | Les libellés du panneau sticky et l'estimation en centimes s'affichent dans la langue active. |  🟢 Conforme   |
-| **WhatsApp Localisé**      | Le clic sur WhatsApp ouvre un message rédigé dans la langue sélectionnée.                     |  🟢 Conforme   |
-| **Impression PDF A4**      | `Ctrl + P` génère un devis propre dans la langue active, y compris en Arabe RTL.              |  🟢 Conforme   |
+### Action 3 : Sécurisation du Formateur des Centimes dans `devis-calculator.js`
+- **Fichier :** 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
+- **Modifications :**
+  - Dans la fonction `formatCentimes(amountDZD)` :
+    - Encapsuler la valeur numérique formatée dans une balise `<bdi dir="ltr">${formatted}</bdi>` pour l'arabe :
+      ```javascript
+      if (lang === "ar") {
+        return `<bdi dir="ltr">${formatted}</bdi> مليون سنتيم`;
+      }
+      ```
+    - Utiliser `totalCentimesEl.innerHTML` au lieu de `textContent` pour rendre la balise d'isolation valide.
+  - Dans l'affichage des lignes récapitulatives dynamiques :
+    - Encapsuler le prix avec un tag d'isolation `<span class="price" dir="ltr">+ ${formatDZD(opt.price)}</span>`.
 
 ---
 
-## 5. Séquence Git & Livrables Prévus
+## 4. Matrice de Recette & Critères d'Acceptation
+
+| Élément | Comportement Attendu en Arabe (RTL) | Validation |
+| :--- | :--- | :---: |
+| **Cases à cocher (`.option-card`)** | Case à cocher située à l'extrême droite, libellé au centre, prix à gauche. | 🟢 Conforme |
+| **Prix unitaire (`.option-price`)** | Affichage strict LTR : `+25 000 DZD` (signe `+` à gauche, chiffres ordonnés). | 🟢 Conforme |
+| **Récapitulatif (`.summary-row`)** | Nom de l'option aligné à droite, montant aligné à gauche en LTR. | 🟢 Conforme |
+| **Total DZD (`.total-amount-dzd`)** | Chiffre en gros caractères LTR : `185 000 DZD`. | 🟢 Conforme |
+| **Total Centimes (`.total-amount-centimes`)** | Chiffre décimal stable : `18,5 مليون سنتيم` sans permutation de la virgule. | 🟢 Conforme |
+| **Boutons & Actions** | Icône et libellé orientés harmonieusement sans chevauchement. | 🟢 Conforme |
+
+---
+
+## 5. Séquence de Déploiement & Commit
 
 ```bash
-git add devis/
-git commit -m "feat(devis): internationalisation trilingue 360 (FR/EN/AR RTL) du dossier devis" -m "Co-Authored-By: AImi <aimi@archisys.tech>"
+git add devis/assets/css/devis-style.css devis/assets/js/devis-calculator.js .agents/
+git commit -m "fix(devis): retablissement flexbox natif et isolation bidi LTR des montants en arabe" -m "Co-Authored-By: AImi <aimi@antigravity.ai>"
+git pull --rebase origin main && git push origin main
 ```
