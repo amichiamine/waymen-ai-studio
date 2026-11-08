@@ -34,7 +34,11 @@ const STEPS: { status: OrderStatus; labelKey: string; icon: typeof Clock }[] = [
   { status: "delivered", labelKey: "track.step.delivered", icon: CheckCircle2 },
 ];
 
-export default function TrackOrder() {
+export default function TrackOrder({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { t, lang } = useI18n();
   const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
   const formatPrice = useFormatPrice();
@@ -101,7 +105,7 @@ export default function TrackOrder() {
   const systemPage = siteContent?.customPages?.find(
     (p) => p.isSystem && (p.systemKey === "track" || p.slug === "track"),
   );
-  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
   const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
   const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 

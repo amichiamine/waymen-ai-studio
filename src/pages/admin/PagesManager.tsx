@@ -249,7 +249,9 @@ export default function PagesManager() {
     try {
       await updateSiteContent({ customPages: pages });
       setIsDirty(false);
-      toast.success(t("common.saved") || "Pages et blocs enregistrés avec succès !");
+      toast.success(
+        "Modifications persistées avec succès dans la base de données SQLite locale (katech-data) !",
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erreur lors de la sauvegarde.";
       toast.error(msg);
@@ -535,18 +537,31 @@ export default function PagesManager() {
               </Button>
             </div>
 
-            {isDirty && (
-              <Badge variant="outline" className="text-amber-500 border-amber-500/40">
-                Modifications non enregistrées
+            {isDirty ? (
+              <Badge
+                variant="outline"
+                className="text-amber-500 border-amber-500/40 bg-amber-500/10 gap-1.5 py-1 px-2.5 text-xs font-semibold"
+              >
+                <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+                <span>Modifications non enregistrées</span>
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="text-emerald-500 border-emerald-500/40 bg-emerald-500/10 gap-1.5 py-1 px-2.5 text-xs font-semibold"
+              >
+                <span className="size-2 rounded-full bg-emerald-500" />
+                <span>Synchronisé SQLite (katech-data)</span>
               </Badge>
             )}
             <Button
               onClick={handleSave}
               disabled={saving || !isDirty}
               className="gap-2 font-semibold shadow-sm"
+              title="Persister immédiatement toutes les modifications dans la base SQLite locale"
             >
               <Save className="h-4 w-4" />
-              <span>{saving ? "Enregistrement..." : "Enregistrer"}</span>
+              <span>{saving ? "Sauvegarde SQLite..." : "Enregistrer en BD"}</span>
             </Button>
             <Button
               onClick={handleOpenCreatePage}
@@ -606,8 +621,8 @@ export default function PagesManager() {
 
       {activeStudioTab === "views" && studioViewMode === "canvas" && (
         <>
-          {/* Sélecteur de mode tactile / mobile / tablette (< 1024px) */}
-          <div className="flex lg:hidden items-center p-1 bg-muted/60 rounded-xl border border-border gap-1">
+          {/* Sélecteur de mode tactile / mobile / tablette (< 1024px) avec ancrage sticky */}
+          <div className="flex lg:hidden sticky top-2 z-30 shadow-md backdrop-blur-md bg-background/95 items-center p-1 rounded-xl border border-border gap-1 my-2">
             <button
               type="button"
               onClick={() => setMobileStudioView("tree")}
@@ -886,6 +901,8 @@ export default function PagesManager() {
                 onToggleRight={() => setRightCollapsed((prev) => !prev)}
                 isZenMode={isZenMode}
                 onToggleZen={handleToggleZen}
+                onCloseMobilePreview={() => setMobileStudioView("tree")}
+                onOpenMobileInspector={() => setMobileStudioView("inspector")}
               />
             </div>
 

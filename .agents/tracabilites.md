@@ -2794,10 +2794,10 @@
 - **Date :** 08/11/2026
 - **Contexte & Constat Initial :**  
   Suite à la livraison de la Phase 46, ArchiSys3.0 a identifié 4 angles morts majeurs :
-  1. *Couverture & Persistance :* Inquiétude légitime sur la persistance réelle en base SQLite des vues systèmes nouvellement ajoutées et risque d'écrasement lors du fetch asynchrone.
-  2. *Fidélité Réelle du Live Canvas :* Les vues systèmes affichaient un canevas vide lorsqu'aucun bloc composable n'y était encore ajouté, masquant le cœur applicatif de la vue (suivi de commande, configurateur, panier, etc.).
-  3. *Inspecteur de Blocs Incomplet & Valeurs Manquantes :* Lors de la sélection d'un bloc, certains champs et médias s'affichaient vides au lieu de refléter les données de démonstration ou le contenu global configuré.
-  4. *Édition Fine Trilingue Dégradée :* L'édition dans l'inspecteur écrasait les structures localisées (`{ fr, en, ar }`) en simples chaînes plates, et des blocs comme l'accordéon FAQ ne permettaient pas d'éditer le titre, sous-titre ni les questions/réponses de façon synchrone.
+  1. _Couverture & Persistance :_ Inquiétude légitime sur la persistance réelle en base SQLite des vues systèmes nouvellement ajoutées et risque d'écrasement lors du fetch asynchrone.
+  2. _Fidélité Réelle du Live Canvas :_ Les vues systèmes affichaient un canevas vide lorsqu'aucun bloc composable n'y était encore ajouté, masquant le cœur applicatif de la vue (suivi de commande, configurateur, panier, etc.).
+  3. _Inspecteur de Blocs Incomplet & Valeurs Manquantes :_ Lors de la sélection d'un bloc, certains champs et médias s'affichaient vides au lieu de refléter les données de démonstration ou le contenu global configuré.
+  4. _Édition Fine Trilingue Dégradée :_ L'édition dans l'inspecteur écrasait les structures localisées (`{ fr, en, ar }`) en simples chaînes plates, et des blocs comme l'accordéon FAQ ne permettaient pas d'éditer le titre, sous-titre ni les questions/réponses de façon synchrone.
 - **Décisions d'ArchiSys3.0 :**  
   Validation intégrale du Plan d'Implémentation Phase 47 (`47_plan_studio_360_fidelite_canvas_resolution_props_cascade_et_inspecteur_fin_trilingue.md`) :
   1. **Cascade de Résolution Universelle dans l'Inspecteur :** Si une propriété n'est pas encore surchargée dans `block.props`, elle résout automatiquement les valeurs par défaut issues de `siteContent`, `siteSettings` ou `defaultProps`.
@@ -2862,3 +2862,64 @@
 - **Livrables :**
   - Plan validé : 📄 [`47_plan_studio_360_fidelite_canvas_resolution_props_cascade_et_inspecteur_fin_trilingue.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/47_plan_studio_360_fidelite_canvas_resolution_props_cascade_et_inspecteur_fin_trilingue.md)
   - Archives horodatées : 📦 [katech-site-08112026-2036.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2036.zip) & 📦 [katech-data-08112026-2036.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2036.zip)
+
+---
+
+## Phase 48 : Grand Alignement Studio 360 : Vraies Vues Connectées, Contrats 1:1, Navigation Mobile & Persistance SQLite
+
+- **Date :** 08 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** Livré, testé et validé sur main
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 48 (`48_plan_grand_alignement_studio_360_vraies_vues_contrats_proprietes_navigation_mobile_et_badge_sqlite.md`).
+- **Contexte & Enjeux :**
+  Suite à la livraison de la Phase 47, ArchiSys3.0 a mis en lumière 5 exigences et angles d'amélioration critiques :
+  1. *Fermeture impossible en navigation tactile mobile/tablette :* Lorsque l'administrateur basculait sur l'aperçu Live en vue mobile ou tablette, les colonnes Structure et Inspecteur étaient masquées et aucun bouton ne permettait de fermer l'aperçu ou de revenir en arrière.
+  2. *Vraies Vues Connectées au lieu de maquettes simulées :* Le Live Canvas utilisait des cartes statiques factices avec faux numéros de commande en dur (`CMD-2026-9842`) au lieu de monter et exécuter les vrais composants de pages métier de la plateforme.
+  3. *Décalage de contrats de propriétés dans l'Inspecteur :* Des blocs tels que `projects_grid`, `profile_hero`, `skills_matrix`, `timeline`, `hero_banner` et `pricing_table` souffraient de disparités de clés (ex: écriture dans `p.projects` au lieu de `p.items`, absence de sélecteur de médias pour les images de réalisations et avatars, absence de contrôles trilingues fins).
+  4. *Disparition silencieuse des blocs catalogue en Canvas :* Les blocs `FlashSale`, `BestSellers` ou `UseChips` renvoyaient `null` lorsque la base de données ne contenait pas encore de produit avec promo ou usage, rendant le bloc invisible et impossible à sélectionner dans le Studio.
+  5. *Visibilité de la persistance SQLite locale :* Nécessité d'exposer clairement l'état de synchronisation avec la base SQLite locale (`katech-data`) et de proposer une persistance explicite immédiate.
+- **Actions Réalisées :**
+  - **Étape 48.1 (Bouton de Fermeture Dédié & Navigation Tactile Mobile/Tablette) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) : ajout des props `onCloseMobilePreview` et `onOpenMobileInspector`. Intégration dans la barre d'outils mobile (`lg:hidden`) d'un bouton de fermeture bien visible avec icône fléchée et du bouton raccourci d'inspection.
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Passage des callbacks `onCloseMobilePreview={() => setMobileStudioView("tree")}` et `onOpenMobileInspector={() => setMobileStudioView("inspector")}` à `<StudioLiveCanvas />`.
+      - Ancrage sticky du sélecteur mobile (`sticky top-2 z-30 shadow-md backdrop-blur-md bg-background/95`) pour qu'il demeure toujours visible lors du défilement tactile.
+  - **Étape 48.2 (Exécution Réelle des Vues Systèmes & Fallback Studio Catalogue) :**
+    - Modification des 6 pages métiers : [`TrackOrder.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/TrackOrder.tsx), [`Cart.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Cart.tsx), [`Builder.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Builder.tsx), [`Blog.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/Blog.tsx), [`CheckoutSuccess.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/CheckoutSuccess.tsx) et [`NotFound.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/NotFound.tsx) :
+      - Ajout de la prop optionnelle `suppressCustomBlocks?: boolean` (par défaut `false`).
+      - Neutralisation du double-rendu des blocs personnalisés lorsque ces pages sont encapsulées dans le Studio.
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Remplacement intégral des fausses cartes de simulation par le montage réel et connecté des 6 pages métier authentiques.
+      - Application dynamique de `pageBgClass` (fond sombre, surface, atténué ou dégradé) sur la surface de rendu du Canvas.
+    - Modification de [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) :
+      - Ajout de cartes d'aperçu de secours Studio pour `FlashSaleBlock`, `BestSellersBlock` et `UseChipsBlock` évitant le retour à `null` et garantissant que chaque bloc reste visible, inspectable et paramétrable même si le catalogue ne contient pas encore de produits correspondant aux filtres.
+  - **Étape 48.3 (Alignement 1:1 Exhaustif des Propriétés & Médias dans l'Inspecteur) :**
+    - Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) :
+      - `projects_grid` : titres et sous-titres trilingues, sélecteur de médias pour l'image de couverture de chaque projet, `LocalizedFieldEditor` pour les titres et descriptions, champs pour la catégorie, les tags, l'URL de démo et le code GitHub, avec double écriture `items` et `projects`.
+      - `profile_hero` : `MediaPickerField` pour l'avatar officiel (avec repli sur `archisysSignatureSrc`), switch d'activation du bouton PDF, champs pour GitHub, LinkedIn et Email, et champs trilingues pour nom, rôle, bio et disponibilité.
+      - `skills_matrix` : titres trilingues de section, gestion des catégories avec nom trilingue et liste de compétences séparées par virgules, avec double écriture `categories` et `groups`.
+      - `timeline` : titres trilingues de section, gestion des étapes chronologiques avec rôle et description trilingues, entreprise, période et tags.
+      - `hero_banner` : contrôles complets des boutons CTA principal et secondaire (libellés trilingues et URLs de redirection), switch d'affichage de l'image de hero.
+      - `pricing_table` : titres trilingues de section, gestion complète de chaque offre avec nom et période trilingues, tarif numérique, badge de mise en avant, liste des points forts et bouton CTA trilingue.
+      - `category_cards` & `latest_blog_posts` : ajout des champs trilingues de titre et sous-titre de section.
+  - **Étape 48.4 (Badge de Statut Persistance SQLite & Bouton d'Enregistrement Direct) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout d'un badge d'état temps réel : `🟢 Synchronisé SQLite (katech-data)` lorsque l'état est à jour, ou `🟡 Modifications non enregistrées` avec puce clignotante en cas de changement en attente.
+      - Bouton explicite "Enregistrer en BD" persistant immédiatement les pages et blocs dans SQLite locale via `updateSiteContent({ customPages: pages })`, avec confirmation toast détaillée.
+  - **Étape 48.5 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : 100% de parité trilingue FR/EN/AR (0 clé manquante, 0 erreur).
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : Conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : Compilation Vite réussie avec bundle de production complet (`dist/`).
+    - `bun run paqueter:data` : Nouvelle archive SQLite produite (`katech-data-08112026-2101.zip`).
+- **Résultats de Recette :**
+  - Sur mobile et tablette, un bouton tactile "Fermer l'aperçu" permet de quitter instantanément le plein écran du canvas pour revenir à l'arborescence des blocs ou à l'inspecteur, sans jamais être bloqué.
+  - Le Live Canvas exécute les vraies pages interactives de la plateforme pour le suivi de colis, le panier, le configurateur sur mesure, le blog, le succès de commande et la page 404.
+  - L'inspecteur expose 100% des propriétés réelles de chaque bloc avec sélecteurs de médias, boutons CTA personnalisables et édition trilingue fine.
+  - Le statut de persistance en base SQLite locale est explicite à tout instant et le bouton "Enregistrer en BD" garantit la souveraineté des données.
+- **Livrables :**
+  - Plan validé : 📄 [`48_plan_grand_alignement_studio_360_vraies_vues_contrats_proprietes_navigation_mobile_et_badge_sqlite.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/48_plan_grand_alignement_studio_360_vraies_vues_contrats_proprietes_navigation_mobile_et_badge_sqlite.md)
+  - Archives horodatées : 📦 [katech-site-08112026-2101.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2101.zip) & 📦 [katech-data-08112026-2101.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2101.zip)
+

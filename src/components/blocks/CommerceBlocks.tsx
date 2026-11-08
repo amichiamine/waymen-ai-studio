@@ -11,8 +11,10 @@ import { Reviews } from "@/components/Reviews";
 import { ContactCTA } from "@/components/ContactCTA";
 import { Ticker } from "@/components/Ticker";
 import { PromoBanner } from "@/components/PromoBanner";
+import { Badge } from "@/components/ui/badge";
 import { useSiteContent, useSiteSettings, useProductList } from "@/data-provider";
 import { useLocalize, type Localized } from "@/lib/i18n";
+import { catalogProducts } from "@/data/products";
 import type { BlockConfig } from "@/types/pages";
 import type { SiteContent } from "@/lib/site-content";
 
@@ -24,7 +26,24 @@ export function HeroBannerBlock({ config }: { config: BlockConfig }) {
 
 export function FlashSaleBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
-  if (siteContent.flashSale?.enabled === false) return null;
+  const { data: products } = useProductList();
+  if (siteContent.flashSale?.enabled === false && !config.props?.title) return null;
+  const hasSale = catalogProducts(products || []).some((p) => p.sale);
+  if (!hasSale) {
+    return (
+      <section className="container-page py-6">
+        <div className="border border-dashed border-amber-500/40 bg-amber-500/5 rounded-2xl p-6 text-center space-y-2">
+          <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30 text-xs font-semibold">
+            ⚡ Vente Flash (Aperçu Studio)
+          </Badge>
+          <p className="text-xs text-muted-foreground">
+            Ce bloc s'affichera automatiquement dès que des produits seront marqués en promotion
+            (sale: true) dans votre catalogue.
+          </p>
+        </div>
+      </section>
+    );
+  }
   return <FlashSale override={config.props as Partial<SiteContent["flashSale"]>} />;
 }
 
@@ -42,7 +61,21 @@ export function UseChipsBlock({ config }: { config: BlockConfig }) {
   const L = useLocalize();
   if (siteContent.useChips?.enabled === false && !config.props?.title) return null;
   const hasProductsWithUse = (products || []).some((p) => Array.isArray(p.use) && p.use.length > 0);
-  if (!hasProductsWithUse) return null;
+  if (!hasProductsWithUse) {
+    return (
+      <section className="container-page py-6">
+        <div className="border border-dashed border-muted-foreground/30 bg-muted/20 rounded-2xl p-6 text-center space-y-2">
+          <Badge variant="outline" className="text-xs font-semibold">
+            🏷️ Usages & Filtres Rapides (Aperçu Studio)
+          </Badge>
+          <p className="text-xs text-muted-foreground">
+            Ce bloc s'affichera dès que des usages (Gaming, Bureautique, Création...) seront
+            associés à des produits du catalogue.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   const rawTitle = config.props?.title;
   let displayTitle = "";
@@ -66,7 +99,24 @@ export function UseChipsBlock({ config }: { config: BlockConfig }) {
 
 export function BestSellersBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
-  if (siteContent.bestSellers?.enabled === false) return null;
+  const { data: products } = useProductList();
+  if (siteContent.bestSellers?.enabled === false && !config.props?.title) return null;
+  const hasBest = catalogProducts(products || []).some((p) => p.bestSeller);
+  if (!hasBest) {
+    return (
+      <section className="container-page py-6">
+        <div className="border border-dashed border-primary/40 bg-primary/5 rounded-2xl p-6 text-center space-y-2">
+          <Badge className="bg-primary/15 text-primary border-primary/30 text-xs font-semibold">
+            ⭐ Meilleures Ventes (Aperçu Studio)
+          </Badge>
+          <p className="text-xs text-muted-foreground">
+            Ce bloc s'affichera automatiquement dès que des produits seront marqués comme meilleures
+            ventes dans votre catalogue.
+          </p>
+        </div>
+      </section>
+    );
+  }
   return <BestSellers override={config.props as Partial<SiteContent["bestSellers"]>} />;
 }
 

@@ -246,7 +246,11 @@ function checkCompatibility(steps: BuilderStep[], picks: Record<string, BuilderP
 
 /* -------------------------------------------------------------------------- */
 
-export default function Builder() {
+export default function Builder({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { t } = useI18n();
   const L = useLocalize();
   const { user } = useAuth();
@@ -261,7 +265,7 @@ export default function Builder() {
   const systemPage = siteContent?.customPages?.find(
     (p) => p.isSystem && (p.systemKey === "builder" || p.slug === "builder"),
   );
-  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
   const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
   const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 

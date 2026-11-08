@@ -144,7 +144,11 @@ function CartLine({ product_id, quantity, onContribution, onQtyChange, onRemove 
   );
 }
 
-export default function Cart() {
+export default function Cart({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { t } = useI18n();
   const { cart, updateQty, removeFromCart } = useStore();
   const { validate: validateCoupon } = useCouponMutations();
@@ -153,7 +157,7 @@ export default function Cart() {
   const systemPage = siteContent?.customPages?.find(
     (p) => p.isSystem && (p.systemKey === "cart" || p.slug === "cart"),
   );
-  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
   const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
   const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 

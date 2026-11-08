@@ -9,7 +9,11 @@ import { renderBlock } from "@/components/blocks";
 
 const fmt = (n: number) => `⁦${n.toLocaleString("fr-FR")} DA⁩`;
 
-export default function CheckoutSuccess() {
+export default function CheckoutSuccess({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { t } = useI18n();
   const [params] = useSearchParams();
   const id = params.get("id") ?? undefined;
@@ -21,7 +25,7 @@ export default function CheckoutSuccess() {
   const systemPage = siteContent?.customPages?.find(
     (p) => p.isSystem && (p.systemKey === "checkout_success" || p.slug === "checkout-success"),
   );
-  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
   const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
   const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 

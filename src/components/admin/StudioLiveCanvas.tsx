@@ -16,13 +16,7 @@ import {
   Maximize2,
   Minimize2,
   PanelsTopLeft,
-  Truck,
-  Clock,
-  Package,
-  CheckCircle2,
-  ShoppingBag,
-  Cpu,
-  Newspaper,
+  ArrowLeft,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -33,6 +27,12 @@ import { getBlockMeta, BLOCK_COMPONENTS } from "@/components/blocks";
 import { BlockWrapper } from "@/components/blocks/BlockWrapper";
 import { useLocalize } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import TrackOrder from "@/pages/TrackOrder";
+import Cart from "@/pages/Cart";
+import Builder from "@/pages/Builder";
+import Blog from "@/pages/Blog";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import NotFound from "@/pages/NotFound";
 
 export type DeviceMode = "desktop" | "tablet" | "mobile";
 
@@ -52,11 +52,13 @@ interface StudioLiveCanvasProps {
   onToggleRight?: () => void;
   isZenMode?: boolean;
   onToggleZen?: () => void;
+  onCloseMobilePreview?: () => void;
+  onOpenMobileInspector?: () => void;
 }
 
 /**
- * ⚙️ Réplique visuelle représentative du cœur applicatif des Vues Systèmes
- * Permet à l'administrateur de voir la vraie page métier au centre de ses blocs personnalisés.
+ * ⚙️ Cœur applicatif réel et connecté des Vues Systèmes
+ * Exécute l'interface métier authentique (sans doublon de blocs) au centre de la vue Studio.
  */
 function SystemViewNativePreview({ page }: { page: CustomPageDefinition }) {
   const L = useLocalize();
@@ -80,237 +82,31 @@ function SystemViewNativePreview({ page }: { page: CustomPageDefinition }) {
   if (!systemKey) return null;
 
   return (
-    <div className="p-4 sm:p-6 bg-card border-y-2 border-dashed border-primary/40 my-3 rounded-xl shadow-xs space-y-4">
+    <div className="relative my-4 border-2 border-primary/30 rounded-2xl bg-card/60 shadow-sm overflow-hidden">
       {/* Badge d'identification du cœur fonctionnel */}
-      <div className="flex items-center justify-between pb-3 border-b border-border/60">
+      <div className="flex items-center justify-between p-3.5 bg-primary/5 border-b border-primary/20">
         <div className="flex items-center gap-2">
           <Badge className="bg-primary/10 text-primary border-primary/30 text-xs font-bold gap-1 py-1 px-2.5">
             <span className="size-2 rounded-full bg-primary animate-pulse" />
-            <span>Cœur Fonctionnel Natif : {L(page.title) || page.slug}</span>
+            <span>Cœur Fonctionnel Réel : {L(page.title) || page.slug}</span>
           </Badge>
           <span className="text-[11px] text-muted-foreground hidden sm:inline">
-            (Interface réelle générée par la plateforme)
+            (Interface interactive live de la plateforme)
           </span>
         </div>
         <Badge variant="outline" className="text-[10px] text-muted-foreground">
-          Emplacement dynamique
+          Cœur applicatif
         </Badge>
       </div>
 
-      {/* Rendu spécifique par vue métier */}
-      {systemKey === "track" && (
-        <div className="max-w-xl mx-auto space-y-4 py-2">
-          <div className="text-center space-y-1">
-            <div className="size-10 rounded-xl bg-primary/10 text-primary mx-auto flex items-center justify-center mb-1">
-              <Truck className="size-5" />
-            </div>
-            <h3 className="font-bold text-base">Suivre l'acheminement de mon colis</h3>
-            <p className="text-xs text-muted-foreground">
-              Saisissez votre référence de commande et numéro de téléphone
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-2 bg-muted/40 p-3 rounded-lg border">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground">N° Commande</span>
-              <div className="h-8 rounded bg-background border px-2.5 text-xs flex items-center font-mono">
-                CMD-2026-9842
-              </div>
-            </div>
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground">Téléphone</span>
-              <div className="h-8 rounded bg-background border px-2.5 text-xs flex items-center font-mono">
-                +213 555 12 34 56
-              </div>
-            </div>
-          </div>
-          <div className="p-3 rounded-lg border bg-background space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold border-b pb-2">
-              <span>Statut : En cours de livraison</span>
-              <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 text-[10px]">
-                Expédié
-              </Badge>
-            </div>
-            <div className="grid grid-cols-4 gap-1 text-center">
-              <div className="flex flex-col items-center gap-1">
-                <div className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px]">
-                  ✓
-                </div>
-                <span className="text-[10px] text-muted-foreground">Validée</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px]">
-                  ✓
-                </div>
-                <span className="text-[10px] text-muted-foreground">Préparée</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] animate-pulse">
-                  🚚
-                </div>
-                <span className="text-[10px] font-bold text-primary">Expédiée</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="size-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px]">
-                  4
-                </div>
-                <span className="text-[10px] text-muted-foreground">Livrée</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {systemKey === "cart" && (
-        <div className="max-w-2xl mx-auto space-y-4 py-2">
-          <div className="flex items-center justify-between pb-2 border-b">
-            <h3 className="font-bold text-base flex items-center gap-2">
-              <ShoppingBag className="size-4 text-primary" />
-              <span>Articles dans votre Panier</span>
-            </h3>
-            <Badge variant="outline" className="text-xs">
-              2 articles
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between p-2.5 rounded-lg border bg-background text-xs">
-              <div className="flex items-center gap-2.5">
-                <div className="size-10 rounded bg-muted flex items-center justify-center font-bold text-muted-foreground">
-                  PC
-                </div>
-                <div>
-                  <div className="font-bold">PC Portable Pro Gaming 16" QHD</div>
-                  <div className="text-muted-foreground text-[10px]">
-                    Core i7 · 32GB RAM · 1TB NVMe
-                  </div>
-                </div>
-              </div>
-              <div className="text-end font-bold text-primary">185 000 DZD</div>
-            </div>
-            <div className="flex items-center justify-between p-2.5 rounded-lg border bg-background text-xs">
-              <div className="flex items-center gap-2.5">
-                <div className="size-10 rounded bg-muted flex items-center justify-center font-bold text-muted-foreground">
-                  LCD
-                </div>
-                <div>
-                  <div className="font-bold">Écran Gaming 27" 165Hz IPS 1ms</div>
-                  <div className="text-muted-foreground text-[10px]">
-                    QHD 2560x1440 · FreeSync / G-Sync
-                  </div>
-                </div>
-              </div>
-              <div className="text-end font-bold text-primary">42 000 DZD</div>
-            </div>
-          </div>
-          <div className="p-3 rounded-lg border bg-muted/30 flex items-center justify-between text-xs font-bold">
-            <span className="text-muted-foreground">Total estimé avec livraison 58 wilayas :</span>
-            <span className="text-base text-primary">227 600 DZD</span>
-          </div>
-        </div>
-      )}
-
-      {systemKey === "builder" && (
-        <div className="max-w-2xl mx-auto space-y-4 py-2">
-          <div className="flex items-center justify-between pb-2 border-b">
-            <h3 className="font-bold text-base flex items-center gap-2">
-              <Cpu className="size-4 text-primary" />
-              <span>Configurateur PC sur Mesure (8 Étapes)</span>
-            </h3>
-            <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 text-xs">
-              100% Compatible
-            </Badge>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-2 text-xs">
-            <div className="p-2 border rounded bg-background flex items-center justify-between">
-              <span>1. Boîtier : Verre Trempé RGB</span>
-              <span className="font-bold text-primary">14 500 DZD</span>
-            </div>
-            <div className="p-2 border rounded bg-background flex items-center justify-between">
-              <span>2. Carte Mère : B760 DDR5</span>
-              <span className="font-bold text-primary">26 000 DZD</span>
-            </div>
-            <div className="p-2 border rounded bg-background flex items-center justify-between">
-              <span>3. CPU : Intel Core i5-14600KF</span>
-              <span className="font-bold text-primary">48 000 DZD</span>
-            </div>
-            <div className="p-2 border rounded bg-background flex items-center justify-between">
-              <span>4. RAM : 32GB DDR5 6000MHz</span>
-              <span className="font-bold text-primary">22 000 DZD</span>
-            </div>
-          </div>
-          <div className="p-3 rounded-lg border bg-background flex items-center justify-between text-xs font-bold">
-            <span>Total Configuration Sélectionnée :</span>
-            <span className="text-base text-primary">285 000 DZD</span>
-          </div>
-        </div>
-      )}
-
-      {systemKey === "blog" && (
-        <div className="max-w-2xl mx-auto space-y-4 py-2">
-          <div className="flex items-center justify-between pb-2 border-b">
-            <h3 className="font-bold text-base flex items-center gap-2">
-              <Newspaper className="size-4 text-primary" />
-              <span>Hub Blog & Actualités Tech</span>
-            </h3>
-            <span className="text-xs text-muted-foreground">Listing dynamique des articles</span>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-3 text-xs">
-            <div className="p-3 border rounded-xl bg-background space-y-1.5">
-              <Badge variant="secondary" className="text-[9px]">
-                Guide Matériel
-              </Badge>
-              <div className="font-bold text-sm">Guide d'Achat PC Portable 2026</div>
-              <p className="text-muted-foreground text-[11px] line-clamp-2">
-                Comment choisir les meilleurs composants selon vos besoins professionnels et gaming.
-              </p>
-            </div>
-            <div className="p-3 border rounded-xl bg-background space-y-1.5">
-              <Badge variant="secondary" className="text-[9px]">
-                Logistique
-              </Badge>
-              <div className="font-bold text-sm">Livraison Express 58 Wilayas</div>
-              <p className="text-muted-foreground text-[11px] line-clamp-2">
-                Découvrez notre réseau logistique en Cash-on-Delivery et nos garanties de suivi.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {systemKey === "checkout_success" && (
-        <div className="max-w-md mx-auto text-center space-y-3 py-4">
-          <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 mx-auto flex items-center justify-center">
-            <CheckCircle2 className="size-7" />
-          </div>
-          <h3 className="font-bold text-lg">Commande Confirmée avec Succès !</h3>
-          <p className="text-xs text-muted-foreground">
-            Votre commande #CMD-2026-8741 a été transmise à notre service logistique.
-          </p>
-          <div className="p-3 border rounded-lg bg-background text-xs text-start space-y-1 font-mono">
-            <div className="flex justify-between">
-              <span>Sous-total:</span>
-              <span>185 000 DZD</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Livraison:</span>
-              <span>Gratuite</span>
-            </div>
-            <div className="flex justify-between font-bold text-primary pt-1 border-t">
-              <span>Total Payé:</span>
-              <span>185 000 DZD</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {systemKey === "not_found" && (
-        <div className="max-w-md mx-auto text-center space-y-2 py-6">
-          <span className="text-5xl font-black text-muted-foreground/40 font-mono">404</span>
-          <h3 className="font-bold text-lg">Page Introuvable</h3>
-          <p className="text-xs text-muted-foreground">
-            La page demandée n'existe pas ou a été déplacée par l'administrateur.
-          </p>
-        </div>
-      )}
+      <div className="p-2 sm:p-4">
+        {systemKey === "track" && <TrackOrder suppressCustomBlocks />}
+        {systemKey === "cart" && <Cart suppressCustomBlocks />}
+        {systemKey === "builder" && <Builder suppressCustomBlocks />}
+        {systemKey === "blog" && <Blog suppressCustomBlocks />}
+        {systemKey === "checkout_success" && <CheckoutSuccess suppressCustomBlocks />}
+        {systemKey === "not_found" && <NotFound suppressCustomBlocks />}
+      </div>
     </div>
   );
 }
@@ -331,6 +127,8 @@ export function StudioLiveCanvas({
   onToggleRight,
   isZenMode,
   onToggleZen,
+  onCloseMobilePreview,
+  onOpenMobileInspector,
 }: StudioLiveCanvasProps) {
   const [device, setDevice] = useState<DeviceMode>("desktop");
   const [showSiteFrame, setShowSiteFrame] = useState(false);
@@ -385,6 +183,17 @@ export function StudioLiveCanvas({
     ? blocks.filter((b) => (b.style?.placement || "top") === "top")
     : blocks;
   const bottomBlocks = isSystemPage ? blocks.filter((b) => b.style?.placement === "bottom") : [];
+
+  const pageBgClass =
+    page?.layout?.pageBg === "dark"
+      ? "bg-[#0a0f1d] text-white"
+      : page?.layout?.pageBg === "surface"
+        ? "bg-card text-card-foreground"
+        : page?.layout?.pageBg === "muted"
+          ? "bg-muted/30 text-foreground"
+          : page?.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background text-foreground"
+            : "bg-background text-foreground";
 
   const renderSingleBlock = (block: BlockConfig, idx: number, total: number) => {
     const isSelected = selectedBlockId === block.id;
@@ -511,12 +320,42 @@ export function StudioLiveCanvas({
     <div className="flex flex-col h-full rounded-2xl border border-border bg-muted/20 overflow-hidden shadow-xs">
       {/* Barre d'outils du Canvas avec volets rétractables & Zen Mode */}
       <div className="flex items-center justify-between px-3 py-2 bg-card/90 border-b border-border backdrop-blur-md gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Bouton fermeture dédiée tactile mobile/tablette (< 1024px) */}
+          {onCloseMobilePreview && (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={onCloseMobilePreview}
+              className="lg:hidden h-7 text-xs font-bold gap-1 px-2.5 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 shrink-0"
+              title="Fermer l'aperçu et retourner à l'arborescence des blocs"
+            >
+              <ArrowLeft className="size-3.5 rtl:rotate-180" />
+              <span>Fermer</span>
+            </Button>
+          )}
+
+          {/* Raccourci vers inspecteur mobile si bloc sélectionné */}
+          {onOpenMobileInspector && selectedBlockId && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onOpenMobileInspector}
+              className="lg:hidden h-7 text-xs font-semibold gap-1 px-2 text-primary shrink-0"
+              title="Ouvrir l'inspecteur du bloc sélectionné"
+            >
+              <Settings className="size-3.5" />
+              <span>Inspecter</span>
+            </Button>
+          )}
+
           {onToggleLeft && (
             <Button
               size="icon"
               variant="outline"
-              className="size-7 rounded-md shrink-0 text-muted-foreground hover:text-foreground"
+              className="size-7 rounded-md shrink-0 text-muted-foreground hover:text-foreground hidden lg:flex"
               onClick={onToggleLeft}
               title={
                 leftCollapsed
@@ -646,7 +485,8 @@ export function StudioLiveCanvas({
       <div className="flex-1 overflow-y-auto p-2 sm:p-6 flex justify-center items-start bg-muted/15 max-w-full overflow-x-hidden">
         <div
           className={cn(
-            "w-full transition-all duration-300 ease-out bg-background min-h-[500px] box-border max-w-full",
+            "w-full transition-all duration-300 ease-out min-h-[500px] box-border max-w-full",
+            pageBgClass,
             getViewportWidth(),
             getDeviceSimulationClass(),
             device !== "desktop" &&

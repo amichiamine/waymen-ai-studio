@@ -15,7 +15,11 @@ const haystack = (v: Localized<string> | undefined): string =>
     .join(" ")
     .toLowerCase();
 
-export default function Blog() {
+export default function Blog({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const [q, setQ] = useState("");
   const { data: blogPosts, loading, error } = useBlogPostList();
   const { data: siteSettings } = useSiteSettings();
@@ -28,7 +32,7 @@ export default function Blog() {
   const systemPage = siteContent?.customPages?.find(
     (p) => p.isSystem && (p.systemKey === "blog" || p.slug === "blog"),
   );
-  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
   const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
   const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 

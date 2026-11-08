@@ -4,14 +4,18 @@ import { useI18n } from "@/lib/i18n";
 import { useSiteContent } from "@/data-provider";
 import { renderBlock } from "@/components/blocks";
 
-export default function NotFound() {
+export default function NotFound({
+  suppressCustomBlocks = false,
+}: {
+  suppressCustomBlocks?: boolean;
+} = {}) {
   const { t } = useI18n();
   const { data: siteContent } = useSiteContent();
 
   const systemPage = siteContent?.customPages?.find(
     (p) => p.isSystem && (p.systemKey === "not_found" || p.slug === "404"),
   );
-  const blocks = systemPage?.blocks?.filter((b) => b.enabled) || [];
+  const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
   const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
   const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
 
