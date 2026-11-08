@@ -17,9 +17,11 @@ import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import type { BlockConfig, BlockStyleConfig } from "@/types/pages";
 import type { Localized } from "@/lib/i18n";
 import { getBlockMeta } from "@/components/blocks/registry";
-import { useSiteContent } from "@/data-provider";
+import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import heroImg from "@/assets/hero-laptop.webp";
+import archisysBannerSrc from "@/assets/stacgate-archisys-banner.webp";
 
 interface BlockPropsEditorProps {
   block: BlockConfig;
@@ -36,6 +38,115 @@ function getPropStr(val: unknown): string {
   return "";
 }
 
+/**
+ * 🌐 Éditeur de champ localisé trilingue (FR / EN / AR) avec conservation de la parité
+ */
+interface LocalizedFieldEditorProps {
+  label: string;
+  value: unknown;
+  onChange: (val: Localized<string>) => void;
+  isTextarea?: boolean;
+  rows?: number;
+  placeholder?: string;
+  className?: string;
+}
+
+export function LocalizedFieldEditor({
+  label,
+  value,
+  onChange,
+  isTextarea = false,
+  rows = 2,
+  placeholder,
+  className,
+}: LocalizedFieldEditorProps) {
+  const [lang, setLang] = useState<"fr" | "en" | "ar">("fr");
+
+  const locObj: { fr: string; en: string; ar: string } =
+    typeof value === "object" && value !== null
+      ? {
+          fr: String((value as Record<string, unknown>).fr || ""),
+          en: String((value as Record<string, unknown>).en || ""),
+          ar: String((value as Record<string, unknown>).ar || ""),
+        }
+      : typeof value === "string"
+        ? { fr: value, en: value, ar: value }
+        : { fr: "", en: "", ar: "" };
+
+  const currentVal = locObj[lang] || "";
+
+  const handleChange = (newStr: string) => {
+    onChange({
+      ...locObj,
+      [lang]: newStr,
+    });
+  };
+
+  return (
+    <div className={cn("space-y-1", className)}>
+      <div className="flex items-center justify-between gap-1">
+        <Label className="text-xs font-semibold">{label} :</Label>
+        <div className="flex items-center rounded-md border border-border bg-muted/40 p-0.5 text-[10px] font-bold">
+          <button
+            type="button"
+            onClick={() => setLang("fr")}
+            className={cn(
+              "px-1.5 py-0.5 rounded transition-all",
+              lang === "fr"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            FR
+          </button>
+          <button
+            type="button"
+            onClick={() => setLang("en")}
+            className={cn(
+              "px-1.5 py-0.5 rounded transition-all",
+              lang === "en"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLang("ar")}
+            className={cn(
+              "px-1.5 py-0.5 rounded transition-all",
+              lang === "ar"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            العربية
+          </button>
+        </div>
+      </div>
+      {isTextarea ? (
+        <Textarea
+          rows={rows}
+          value={currentVal}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder={placeholder}
+          dir={lang === "ar" ? "rtl" : "ltr"}
+          className="text-xs"
+        />
+      ) : (
+        <Input
+          value={currentVal}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder={placeholder}
+          dir={lang === "ar" ? "rtl" : "ltr"}
+          className="h-8 text-xs"
+        />
+      )}
+    </div>
+  );
+}
+
 export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsEditorProps) {
   const p = block.props || {};
   const s = block.style || {};
@@ -50,6 +161,9 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
   }, [block.id, block.props]);
 
   const { data: siteContent } = useSiteContent();
+  const { data: siteSettings } = useSiteSettings();
+  const meta = getBlockMeta(block.type);
+  const defProps = (meta?.defaultProps as Record<string, unknown>) || {};
   const L = useLocalize();
 
   const updateProp = (key: string, value: unknown) => {
@@ -147,31 +261,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Arrière-plan de la section */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold">Arrière-plan de section :</Label>
@@ -190,31 +279,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1.5 px-2 text-xs font-semibold rounded-md border text-center transition-all truncate",
                     (s.bg || "transparent") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -308,31 +372,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Ombres portées & Élévation */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold">Ombre portée (Élévation) :</Label>
@@ -349,31 +388,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
                     (s.shadow || "none") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -410,31 +424,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Largeur maximale du conteneur */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold">Largeur max du contenu :</Label>
@@ -451,31 +440,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
                     (s.maxWidth || "full") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -512,31 +476,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Ancre HTML fluide */}
           <div className="space-y-1.5 pt-2 border-t border-border/40">
             <Label className="text-xs font-bold">Ancre HTML (Lien direct #) :</Label>
@@ -560,31 +499,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               onChange={(e) => updateStyle("customClassName", e.target.value)}
               className="h-7 text-xs font-mono"
             />
-          </div>
-
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* 🎛️ Sous-éléments Atomiques : Cartes & Grille (Phase 43) */}
@@ -616,31 +530,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
             </div>
           </div>
 
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Effet au survol des cartes */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold">Effet au survol (Cartes) :</Label>
@@ -659,31 +548,6 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   className={cn(
                     "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
                     (s.cardHover || "none") === item.key
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 📍 Emplacement dans la page (Vues systèmes & parcours) */}
-          <div className="space-y-1.5 pt-2 border-t border-border/40">
-            <Label className="text-xs font-bold">Emplacement dans la page :</Label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { key: "top", label: "En Haut (Avant le contenu)" },
-                { key: "bottom", label: "En Bas (Après le contenu)" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => updateStyle("placement", item.key)}
-                  className={cn(
-                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
-                    (s.placement || "top") === item.key
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
                   )}
@@ -783,49 +647,38 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {block.type === "hero_banner" && (
             <div className="space-y-3">
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Titre Ligne 1 :</Label>
-                  <Input
-                    value={getPropStr(p.title1) || L(siteContent.hero.title1) || ""}
-                    onChange={(e) => updateProp("title1", e.target.value)}
-                    placeholder="Plateforme E-Commerce"
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Titre Ligne 2 (Glow) :</Label>
-                  <Input
-                    value={getPropStr(p.title2) || L(siteContent.hero.title2) || ""}
-                    onChange={(e) => updateProp("title2", e.target.value)}
-                    placeholder="Nouvelle Génération"
-                    className="h-8 text-xs"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre / Slogan :</Label>
-                <Textarea
-                  rows={2}
-                  value={getPropStr(p.subtitle) || L(siteContent.hero.subtitle) || ""}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Boutique officielle avec livraison 58 wilayas..."
-                  className="text-xs"
+                <LocalizedFieldEditor
+                  label="Titre Ligne 1"
+                  value={p.title1 ?? siteContent.hero.title1}
+                  onChange={(val) => updateProp("title1", val)}
+                  placeholder="Plateforme E-Commerce"
+                />
+                <LocalizedFieldEditor
+                  label="Titre Ligne 2 (Glow)"
+                  value={p.title2 ?? siteContent.hero.title2}
+                  onChange={(val) => updateProp("title2", val)}
+                  placeholder="Nouvelle Génération"
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Badge d'accroche :</Label>
-                <Input
-                  value={getPropStr(p.badge) || L(siteContent.hero.badge) || ""}
-                  onChange={(e) => updateProp("badge", e.target.value)}
-                  placeholder="Offre spéciale"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Sous-titre / Slogan"
+                value={p.subtitle ?? siteContent.hero.subtitle}
+                onChange={(val) => updateProp("subtitle", val)}
+                isTextarea
+                rows={2}
+                placeholder="Boutique officielle avec livraison 58 wilayas..."
+              />
+              <LocalizedFieldEditor
+                label="Badge d'accroche"
+                value={p.badge ?? siteContent.hero.badge}
+                onChange={(val) => updateProp("badge", val)}
+                placeholder="Offre spéciale"
+              />
               <div className="space-y-1 pt-1">
                 <MediaPickerField
                   label="Image personnalisée du Hero"
                   description="Visuel principal d'illustration (laisser vide pour l'image officielle par défaut)"
-                  value={typeof p.imageSrc === "string" ? p.imageSrc : ""}
+                  value={typeof p.imageSrc === "string" && p.imageSrc ? p.imageSrc : heroImg}
                   onChange={(url) => updateProp("imageSrc", url)}
                 />
               </div>
@@ -836,24 +689,18 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {block.type === "flash_sale" && (
             <div className="space-y-3">
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Titre Promotionnel :</Label>
-                  <Input
-                    value={getPropStr(p.title) || L(siteContent.flashSale.title) || ""}
-                    onChange={(e) => updateProp("title", e.target.value)}
-                    placeholder="Offres de la semaine"
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Badge Flamme :</Label>
-                  <Input
-                    value={getPropStr(p.badge) || L(siteContent.flashSale.badge) || ""}
-                    onChange={(e) => updateProp("badge", e.target.value)}
-                    placeholder="VENTE FLASH"
-                    className="h-8 text-xs"
-                  />
-                </div>
+                <LocalizedFieldEditor
+                  label="Titre Promotionnel"
+                  value={p.title ?? siteContent.flashSale.title}
+                  onChange={(val) => updateProp("title", val)}
+                  placeholder="Offres de la semaine"
+                />
+                <LocalizedFieldEditor
+                  label="Badge Flamme"
+                  value={p.badge ?? siteContent.flashSale.badge}
+                  onChange={(val) => updateProp("badge", val)}
+                  placeholder="VENTE FLASH"
+                />
               </div>
               <div className="space-y-1 max-w-xs">
                 <Label className="text-xs font-semibold">
@@ -878,36 +725,28 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {/* C. MEILLEURES VENTES & PRODUITS PHARES */}
           {(block.type === "best_sellers" || block.type === "featured_tabs") && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre de la section :</Label>
-                <Input
-                  value={
-                    getPropStr(p.title) ||
-                    (block.type === "best_sellers"
-                      ? L(siteContent.bestSellers.title)
-                      : L(siteContent.featuredTabs.title)) ||
-                    ""
-                  }
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Nos Meilleurs Produits"
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre explicatif :</Label>
-                <Input
-                  value={
-                    getPropStr(p.subtitle) ||
-                    (block.type === "best_sellers"
-                      ? L(siteContent.bestSellers.subtitle)
-                      : L(siteContent.featuredTabs.subtitle)) ||
-                    ""
-                  }
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Sélectionnés par nos experts"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre de la section"
+                value={
+                  p.title ??
+                  (block.type === "best_sellers"
+                    ? siteContent.bestSellers.title
+                    : siteContent.featuredTabs.title)
+                }
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Nos Meilleurs Produits"
+              />
+              <LocalizedFieldEditor
+                label="Sous-titre explicatif"
+                value={
+                  p.subtitle ??
+                  (block.type === "best_sellers"
+                    ? siteContent.bestSellers.subtitle
+                    : siteContent.featuredTabs.subtitle)
+                }
+                onChange={(val) => updateProp("subtitle", val)}
+                placeholder="Sélectionnés par nos experts"
+              />
             </div>
           )}
 
@@ -915,35 +754,27 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {block.type === "why_us" && (
             <div className="space-y-3">
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Titre Ligne 1 :</Label>
-                  <Input
-                    value={getPropStr(p.title1) || L(siteContent.whyUs.title1) || ""}
-                    onChange={(e) => updateProp("title1", e.target.value)}
-                    placeholder="Pourquoi nous"
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Titre Ligne 2 :</Label>
-                  <Input
-                    value={getPropStr(p.title2) || L(siteContent.whyUs.title2) || ""}
-                    onChange={(e) => updateProp("title2", e.target.value)}
-                    placeholder="faire confiance"
-                    className="h-8 text-xs"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre / Argumentaire :</Label>
-                <Textarea
-                  rows={2}
-                  value={getPropStr(p.subtitle) || L(siteContent.whyUs.subtitle) || ""}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Garantie constructeur, livraison express, service client dédié..."
-                  className="text-xs"
+                <LocalizedFieldEditor
+                  label="Titre Ligne 1"
+                  value={p.title1 ?? siteContent.whyUs.title1}
+                  onChange={(val) => updateProp("title1", val)}
+                  placeholder="Pourquoi nous"
+                />
+                <LocalizedFieldEditor
+                  label="Titre Ligne 2"
+                  value={p.title2 ?? siteContent.whyUs.title2}
+                  onChange={(val) => updateProp("title2", val)}
+                  placeholder="faire confiance"
                 />
               </div>
+              <LocalizedFieldEditor
+                label="Sous-titre / Argumentaire"
+                value={p.subtitle ?? siteContent.whyUs.subtitle}
+                onChange={(val) => updateProp("subtitle", val)}
+                isTextarea
+                rows={2}
+                placeholder="Garantie constructeur, livraison express, service client dédié..."
+              />
 
               <div className="space-y-2 pt-2 border-t border-border/40">
                 <div className="flex items-center justify-between">
@@ -958,8 +789,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                       currentItems.push({
                         id: "w_" + Date.now(),
                         icon: "shield",
-                        title: "Nouvelle garantie",
-                        description: "Description de la garantie ou du service...",
+                        title: { fr: "Nouvelle garantie", en: "New guarantee", ar: "ضمان جديد" },
+                        description: {
+                          fr: "Description de la garantie ou du service...",
+                          en: "Description of guarantee or service...",
+                          ar: "وصف الضمان أو الخدمة...",
+                        },
                       });
                       updateProp("items", currentItems);
                     }}
@@ -970,56 +805,59 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   </Button>
                 </div>
 
-                {(Array.isArray(p.items) ? p.items : siteContent.whyUs?.items || []).map(
-                  (card: Record<string, unknown>, idx: number) => (
-                    <div
-                      key={(card.id as string) || idx}
-                      className="p-2.5 border rounded-lg bg-card/60 space-y-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <Input
-                          placeholder="Titre de la réassurance"
-                          value={getPropStr(card.title)}
-                          onChange={(e) => {
-                            const current = Array.isArray(p.items)
-                              ? [...p.items]
-                              : [...(siteContent.whyUs?.items || [])];
-                            current[idx] = { ...current[idx], title: e.target.value };
-                            updateProp("items", current);
-                          }}
-                          className="h-7 text-xs font-semibold flex-1"
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => {
-                            const current = Array.isArray(p.items)
-                              ? [...p.items]
-                              : [...(siteContent.whyUs?.items || [])];
-                            current.splice(idx, 1);
-                            updateProp("items", current);
-                          }}
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <Textarea
-                        rows={2}
-                        placeholder="Description de la réassurance..."
-                        value={getPropStr(card.description)}
-                        onChange={(e) => {
+                {(Array.isArray(p.items) && p.items.length > 0
+                  ? (p.items as Record<string, unknown>[])
+                  : (siteContent.whyUs?.items as Record<string, unknown>[]) || []
+                ).map((card: Record<string, unknown>, idx: number) => (
+                  <div
+                    key={(card.id as string) || idx}
+                    className="p-2.5 border rounded-lg bg-card/60 space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold text-primary">Carte #{idx + 1}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
                           const current = Array.isArray(p.items)
                             ? [...p.items]
                             : [...(siteContent.whyUs?.items || [])];
-                          current[idx] = { ...current[idx], description: e.target.value };
+                          current.splice(idx, 1);
                           updateProp("items", current);
                         }}
-                        className="text-xs"
-                      />
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                  ),
-                )}
+                    <LocalizedFieldEditor
+                      label="Titre réassurance"
+                      value={card.title}
+                      onChange={(val) => {
+                        const current = Array.isArray(p.items)
+                          ? [...p.items]
+                          : [...(siteContent.whyUs?.items || [])];
+                        current[idx] = { ...current[idx], title: val };
+                        updateProp("items", current);
+                      }}
+                      placeholder="Titre de la réassurance"
+                    />
+                    <LocalizedFieldEditor
+                      label="Description réassurance"
+                      value={card.description}
+                      onChange={(val) => {
+                        const current = Array.isArray(p.items)
+                          ? [...p.items]
+                          : [...(siteContent.whyUs?.items || [])];
+                        current[idx] = { ...current[idx], description: val };
+                        updateProp("items", current);
+                      }}
+                      isTextarea
+                      rows={2}
+                      placeholder="Description de la réassurance..."
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -1027,48 +865,36 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {/* E. REVIEWS / AVIS CLIENTS */}
           {block.type === "reviews_grid" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre de la section Avis :</Label>
-                <Input
-                  value={getPropStr(p.title) || L(siteContent.reviews.title) || ""}
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Ce que disent nos clients"
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre :</Label>
-                <Input
-                  value={getPropStr(p.subtitle) || L(siteContent.reviews.subtitle) || ""}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Avis vérifiés et retours d'expérience"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre de la section Avis"
+                value={p.title ?? siteContent.reviews.title}
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Ce que disent nos clients"
+              />
+              <LocalizedFieldEditor
+                label="Sous-titre"
+                value={p.subtitle ?? siteContent.reviews.subtitle}
+                onChange={(val) => updateProp("subtitle", val)}
+                placeholder="Avis vérifiés et retours d'expérience"
+              />
             </div>
           )}
 
           {/* F. CONTACT CTA */}
           {block.type === "contact_cta" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre d'accroche :</Label>
-                <Input
-                  value={getPropStr(p.title) || L(siteContent.contactCta.title) || ""}
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Besoin d'un conseil personnalisé ?"
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Texte explicatif :</Label>
-                <Input
-                  value={getPropStr(p.subtitle) || L(siteContent.contactCta.subtitle) || ""}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Nos techniciens répondent directement sur WhatsApp"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre d'accroche"
+                value={p.title ?? siteContent.contactCta.title}
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Besoin d'un conseil personnalisé ?"
+              />
+              <LocalizedFieldEditor
+                label="Texte explicatif"
+                value={p.subtitle ?? siteContent.contactCta.subtitle}
+                onChange={(val) => updateProp("subtitle", val)}
+                placeholder="Nos techniciens répondent directement sur WhatsApp"
+              />
             </div>
           )}
 
@@ -1386,71 +1212,126 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           )}
 
           {/* 5. FAQ ACCORDION */}
-          {block.type === "faq_accordion" && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold">Questions / Réponses de la FAQ :</Label>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const items = Array.isArray(p.items) ? [...p.items] : [];
-                    items.push({
-                      q: "Nouvelle question ?",
-                      a: "Réponse détaillée...",
-                    });
-                    updateProp("items", items);
-                  }}
-                  className="h-7 text-xs gap-1"
-                >
-                  <Plus className="h-3 w-3" />
-                  <span>Ajouter une question</span>
-                </Button>
-              </div>
+          {block.type === "faq_accordion" &&
+            (() => {
+              const currentFaqs =
+                Array.isArray(p.faqs) && p.faqs.length > 0
+                  ? (p.faqs as Record<string, unknown>[])
+                  : Array.isArray(p.items) && p.items.length > 0
+                    ? (p.items as Record<string, unknown>[])
+                    : (siteContent.contact?.faqs as unknown as Record<string, unknown>[]) || [];
 
-              {(Array.isArray(p.items) ? p.items : []).map(
-                (faq: Record<string, unknown>, idx: number) => (
-                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <Input
-                        placeholder="Question posée par le client"
-                        value={String(faq.q || "")}
-                        onChange={(e) => {
-                          const items = [...(p.items as Record<string, unknown>[])];
-                          items[idx] = { ...items[idx], q: e.target.value };
-                          updateProp("items", items);
-                        }}
-                        className="h-7 text-xs font-semibold"
-                      />
+              return (
+                <div className="space-y-3">
+                  <LocalizedFieldEditor
+                    label="Titre de la section FAQ"
+                    value={p.title ?? "Foire Aux Questions"}
+                    onChange={(val) => updateProp("title", val)}
+                    placeholder="Foire Aux Questions"
+                  />
+                  <LocalizedFieldEditor
+                    label="Sous-titre descriptif"
+                    value={
+                      p.subtitle ??
+                      "Retrouvez rapidement les réponses à vos questions les plus courantes."
+                    }
+                    onChange={(val) => updateProp("subtitle", val)}
+                    isTextarea
+                    rows={2}
+                    placeholder="Retrouvez rapidement les réponses à vos questions les plus courantes."
+                  />
+
+                  <div className="space-y-2 pt-2 border-t border-border/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold">
+                        Questions / Réponses de la FAQ :
+                      </Label>
                       <Button
-                        size="icon"
-                        variant="ghost"
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
-                          const items = [...(p.items as Record<string, unknown>[])];
-                          items.splice(idx, 1);
-                          updateProp("items", items);
+                          const next = [...currentFaqs];
+                          next.push({
+                            id: "faq_" + Date.now(),
+                            question: {
+                              fr: "Nouvelle question ?",
+                              en: "New question?",
+                              ar: "سؤال جديد؟",
+                            },
+                            answer: {
+                              fr: "Réponse détaillée...",
+                              en: "Detailed answer...",
+                              ar: "إجابة مفصلة...",
+                            },
+                          });
+                          updateProp("faqs", next);
+                          updateProp("items", next);
                         }}
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        className="h-7 text-xs gap-1"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Plus className="h-3 w-3" />
+                        <span>Ajouter une question</span>
                       </Button>
                     </div>
-                    <Textarea
-                      rows={2}
-                      placeholder="Réponse apportée..."
-                      value={String(faq.a || "")}
-                      onChange={(e) => {
-                        const items = [...(p.items as Record<string, unknown>[])];
-                        items[idx] = { ...items[idx], a: e.target.value };
-                        updateProp("items", items);
-                      }}
-                      className="text-xs"
-                    />
+
+                    {currentFaqs.map((faq: Record<string, unknown>, idx: number) => {
+                      const qVal = faq.question ?? faq.q ?? "";
+                      const aVal = faq.answer ?? faq.a ?? "";
+
+                      return (
+                        <div
+                          key={(faq.id as string) || idx}
+                          className="p-2.5 border rounded-lg bg-card/60 space-y-2"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] font-bold text-primary">
+                              Question #{idx + 1}
+                            </span>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => {
+                                const next = [...currentFaqs];
+                                next.splice(idx, 1);
+                                updateProp("faqs", next);
+                                updateProp("items", next);
+                              }}
+                              className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <LocalizedFieldEditor
+                            label="Question posée"
+                            value={qVal}
+                            onChange={(val) => {
+                              const next = [...currentFaqs];
+                              next[idx] = { ...next[idx], question: val, q: val };
+                              updateProp("faqs", next);
+                              updateProp("items", next);
+                            }}
+                            placeholder="Question posée par le client"
+                          />
+                          <LocalizedFieldEditor
+                            label="Réponse apportée"
+                            value={aVal}
+                            onChange={(val) => {
+                              const next = [...currentFaqs];
+                              next[idx] = { ...next[idx], answer: val, a: val };
+                              updateProp("faqs", next);
+                              updateProp("items", next);
+                            }}
+                            isTextarea
+                            rows={2}
+                            placeholder="Réponse apportée..."
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
-                ),
-              )}
-            </div>
-          )}
+                </div>
+              );
+            })()}
 
           {/* 6. CATEGORY CARDS / BLOG POSTS */}
           {(block.type === "category_cards" || block.type === "latest_blog_posts") && (
@@ -1469,16 +1350,20 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
 
           {/* 7. MARKDOWN SECTION */}
           {block.type === "markdown_section" && (
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">
-                Contenu Markdown (Titres, Images, Listes, Vidéos YouTube) :
-              </Label>
-              <Textarea
-                rows={5}
-                value={getPropStr(p.content)}
-                onChange={(e) => updateProp("content", e.target.value)}
+            <div className="space-y-3">
+              <LocalizedFieldEditor
+                label="Titre de la section Markdown (Optionnel)"
+                value={p.title}
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Titre de la section"
+              />
+              <LocalizedFieldEditor
+                label="Contenu Markdown (Titres, Images, Listes, Vidéos)"
+                value={p.content}
+                onChange={(val) => updateProp("content", val)}
+                isTextarea
+                rows={6}
                 placeholder="### Titre de votre section&#10;&#10;Votre contenu rédigé en Markdown..."
-                className="font-mono text-xs"
               />
             </div>
           )}
@@ -1489,214 +1374,185 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <MediaPickerField
                 label="Visuel de la Bannière Marque"
                 description="Sélectionnez l'image de bannière grand format (laisser vide pour la bannière officielle)"
-                value={typeof p.bannerSrc === "string" ? p.bannerSrc : ""}
+                value={
+                  typeof p.bannerSrc === "string" && p.bannerSrc ? p.bannerSrc : archisysBannerSrc
+                }
                 onChange={(url) => updateProp("bannerSrc", url)}
               />
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">
-                  Texte alternatif (Accessibilité & SEO) :
-                </Label>
-                <Input
-                  value={
-                    getPropStr(p.altText) || "StacGate Platform — Conçu et Validé par ArchiSys3.0"
-                  }
-                  onChange={(e) => updateProp("altText", e.target.value)}
-                  placeholder="Description textuelle du visuel"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Texte alternatif (Accessibilité & SEO)"
+                value={p.altText ?? "StacGate Platform — Conçu et Validé par ArchiSys3.0"}
+                onChange={(val) => updateProp("altText", val)}
+                placeholder="Description textuelle du visuel"
+              />
             </div>
           )}
 
           {/* 9. FEATURES GRID (NOUVEAU BLOC PHASE 41) */}
-          {block.type === "features_grid" && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre de la section :</Label>
-                <Input
-                  value={getPropStr(p.title)}
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Nos Atouts & Piliers Technologiques"
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre d'accompagnement :</Label>
-                <Textarea
-                  rows={2}
-                  value={getPropStr(p.subtitle)}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Une vision d'ingénierie sans compromis..."
-                  className="text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Nombre de colonnes :</Label>
-                <Select
-                  value={String(p.columns || "3")}
-                  onValueChange={(val) => updateProp("columns", Number(val))}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="3 colonnes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2">2 Colonnes</SelectItem>
-                    <SelectItem value="3">3 Colonnes (Standard)</SelectItem>
-                    <SelectItem value="4">4 Colonnes</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2 pt-2 border-t border-border/40">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold">Cartes de fonctionnalités :</Label>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const baseItems =
-                        Array.isArray(p.items) && p.items.length > 0
-                          ? p.items
-                          : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
-                              string,
-                              unknown
-                            >[]) || [];
-                      const items = [...baseItems];
-                      items.push({
-                        id: "f_" + Date.now(),
-                        icon: "rocket",
-                        title: "Nouvelle fonctionnalité",
-                        description: "Description concise de l'atout...",
-                        link: "",
-                      });
-                      updateProp("items", items);
-                    }}
-                    className="h-7 text-xs gap-1"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>Ajouter une carte</span>
-                  </Button>
-                </div>
-
-                {(Array.isArray(p.items) && p.items.length > 0
-                  ? p.items
+          {block.type === "features_grid" &&
+            (() => {
+              const baseItems =
+                Array.isArray(p.items) && p.items.length > 0
+                  ? (p.items as Record<string, unknown>[])
                   : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
                       string,
                       unknown
-                    >[]) || []
-                ).map((item: Record<string, unknown>, idx: number) => (
-                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <Select
-                        value={String(item.icon || "rocket")}
-                        onValueChange={(val) => {
-                          const baseItems =
-                            Array.isArray(p.items) && p.items.length > 0
-                              ? p.items
-                              : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
-                                  string,
-                                  unknown
-                                >[]) || [];
-                          const items = [...baseItems];
-                          items[idx] = { ...items[idx], icon: val };
-                          updateProp("items", items);
-                        }}
-                      >
-                        <SelectTrigger className="h-7 text-[11px] w-28">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="rocket">Fusée</SelectItem>
-                          <SelectItem value="shield">Bouclier</SelectItem>
-                          <SelectItem value="cpu">Processeur</SelectItem>
-                          <SelectItem value="zap">Éclair</SelectItem>
-                          <SelectItem value="sparkles">Étoiles</SelectItem>
-                          <SelectItem value="globe">Globe</SelectItem>
-                          <SelectItem value="code">Code</SelectItem>
-                          <SelectItem value="check">Validation</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    >[]) || [];
 
-                      <Input
-                        placeholder="Titre de la carte"
-                        value={getPropStr(item.title)}
-                        onChange={(e) => {
-                          const baseItems =
-                            Array.isArray(p.items) && p.items.length > 0
-                              ? p.items
-                              : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
-                                  string,
-                                  unknown
-                                >[]) || [];
-                          const items = [...baseItems];
-                          items[idx] = { ...items[idx], title: e.target.value };
-                          updateProp("items", items);
-                        }}
-                        className="h-7 text-xs font-semibold flex-1"
-                      />
+              return (
+                <div className="space-y-3">
+                  <LocalizedFieldEditor
+                    label="Titre de la section"
+                    value={p.title ?? defProps.title ?? "Nos Atouts & Piliers Technologiques"}
+                    onChange={(val) => updateProp("title", val)}
+                    placeholder="Nos Atouts & Piliers Technologiques"
+                  />
+                  <LocalizedFieldEditor
+                    label="Sous-titre d'accompagnement"
+                    value={
+                      p.subtitle ?? defProps.subtitle ?? "Une vision d'ingénierie sans compromis..."
+                    }
+                    onChange={(val) => updateProp("subtitle", val)}
+                    isTextarea
+                    rows={2}
+                    placeholder="Une vision d'ingénierie sans compromis..."
+                  />
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold">Nombre de colonnes :</Label>
+                    <Select
+                      value={String(p.columns || "3")}
+                      onValueChange={(val) => updateProp("columns", Number(val))}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="3 colonnes" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 Colonnes</SelectItem>
+                        <SelectItem value="3">3 Colonnes (Standard)</SelectItem>
+                        <SelectItem value="4">4 Colonnes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
+                  <div className="space-y-2 pt-2 border-t border-border/40">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold">Cartes de fonctionnalités :</Label>
                       <Button
-                        size="icon"
-                        variant="ghost"
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
-                          const baseItems =
-                            Array.isArray(p.items) && p.items.length > 0
-                              ? p.items
-                              : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
-                                  string,
-                                  unknown
-                                >[]) || [];
                           const items = [...baseItems];
-                          items.splice(idx, 1);
+                          items.push({
+                            id: "f_" + Date.now(),
+                            icon: "rocket",
+                            title: {
+                              fr: "Nouvelle fonctionnalité",
+                              en: "New feature",
+                              ar: "ميزة جديدة",
+                            },
+                            description: {
+                              fr: "Description concise de l'atout...",
+                              en: "Concise description...",
+                              ar: "وصف موجز للميزة...",
+                            },
+                            link: "",
+                          });
                           updateProp("items", items);
                         }}
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        className="h-7 text-xs gap-1"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Plus className="h-3 w-3" />
+                        <span>Ajouter une carte</span>
                       </Button>
                     </div>
 
-                    <Textarea
-                      rows={2}
-                      placeholder="Description de la fonctionnalité..."
-                      value={getPropStr(item.description)}
-                      onChange={(e) => {
-                        const baseItems =
-                          Array.isArray(p.items) && p.items.length > 0
-                            ? p.items
-                            : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
-                                string,
-                                unknown
-                              >[]) || [];
-                        const items = [...baseItems];
-                        items[idx] = { ...items[idx], description: e.target.value };
-                        updateProp("items", items);
-                      }}
-                      className="text-xs"
-                    />
+                    {baseItems.map((item: Record<string, unknown>, idx: number) => (
+                      <div
+                        key={(item.id as string) || idx}
+                        className="p-2.5 border rounded-lg bg-card/60 space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <Select
+                            value={String(item.icon || "rocket")}
+                            onValueChange={(val) => {
+                              const items = [...baseItems];
+                              items[idx] = { ...items[idx], icon: val };
+                              updateProp("items", items);
+                            }}
+                          >
+                            <SelectTrigger className="h-7 text-[11px] w-28">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="rocket">Fusée</SelectItem>
+                              <SelectItem value="shield">Bouclier</SelectItem>
+                              <SelectItem value="cpu">Processeur</SelectItem>
+                              <SelectItem value="zap">Éclair</SelectItem>
+                              <SelectItem value="sparkles">Étoiles</SelectItem>
+                              <SelectItem value="globe">Globe</SelectItem>
+                              <SelectItem value="code">Code</SelectItem>
+                              <SelectItem value="check">Validation</SelectItem>
+                            </SelectContent>
+                          </Select>
 
-                    <Input
-                      placeholder="Lien d'action (optionnel, ex: /catalogue)"
-                      value={String(item.link || "")}
-                      onChange={(e) => {
-                        const baseItems =
-                          Array.isArray(p.items) && p.items.length > 0
-                            ? p.items
-                            : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
-                                string,
-                                unknown
-                              >[]) || [];
-                        const items = [...baseItems];
-                        items[idx] = { ...items[idx], link: e.target.value };
-                        updateProp("items", items);
-                      }}
-                      className="h-7 text-xs font-mono"
-                    />
+                          <span className="text-[11px] font-bold text-primary flex-1">
+                            Carte #{idx + 1}
+                          </span>
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => {
+                              const items = [...baseItems];
+                              items.splice(idx, 1);
+                              updateProp("items", items);
+                            }}
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+
+                        <LocalizedFieldEditor
+                          label="Titre de la carte"
+                          value={item.title}
+                          onChange={(val) => {
+                            const items = [...baseItems];
+                            items[idx] = { ...items[idx], title: val };
+                            updateProp("items", items);
+                          }}
+                          placeholder="Titre de la carte"
+                        />
+
+                        <LocalizedFieldEditor
+                          label="Description"
+                          value={item.description}
+                          onChange={(val) => {
+                            const items = [...baseItems];
+                            items[idx] = { ...items[idx], description: val };
+                            updateProp("items", items);
+                          }}
+                          isTextarea
+                          rows={2}
+                          placeholder="Description de la fonctionnalité..."
+                        />
+
+                        <Input
+                          placeholder="Lien d'action (optionnel, ex: /catalogue)"
+                          value={String(item.link || "")}
+                          onChange={(e) => {
+                            const items = [...baseItems];
+                            items[idx] = { ...items[idx], link: e.target.value };
+                            updateProp("items", items);
+                          }}
+                          className="h-7 text-xs font-mono"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              );
+            })()}
 
           {/* 10. PRICING TABLE (NOUVEAU BLOC PHASE 41) */}
           {block.type === "pricing_table" && (
@@ -1936,26 +1792,21 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {/* 11. QUOTE STAR (NOUVEAU BLOC PHASE 41) */}
           {block.type === "quote_star" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Texte du témoignage / Citation :</Label>
-                <Textarea
-                  rows={3}
-                  value={getPropStr(p.quote)}
-                  onChange={(e) => updateProp("quote", e.target.value)}
-                  placeholder="« Un travail d'ingénierie exemplaire et une fiabilité totale. »"
-                  className="text-xs italic"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Texte du témoignage / Citation"
+                value={p.quote}
+                onChange={(val) => updateProp("quote", val)}
+                isTextarea
+                rows={3}
+                placeholder="« Un travail d'ingénierie exemplaire et une fiabilité totale. »"
+              />
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Nom de l'auteur :</Label>
-                  <Input
-                    value={String(p.author || "")}
-                    onChange={(e) => updateProp("author", e.target.value)}
-                    placeholder="Dr. Salim B."
-                    className="h-8 text-xs font-semibold"
-                  />
-                </div>
+                <LocalizedFieldEditor
+                  label="Nom de l'auteur"
+                  value={p.author}
+                  onChange={(val) => updateProp("author", val)}
+                  placeholder="Dr. Salim B."
+                />
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Note Étoiles (1-5) :</Label>
                   <Select
@@ -1973,15 +1824,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   </Select>
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Fonction & Entreprise :</Label>
-                <Input
-                  value={getPropStr(p.role)}
-                  onChange={(e) => updateProp("role", e.target.value)}
-                  placeholder="Directeur des Systèmes d'Information"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Fonction & Entreprise"
+                value={p.role}
+                onChange={(val) => updateProp("role", val)}
+                placeholder="Directeur des Systèmes d'Information"
+              />
               <MediaPickerField
                 label="Photo ou Avatar de l'auteur"
                 description="Visuel de portrait (laisser vide pour les initiales)"
@@ -1995,30 +1843,27 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {/* 12. FULL WIDTH BANNER (NOUVEAU BLOC PHASE 41) */}
           {block.type === "full_width_banner" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre de la bannière :</Label>
-                <Input
-                  value={getPropStr(p.title)}
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Construisez votre Écosystème Haute Performance"
-                  className="h-8 text-xs font-bold"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre descriptif :</Label>
-                <Textarea
-                  rows={2}
-                  value={getPropStr(p.subtitle)}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Une solution technologique souveraine et modulaire..."
-                  className="text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre de la bannière"
+                value={p.title}
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Construisez votre Écosystème Haute Performance"
+              />
+              <LocalizedFieldEditor
+                label="Sous-titre descriptif"
+                value={p.subtitle}
+                onChange={(val) => updateProp("subtitle", val)}
+                isTextarea
+                rows={2}
+                placeholder="Une solution technologique souveraine et modulaire..."
+              />
 
               <MediaPickerField
                 label="Image d'arrière-plan de la bannière"
-                description="Image panoramique haute définition"
-                value={typeof p.bannerSrc === "string" ? p.bannerSrc : ""}
+                description="Image panoramique haute définition (laisser vide pour la bannière par défaut)"
+                value={
+                  typeof p.bannerSrc === "string" && p.bannerSrc ? p.bannerSrc : archisysBannerSrc
+                }
                 onChange={(url) => updateProp("bannerSrc", url)}
               />
 
@@ -2040,13 +1885,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-1">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Bouton CTA Principal :</Label>
-                  <Input
-                    value={getPropStr(p.primaryCtaText)}
-                    onChange={(e) => updateProp("primaryCtaText", e.target.value)}
+                <div className="space-y-2">
+                  <LocalizedFieldEditor
+                    label="Bouton CTA Principal"
+                    value={p.primaryCtaText}
+                    onChange={(val) => updateProp("primaryCtaText", val)}
                     placeholder="Découvrir"
-                    className="h-7 text-xs"
                   />
                   <Input
                     value={String(p.primaryCtaLink || "")}
@@ -2055,13 +1899,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                     className="h-7 text-xs font-mono"
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Bouton CTA Secondaire :</Label>
-                  <Input
-                    value={getPropStr(p.secondaryCtaText)}
-                    onChange={(e) => updateProp("secondaryCtaText", e.target.value)}
+                <div className="space-y-2">
+                  <LocalizedFieldEditor
+                    label="Bouton CTA Secondaire"
+                    value={p.secondaryCtaText}
+                    onChange={(val) => updateProp("secondaryCtaText", val)}
                     placeholder="Nous contacter"
-                    className="h-7 text-xs"
                   />
                   <Input
                     value={String(p.secondaryCtaLink || "")}
@@ -2131,62 +1974,53 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {block.type === "builder_teaser" && (
             <div className="space-y-3">
               <div className="grid gap-2 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Titre principal :</Label>
-                  <Input
-                    value={getPropStr(p.title) || L(siteContent.builderTeaser?.title) || ""}
-                    onChange={(e) => updateProp("title", e.target.value)}
-                    placeholder="Concevez votre PC sur Mesure"
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Badge d'accroche :</Label>
-                  <Input
-                    value={getPropStr(p.badge) || L(siteContent.builderTeaser?.badge) || ""}
-                    onChange={(e) => updateProp("badge", e.target.value)}
-                    placeholder="Configurateur 3D"
-                    className="h-8 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre / Description :</Label>
-                <Textarea
-                  rows={2}
-                  value={getPropStr(p.subtitle) || L(siteContent.builderTeaser?.subtitle) || ""}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Choisissez chaque composant selon vos besoins..."
-                  className="text-xs"
+                <LocalizedFieldEditor
+                  label="Titre principal"
+                  value={p.title ?? siteContent.builderTeaser?.title}
+                  onChange={(val) => updateProp("title", val)}
+                  placeholder="Concevez votre PC sur Mesure"
+                />
+                <LocalizedFieldEditor
+                  label="Badge d'accroche"
+                  value={p.badge ?? siteContent.builderTeaser?.badge}
+                  onChange={(val) => updateProp("badge", val)}
+                  placeholder="Configurateur 3D"
                 />
               </div>
 
+              <LocalizedFieldEditor
+                label="Sous-titre / Description"
+                value={p.subtitle ?? siteContent.builderTeaser?.subtitle}
+                onChange={(val) => updateProp("subtitle", val)}
+                isTextarea
+                rows={2}
+                placeholder="Choisissez chaque composant selon vos besoins..."
+              />
+
               <MediaPickerField
                 label="Image d'arrière-plan du teaser"
-                description="Image de fond haute résolution pour le teaser du configurateur"
-                value={typeof p.bannerSrc === "string" ? p.bannerSrc : ""}
+                description="Image de fond haute résolution pour le teaser du configurateur (laisser vide pour la bannière par défaut)"
+                value={
+                  typeof p.bannerSrc === "string" && p.bannerSrc ? p.bannerSrc : archisysBannerSrc
+                }
                 onChange={(url) => updateProp("bannerSrc", url)}
               />
 
               <div className="grid grid-cols-2 gap-2 pt-1">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Texte du bouton CTA :</Label>
-                  <Input
-                    value={
-                      getPropStr((p.cta as Record<string, unknown>)?.label) ||
-                      getPropStr(p.ctaLabel) ||
-                      L(siteContent.builderTeaser?.cta?.label) ||
-                      ""
-                    }
-                    onChange={(e) => {
-                      const cta = (p.cta as Record<string, unknown>) || {};
-                      updateProp("cta", { ...cta, label: e.target.value });
-                    }}
-                    placeholder="Lancer le configurateur"
-                    className="h-7 text-xs"
-                  />
-                </div>
+                <LocalizedFieldEditor
+                  label="Texte du bouton CTA"
+                  value={
+                    (p.cta as Record<string, unknown>)?.label ??
+                    p.ctaLabel ??
+                    siteContent.builderTeaser?.cta?.label
+                  }
+                  onChange={(val) => {
+                    const cta = (p.cta as Record<string, unknown>) || {};
+                    updateProp("cta", { ...cta, label: val });
+                    updateProp("ctaLabel", val);
+                  }}
+                  placeholder="Lancer le configurateur"
+                />
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Lien URL du CTA :</Label>
                   <Input
@@ -2199,9 +2033,10 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                     onChange={(e) => {
                       const cta = (p.cta as Record<string, unknown>) || {};
                       updateProp("cta", { ...cta, href: e.target.value });
+                      updateProp("ctaHref", e.target.value);
                     }}
                     placeholder="/builder"
-                    className="h-7 text-xs font-mono"
+                    className="h-8 text-xs font-mono"
                   />
                 </div>
               </div>
@@ -2211,198 +2046,179 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {/* 15. COMPANY HISTORY (PHASE 43) */}
           {block.type === "company_history" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre Historique :</Label>
-                <Input
-                  value={getPropStr(p.historyTitle) || L(siteContent.about?.historyTitle) || ""}
-                  onChange={(e) => updateProp("historyTitle", e.target.value)}
-                  placeholder="Notre Histoire"
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Corps du texte Historique :</Label>
-                <Textarea
-                  rows={4}
-                  value={getPropStr(p.historyBody) || L(siteContent.about?.historyBody) || ""}
-                  onChange={(e) => updateProp("historyBody", e.target.value)}
-                  placeholder="Fondée avec la volonté d'offrir des solutions souveraines..."
-                  className="text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre Historique"
+                value={p.historyTitle ?? siteContent.about?.historyTitle}
+                onChange={(val) => updateProp("historyTitle", val)}
+                placeholder="Notre Histoire"
+              />
+              <LocalizedFieldEditor
+                label="Corps du texte Historique"
+                value={p.historyBody ?? siteContent.about?.historyBody}
+                onChange={(val) => updateProp("historyBody", val)}
+                isTextarea
+                rows={4}
+                placeholder="Fondée avec la volonté d'offrir des solutions souveraines..."
+              />
 
-              <div className="space-y-1 pt-2 border-t border-border/40">
-                <Label className="text-xs font-semibold">Titre Mission :</Label>
-                <Input
-                  value={getPropStr(p.missionTitle) || L(siteContent.about?.missionTitle) || ""}
-                  onChange={(e) => updateProp("missionTitle", e.target.value)}
+              <div className="pt-2 border-t border-border/40 space-y-3">
+                <LocalizedFieldEditor
+                  label="Titre Mission"
+                  value={p.missionTitle ?? siteContent.about?.missionTitle}
+                  onChange={(val) => updateProp("missionTitle", val)}
                   placeholder="Notre Mission"
-                  className="h-8 text-xs"
                 />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Corps du texte Mission :</Label>
-                <Textarea
+                <LocalizedFieldEditor
+                  label="Corps du texte Mission"
+                  value={p.missionBody ?? siteContent.about?.missionBody}
+                  onChange={(val) => updateProp("missionBody", val)}
+                  isTextarea
                   rows={4}
-                  value={getPropStr(p.missionBody) || L(siteContent.about?.missionBody) || ""}
-                  onChange={(e) => updateProp("missionBody", e.target.value)}
                   placeholder="Rendre la haute technologie accessible et durable..."
-                  className="text-xs"
                 />
               </div>
             </div>
           )}
 
           {/* 16. VALUES GRID (PHASE 43) */}
-          {block.type === "values_grid" && (
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold">Cartes de Valeurs d'Entreprise :</Label>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const baseValues =
-                        Array.isArray(p.values) && p.values.length > 0
-                          ? p.values
-                          : (siteContent.about?.values as Record<string, unknown>[]) || [];
-                      const values = [...baseValues];
-                      values.push({
-                        id: "val_" + Date.now(),
-                        icon: "shield",
-                        title: { fr: "Nouvelle Valeur", en: "New Value", ar: "قيمة جديدة" },
-                        description: {
-                          fr: "Description de la valeur d'entreprise...",
-                          en: "Company value description...",
-                          ar: "وصف قيمة الشركة...",
-                        },
-                      });
-                      updateProp("values", values);
-                    }}
-                    className="h-7 text-xs gap-1"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>Ajouter une valeur</span>
-                  </Button>
-                </div>
-
-                {(Array.isArray(p.values) && p.values.length > 0
+          {block.type === "values_grid" &&
+            (() => {
+              const baseValues =
+                Array.isArray(p.values) && p.values.length > 0
                   ? (p.values as Record<string, unknown>[])
-                  : (siteContent.about?.values as Record<string, unknown>[]) || []
-                ).map((valItem: Record<string, unknown>, idx: number) => (
-                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <Select
-                        value={String(valItem.icon || "shield")}
-                        onValueChange={(val) => {
-                          const base =
-                            Array.isArray(p.values) && p.values.length > 0
-                              ? [...p.values]
-                              : [
-                                  ...((siteContent.about?.values as Record<string, unknown>[]) ||
-                                    []),
-                                ];
-                          base[idx] = { ...valItem, icon: val };
-                          updateProp("values", base);
-                        }}
-                      >
-                        <SelectTrigger className="h-7 text-xs w-44">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="shield">🛡️ Bouclier (Garantie)</SelectItem>
-                          <SelectItem value="truck">🚚 Camion (Livraison)</SelectItem>
-                          <SelectItem value="headphones">🎧 Casque (Support)</SelectItem>
-                          <SelectItem value="award">🏆 Trophée (Excellence)</SelectItem>
-                          <SelectItem value="star">⭐ Étoile (Qualité)</SelectItem>
-                          <SelectItem value="heart">❤️ Cœur (Passion)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  : (siteContent.about?.values as Record<string, unknown>[]) || [];
+
+              return (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold">
+                        Cartes de Valeurs d'Entreprise :
+                      </Label>
                       <Button
                         size="sm"
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => {
-                          const base =
-                            Array.isArray(p.values) && p.values.length > 0
-                              ? [...p.values]
-                              : [
-                                  ...((siteContent.about?.values as Record<string, unknown>[]) ||
-                                    []),
-                                ];
-                          base.splice(idx, 1);
-                          updateProp("values", base);
+                          const values = [...baseValues];
+                          values.push({
+                            id: "val_" + Date.now(),
+                            icon: "shield",
+                            title: { fr: "Nouvelle Valeur", en: "New Value", ar: "قيمة جديدة" },
+                            description: {
+                              fr: "Description de la valeur d'entreprise...",
+                              en: "Company value description...",
+                              ar: "وصف قيمة الشركة...",
+                            },
+                          });
+                          updateProp("values", values);
                         }}
-                        className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                        className="h-7 text-xs gap-1"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Plus className="h-3 w-3" />
+                        <span>Ajouter une valeur</span>
                       </Button>
                     </div>
 
-                    <Input
-                      value={getPropStr(valItem.title)}
-                      onChange={(e) => {
-                        const base =
-                          Array.isArray(p.values) && p.values.length > 0
-                            ? [...p.values]
-                            : [...((siteContent.about?.values as Record<string, unknown>[]) || [])];
-                        base[idx] = { ...valItem, title: e.target.value };
-                        updateProp("values", base);
-                      }}
-                      placeholder="Titre de la valeur"
-                      className="h-7 text-xs font-semibold"
-                    />
-                    <Textarea
-                      rows={2}
-                      value={getPropStr(valItem.description)}
-                      onChange={(e) => {
-                        const base =
-                          Array.isArray(p.values) && p.values.length > 0
-                            ? [...p.values]
-                            : [...((siteContent.about?.values as Record<string, unknown>[]) || [])];
-                        base[idx] = { ...valItem, description: e.target.value };
-                        updateProp("values", base);
-                      }}
-                      placeholder="Description de la valeur..."
-                      className="text-xs"
-                    />
+                    {baseValues.map((valItem: Record<string, unknown>, idx: number) => (
+                      <div
+                        key={(valItem.id as string) || idx}
+                        className="p-2.5 border rounded-lg bg-card/60 space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <Select
+                            value={String(valItem.icon || "shield")}
+                            onValueChange={(val) => {
+                              const values = [...baseValues];
+                              values[idx] = { ...valItem, icon: val };
+                              updateProp("values", values);
+                            }}
+                          >
+                            <SelectTrigger className="h-7 text-xs w-44">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="shield">🛡️ Bouclier (Garantie)</SelectItem>
+                              <SelectItem value="truck">🚚 Camion (Livraison)</SelectItem>
+                              <SelectItem value="headphones">🎧 Casque (Support)</SelectItem>
+                              <SelectItem value="award">🏆 Trophée (Excellence)</SelectItem>
+                              <SelectItem value="star">⭐ Étoile (Qualité)</SelectItem>
+                              <SelectItem value="heart">❤️ Cœur (Passion)</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <span className="text-[11px] font-bold text-primary flex-1">
+                            Valeur #{idx + 1}
+                          </span>
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const values = [...baseValues];
+                              values.splice(idx, 1);
+                              updateProp("values", values);
+                            }}
+                            className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+
+                        <LocalizedFieldEditor
+                          label="Titre de la valeur"
+                          value={valItem.title}
+                          onChange={(val) => {
+                            const values = [...baseValues];
+                            values[idx] = { ...valItem, title: val };
+                            updateProp("values", values);
+                          }}
+                          placeholder="Titre de la valeur"
+                        />
+
+                        <LocalizedFieldEditor
+                          label="Description de la valeur"
+                          value={valItem.description}
+                          onChange={(val) => {
+                            const values = [...baseValues];
+                            values[idx] = { ...valItem, description: val };
+                            updateProp("values", values);
+                          }}
+                          isTextarea
+                          rows={2}
+                          placeholder="Description de la valeur..."
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              );
+            })()}
 
           {/* 17. CONTACT FORM (PHASE 43) */}
           {block.type === "contact_form" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre du formulaire :</Label>
-                <Input
-                  value={getPropStr(p.title)}
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Envoyez-nous un message"
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Sous-titre / Chapô :</Label>
-                <Textarea
-                  rows={2}
-                  value={getPropStr(p.subtitle)}
-                  onChange={(e) => updateProp("subtitle", e.target.value)}
-                  placeholder="Une question, un devis ou un projet ? Remplissez ce formulaire..."
-                  className="text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Libellé du bouton d'envoi :</Label>
-                <Input
-                  value={getPropStr(p.submitText)}
-                  onChange={(e) => updateProp("submitText", e.target.value)}
-                  placeholder="Envoyer le message"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre du formulaire"
+                value={p.title ?? "Envoyez-nous un message"}
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Envoyez-nous un message"
+              />
+              <LocalizedFieldEditor
+                label="Sous-titre / Chapô"
+                value={
+                  p.subtitle ?? "Une question, un devis ou un projet ? Remplissez ce formulaire..."
+                }
+                onChange={(val) => updateProp("subtitle", val)}
+                isTextarea
+                rows={2}
+                placeholder="Une question, un devis ou un projet ? Remplissez ce formulaire..."
+              />
+              <LocalizedFieldEditor
+                label="Libellé du bouton d'envoi"
+                value={p.submitText ?? "Envoyer le message"}
+                onChange={(val) => updateProp("submitText", val)}
+                placeholder="Envoyer le message"
+              />
             </div>
           )}
 
@@ -2412,7 +2228,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Numéro de téléphone :</Label>
                 <Input
-                  value={String(p.contactPhone || "")}
+                  value={String(p.contactPhone || siteSettings?.contactPhone || "")}
                   onChange={(e) => updateProp("contactPhone", e.target.value)}
                   placeholder="ex: +213 555 12 34 56"
                   className="h-8 text-xs font-mono"
@@ -2421,7 +2237,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Numéro WhatsApp :</Label>
                 <Input
-                  value={String(p.whatsapp || "")}
+                  value={String(p.whatsapp || siteSettings?.whatsapp || "")}
                   onChange={(e) => updateProp("whatsapp", e.target.value)}
                   placeholder="ex: +213 661 00 00 00"
                   className="h-8 text-xs font-mono"
@@ -2430,7 +2246,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Adresse Email :</Label>
                 <Input
-                  value={String(p.contactEmail || "")}
+                  value={String(p.contactEmail || siteSettings?.contactEmail || "")}
                   onChange={(e) => updateProp("contactEmail", e.target.value)}
                   placeholder="contact@entreprise.com"
                   className="h-8 text-xs font-mono"
@@ -2439,7 +2255,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Adresse physique :</Label>
                 <Input
-                  value={String(p.address || "")}
+                  value={String(p.address || siteSettings?.address || "")}
                   onChange={(e) => updateProp("address", e.target.value)}
                   placeholder="123 Boulevard Technologique, Alger"
                   className="h-8 text-xs"
@@ -2448,7 +2264,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Horaires d'ouverture :</Label>
                 <Input
-                  value={String(p.hours || "")}
+                  value={String(p.hours || siteSettings?.hours || "")}
                   onChange={(e) => updateProp("hours", e.target.value)}
                   placeholder="Dimanche - Jeudi : 08h30 - 17h00"
                   className="h-8 text-xs"
@@ -2539,7 +2355,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Texte du bandeau promotionnel :</Label>
                 <Input
-                  value={String(p.text || "")}
+                  value={String(p.text || siteSettings?.promoBannerText || "")}
                   onChange={(e) => updateProp("text", e.target.value)}
                   placeholder="Profitez de -15% sur toutes les stations de travail !"
                   className="h-8 text-xs"
@@ -2549,7 +2365,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Code Promotionnel :</Label>
                   <Input
-                    value={String(p.code || "")}
+                    value={String(p.code || "KATECH15")}
                     onChange={(e) => updateProp("code", e.target.value)}
                     placeholder="ex: KATECH15"
                     className="h-7 text-xs font-mono uppercase"
@@ -2558,7 +2374,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Libellé du Bouton :</Label>
                   <Input
-                    value={String(p.label || "")}
+                    value={String(p.label || siteSettings?.promoBannerLabel || "")}
                     onChange={(e) => updateProp("label", e.target.value)}
                     placeholder="En profiter"
                     className="h-7 text-xs"
@@ -2568,7 +2384,7 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Lien URL de redirection :</Label>
                 <Input
-                  value={String(p.href || "")}
+                  value={String(p.href || siteSettings?.promoBannerHref || "/category/solutions")}
                   onChange={(e) => updateProp("href", e.target.value)}
                   placeholder="/category/solutions"
                   className="h-7 text-xs font-mono"
@@ -2580,15 +2396,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {/* 21. USE CHIPS (SOUS-PHASE 43.1) */}
           {block.type === "use_chips" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre de la section d'usages :</Label>
-                <Input
-                  value={getPropStr(p.title) || L(siteContent.useChips?.title) || ""}
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Trouvez l'équipement adapté à votre métier"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre de la section d'usages"
+                value={p.title ?? siteContent.useChips?.title}
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Trouvez l'équipement adapté à votre métier"
+              />
               <p className="text-[11px] text-muted-foreground italic">
                 Ce bloc affiche automatiquement les puces filtrables de cas d'usage (Gaming, R&D,
                 Bureautique, Création) associées aux produits du catalogue.
@@ -2599,15 +2412,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {/* 22. BRANDS MARQUEE (SOUS-PHASE 43.1) */}
           {block.type === "brands_marquee" && (
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Titre du bandeau de défilement :</Label>
-                <Input
-                  value={getPropStr(p.title) || L(siteContent.brandsMarquee?.title) || ""}
-                  onChange={(e) => updateProp("title", e.target.value)}
-                  placeholder="Marques & Partenaires Officiels"
-                  className="h-8 text-xs"
-                />
-              </div>
+              <LocalizedFieldEditor
+                label="Titre du bandeau de défilement"
+                value={p.title ?? siteContent.brandsMarquee?.title}
+                onChange={(val) => updateProp("title", val)}
+                placeholder="Marques & Partenaires Officiels"
+              />
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Vitesse de défilement :</Label>
                 <Select

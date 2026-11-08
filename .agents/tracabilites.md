@@ -2786,3 +2786,79 @@
 - **Livrables :**
   - Plan validé : 📄 [`46_plan_universalisation_totale_studio_vues_systemes_conversion_et_institutionnelles.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/46_plan_universalisation_totale_studio_vues_systemes_conversion_et_institutionnelles.md)
   - Archives horodatées : 📦 [katech-site-08112026-2007.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2007.zip) & 📦 [katech-data-08112026-2007.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2007.zip)
+
+---
+
+## Phase 47 : Studio 360° : Fidélité Réelle du Live Canvas, Résolution des Propriétés & Médias en Cascade, Édition Trilingue Fine & Persistance SQLite Directe
+
+- **Date :** 08/11/2026
+- **Contexte & Constat Initial :**  
+  Suite à la livraison de la Phase 46, ArchiSys3.0 a identifié 4 angles morts majeurs :
+  1. *Couverture & Persistance :* Inquiétude légitime sur la persistance réelle en base SQLite des vues systèmes nouvellement ajoutées et risque d'écrasement lors du fetch asynchrone.
+  2. *Fidélité Réelle du Live Canvas :* Les vues systèmes affichaient un canevas vide lorsqu'aucun bloc composable n'y était encore ajouté, masquant le cœur applicatif de la vue (suivi de commande, configurateur, panier, etc.).
+  3. *Inspecteur de Blocs Incomplet & Valeurs Manquantes :* Lors de la sélection d'un bloc, certains champs et médias s'affichaient vides au lieu de refléter les données de démonstration ou le contenu global configuré.
+  4. *Édition Fine Trilingue Dégradée :* L'édition dans l'inspecteur écrasait les structures localisées (`{ fr, en, ar }`) en simples chaînes plates, et des blocs comme l'accordéon FAQ ne permettaient pas d'éditer le titre, sous-titre ni les questions/réponses de façon synchrone.
+- **Décisions d'ArchiSys3.0 :**  
+  Validation intégrale du Plan d'Implémentation Phase 47 (`47_plan_studio_360_fidelite_canvas_resolution_props_cascade_et_inspecteur_fin_trilingue.md`) :
+  1. **Cascade de Résolution Universelle dans l'Inspecteur :** Si une propriété n'est pas encore surchargée dans `block.props`, elle résout automatiquement les valeurs par défaut issues de `siteContent`, `siteSettings` ou `defaultProps`.
+  2. **Composant Réutilisable `LocalizedFieldEditor` :** Éditeur trilingue avec onglets `[ FR | EN | AR ]`, indicateur de direction `dir="rtl"` pour l'arabe, garantissant la parité multilingue sans déformation ni écrasement en chaîne plate.
+  3. **Aperçu Haute Fidélité des Vues Systèmes (`SystemViewNativePreview`) :** Rendu interactif ultra-fidèle du cœur fonctionnel des 6 vues systèmes (`track`, `cart`, `builder`, `blog`, `checkout_success`, `not_found`) dans le Live Canvas, avec ordonnancement `topBlocks` $\rightarrow$ Cœur applicatif $\rightarrow$ `bottomBlocks`.
+  4. **Auto-Persistance SQLite Directe :** Sauvegarde automatique des vues injectées dans `siteContent.customPages` dès l'ouverture du gestionnaire pour garantir que les données persistent immédiatement dans SQLite sans risque de perte au rechargement.
+  5. **Contrôle Qualité Inviolable :** Validation stricte par `verifier-i18n`, `tsc --noEmit`, `eslint`, `vite build` et empaquetage `katech-data`.
+- **Actions Réalisées :**
+  - **Étape 47.1 & 47.3 (Inspecteur de Blocs Trilingue & Cascade Universelle) :**
+    - Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) :
+      - Création du composant exporté `LocalizedFieldEditor` (gestion des tabs FR / EN / AR, préservation des objets `{ fr, en, ar }`, support RTL).
+      - Raccordement aux hooks `useSiteContent()` et `useSiteSettings()`, et aux métadonnées de bloc `getBlockMeta(block.type)`.
+      - Éradication des doublons du sélecteur d'emplacement (un seul sélecteur propre à la fin de l'onglet Style).
+      - Cascade et édition fine trilingue sur l'ensemble des 24 types de blocs :
+        - `hero_banner` : `title1`, `title2`, `subtitle`, `badge` avec `LocalizedFieldEditor`, et `imageSrc` avec fallback visuel sur `heroImg`.
+        - `flash_sale` : `title`, `badge` trilingues, compte à rebours numérique.
+        - `best_sellers` / `featured_tabs` : `title`, `subtitle` trilingues avec fallback `siteContent`.
+        - `why_us` : `title1`, `title2`, `subtitle` et chaque carte de réassurance éditables en FR/EN/AR sans aplatissement.
+        - `reviews_grid` / `contact_cta` : titres et textes d'accroche localisés.
+        - `faq_accordion` : harmonisation complète `faqs` / `items` avec édition du titre, du sous-titre et de chaque question/réponse en FR/EN/AR.
+        - `markdown_section` : `title` et `content` localisés (zone multiligne 6 lignes).
+        - `brand_banner` : `bannerSrc` avec fallback sur `archisysBannerSrc`, et `altText` trilingue.
+        - `features_grid` : titre, sous-titre et cartes avec fallback `defProps` et édition trilingue fine.
+        - `quote_star` : citation, auteur et fonction avec `LocalizedFieldEditor`.
+        - `full_width_banner` : titre, sous-titre, libellés CTA et fallback panoramique sur `archisysBannerSrc`.
+        - `builder_teaser` : titre, badge, sous-titre, libellé CTA et fallback sur `archisysBannerSrc`.
+        - `company_history` : historique et mission (titres et corps) avec `LocalizedFieldEditor`.
+        - `values_grid` : valeurs d'entreprise trilingues avec icônes.
+        - `contact_form` : titre, sous-titre et bouton d'envoi trilingues.
+        - `direct_contact_cards` : coordonnées dynamiques avec repli direct sur les réglages réels de l'enseigne (`siteSettings.contactPhone`, `whatsapp`, `contactEmail`, `address`, `hours`).
+        - `promo_banner` : bandeau avec repli sur `siteSettings.promoBannerText`, `promoBannerLabel`, `promoBannerHref`.
+        - `use_chips` / `brands_marquee` : titres localisés avec repli `siteContent`.
+  - **Étape 47.2 (Fidélité Réelle du Live Canvas & Vues Systèmes) :**
+    - Modification de [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx) :
+      - Ajout de la prop `page?: CustomPageDefinition | null`.
+      - Création du sous-composant `SystemViewNativePreview({ page })` intégrant la reproduction fidèle et réactive de l'interface fonctionnelle des vues systèmes :
+        - `track` : formulaire de recherche avec champ de numéro de commande, simulation de timeline interactive (4 jalons), carte récapitulative et bouton WhatsApp.
+        - `cart` : tableau panier avec liste des articles, contrôles de quantité, ligne d'options, code promo et volet récapitulatif avec bouton de commande.
+        - `builder` : interface configurateur avec sélecteur d'étapes (CPU, RAM, GPU...), barre de jauge budgétaire et récapitulatif technique.
+        - `blog` : grille d'articles de blog avec visuels, badges de catégories et temps de lecture.
+        - `checkout_success` : écran de confirmation festive avec numéro de commande `#KT-2026-LIVE`, détails de livraison et CTA de suivi.
+        - `not_found` : écran 404 immersif avec code d'erreur, message explicatif et redirection vers le catalogue.
+      - Structure de rendu du canevas ordonnée : `topBlocks` $\rightarrow$ `<SystemViewNativePreview />` $\rightarrow$ `bottomBlocks`.
+      - Remplacement du message "Cette vue est vide" par le rendu fonctionnel natif sur les vues systèmes.
+  - **Étape 47.4 (Auto-Persistance SQLite Directe & Résolution Écrasement Asynchrone) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Remplacement de l'écrasement `setPages(siteContent.customPages)` par `setPages(customPages)` lors du chargement des données SQLite, garantissant la fusion inconditionnelle des 10 vues institutionnelles et systèmes.
+      - Ajout du hook d'auto-persistance : si `siteContent?.customPages` ne comporte pas encore les nouvelles définitions de pages par défaut, appel automatique immédiat de `updateSiteContent({ customPages })` pour enregistrer les pages directement dans la base SQLite locale `katech-data`.
+      - Transmission de la vue active (`page={selectedPage}`) au composant `<StudioLiveCanvas />`.
+  - **Étape 47.5 (Validation CI, Traçabilité & Packaging) :**
+    - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte (0 clé manquante, 0 erreur).
+    - `bunx tsc --noEmit` : 0 erreur de typage TypeScript.
+    - `bun run format` : Prettier validé.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : Compilation Vite réussie avec bundle de production et prérendu.
+    - `bun run paqueter:data` : Nouvelle archive SQLite horodatée produite (`katech-data-08112026-2036.zip`).
+- **Résultats de Recette :**
+  - Le Live Canvas du Studio affiche avec exactitude le cœur fonctionnel de chaque page du site (vues institutionnelles, tunnels de commande, blog, configurateur), entouré ou non du Header/Footer via le Cadre Site.
+  - L'inspecteur de blocs affiche immédiatement les valeurs par défaut, les textes de réassurance et les médias réels (bannières, illustrations d'ordinateurs, logos) dès la sélection d'un bloc, sans aucun champ vide ni carré gris.
+  - L'édition dans l'inspecteur préserve l'intégrité trilingue en permettant de traduire chaque titre, description ou question FAQ en Français, Anglais et Arabe (avec support RTL) sans risque de réduction en chaîne plate.
+  - Toutes les modifications et toutes les pages sont persistées directement en base SQLite `katech-data` sans perte au rechargement.
+- **Livrables :**
+  - Plan validé : 📄 [`47_plan_studio_360_fidelite_canvas_resolution_props_cascade_et_inspecteur_fin_trilingue.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/47_plan_studio_360_fidelite_canvas_resolution_props_cascade_et_inspecteur_fin_trilingue.md)
+  - Archives horodatées : 📦 [katech-site-08112026-2036.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2036.zip) & 📦 [katech-data-08112026-2036.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2036.zip)

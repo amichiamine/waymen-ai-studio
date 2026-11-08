@@ -154,13 +154,26 @@ export default function PagesManager() {
 
   // Synchronisation réactive avec le store serveur dès réception des données
   useEffect(() => {
-    if (!isDirty && siteContent?.customPages) {
-      setPages(siteContent.customPages);
-      if (!selectedPageId && siteContent.customPages.length > 0) {
-        setSelectedPageId(siteContent.customPages[0].id);
+    if (!isDirty && customPages.length > 0) {
+      setPages(customPages);
+      if (!selectedPageId && customPages.length > 0) {
+        setSelectedPageId(customPages[0].id);
       }
     }
-  }, [siteContent?.customPages, isDirty, selectedPageId]);
+  }, [customPages, isDirty, selectedPageId]);
+
+  // Auto-persistance SQLite directe des nouvelles vues par défaut dans katech-data
+  useEffect(() => {
+    if (!siteContent?.customPages) return;
+    const existingIds = new Set(siteContent.customPages.map((p) => p.id));
+    const defaults = seedCustomPages();
+    const hasMissing = defaults.some((d) => !existingIds.has(d.id));
+    if (hasMissing && !isDirty) {
+      updateSiteContent({ customPages }).catch(() => {
+        // En cas d'indisponibilité temporaire, repli gracieux sans erreur bloquante
+      });
+    }
+  }, [siteContent?.customPages, customPages, isDirty, updateSiteContent]);
 
   const selectedPage = pages.find((p) => p.id === selectedPageId) || null;
 
@@ -858,6 +871,7 @@ export default function PagesManager() {
               )}
             >
               <StudioLiveCanvas
+                page={selectedPage}
                 blocks={selectedPage?.blocks || []}
                 selectedBlockId={selectedBlockId}
                 onSelectBlock={(id) => setSelectedBlockId(id)}
