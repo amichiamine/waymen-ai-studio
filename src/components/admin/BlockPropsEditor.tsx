@@ -16,6 +16,7 @@ import {
 import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import type { BlockConfig, BlockStyleConfig } from "@/types/pages";
 import type { Localized } from "@/lib/i18n";
+import { getBlockMeta } from "@/components/blocks/registry";
 import { useSiteContent } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -420,6 +421,83 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   placeholder="Garantie constructeur, livraison express, service client dédié..."
                   className="text-xs"
                 />
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Cartes de réassurance :</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const currentItems = Array.isArray(p.items)
+                        ? [...p.items]
+                        : [...(siteContent.whyUs?.items || [])];
+                      currentItems.push({
+                        id: "w_" + Date.now(),
+                        icon: "shield",
+                        title: "Nouvelle garantie",
+                        description: "Description de la garantie ou du service...",
+                      });
+                      updateProp("items", currentItems);
+                    }}
+                    className="h-7 text-xs gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Ajouter une carte</span>
+                  </Button>
+                </div>
+
+                {(Array.isArray(p.items) ? p.items : siteContent.whyUs?.items || []).map(
+                  (card: Record<string, unknown>, idx: number) => (
+                    <div
+                      key={(card.id as string) || idx}
+                      className="p-2.5 border rounded-lg bg-card/60 space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <Input
+                          placeholder="Titre de la réassurance"
+                          value={getPropStr(card.title)}
+                          onChange={(e) => {
+                            const current = Array.isArray(p.items)
+                              ? [...p.items]
+                              : [...(siteContent.whyUs?.items || [])];
+                            current[idx] = { ...current[idx], title: e.target.value };
+                            updateProp("items", current);
+                          }}
+                          className="h-7 text-xs font-semibold flex-1"
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => {
+                            const current = Array.isArray(p.items)
+                              ? [...p.items]
+                              : [...(siteContent.whyUs?.items || [])];
+                            current.splice(idx, 1);
+                            updateProp("items", current);
+                          }}
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <Textarea
+                        rows={2}
+                        placeholder="Description de la réassurance..."
+                        value={getPropStr(card.description)}
+                        onChange={(e) => {
+                          const current = Array.isArray(p.items)
+                            ? [...p.items]
+                            : [...(siteContent.whyUs?.items || [])];
+                          current[idx] = { ...current[idx], description: e.target.value };
+                          updateProp("items", current);
+                        }}
+                        className="text-xs"
+                      />
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           )}
@@ -954,7 +1032,14 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      const items = Array.isArray(p.items) ? [...p.items] : [];
+                      const baseItems =
+                        Array.isArray(p.items) && p.items.length > 0
+                          ? p.items
+                          : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
+                              string,
+                              unknown
+                            >[]) || [];
+                      const items = [...baseItems];
                       items.push({
                         id: "f_" + Date.now(),
                         icon: "rocket",
@@ -971,83 +1056,122 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   </Button>
                 </div>
 
-                {(Array.isArray(p.items) ? p.items : []).map(
-                  (item: Record<string, unknown>, idx: number) => (
-                    <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Select
-                          value={String(item.icon || "rocket")}
-                          onValueChange={(val) => {
-                            const items = [...(p.items as Record<string, unknown>[])];
-                            items[idx] = { ...items[idx], icon: val };
-                            updateProp("items", items);
-                          }}
-                        >
-                          <SelectTrigger className="h-7 text-[11px] w-28">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="rocket">Fusée</SelectItem>
-                            <SelectItem value="shield">Bouclier</SelectItem>
-                            <SelectItem value="cpu">Processeur</SelectItem>
-                            <SelectItem value="zap">Éclair</SelectItem>
-                            <SelectItem value="sparkles">Étoiles</SelectItem>
-                            <SelectItem value="globe">Globe</SelectItem>
-                            <SelectItem value="code">Code</SelectItem>
-                            <SelectItem value="check">Validation</SelectItem>
-                          </SelectContent>
-                        </Select>
-
-                        <Input
-                          placeholder="Titre de la carte"
-                          value={getPropStr(item.title)}
-                          onChange={(e) => {
-                            const items = [...(p.items as Record<string, unknown>[])];
-                            items[idx] = { ...items[idx], title: e.target.value };
-                            updateProp("items", items);
-                          }}
-                          className="h-7 text-xs font-semibold flex-1"
-                        />
-
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => {
-                            const items = [...(p.items as Record<string, unknown>[])];
-                            items.splice(idx, 1);
-                            updateProp("items", items);
-                          }}
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      <Textarea
-                        rows={2}
-                        placeholder="Description de la fonctionnalité..."
-                        value={getPropStr(item.description)}
-                        onChange={(e) => {
-                          const items = [...(p.items as Record<string, unknown>[])];
-                          items[idx] = { ...items[idx], description: e.target.value };
+                {(Array.isArray(p.items) && p.items.length > 0
+                  ? p.items
+                  : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
+                      string,
+                      unknown
+                    >[]) || []
+                ).map((item: Record<string, unknown>, idx: number) => (
+                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Select
+                        value={String(item.icon || "rocket")}
+                        onValueChange={(val) => {
+                          const baseItems =
+                            Array.isArray(p.items) && p.items.length > 0
+                              ? p.items
+                              : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const items = [...baseItems];
+                          items[idx] = { ...items[idx], icon: val };
                           updateProp("items", items);
                         }}
-                        className="text-xs"
-                      />
+                      >
+                        <SelectTrigger className="h-7 text-[11px] w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="rocket">Fusée</SelectItem>
+                          <SelectItem value="shield">Bouclier</SelectItem>
+                          <SelectItem value="cpu">Processeur</SelectItem>
+                          <SelectItem value="zap">Éclair</SelectItem>
+                          <SelectItem value="sparkles">Étoiles</SelectItem>
+                          <SelectItem value="globe">Globe</SelectItem>
+                          <SelectItem value="code">Code</SelectItem>
+                          <SelectItem value="check">Validation</SelectItem>
+                        </SelectContent>
+                      </Select>
 
                       <Input
-                        placeholder="Lien d'action (optionnel, ex: /catalogue)"
-                        value={String(item.link || "")}
+                        placeholder="Titre de la carte"
+                        value={getPropStr(item.title)}
                         onChange={(e) => {
-                          const items = [...(p.items as Record<string, unknown>[])];
-                          items[idx] = { ...items[idx], link: e.target.value };
+                          const baseItems =
+                            Array.isArray(p.items) && p.items.length > 0
+                              ? p.items
+                              : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const items = [...baseItems];
+                          items[idx] = { ...items[idx], title: e.target.value };
                           updateProp("items", items);
                         }}
-                        className="h-7 text-xs font-mono"
+                        className="h-7 text-xs font-semibold flex-1"
                       />
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          const baseItems =
+                            Array.isArray(p.items) && p.items.length > 0
+                              ? p.items
+                              : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const items = [...baseItems];
+                          items.splice(idx, 1);
+                          updateProp("items", items);
+                        }}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                  ),
-                )}
+
+                    <Textarea
+                      rows={2}
+                      placeholder="Description de la fonctionnalité..."
+                      value={getPropStr(item.description)}
+                      onChange={(e) => {
+                        const baseItems =
+                          Array.isArray(p.items) && p.items.length > 0
+                            ? p.items
+                            : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
+                                string,
+                                unknown
+                              >[]) || [];
+                        const items = [...baseItems];
+                        items[idx] = { ...items[idx], description: e.target.value };
+                        updateProp("items", items);
+                      }}
+                      className="text-xs"
+                    />
+
+                    <Input
+                      placeholder="Lien d'action (optionnel, ex: /catalogue)"
+                      value={String(item.link || "")}
+                      onChange={(e) => {
+                        const baseItems =
+                          Array.isArray(p.items) && p.items.length > 0
+                            ? p.items
+                            : (getBlockMeta("features_grid")?.defaultProps?.items as Record<
+                                string,
+                                unknown
+                              >[]) || [];
+                        const items = [...baseItems];
+                        items[idx] = { ...items[idx], link: e.target.value };
+                        updateProp("items", items);
+                      }}
+                      className="h-7 text-xs font-mono"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -1082,7 +1206,14 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      const plans = Array.isArray(p.plans) ? [...p.plans] : [];
+                      const basePlans =
+                        Array.isArray(p.plans) && p.plans.length > 0
+                          ? p.plans
+                          : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                              string,
+                              unknown
+                            >[]) || [];
+                      const plans = [...basePlans];
                       plans.push({
                         id: "p_" + Date.now(),
                         name: "Nouveau Plan",
@@ -1102,120 +1233,180 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   </Button>
                 </div>
 
-                {(Array.isArray(p.plans) ? p.plans : []).map(
-                  (plan: Record<string, unknown>, idx: number) => (
-                    <div key={idx} className="p-3 border rounded-xl bg-card/60 space-y-2.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <Input
-                          placeholder="Nom de l'offre (ex: Starter)"
-                          value={getPropStr(plan.name)}
-                          onChange={(e) => {
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans[idx] = { ...plans[idx], name: e.target.value };
-                            updateProp("plans", plans);
-                          }}
-                          className="h-7 text-xs font-bold"
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => {
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans.splice(idx, 1);
-                            updateProp("plans", plans);
-                          }}
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="Prix (ex: 49 000 DZD)"
-                          value={String(plan.price || "")}
-                          onChange={(e) => {
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans[idx] = { ...plans[idx], price: e.target.value };
-                            updateProp("plans", plans);
-                          }}
-                          className="h-7 text-xs font-semibold"
-                        />
-                        <Input
-                          placeholder="Période (ex: / projet)"
-                          value={getPropStr(plan.period)}
-                          onChange={(e) => {
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans[idx] = { ...plans[idx], period: e.target.value };
-                            updateProp("plans", plans);
-                          }}
-                          className="h-7 text-xs"
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">
-                          Mettre en avant (Recommandé) :
-                        </span>
-                        <Switch
-                          checked={Boolean(plan.popular)}
-                          onCheckedChange={(val) => {
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans[idx] = { ...plans[idx], popular: val };
-                            updateProp("plans", plans);
-                          }}
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">
-                          Liste des avantages (1 ligne par point fort) :
-                        </Label>
-                        <Textarea
-                          rows={3}
-                          value={
-                            Array.isArray(plan.features)
-                              ? plan.features.map((f) => getPropStr(f)).join("\n")
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const lines = e.target.value
-                              .split("\n")
-                              .filter((l) => l.trim().length > 0);
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans[idx] = { ...plans[idx], features: lines };
-                            updateProp("plans", plans);
-                          }}
-                          placeholder="Architecture optimisée&#10;Support garanti&#10;Mises à jour..."
-                          className="text-xs"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="Libellé bouton (ex: Commander)"
-                          value={getPropStr(plan.ctaText)}
-                          onChange={(e) => {
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans[idx] = { ...plans[idx], ctaText: e.target.value };
-                            updateProp("plans", plans);
-                          }}
-                          className="h-7 text-xs"
-                        />
-                        <Input
-                          placeholder="Lien (ex: /contact)"
-                          value={String(plan.ctaLink || "")}
-                          onChange={(e) => {
-                            const plans = [...(p.plans as Record<string, unknown>[])];
-                            plans[idx] = { ...plans[idx], ctaLink: e.target.value };
-                            updateProp("plans", plans);
-                          }}
-                          className="h-7 text-xs font-mono"
-                        />
-                      </div>
+                {(Array.isArray(p.plans) && p.plans.length > 0
+                  ? p.plans
+                  : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                      string,
+                      unknown
+                    >[]) || []
+                ).map((plan: Record<string, unknown>, idx: number) => (
+                  <div key={idx} className="p-3 border rounded-xl bg-card/60 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <Input
+                        placeholder="Nom de l'offre (ex: Starter)"
+                        value={getPropStr(plan.name)}
+                        onChange={(e) => {
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans[idx] = { ...plans[idx], name: e.target.value };
+                          updateProp("plans", plans);
+                        }}
+                        className="h-7 text-xs font-bold"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans.splice(idx, 1);
+                          updateProp("plans", plans);
+                        }}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                  ),
-                )}
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Prix (ex: 49 000 DZD)"
+                        value={String(plan.price || "")}
+                        onChange={(e) => {
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans[idx] = { ...plans[idx], price: e.target.value };
+                          updateProp("plans", plans);
+                        }}
+                        className="h-7 text-xs font-semibold"
+                      />
+                      <Input
+                        placeholder="Période (ex: / projet)"
+                        value={getPropStr(plan.period)}
+                        onChange={(e) => {
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans[idx] = { ...plans[idx], period: e.target.value };
+                          updateProp("plans", plans);
+                        }}
+                        className="h-7 text-xs"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        Mettre en avant (Recommandé) :
+                      </span>
+                      <Switch
+                        checked={Boolean(plan.popular)}
+                        onCheckedChange={(val) => {
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans[idx] = { ...plans[idx], popular: val };
+                          updateProp("plans", plans);
+                        }}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-[11px] text-muted-foreground">
+                        Liste des avantages (1 ligne par point fort) :
+                      </Label>
+                      <Textarea
+                        rows={3}
+                        value={
+                          Array.isArray(plan.features)
+                            ? plan.features.map((f) => getPropStr(f)).join("\n")
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const lines = e.target.value
+                            .split("\n")
+                            .filter((l) => l.trim().length > 0);
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans[idx] = { ...plans[idx], features: lines };
+                          updateProp("plans", plans);
+                        }}
+                        placeholder="Architecture optimisée&#10;Support garanti&#10;Mises à jour..."
+                        className="text-xs"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Libellé bouton (ex: Commander)"
+                        value={getPropStr(plan.ctaText)}
+                        onChange={(e) => {
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans[idx] = { ...plans[idx], ctaText: e.target.value };
+                          updateProp("plans", plans);
+                        }}
+                        className="h-7 text-xs"
+                      />
+                      <Input
+                        placeholder="Lien (ex: /contact)"
+                        value={String(plan.ctaLink || "")}
+                        onChange={(e) => {
+                          const basePlans =
+                            Array.isArray(p.plans) && p.plans.length > 0
+                              ? p.plans
+                              : (getBlockMeta("pricing_table")?.defaultProps?.plans as Record<
+                                  string,
+                                  unknown
+                                >[]) || [];
+                          const plans = [...basePlans];
+                          plans[idx] = { ...plans[idx], ctaLink: e.target.value };
+                          updateProp("plans", plans);
+                        }}
+                        className="h-7 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

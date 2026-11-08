@@ -465,6 +465,63 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شبكة عصرية من 2، 3 أو 4 أعمدة لعرض الميزات مع أيقونات وعناوين وشروحات.",
     },
     icon: "Sparkles",
+    defaultProps: {
+      title: {
+        fr: "Nos Atouts & Piliers Technologiques",
+        en: "Our Key Strengths & Tech Pillars",
+        ar: "أبرز مميزاتنا وركائزنا التقنية",
+      },
+      subtitle: {
+        fr: "Une architecture optimisée garantissant performance, souveraineté et évolutivité.",
+        en: "An optimized architecture guaranteeing performance, sovereignty and scalability.",
+        ar: "بنية محسّنة تضمن الأداء العالي، السيادة البرمجية والقابلية للتطوير.",
+      },
+      columns: 3,
+      items: [
+        {
+          id: "f1",
+          icon: "rocket",
+          title: {
+            fr: "Haute Performance & Vélocité",
+            en: "High Performance & Speed",
+            ar: "أداء عالٍ وسرعة فائقة",
+          },
+          description: {
+            fr: "Une architecture optimisée garantissant des temps de réponse instantanés.",
+            en: "Optimized architecture ensuring instantaneous response times.",
+            ar: "بنية برمجية محسّنة تضمن سرعة استجابة فورية.",
+          },
+        },
+        {
+          id: "f2",
+          icon: "shield",
+          title: {
+            fr: "Sécurité & Souveraineté",
+            en: "Security & Sovereignty",
+            ar: "أمان وسيادة تقنية",
+          },
+          description: {
+            fr: "Isolation stricte, chiffrement avancé et hébergement sous votre contrôle total.",
+            en: "Strict isolation, advanced encryption and hosting under your total control.",
+            ar: "عزل محكم، تشفير متقدم واستضافة تحت سيطرتك الكاملة.",
+          },
+        },
+        {
+          id: "f3",
+          icon: "cpu",
+          title: {
+            fr: "Technologies de Pointe",
+            en: "Cutting-Edge Technologies",
+            ar: "تقنيات متقدمة وحديثة",
+          },
+          description: {
+            fr: "Composants modernes, scalables et interopérables sans compromis technique.",
+            en: "Modern, scalable and interoperable components without technical compromise.",
+            ar: "مكونات عصرية، قابلة للتطوير ومتكاملة بدون أي تنازل تقني.",
+          },
+        },
+      ],
+    },
   },
   {
     type: "pricing_table",
@@ -480,6 +537,114 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "جدول مقارنة الباقات مع الأسعار، شارة الأكثر طلباً، قائمة الميزات وأزرار الطلب.",
     },
     icon: "CreditCard",
+    defaultProps: {
+      title: {
+        fr: "Nos Offres & Solutions",
+        en: "Our Pricing & Solutions",
+        ar: "باقاتنا وعروضنا التقنية",
+      },
+      subtitle: {
+        fr: "Des formules claires et transparentes adaptées à la taille et aux ambitions de votre projet.",
+        en: "Clear and transparent plans adapted to your project size and ambitions.",
+        ar: "صيغ واضحة وشفافة مصممة خصيصاً لتناسب حجم وتطلعات مشروعكم.",
+      },
+      plans: [
+        {
+          id: "p1",
+          name: { fr: "Essentiel", en: "Starter", ar: "الأساسي" },
+          price: "49 000 DZD",
+          period: { fr: "/ projet", en: "/ project", ar: "/ مشروع" },
+          popular: false,
+          features: [
+            {
+              fr: "Architecture socle optimisée",
+              en: "Optimized core architecture",
+              ar: "بنية أساسية محسّنة",
+            },
+            {
+              fr: "Interface responsive Mobile/Desktop",
+              en: "Responsive Mobile/Desktop UI",
+              ar: "واجهة متجاوبة للهاتف والحاسوب",
+            },
+            {
+              fr: "Documentation technique standard",
+              en: "Standard technical docs",
+              ar: "توثيق تقني قياسي",
+            },
+            {
+              fr: "Support garanti 30 jours",
+              en: "30-day guaranteed support",
+              ar: "دعم فني مضمون 30 يوماً",
+            },
+          ],
+          ctaText: { fr: "Démarrer", en: "Get Started", ar: "ابدأ الآن" },
+          ctaLink: "/contact",
+        },
+        {
+          id: "p2",
+          name: { fr: "Professionnel", en: "Professional", ar: "المحترف" },
+          price: "129 000 DZD",
+          period: { fr: "/ projet", en: "/ project", ar: "/ مشروع" },
+          badge: { fr: "Le Plus Recommandé", en: "Most Popular", ar: "الأكثر طلباً" },
+          popular: true,
+          features: [
+            {
+              fr: "Tout de l'offre Essentiel",
+              en: "Everything in Starter",
+              ar: "كل ميزات العرض الأساسي",
+            },
+            {
+              fr: "Personnalisation avancée & Blocs 360°",
+              en: "Advanced customization & 360° blocks",
+              ar: "تخصيص متقدم وقوالب 360°",
+            },
+            {
+              fr: "Multi-devises & Multi-langues",
+              en: "Multi-currency & Multi-language",
+              ar: "متعدد العملات واللغات",
+            },
+            {
+              fr: "Support prioritaire & Accompagnement",
+              en: "Priority support & assistance",
+              ar: "دعم ذو أولوية ومرافقة مخصصة",
+            },
+          ],
+          ctaText: { fr: "Commander cette Offre", en: "Order This Plan", ar: "طلب هذا العرض" },
+          ctaLink: "/contact",
+        },
+        {
+          id: "p3",
+          name: { fr: "Sur Mesure R&D", en: "Custom Enterprise", ar: "مخصص للمؤسسات" },
+          price: "Sur Devis",
+          period: { fr: "/ architecture", en: "/ architecture", ar: "/ هندسة معمارية" },
+          popular: false,
+          features: [
+            {
+              fr: "Cahier des charges sur mesure",
+              en: "Custom technical specifications",
+              ar: "دفتر شروط مخصص بالكامل",
+            },
+            {
+              fr: "Audit d'architecture & Intégrations API",
+              en: "Architecture audit & API integrations",
+              ar: "تدقيق معماري وربط برمجي كامل",
+            },
+            {
+              fr: "Déploiement haute disponibilité",
+              en: "High-availability deployment",
+              ar: "نشر على بنية عالية الجاهزية",
+            },
+            {
+              fr: "SLA & Maintenance R&D dédiée",
+              en: "Dedicated R&D SLA & Maintenance",
+              ar: "اتفاقية مستوى خدمة وصيانة متقدمة",
+            },
+          ],
+          ctaText: { fr: "Demander une Étude", en: "Request a Study", ar: "طلب دراسة مخصصة" },
+          ctaLink: "/contact",
+        },
+      ],
+    },
   },
   {
     type: "quote_star",
@@ -495,6 +660,21 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "شهادة عميل مميزة مع اقتباس بارز، تقييم بالنجوم وملف تعريفي بالكاتب.",
     },
     icon: "Quote",
+    defaultProps: {
+      quote: {
+        fr: "« L'architecture StacGate et le niveau de rigueur d'ArchiSys3.0 ont transformé notre infrastructure numérique avec une robustesse exemplaire. »",
+        en: "“The StacGate architecture and ArchiSys3.0's level of rigor transformed our digital infrastructure with exemplary robustness.”",
+        ar: "«لقد أحدثت بنية StacGate ومستوى الدقة الهندسية نقلة نوعية في بنيتنا الرقمية بصلابة استثنائية.»",
+      },
+      author: "Dr. Salim B.",
+      role: {
+        fr: "Directeur des Systèmes d'Information — Enterprise Partner",
+        en: "Chief Information Officer — Enterprise Partner",
+        ar: "مدير نظم المعلومات — شريك مؤسساتي",
+      },
+      rating: 5,
+      avatarSrc: "",
+    },
   },
   {
     type: "full_width_banner",
@@ -510,6 +690,32 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "بانر رئيسي عريض مع صورة خلفية وتدرج متباين وأزرار عمل مزدوجة.",
     },
     icon: "Maximize",
+    defaultProps: {
+      title: {
+        fr: "Construisez votre Écosystème Haute Performance avec StacGate",
+        en: "Build Your High Performance Ecosystem with StacGate",
+        ar: "ابنِ بنيتك الرقمية عالية الأداء مع StacGate",
+      },
+      subtitle: {
+        fr: "Une solution technologique souveraine, composable et modulaire conçue pour l'excellence et la longévité.",
+        en: "A sovereign, composable and modular technological solution designed for excellence and longevity.",
+        ar: "حل برمجي سيادي وتكاملي مصمم لتحقيق أعلى معايير الجودة والاستدامة.",
+      },
+      bannerSrc: "/media/stacgate-archisys-combined.webp",
+      height: "normal",
+      primaryCtaText: {
+        fr: "Découvrir la Plateforme",
+        en: "Discover Platform",
+        ar: "استكشف المنصة",
+      },
+      primaryCtaLink: "/catalogue",
+      secondaryCtaText: {
+        fr: "Nous Contacter",
+        en: "Contact Us",
+        ar: "تواصل معنا",
+      },
+      secondaryCtaLink: "/contact",
+    },
   },
   {
     type: "visual_spacer",
@@ -525,6 +731,11 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
       ar: "فاصل رأسي قابل للتعديل (20 إلى 160 بكسل) مع خط فاصل أنيق اختياري.",
     },
     icon: "Minus",
+    defaultProps: {
+      height: 48,
+      showDivider: false,
+      dividerStyle: "subtle",
+    },
   },
 ];
 

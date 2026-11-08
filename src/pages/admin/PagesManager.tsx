@@ -1080,6 +1080,7 @@ export default function PagesManager() {
                               <BlockPropsEditor
                                 block={block}
                                 onChange={(newProps) => handleUpdateBlockProps(idx, newProps)}
+                                onStyleChange={(newStyle) => handleUpdateBlockStyle(idx, newStyle)}
                               />
                             )}
                           </div>
@@ -1293,13 +1294,13 @@ export default function PagesManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Catalogue des 24 Blocs Universels */}
+      {/* Modal Catalogue des Blocs Universels */}
       <Dialog open={addBlockModalOpen} onOpenChange={setAddBlockModalOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto text-start">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <span>Catalogue des Blocs Universels (24 Blocs)</span>
+              <span>Catalogue des Blocs Universels ({BLOCK_REGISTRY.length} Blocs)</span>
             </DialogTitle>
             <DialogDescription className="text-xs">
               Choisissez un bloc à ajouter dans votre vue. Il sera inséré à la suite des blocs
