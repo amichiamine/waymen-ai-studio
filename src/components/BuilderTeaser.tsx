@@ -2,22 +2,29 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Cpu } from "lucide-react";
 import banner from "@/assets/builder-banner.webp";
 import { useSiteContent, useSiteSettings } from "@/data-provider";
-import { getIcon } from "@/lib/site-content";
+import { getIcon, type SiteContent } from "@/lib/site-content";
 import { Reveal } from "@/components/Reveal";
 import { useLocalize } from "@/lib/i18n";
 
-export function BuilderTeaser() {
+interface BuilderTeaserProps {
+  override?: Partial<SiteContent["builderTeaser"] & { bannerSrc?: string }>;
+}
+
+export function BuilderTeaser({ override }: BuilderTeaserProps = {}) {
   const { data: siteContent } = useSiteContent();
   const { data: siteSettings } = useSiteSettings();
   const storeName = siteSettings.storeName?.trim() || "Boutique";
-  const b = siteContent.builderTeaser;
+  const b = { ...siteContent.builderTeaser, ...override };
+  const items = (override?.items ||
+    siteContent.builderTeaser.items) as SiteContent["builderTeaser"]["items"];
   const L = useLocalize();
+  const bannerImage = override?.bannerSrc || banner;
   return (
     <section className="container-page py-16">
       <Reveal variant="up">
         <div className="group relative overflow-hidden rounded-2xl border border-border transition-all duration-500 hover:border-primary/50">
           <img
-            src={banner}
+            src={bannerImage}
             alt={storeName}
             width={1280}
             height={600}
@@ -45,7 +52,7 @@ export function BuilderTeaser() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 self-end">
-              {b.items.map((it, i) => {
+              {items.map((it, i) => {
                 const Icon = getIcon(it.icon);
                 return (
                   <Reveal key={it.id} variant="up" delay={150 + i * 90}>

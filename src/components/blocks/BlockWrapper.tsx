@@ -118,6 +118,30 @@ export function BlockWrapper({ config, children, className }: BlockWrapperProps)
             ? "my-14 md:my-20"
             : "";
 
+  const cardPresetClass =
+    style.cardStyle === "flat"
+      ? "[&_.card-item]:shadow-none [&_.card-item]:border-border/30"
+      : style.cardStyle === "elevated"
+        ? "[&_.card-item]:shadow-lg [&_.card-item]:border-border/60"
+        : style.cardStyle === "bordered"
+          ? "[&_.card-item]:border-2 [&_.card-item]:border-primary/40"
+          : style.cardStyle === "glass"
+            ? "[&_.card-item]:backdrop-blur-md [&_.card-item]:bg-card/40"
+            : style.cardStyle === "gradient"
+              ? "[&_.card-item]:bg-gradient-to-br [&_.card-item]:from-card [&_.card-item]:to-primary/5"
+              : "";
+
+  const cardHoverClass =
+    style.cardHover === "lift"
+      ? "[&_.card-item]:hover:-translate-y-2 [&_.card-item]:transition-transform"
+      : style.cardHover === "glow"
+        ? "[&_.card-item]:hover:shadow-lg [&_.card-item]:hover:shadow-primary/20"
+        : style.cardHover === "zoom"
+          ? "[&_.card-item]:hover:scale-105 [&_.card-item]:transition-transform"
+          : style.cardHover === "border-accent"
+            ? "[&_.card-item]:hover:border-primary"
+            : "";
+
   return (
     <section
       id={style.anchorId || undefined}
@@ -132,6 +156,8 @@ export function BlockWrapper({ config, children, className }: BlockWrapperProps)
         shadowClass,
         borderClass,
         marginClass,
+        cardPresetClass,
+        cardHoverClass,
         style.customClassName,
       )}
     >

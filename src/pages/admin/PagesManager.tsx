@@ -54,10 +54,17 @@ import {
 } from "@/components/ui/select";
 import { useSiteContent, useSiteContentMutations } from "@/data-provider";
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
-import type { BlockConfig, BlockType, CustomPageDefinition, BlockStyleConfig } from "@/types/pages";
+import type {
+  BlockConfig,
+  BlockType,
+  CustomPageDefinition,
+  BlockStyleConfig,
+  PageLayoutConfig,
+} from "@/types/pages";
 import { BLOCK_REGISTRY, getBlockMeta } from "@/components/blocks";
 import { BlockPropsEditor } from "@/components/admin/BlockPropsEditor";
 import { StudioLiveCanvas } from "@/components/admin/StudioLiveCanvas";
+import { MediaPickerField } from "@/components/admin/MediaPickerField";
 import { cn } from "@/lib/utils";
 import AdminContent from "./Content";
 
@@ -122,6 +129,7 @@ export default function PagesManager() {
   // Dialog création / paramètres de page
   const [pageModalOpen, setPageModalOpen] = useState(false);
   const [metaLang, setMetaLang] = useState<LangCode>("fr");
+  const [metaModalTab, setMetaModalTab] = useState<"general" | "layout" | "seo">("general");
   const [editingPageMeta, setEditingPageMeta] = useState<Partial<CustomPageDefinition> | null>(
     null,
   );
@@ -203,16 +211,24 @@ export default function PagesManager() {
       inNavbar: true,
       inFooter: false,
       navOrder: pages.length + 1,
+      layout: { pageBg: "default" },
+      seo: {},
       blocks: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+    setMetaModalTab("general");
     setPageModalOpen(true);
   };
 
   // Ouverture modal édition paramètres de page
   const handleOpenEditPageMeta = (p: CustomPageDefinition) => {
-    setEditingPageMeta({ ...p });
+    setEditingPageMeta({
+      ...p,
+      layout: p.layout ? { ...p.layout } : { pageBg: "default" },
+      seo: p.seo ? { ...p.seo } : {},
+    });
+    setMetaModalTab("general");
     setPageModalOpen(true);
   };
 
@@ -259,6 +275,8 @@ export default function PagesManager() {
       inNavbar: isHomePage ? false : (editingPageMeta.inNavbar ?? false),
       inFooter: isHomePage ? false : (editingPageMeta.inFooter ?? false),
       navOrder: editingPageMeta.navOrder ?? pages.length + 1,
+      layout: editingPageMeta.layout,
+      seo: editingPageMeta.seo,
       blocks: editingPageMeta.blocks || [],
       createdAt: editingPageMeta.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1209,170 +1227,473 @@ export default function PagesManager() {
 
       {/* Modal Paramètres de Vue (Création / Édition) */}
       <Dialog open={pageModalOpen} onOpenChange={setPageModalOpen}>
-        <DialogContent className="sm:max-w-md text-start">
+        <DialogContent className="sm:max-w-xl text-start max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Paramètres de la Vue</DialogTitle>
+            <DialogTitle>Paramètres Avancés de la Vue (360°)</DialogTitle>
             <DialogDescription className="text-xs">
-              Définissez l'adresse URL (slug) et la visibilité de cette vue.
+              Configurez la structure d'accès, la disposition d'affichage et l'optimisation SEO de
+              cette vue.
             </DialogDescription>
           </DialogHeader>
 
+          {/* Sélecteur d'onglets du Modal : Général | Layout | SEO */}
+          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border">
+            <Button
+              type="button"
+              size="sm"
+              variant={metaModalTab === "general" ? "default" : "ghost"}
+              className="flex-1 h-7 text-xs font-semibold"
+              onClick={() => setMetaModalTab("general")}
+            >
+              Général
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={metaModalTab === "layout" ? "default" : "ghost"}
+              className="flex-1 h-7 text-xs font-semibold"
+              onClick={() => setMetaModalTab("layout")}
+            >
+              Mise en page / Layout
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={metaModalTab === "seo" ? "default" : "ghost"}
+              className="flex-1 h-7 text-xs font-semibold"
+              onClick={() => setMetaModalTab("seo")}
+            >
+              SEO & Réseaux
+            </Button>
+          </div>
+
           {editingPageMeta && (
             <div className="space-y-4 py-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="page_slug" className="text-xs font-semibold">
-                  Adresse URL (Slug) :
-                </Label>
-                <div className="flex items-center rounded-md border border-input bg-muted/20 px-3">
-                  <span className="text-xs text-muted-foreground font-mono">/</span>
-                  <Input
-                    id="page_slug"
-                    value={editingPageMeta.id === "page_home" ? "" : editingPageMeta.slug || ""}
-                    disabled={editingPageMeta.id === "page_home"}
-                    onChange={(e) =>
-                      setEditingPageMeta({ ...editingPageMeta, slug: e.target.value })
+              {/* ========================================================= */}
+              {/* 🏷️ ONGLET 1 : GÉNÉRAL                                     */}
+              {/* ========================================================= */}
+              {metaModalTab === "general" && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="page_slug" className="text-xs font-semibold">
+                      Adresse URL (Slug) :
+                    </Label>
+                    <div className="flex items-center rounded-md border border-input bg-muted/20 px-3">
+                      <span className="text-xs text-muted-foreground font-mono">/</span>
+                      <Input
+                        id="page_slug"
+                        value={editingPageMeta.id === "page_home" ? "" : editingPageMeta.slug || ""}
+                        disabled={editingPageMeta.id === "page_home"}
+                        onChange={(e) =>
+                          setEditingPageMeta({ ...editingPageMeta, slug: e.target.value })
+                        }
+                        placeholder={
+                          editingPageMeta.id === "page_home"
+                            ? "(Racine Accueil /)"
+                            : "cv, projets, solutions..."
+                        }
+                        className="border-0 bg-transparent focus-visible:ring-0 text-sm font-mono"
+                      />
+                    </div>
+                    {editingPageMeta.id === "page_home" && (
+                      <p className="text-[11px] text-muted-foreground">
+                        La page d'accueil est fixée sur la racine principale (/) du site.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Sélecteur de langue trilingue FR / EN / AR */}
+                  <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={metaLang === "fr" ? "secondary" : "ghost"}
+                      className="text-xs h-7 flex-1 font-semibold"
+                      onClick={() => setMetaLang("fr")}
+                    >
+                      Français (FR)
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={metaLang === "en" ? "secondary" : "ghost"}
+                      className="text-xs h-7 flex-1 font-semibold"
+                      onClick={() => setMetaLang("en")}
+                    >
+                      English (EN)
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={metaLang === "ar" ? "secondary" : "ghost"}
+                      className="text-xs h-7 flex-1 font-semibold"
+                      onClick={() => setMetaLang("ar")}
+                    >
+                      العربية (AR)
+                    </Button>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      Titre de la Vue ({metaLang.toUpperCase()}) :
+                    </Label>
+                    <Input
+                      value={toLocObj(editingPageMeta.title)[metaLang]}
+                      onChange={(e) =>
+                        setEditingPageMeta({
+                          ...editingPageMeta,
+                          title: {
+                            ...toLocObj(editingPageMeta.title),
+                            [metaLang]: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder={
+                        metaLang === "ar"
+                          ? "عنوان الصفحة..."
+                          : metaLang === "en"
+                            ? "Page title..."
+                            : "ex: Mon Profil & CV"
+                      }
+                      dir={metaLang === "ar" ? "rtl" : "ltr"}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      Description SEO courte ({metaLang.toUpperCase()}) :
+                    </Label>
+                    <Input
+                      value={toLocObj(editingPageMeta.description)[metaLang]}
+                      onChange={(e) =>
+                        setEditingPageMeta({
+                          ...editingPageMeta,
+                          description: {
+                            ...toLocObj(editingPageMeta.description),
+                            [metaLang]: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder={
+                        metaLang === "ar"
+                          ? "وصف محركات البحث..."
+                          : metaLang === "en"
+                            ? "Search engine description..."
+                            : "Résumé pour les moteurs de recherche..."
+                      }
+                      dir={metaLang === "ar" ? "rtl" : "ltr"}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <div>
+                      <Label className="text-xs font-bold">Publier immédiatement :</Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        La vue sera accessible aux visiteurs.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={editingPageMeta.isPublished ?? true}
+                      onCheckedChange={(c) =>
+                        setEditingPageMeta({ ...editingPageMeta, isPublished: c })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <div>
+                      <Label className="text-xs font-bold">
+                        Lien dans le menu supérieur (Navbar) :
+                      </Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        Insère un lien dans la barre de navigation et le menu mobile (dédoublonné si
+                        déjà présent).
+                      </p>
+                    </div>
+                    <Switch
+                      checked={editingPageMeta.inNavbar ?? false}
+                      onCheckedChange={(c) =>
+                        setEditingPageMeta({ ...editingPageMeta, inNavbar: c })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <div>
+                      <Label className="text-xs font-bold">
+                        Lien dans le pied de page (Footer) :
+                      </Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        Insère un lien dans la colonne institutionnelle du pied de page.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={editingPageMeta.inFooter ?? false}
+                      onCheckedChange={(c) =>
+                        setEditingPageMeta({ ...editingPageMeta, inFooter: c })
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================= */}
+              {/* 🎨 ONGLET 2 : MISE EN PAGE / LAYOUT                       */}
+              {/* ========================================================= */}
+              {metaModalTab === "layout" && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold">Arrière-plan de la Page :</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                      {[
+                        { key: "default", label: "Défaut (Standard)" },
+                        { key: "dark", label: "Sombre Profond" },
+                        { key: "surface", label: "Blanc / Carte" },
+                        { key: "muted", label: "Gris Doux" },
+                        { key: "gradient", label: "Dégradé Subtil" },
+                      ].map((bgItem) => (
+                        <button
+                          key={bgItem.key}
+                          type="button"
+                          onClick={() =>
+                            setEditingPageMeta({
+                              ...editingPageMeta,
+                              layout: {
+                                ...editingPageMeta.layout,
+                                pageBg: bgItem.key as PageLayoutConfig["pageBg"],
+                              },
+                            })
+                          }
+                          className={cn(
+                            "py-1.5 px-2 text-xs font-semibold rounded-md border text-center transition-all truncate",
+                            (editingPageMeta.layout?.pageBg || "default") === bgItem.key
+                              ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                              : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                          )}
+                        >
+                          {bgItem.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-2 border-t border-border/40">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-xs font-bold">Masquer l'En-tête (Header) :</Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Idéal pour les landing pages, formulaires plein écran ou tunnels épurés.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={editingPageMeta.layout?.hideHeader ?? false}
+                        onCheckedChange={(c) =>
+                          setEditingPageMeta({
+                            ...editingPageMeta,
+                            layout: { ...editingPageMeta.layout, hideHeader: c },
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-xs font-bold">
+                          Masquer le Pied de page (Footer) :
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Retire le footer pour les pages d'action ou présentations focalisées.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={editingPageMeta.layout?.hideFooter ?? false}
+                        onCheckedChange={(c) =>
+                          setEditingPageMeta({
+                            ...editingPageMeta,
+                            layout: { ...editingPageMeta.layout, hideFooter: c },
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-xs font-bold">
+                          Masquer le Bandeau Défilant (Ticker & Promo) :
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Désactive le bandeau d'annonces en haut de page.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={editingPageMeta.layout?.hideTicker ?? false}
+                        onCheckedChange={(c) =>
+                          setEditingPageMeta({
+                            ...editingPageMeta,
+                            layout: { ...editingPageMeta.layout, hideTicker: c },
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-xs font-bold">
+                          Masquer le Contact Flottant WhatsApp :
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Retire le bouton flottant WhatsApp en bas d'écran.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={editingPageMeta.layout?.hideFloatingContact ?? false}
+                        onCheckedChange={(c) =>
+                          setEditingPageMeta({
+                            ...editingPageMeta,
+                            layout: { ...editingPageMeta.layout, hideFloatingContact: c },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================= */}
+              {/* 🚀 ONGLET 3 : SEO & RÉSEAUX SOCIAUX                       */}
+              {/* ========================================================= */}
+              {metaModalTab === "seo" && (
+                <div className="space-y-4 animate-fade-in">
+                  {/* Sélecteur de langue trilingue FR / EN / AR */}
+                  <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={metaLang === "fr" ? "secondary" : "ghost"}
+                      className="text-xs h-7 flex-1 font-semibold"
+                      onClick={() => setMetaLang("fr")}
+                    >
+                      Français (FR)
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={metaLang === "en" ? "secondary" : "ghost"}
+                      className="text-xs h-7 flex-1 font-semibold"
+                      onClick={() => setMetaLang("en")}
+                    >
+                      English (EN)
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={metaLang === "ar" ? "secondary" : "ghost"}
+                      className="text-xs h-7 flex-1 font-semibold"
+                      onClick={() => setMetaLang("ar")}
+                    >
+                      العربية (AR)
+                    </Button>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      Titre Balise &lt;title&gt; SEO ({metaLang.toUpperCase()}) :
+                    </Label>
+                    <Input
+                      value={toLocObj(editingPageMeta.seo?.metaTitle)[metaLang]}
+                      onChange={(e) =>
+                        setEditingPageMeta({
+                          ...editingPageMeta,
+                          seo: {
+                            ...editingPageMeta.seo,
+                            metaTitle: {
+                              ...toLocObj(editingPageMeta.seo?.metaTitle),
+                              [metaLang]: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Titre personnalisé pour Google (laisser vide pour titre automatique)"
+                      dir={metaLang === "ar" ? "rtl" : "ltr"}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      Meta Description SEO ({metaLang.toUpperCase()}) :
+                    </Label>
+                    <Textarea
+                      rows={2}
+                      value={toLocObj(editingPageMeta.seo?.metaDescription)[metaLang]}
+                      onChange={(e) =>
+                        setEditingPageMeta({
+                          ...editingPageMeta,
+                          seo: {
+                            ...editingPageMeta.seo,
+                            metaDescription: {
+                              ...toLocObj(editingPageMeta.seo?.metaDescription),
+                              [metaLang]: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Texte descriptif affiché dans les résultats de recherche Google..."
+                      dir={metaLang === "ar" ? "rtl" : "ltr"}
+                      className="text-xs"
+                    />
+                  </div>
+
+                  <MediaPickerField
+                    label="Image OpenGraph (Partage Réseaux Sociaux)"
+                    description="Visuel affiché lors du partage du lien sur Facebook, LinkedIn, Twitter/X, WhatsApp"
+                    value={editingPageMeta.seo?.ogImage || ""}
+                    onChange={(url) =>
+                      setEditingPageMeta({
+                        ...editingPageMeta,
+                        seo: { ...editingPageMeta.seo, ogImage: url },
+                      })
                     }
-                    placeholder={
-                      editingPageMeta.id === "page_home"
-                        ? "(Racine Accueil /)"
-                        : "cv, projets, solutions..."
-                    }
-                    className="border-0 bg-transparent focus-visible:ring-0 text-sm font-mono"
                   />
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">
+                      URL Canonique personnalisée (Optionnel) :
+                    </Label>
+                    <Input
+                      value={editingPageMeta.seo?.canonicalUrl || ""}
+                      onChange={(e) =>
+                        setEditingPageMeta({
+                          ...editingPageMeta,
+                          seo: { ...editingPageMeta.seo, canonicalUrl: e.target.value },
+                        })
+                      }
+                      placeholder="ex: https://mon-domaine.com/cv"
+                      className="h-8 text-xs font-mono"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <div>
+                      <Label className="text-xs font-bold">
+                        Interdire l'indexation (noindex, nofollow) :
+                      </Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        Empêche les robots d'indexer cette page dans les moteurs de recherche.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={editingPageMeta.seo?.noIndex ?? false}
+                      onCheckedChange={(c) =>
+                        setEditingPageMeta({
+                          ...editingPageMeta,
+                          seo: { ...editingPageMeta.seo, noIndex: c },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
-                {editingPageMeta.id === "page_home" && (
-                  <p className="text-[11px] text-muted-foreground">
-                    La page d'accueil est fixée sur la racine principale (/) du site.
-                  </p>
-                )}
-              </div>
-
-              {/* Sélecteur de langue trilingue FR / EN / AR */}
-              <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-lg border border-border/50">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={metaLang === "fr" ? "secondary" : "ghost"}
-                  className="text-xs h-7 flex-1 font-semibold"
-                  onClick={() => setMetaLang("fr")}
-                >
-                  Français (FR)
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={metaLang === "en" ? "secondary" : "ghost"}
-                  className="text-xs h-7 flex-1 font-semibold"
-                  onClick={() => setMetaLang("en")}
-                >
-                  English (EN)
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={metaLang === "ar" ? "secondary" : "ghost"}
-                  className="text-xs h-7 flex-1 font-semibold"
-                  onClick={() => setMetaLang("ar")}
-                >
-                  العربية (AR)
-                </Button>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">
-                  Titre de la Vue ({metaLang.toUpperCase()}) :
-                </Label>
-                <Input
-                  value={toLocObj(editingPageMeta.title)[metaLang]}
-                  onChange={(e) =>
-                    setEditingPageMeta({
-                      ...editingPageMeta,
-                      title: {
-                        ...toLocObj(editingPageMeta.title),
-                        [metaLang]: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder={
-                    metaLang === "ar"
-                      ? "عنوان الصفحة..."
-                      : metaLang === "en"
-                        ? "Page title..."
-                        : "ex: Mon Profil & CV"
-                  }
-                  dir={metaLang === "ar" ? "rtl" : "ltr"}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">
-                  Description SEO ({metaLang.toUpperCase()}) :
-                </Label>
-                <Input
-                  value={toLocObj(editingPageMeta.description)[metaLang]}
-                  onChange={(e) =>
-                    setEditingPageMeta({
-                      ...editingPageMeta,
-                      description: {
-                        ...toLocObj(editingPageMeta.description),
-                        [metaLang]: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder={
-                    metaLang === "ar"
-                      ? "وصف محركات البحث..."
-                      : metaLang === "en"
-                        ? "Search engine description..."
-                        : "Résumé pour les moteurs de recherche..."
-                  }
-                  dir={metaLang === "ar" ? "rtl" : "ltr"}
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                <div>
-                  <Label className="text-xs font-bold">Publier immédiatement :</Label>
-                  <p className="text-[11px] text-muted-foreground">
-                    La vue sera accessible aux visiteurs.
-                  </p>
-                </div>
-                <Switch
-                  checked={editingPageMeta.isPublished ?? true}
-                  onCheckedChange={(c) =>
-                    setEditingPageMeta({ ...editingPageMeta, isPublished: c })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                <div>
-                  <Label className="text-xs font-bold">
-                    Lien dans le menu supérieur (Navbar) :
-                  </Label>
-                  <p className="text-[11px] text-muted-foreground">
-                    Insère un lien dans la barre de navigation et le menu mobile (dédoublonné si
-                    déjà présent).
-                  </p>
-                </div>
-                <Switch
-                  checked={editingPageMeta.inNavbar ?? false}
-                  onCheckedChange={(c) => setEditingPageMeta({ ...editingPageMeta, inNavbar: c })}
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                <div>
-                  <Label className="text-xs font-bold">Lien dans le pied de page (Footer) :</Label>
-                  <p className="text-[11px] text-muted-foreground">
-                    Insère un lien dans la colonne institutionnelle du pied de page.
-                  </p>
-                </div>
-                <Switch
-                  checked={editingPageMeta.inFooter ?? false}
-                  onCheckedChange={(c) => setEditingPageMeta({ ...editingPageMeta, inFooter: c })}
-                />
-              </div>
+              )}
             </div>
           )}
 

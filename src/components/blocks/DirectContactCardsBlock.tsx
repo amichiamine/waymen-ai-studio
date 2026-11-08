@@ -9,12 +9,18 @@ export function DirectContactCardsBlock({ config }: { config: BlockConfig }) {
   const L = useLocalize();
   const p = config.props || {};
 
-  const phoneDigits = s.contactPhone ? s.contactPhone.replace(/\s+/g, "") : "";
+  const contactPhone = (typeof p.contactPhone === "string" ? p.contactPhone : "") || s.contactPhone;
+  const whatsapp = (typeof p.whatsapp === "string" ? p.whatsapp : "") || s.whatsapp;
+  const contactEmail = (typeof p.contactEmail === "string" ? p.contactEmail : "") || s.contactEmail;
+  const address = (typeof p.address === "string" ? p.address : "") || s.address;
+  const hours = (typeof p.hours === "string" ? p.hours : "") || s.hours;
+
+  const phoneDigits = contactPhone ? contactPhone.replace(/\s+/g, "") : "";
 
   return (
     <section className="container-page py-10 text-start">
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {s.contactPhone && (
+        {contactPhone && (
           <a
             href={`tel:${phoneDigits}`}
             className="flex items-start gap-4 rounded-2xl border border-border/60 bg-card/60 p-6 shadow-xs hover:border-primary/40 transition-all group"
@@ -26,14 +32,14 @@ export function DirectContactCardsBlock({ config }: { config: BlockConfig }) {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t("contact.phone")}
               </p>
-              <p className="text-base font-bold text-foreground mt-1">{s.contactPhone}</p>
+              <p className="text-base font-bold text-foreground mt-1">{contactPhone}</p>
             </div>
           </a>
         )}
 
-        {s.whatsapp && (
+        {whatsapp && (
           <a
-            href={`https://wa.me/${s.whatsapp.replace(/\D/g, "")}`}
+            href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
             target="_blank"
             rel="noreferrer noopener"
             className="flex items-start gap-4 rounded-2xl border border-border/60 bg-card/60 p-6 shadow-xs hover:border-emerald-500/40 transition-all group"
@@ -45,14 +51,14 @@ export function DirectContactCardsBlock({ config }: { config: BlockConfig }) {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 WhatsApp
               </p>
-              <p className="text-base font-bold text-foreground mt-1">{s.whatsapp}</p>
+              <p className="text-base font-bold text-foreground mt-1">{whatsapp}</p>
             </div>
           </a>
         )}
 
-        {s.contactEmail && (
+        {contactEmail && (
           <a
-            href={`mailto:${s.contactEmail}`}
+            href={`mailto:${contactEmail}`}
             className="flex items-start gap-4 rounded-2xl border border-border/60 bg-card/60 p-6 shadow-xs hover:border-primary/40 transition-all group"
           >
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -62,12 +68,12 @@ export function DirectContactCardsBlock({ config }: { config: BlockConfig }) {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t("contact.email")}
               </p>
-              <p className="text-base font-bold text-foreground mt-1 truncate">{s.contactEmail}</p>
+              <p className="text-base font-bold text-foreground mt-1 truncate">{contactEmail}</p>
             </div>
           </a>
         )}
 
-        {s.address && (
+        {address && (
           <div className="flex items-start gap-4 rounded-2xl border border-border/60 bg-card/60 p-6 shadow-xs">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <MapPin className="h-5 w-5" />
@@ -76,12 +82,12 @@ export function DirectContactCardsBlock({ config }: { config: BlockConfig }) {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t("contact.address")}
               </p>
-              <p className="text-sm font-medium text-foreground mt-1 leading-snug">{s.address}</p>
+              <p className="text-sm font-medium text-foreground mt-1 leading-snug">{address}</p>
             </div>
           </div>
         )}
 
-        {s.hours && (
+        {hours && (
           <div className="flex items-start gap-4 rounded-2xl border border-border/60 bg-card/60 p-6 shadow-xs">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Clock className="h-5 w-5" />
@@ -90,7 +96,7 @@ export function DirectContactCardsBlock({ config }: { config: BlockConfig }) {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t("contact.hours")}
               </p>
-              <p className="text-sm font-medium text-foreground mt-1 leading-snug">{s.hours}</p>
+              <p className="text-sm font-medium text-foreground mt-1 leading-snug">{hours}</p>
             </div>
           </div>
         )}

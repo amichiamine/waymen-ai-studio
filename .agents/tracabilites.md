@@ -62,6 +62,7 @@
 | **Phase 40** | 08/11/2026 | Grand Studio Visuel Interactif (Live Canvas WYSYWIG, Inspecteur Fin & Styles)                                                | 📄 [`40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md`](Implementations_Plans/40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md)                                                 | 🟢 **Livré & Validé** |
 | **Phase 41** | 08/11/2026 | Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, 5 Nouveaux Blocs                             | 📄 [`41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md`](Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md)               | 🟢 **Livré & Validé** |
 | **Phase 42** | 08/11/2026 | Ergonomie & Réactivité 360° du Studio Visuel : Sidebar Rétractable, Mode Mobile/Tablette, Auto-Scroll & Inspecteur Ultra-Fin | 📄 [`42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md`](Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md) | 🟢 **Livré & Validé** |
+| **Phase 43** | 08/11/2026 | Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments, Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite | 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md) | 🟢 **Livré & Validé** |
 
 ---
 
@@ -2176,10 +2177,10 @@
 
 - **Contexte & Enjeux :**  
   Suite à la question de contrôle d'ArchiSys3.0 sur la complétude intégrale et les angles morts, un audit forensique en lecture seule a mis en lumière 4 angles morts critiques nécessitant une éradication immédiate :
-  1. *Angle Mort 1 (Découplage Fond / Conteneur) :* Dans [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx), `bgClass` et `maxWidthClass` étaient appliqués sur la même balise, rognant les fonds sombres/accentués lorsque le contenu était centré en 7xl ou 5xl.
-  2. *Angle Noir 2 (Sécurisation JSON) :* Dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx), `rawJson` manquait d'un `useEffect` à la sélection d'un nouveau bloc, risquant d'écraser les propriétés d'un bloc avec celles d'un autre en cas de passage en mode codeur JSON.
-  3. *Angle Mort 3 (Raccourci Tactile Mobile) :* Dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx), l'inspecteur sur mobile/tablette n'avait pas de bouton contextuel rapide pour revenir en 1 tap au visualiseur Live Canvas.
-  4. *Angle Mort 4 (Anti-débordement Écrans 360px) :* Dans [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx), le simulateur mobile à 375px + bordures de 8px débordait horizontalement sur les vrais smartphones de 360px.
+  1. _Angle Mort 1 (Découplage Fond / Conteneur) :_ Dans [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx), `bgClass` et `maxWidthClass` étaient appliqués sur la même balise, rognant les fonds sombres/accentués lorsque le contenu était centré en 7xl ou 5xl.
+  2. _Angle Noir 2 (Sécurisation JSON) :_ Dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx), `rawJson` manquait d'un `useEffect` à la sélection d'un nouveau bloc, risquant d'écraser les propriétés d'un bloc avec celles d'un autre en cas de passage en mode codeur JSON.
+  3. _Angle Mort 3 (Raccourci Tactile Mobile) :_ Dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx), l'inspecteur sur mobile/tablette n'avait pas de bouton contextuel rapide pour revenir en 1 tap au visualiseur Live Canvas.
+  4. _Angle Mort 4 (Anti-débordement Écrans 360px) :_ Dans [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx), le simulateur mobile à 375px + bordures de 8px débordait horizontalement sur les vrais smartphones de 360px.
 - **Actions Réalisées :**
   - **Étape 42.1.1 (Refonte Conteneur à 2 Paliers dans BlockWrapper) :**  
     Séparation de `BlockWrapper.tsx` en une balise `<section>` externe 100% pleine largeur portant `bgClass`, `paddingClass`, `marginClass`, `borderClass`, `roundedClass`, `shadowClass`, `visibilityClass`, et une balise `<div>` interne centrée portant `maxWidthClass` et `alignClass`. Les fonds pleine largeur s'étendent désormais à l'infini sur tous les écrans tout en gardant le texte proprement cadré.
@@ -2204,6 +2205,70 @@
   - Plan Consolidé Miroir : 📄 [42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)
   - Archive application horodatée : 📦 [katech-site-08112026-1454.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1454.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1454.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1454.zip) (42 Ko)
+
+---
+
+### Phase 43 : Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments (Badges, Titres, CTAs, Grilles/Cartes), Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite (Zéro Régression)
+
+- **Contexte & Enjeux :**  
+  Suite aux orientations stratégiques d'ArchiSys3.0 pour dépasser le stade de simple formulaire et doter le Studio Visuel d'un niveau d'ingénierie et de liberté de direction artistique atomique professionnelle, quatre chantiers majeurs ont été accomplis sans aucune régression :
+  1. Complétude 100% des 29 blocs du catalogue sans aucun bloc orphelin : création d'inspecteurs dédiés pour les 7 blocs non encore pourvus (`builder_teaser`, `company_history`, `values_grid`, `contact_form`, `direct_contact_cards`, `ticker_bar`, `promo_banner`).
+  2. Contrôleurs atomiques des sous-éléments dans l'inspecteur : styles de cartes (flat, elevated, bordered, glass, gradient), effets au survol (lift, glow, zoom, border-accent), variantes de boutons CTA (primaire, secondaire, outline, ghost, gradient).
+  3. Paramètres de Vues Dédiés 360° dans `PagesManager.tsx` : refonte du modal en 3 onglets distincts (« Général », « Mise en page / Layout », « SEO & Réseaux Sociaux ») permettant de masquer le header, footer, ticker, contact WhatsApp, personnaliser le fond de page, injecter des balises OpenGraph, URL canonique et balises robots `noindex`.
+  4. Persistance souveraine directe SQLite : sérialisation garantie dans `katech-data/dev-a97b6b98a368.sqlite` sous `site_content.customPages` via `PATCH /api/v1/content`, 0 dépendance à `localStorage`.
+- **Décisions d'ArchiSys3.0 :**  
+  Validation formelle de l'Option A : couverture complète des blocs, sous-éléments atomiques, onglets de paramétrage de page, persistance SQLite souveraine et respect strict du zéro régression.
+- **Actions Réalisées :**
+  - **Étape 43.1 (Extension Typologique) :**  
+    Modification de [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) :
+    - Définition de `PageLayoutConfig` (`hideHeader`, `transparentHeader`, `hideFooter`, `hideTicker`, `hideFloatingContact`, `pageBg`).
+    - Définition de `PageSeoConfig` (`metaTitle`, `metaDescription`, `ogImage`, `canonicalUrl`, `noIndex`).
+    - Extension de `CustomPageDefinition` avec `layout?: PageLayoutConfig` et `seo?: PageSeoConfig`.
+    - Extension de `BlockStyleConfig` avec `cardStyle`, `cardHover`, `gridColsDesktop`, `gridColsMobile`, `gridGap`, `ctaVariant`, `ctaSize`, `headerBadge`, `headerTitleSize`.
+  - **Étape 43.2 (Intégration Vitrine Dynamique & Layout) :**  
+    - Modification de [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx) : injection des balises SEO avancées (`og:image`, `canonical`, `noindex, nofollow`), application dynamique de `pageBg` (dark, surface, muted, gradient).
+    - Modification de [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx) : prise en compte des directives de mise en page pour masquer header, footer, ticker ou contact WhatsApp selon la vue active.
+  - **Étape 43.3 (Inspecteurs des 7 Blocs Orphelins) :**  
+    Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) :
+    - Formulaire `builder_teaser` (titre, sous-titre, badge, image fond MediaPicker, CTA).
+    - Formulaire `company_history` (titre histoire, corps histoire, titre mission, corps mission).
+    - Formulaire `values_grid` (gestionnaire dynamique de cartes de valeurs avec icônes Lucide, titres trilingues et descriptions).
+    - Formulaire `contact_form` (titre, chapô, bouton d'envoi).
+    - Formulaire `direct_contact_cards` (téléphone, whatsapp, email, adresse, horaires).
+    - Formulaire `ticker_bar` (vitesse de défilement, gestionnaire dynamique de messages).
+    - Formulaire `promo_banner` (texte, code promo badge, libellé CTA, lien URL).
+  - **Étape 43.4 (Contrôleurs Atomiques de Sous-Éléments) :**  
+    - Ajout dans `BlockPropsEditor.tsx` des sélecteurs visuels de Style de Cartes, Effet de Survol et Variantes de Boutons CTA.
+    - Modification de [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) pour propager les styles de cartes et effets de survol via des sélecteurs CSS propres (`card-item`).
+    - Adaptation de [`src/components/BuilderTeaser.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BuilderTeaser.tsx), [`src/components/Ticker.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Ticker.tsx), [`src/components/PromoBanner.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/PromoBanner.tsx), [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) et [`src/components/blocks/DirectContactCardsBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/DirectContactCardsBlock.tsx) pour accepter les surcharges de props.
+  - **Étape 43.5 (Modal Paramètres Avancés de Page 360°) :**  
+    Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+    - Refonte du modal d'édition de page en 3 onglets (« Général », « Mise en page / Layout », « SEO & Réseaux »).
+    - Intégration de `MediaPickerField` pour l'image OpenGraph.
+    - Sauvegarde et persistance intégrale de `layout` et `seo` dans `CustomPageDefinition`.
+  - **Étape 43.6 (CI, Recette & Packaging) :**  
+    - Exécution de `bun run verifier-i18n` (parité trilingue 100% conforme, 0 erreur).
+    - Exécution de `bunx tsc --noEmit` (0 erreur TypeScript).
+    - Exécution de `bun run format` (code 100% formaté).
+    - Exécution de `bun run lint` (0 erreur ESLint).
+    - Exécution de `bun run build` (succès en 17.95s, 10 pages prérendues).
+    - Exécution de `bun run paqueter:data` (archive `katech-data-08112026-1708.zip` générée).
+    - Vérification de la persistance SQLite par requête directe sur `katech-data/dev-a97b6b98a368.sqlite` : 5 vues custom et 25 blocs vérifiés.
+- **Résultats de Recette :**
+  - Les 29 blocs du catalogue disposent d'inspecteurs graphiques dédiés complets, zéro bloc orphelin résiduel.
+  - Les paramètres de vue permettent de créer des landing pages épurées sans header/footer/ticker tout en personnalisant le fond et les métadonnées SEO OpenGraph.
+  - Les modifications de blocs et de pages sont directement persistées en base SQLite souveraine sans régression.
+- **Livrables :**
+  - Types Souverains Étendus : 📄 [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts)
+  - DynamicPage SEO & Layout : 📄 [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx)
+  - App.tsx Layout Handler : 📄 [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx)
+  - Inspecteur Blocs & Sous-Éléments : 📄 [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx)
+  - Modal Pages 360° : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - BlockWrapper Cascading Styles : 📄 [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx)
+  - Composants Blocs Enrichis : 📄 [`src/components/BuilderTeaser.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BuilderTeaser.tsx), [`src/components/Ticker.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Ticker.tsx), [`src/components/PromoBanner.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/PromoBanner.tsx), [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx), [`src/components/blocks/DirectContactCardsBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/DirectContactCardsBlock.tsx)
+  - Plan d'Implémentation Miroir : 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md)
+  - Archive application horodatée : 📦 [katech-site-08112026-1707.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1707.zip) (4.15 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1708.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1708.zip) (42 Ko)
 
 #### Sous-Phase 41.1 : Audit Forensique, Éradication des 4 Angles Morts & Consolidation Intégrale de la Persistance BD Directe
 
@@ -2294,10 +2359,10 @@
 
 - **Contexte & Enjeux :**  
   Suite à la question de contrôle d'ArchiSys3.0 sur la complétude intégrale et les angles morts, un audit forensique en lecture seule a mis en lumière 4 angles morts critiques nécessitant une éradication immédiate :
-  1. *Angle Mort 1 (Découplage Fond / Conteneur) :* Dans [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx), `bgClass` et `maxWidthClass` étaient appliqués sur la même balise, rognant les fonds sombres/accentués lorsque le contenu était centré en 7xl ou 5xl.
-  2. *Angle Noir 2 (Sécurisation JSON) :* Dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx), `rawJson` manquait d'un `useEffect` à la sélection d'un nouveau bloc, risquant d'écraser les propriétés d'un bloc avec celles d'un autre en cas de passage en mode codeur JSON.
-  3. *Angle Mort 3 (Raccourci Tactile Mobile) :* Dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx), l'inspecteur sur mobile/tablette n'avait pas de bouton contextuel rapide pour revenir en 1 tap au visualiseur Live Canvas.
-  4. *Angle Mort 4 (Anti-débordement Écrans 360px) :* Dans [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx), le simulateur mobile à 375px + bordures de 8px débordait horizontalement sur les vrais smartphones de 360px.
+  1. _Angle Mort 1 (Découplage Fond / Conteneur) :_ Dans [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx), `bgClass` et `maxWidthClass` étaient appliqués sur la même balise, rognant les fonds sombres/accentués lorsque le contenu était centré en 7xl ou 5xl.
+  2. _Angle Noir 2 (Sécurisation JSON) :_ Dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx), `rawJson` manquait d'un `useEffect` à la sélection d'un nouveau bloc, risquant d'écraser les propriétés d'un bloc avec celles d'un autre en cas de passage en mode codeur JSON.
+  3. _Angle Mort 3 (Raccourci Tactile Mobile) :_ Dans [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx), l'inspecteur sur mobile/tablette n'avait pas de bouton contextuel rapide pour revenir en 1 tap au visualiseur Live Canvas.
+  4. _Angle Mort 4 (Anti-débordement Écrans 360px) :_ Dans [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx), le simulateur mobile à 375px + bordures de 8px débordait horizontalement sur les vrais smartphones de 360px.
 - **Actions Réalisées :**
   - **Étape 42.1.1 (Refonte Conteneur à 2 Paliers dans BlockWrapper) :**  
     Séparation de `BlockWrapper.tsx` en une balise `<section>` externe 100% pleine largeur portant `bgClass`, `paddingClass`, `marginClass`, `borderClass`, `roundedClass`, `shadowClass`, `visibilityClass`, et une balise `<div>` interne centrée portant `maxWidthClass` et `alignClass`. Les fonds pleine largeur s'étendent désormais à l'infini sur tous les écrans tout en gardant le texte proprement cadré.
@@ -2322,3 +2387,67 @@
   - Plan Consolidé Miroir : 📄 [42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)
   - Archive application horodatée : 📦 [katech-site-08112026-1454.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1454.zip) (4.15 Mo)
   - Archive données horodatée : 📦 [katech-data-08112026-1454.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1454.zip) (42 Ko)
+
+---
+
+### Phase 43 : Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments (Badges, Titres, CTAs, Grilles/Cartes), Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite (Zéro Régression)
+
+- **Contexte & Enjeux :**  
+  Suite aux orientations stratégiques d'ArchiSys3.0 pour dépasser le stade de simple formulaire et doter le Studio Visuel d'un niveau d'ingénierie et de liberté de direction artistique atomique professionnelle, quatre chantiers majeurs ont été accomplis sans aucune régression :
+  1. Complétude 100% des 29 blocs du catalogue sans aucun bloc orphelin : création d'inspecteurs dédiés pour les 7 blocs non encore pourvus (`builder_teaser`, `company_history`, `values_grid`, `contact_form`, `direct_contact_cards`, `ticker_bar`, `promo_banner`).
+  2. Contrôleurs atomiques des sous-éléments dans l'inspecteur : styles de cartes (flat, elevated, bordered, glass, gradient), effets au survol (lift, glow, zoom, border-accent), variantes de boutons CTA (primaire, secondaire, outline, ghost, gradient).
+  3. Paramètres de Vues Dédiés 360° dans `PagesManager.tsx` : refonte du modal en 3 onglets distincts (« Général », « Mise en page / Layout », « SEO & Réseaux Sociaux ») permettant de masquer le header, footer, ticker, contact WhatsApp, personnaliser le fond de page, injecter des balises OpenGraph, URL canonique et balises robots `noindex`.
+  4. Persistance souveraine directe SQLite : sérialisation garantie dans `katech-data/dev-a97b6b98a368.sqlite` sous `site_content.customPages` via `PATCH /api/v1/content`, 0 dépendance à `localStorage`.
+- **Décisions d'ArchiSys3.0 :**  
+  Validation formelle de l'Option A : couverture complète des blocs, sous-éléments atomiques, onglets de paramétrage de page, persistance SQLite souveraine et respect strict du zéro régression.
+- **Actions Réalisées :**
+  - **Étape 43.1 (Extension Typologique) :**  
+    Modification de [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts) :
+    - Définition de `PageLayoutConfig` (`hideHeader`, `transparentHeader`, `hideFooter`, `hideTicker`, `hideFloatingContact`, `pageBg`).
+    - Définition de `PageSeoConfig` (`metaTitle`, `metaDescription`, `ogImage`, `canonicalUrl`, `noIndex`).
+    - Extension de `CustomPageDefinition` avec `layout?: PageLayoutConfig` et `seo?: PageSeoConfig`.
+    - Extension de `BlockStyleConfig` avec `cardStyle`, `cardHover`, `gridColsDesktop`, `gridColsMobile`, `gridGap`, `ctaVariant`, `ctaSize`, `headerBadge`, `headerTitleSize`.
+  - **Étape 43.2 (Intégration Vitrine Dynamique & Layout) :**  
+    - Modification de [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx) : injection des balises SEO avancées (`og:image`, `canonical`, `noindex, nofollow`), application dynamique de `pageBg` (dark, surface, muted, gradient).
+    - Modification de [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx) : prise en compte des directives de mise en page pour masquer header, footer, ticker ou contact WhatsApp selon la vue active.
+  - **Étape 43.3 (Inspecteurs des 7 Blocs Orphelins) :**  
+    Modification de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx) :
+    - Formulaire `builder_teaser` (titre, sous-titre, badge, image fond MediaPicker, CTA).
+    - Formulaire `company_history` (titre histoire, corps histoire, titre mission, corps mission).
+    - Formulaire `values_grid` (gestionnaire dynamique de cartes de valeurs avec icônes Lucide, titres trilingues et descriptions).
+    - Formulaire `contact_form` (titre, chapô, bouton d'envoi).
+    - Formulaire `direct_contact_cards` (téléphone, whatsapp, email, adresse, horaires).
+    - Formulaire `ticker_bar` (vitesse de défilement, gestionnaire dynamique de messages).
+    - Formulaire `promo_banner` (texte, code promo badge, libellé CTA, lien URL).
+  - **Étape 43.4 (Contrôleurs Atomiques de Sous-Éléments) :**  
+    - Ajout dans `BlockPropsEditor.tsx` des sélecteurs visuels de Style de Cartes, Effet de Survol et Variantes de Boutons CTA.
+    - Modification de [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx) pour propager les styles de cartes et effets de survol via des sélecteurs CSS propres (`card-item`).
+    - Adaptation de [`src/components/BuilderTeaser.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BuilderTeaser.tsx), [`src/components/Ticker.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Ticker.tsx), [`src/components/PromoBanner.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/PromoBanner.tsx), [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx) et [`src/components/blocks/DirectContactCardsBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/DirectContactCardsBlock.tsx) pour accepter les surcharges de props.
+  - **Étape 43.5 (Modal Paramètres Avancés de Page 360°) :**  
+    Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+    - Refonte du modal d'édition de page en 3 onglets (« Général », « Mise en page / Layout », « SEO & Réseaux »).
+    - Intégration de `MediaPickerField` pour l'image OpenGraph.
+    - Sauvegarde et persistance intégrale de `layout` et `seo` dans `CustomPageDefinition`.
+  - **Étape 43.6 (CI, Recette & Packaging) :**  
+    - Exécution de `bun run verifier-i18n` (parité trilingue 100% conforme, 0 erreur).
+    - Exécution de `bunx tsc --noEmit` (0 erreur TypeScript).
+    - Exécution de `bun run format` (code 100% formaté).
+    - Exécution de `bun run lint` (0 erreur ESLint).
+    - Exécution de `bun run build` (succès en 17.95s, 10 pages prérendues).
+    - Exécution de `bun run paqueter:data` (archive `katech-data-08112026-1708.zip` générée).
+    - Vérification de la persistance SQLite par requête directe sur `katech-data/dev-a97b6b98a368.sqlite` : 5 vues custom et 25 blocs vérifiés.
+- **Résultats de Recette :**
+  - Les 29 blocs du catalogue disposent d'inspecteurs graphiques dédiés complets, zéro bloc orphelin résiduel.
+  - Les paramètres de vue permettent de créer des landing pages épurées sans header/footer/ticker tout en personnalisant le fond et les métadonnées SEO OpenGraph.
+  - Les modifications de blocs et de pages sont directement persistées en base SQLite souveraine sans régression.
+- **Livrables :**
+  - Types Souverains Étendus : 📄 [`src/types/pages.ts`](file:///c:/xampp/htdocs/ka-tech/src/types/pages.ts)
+  - DynamicPage SEO & Layout : 📄 [`src/pages/DynamicPage.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/DynamicPage.tsx)
+  - App.tsx Layout Handler : 📄 [`src/App.tsx`](file:///c:/xampp/htdocs/ka-tech/src/App.tsx)
+  - Inspecteur Blocs & Sous-Éléments : 📄 [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/BlockPropsEditor.tsx)
+  - Modal Pages 360° : 📄 [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx)
+  - BlockWrapper Cascading Styles : 📄 [`src/components/blocks/BlockWrapper.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/BlockWrapper.tsx)
+  - Composants Blocs Enrichis : 📄 [`src/components/BuilderTeaser.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/BuilderTeaser.tsx), [`src/components/Ticker.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/Ticker.tsx), [`src/components/PromoBanner.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/PromoBanner.tsx), [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/CommerceBlocks.tsx), [`src/components/blocks/DirectContactCardsBlock.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/blocks/DirectContactCardsBlock.tsx)
+  - Plan d'Implémentation Miroir : 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md)
+  - Archive application horodatée : 📦 [katech-site-08112026-1707.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1707.zip) (4.15 Mo)
+  - Archive données horodatée : 📦 [katech-data-08112026-1708.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-1708.zip) (42 Ko)

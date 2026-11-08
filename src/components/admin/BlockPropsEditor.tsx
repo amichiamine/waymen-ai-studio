@@ -386,6 +386,91 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
               className="h-7 text-xs font-mono"
             />
           </div>
+
+          {/* 🎛️ Sous-éléments Atomiques : Cartes & Grille (Phase 43) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Style des Cartes internes :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "default", label: "Défaut" },
+                { key: "flat", label: "Plat" },
+                { key: "elevated", label: "Surélevé" },
+                { key: "bordered", label: "Bordé" },
+                { key: "glass", label: "Verre Glass" },
+                { key: "gradient", label: "Dégradé" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("cardStyle", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.cardStyle || "default") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Effet au survol des cartes */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold">Effet au survol (Cartes) :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "none", label: "Aucun" },
+                { key: "lift", label: "Élévation (Lift)" },
+                { key: "glow", label: "Lueur (Glow)" },
+                { key: "zoom", label: "Zoom (Scale)" },
+                { key: "border-accent", label: "Liseré Actif" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("cardHover", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.cardHover || "none") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Boutons d'Action (CTAs) */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <Label className="text-xs font-bold">Variante des Boutons (CTAs) :</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { key: "default", label: "Primaire" },
+                { key: "secondary", label: "Secondaire" },
+                { key: "outline", label: "Contour" },
+                { key: "ghost", label: "Fantôme" },
+                { key: "gradient", label: "Gradient" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => updateStyle("ctaVariant", item.key)}
+                  className={cn(
+                    "py-1 px-1.5 text-[11px] font-semibold rounded border text-center transition-all truncate",
+                    (s.ctaVariant || "default") === item.key
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-card hover:bg-muted/50 border-border text-muted-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -1764,6 +1849,456 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   </Select>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* 14. BUILDER TEASER (PHASE 43) */}
+          {block.type === "builder_teaser" && (
+            <div className="space-y-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Titre principal :</Label>
+                  <Input
+                    value={getPropStr(p.title) || L(siteContent.builderTeaser?.title) || ""}
+                    onChange={(e) => updateProp("title", e.target.value)}
+                    placeholder="Concevez votre PC sur Mesure"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Badge d'accroche :</Label>
+                  <Input
+                    value={getPropStr(p.badge) || L(siteContent.builderTeaser?.badge) || ""}
+                    onChange={(e) => updateProp("badge", e.target.value)}
+                    placeholder="Configurateur 3D"
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre / Description :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.subtitle) || L(siteContent.builderTeaser?.subtitle) || ""}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Choisissez chaque composant selon vos besoins..."
+                  className="text-xs"
+                />
+              </div>
+
+              <MediaPickerField
+                label="Image d'arrière-plan du teaser"
+                description="Image de fond haute résolution pour le teaser du configurateur"
+                value={typeof p.bannerSrc === "string" ? p.bannerSrc : ""}
+                onChange={(url) => updateProp("bannerSrc", url)}
+              />
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Texte du bouton CTA :</Label>
+                  <Input
+                    value={
+                      getPropStr((p.cta as Record<string, unknown>)?.label) ||
+                      getPropStr(p.ctaLabel) ||
+                      L(siteContent.builderTeaser?.cta?.label) ||
+                      ""
+                    }
+                    onChange={(e) => {
+                      const cta = (p.cta as Record<string, unknown>) || {};
+                      updateProp("cta", { ...cta, label: e.target.value });
+                    }}
+                    placeholder="Lancer le configurateur"
+                    className="h-7 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Lien URL du CTA :</Label>
+                  <Input
+                    value={
+                      String((p.cta as Record<string, unknown>)?.href || "") ||
+                      String(p.ctaHref || "") ||
+                      siteContent.builderTeaser?.cta?.href ||
+                      "/builder"
+                    }
+                    onChange={(e) => {
+                      const cta = (p.cta as Record<string, unknown>) || {};
+                      updateProp("cta", { ...cta, href: e.target.value });
+                    }}
+                    placeholder="/builder"
+                    className="h-7 text-xs font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 15. COMPANY HISTORY (PHASE 43) */}
+          {block.type === "company_history" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre Historique :</Label>
+                <Input
+                  value={getPropStr(p.historyTitle) || L(siteContent.about?.historyTitle) || ""}
+                  onChange={(e) => updateProp("historyTitle", e.target.value)}
+                  placeholder="Notre Histoire"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Corps du texte Historique :</Label>
+                <Textarea
+                  rows={4}
+                  value={getPropStr(p.historyBody) || L(siteContent.about?.historyBody) || ""}
+                  onChange={(e) => updateProp("historyBody", e.target.value)}
+                  placeholder="Fondée avec la volonté d'offrir des solutions souveraines..."
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="space-y-1 pt-2 border-t border-border/40">
+                <Label className="text-xs font-semibold">Titre Mission :</Label>
+                <Input
+                  value={getPropStr(p.missionTitle) || L(siteContent.about?.missionTitle) || ""}
+                  onChange={(e) => updateProp("missionTitle", e.target.value)}
+                  placeholder="Notre Mission"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Corps du texte Mission :</Label>
+                <Textarea
+                  rows={4}
+                  value={getPropStr(p.missionBody) || L(siteContent.about?.missionBody) || ""}
+                  onChange={(e) => updateProp("missionBody", e.target.value)}
+                  placeholder="Rendre la haute technologie accessible et durable..."
+                  className="text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 16. VALUES GRID (PHASE 43) */}
+          {block.type === "values_grid" && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Cartes de Valeurs d'Entreprise :</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const baseValues =
+                        Array.isArray(p.values) && p.values.length > 0
+                          ? p.values
+                          : (siteContent.about?.values as Record<string, unknown>[]) || [];
+                      const values = [...baseValues];
+                      values.push({
+                        id: "val_" + Date.now(),
+                        icon: "shield",
+                        title: { fr: "Nouvelle Valeur", en: "New Value", ar: "قيمة جديدة" },
+                        description: {
+                          fr: "Description de la valeur d'entreprise...",
+                          en: "Company value description...",
+                          ar: "وصف قيمة الشركة...",
+                        },
+                      });
+                      updateProp("values", values);
+                    }}
+                    className="h-7 text-xs gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Ajouter une valeur</span>
+                  </Button>
+                </div>
+
+                {(Array.isArray(p.values) && p.values.length > 0
+                  ? (p.values as Record<string, unknown>[])
+                  : (siteContent.about?.values as Record<string, unknown>[]) || []
+                ).map((valItem: Record<string, unknown>, idx: number) => (
+                  <div key={idx} className="p-2.5 border rounded-lg bg-card/60 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Select
+                        value={String(valItem.icon || "shield")}
+                        onValueChange={(val) => {
+                          const base =
+                            Array.isArray(p.values) && p.values.length > 0
+                              ? [...p.values]
+                              : [
+                                  ...((siteContent.about?.values as Record<string, unknown>[]) ||
+                                    []),
+                                ];
+                          base[idx] = { ...valItem, icon: val };
+                          updateProp("values", base);
+                        }}
+                      >
+                        <SelectTrigger className="h-7 text-xs w-44">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="shield">🛡️ Bouclier (Garantie)</SelectItem>
+                          <SelectItem value="truck">🚚 Camion (Livraison)</SelectItem>
+                          <SelectItem value="headphones">🎧 Casque (Support)</SelectItem>
+                          <SelectItem value="award">🏆 Trophée (Excellence)</SelectItem>
+                          <SelectItem value="star">⭐ Étoile (Qualité)</SelectItem>
+                          <SelectItem value="heart">❤️ Cœur (Passion)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const base =
+                            Array.isArray(p.values) && p.values.length > 0
+                              ? [...p.values]
+                              : [
+                                  ...((siteContent.about?.values as Record<string, unknown>[]) ||
+                                    []),
+                                ];
+                          base.splice(idx, 1);
+                          updateProp("values", base);
+                        }}
+                        className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+
+                    <Input
+                      value={getPropStr(valItem.title)}
+                      onChange={(e) => {
+                        const base =
+                          Array.isArray(p.values) && p.values.length > 0
+                            ? [...p.values]
+                            : [...((siteContent.about?.values as Record<string, unknown>[]) || [])];
+                        base[idx] = { ...valItem, title: e.target.value };
+                        updateProp("values", base);
+                      }}
+                      placeholder="Titre de la valeur"
+                      className="h-7 text-xs font-semibold"
+                    />
+                    <Textarea
+                      rows={2}
+                      value={getPropStr(valItem.description)}
+                      onChange={(e) => {
+                        const base =
+                          Array.isArray(p.values) && p.values.length > 0
+                            ? [...p.values]
+                            : [...((siteContent.about?.values as Record<string, unknown>[]) || [])];
+                        base[idx] = { ...valItem, description: e.target.value };
+                        updateProp("values", base);
+                      }}
+                      placeholder="Description de la valeur..."
+                      className="text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 17. CONTACT FORM (PHASE 43) */}
+          {block.type === "contact_form" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Titre du formulaire :</Label>
+                <Input
+                  value={getPropStr(p.title)}
+                  onChange={(e) => updateProp("title", e.target.value)}
+                  placeholder="Envoyez-nous un message"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Sous-titre / Chapô :</Label>
+                <Textarea
+                  rows={2}
+                  value={getPropStr(p.subtitle)}
+                  onChange={(e) => updateProp("subtitle", e.target.value)}
+                  placeholder="Une question, un devis ou un projet ? Remplissez ce formulaire..."
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Libellé du bouton d'envoi :</Label>
+                <Input
+                  value={getPropStr(p.submitText)}
+                  onChange={(e) => updateProp("submitText", e.target.value)}
+                  placeholder="Envoyer le message"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 18. DIRECT CONTACT CARDS (PHASE 43) */}
+          {block.type === "direct_contact_cards" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Numéro de téléphone :</Label>
+                <Input
+                  value={String(p.contactPhone || "")}
+                  onChange={(e) => updateProp("contactPhone", e.target.value)}
+                  placeholder="ex: +213 555 12 34 56"
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Numéro WhatsApp :</Label>
+                <Input
+                  value={String(p.whatsapp || "")}
+                  onChange={(e) => updateProp("whatsapp", e.target.value)}
+                  placeholder="ex: +213 661 00 00 00"
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Adresse Email :</Label>
+                <Input
+                  value={String(p.contactEmail || "")}
+                  onChange={(e) => updateProp("contactEmail", e.target.value)}
+                  placeholder="contact@entreprise.com"
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Adresse physique :</Label>
+                <Input
+                  value={String(p.address || "")}
+                  onChange={(e) => updateProp("address", e.target.value)}
+                  placeholder="123 Boulevard Technologique, Alger"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Horaires d'ouverture :</Label>
+                <Input
+                  value={String(p.hours || "")}
+                  onChange={(e) => updateProp("hours", e.target.value)}
+                  placeholder="Dimanche - Jeudi : 08h30 - 17h00"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 19. TICKER BAR (PHASE 43) */}
+          {block.type === "ticker_bar" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Vitesse de défilement :</Label>
+                <Select
+                  value={String(p.speed || "normal")}
+                  onValueChange={(val) => updateProp("speed", val)}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Standard" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="slow">Lente (Fluide & Posée)</SelectItem>
+                    <SelectItem value="normal">Standard (Recommandé)</SelectItem>
+                    <SelectItem value="fast">Rapide (Dynamique)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Messages Défilants :</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const msgs = Array.isArray(p.messages) ? [...(p.messages as string[])] : [];
+                      msgs.push("Nouveau message d'annonce...");
+                      updateProp("messages", msgs);
+                    }}
+                    className="h-7 text-xs gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Ajouter un message</span>
+                  </Button>
+                </div>
+
+                {(Array.isArray(p.messages) && p.messages.length > 0
+                  ? (p.messages as string[])
+                  : []
+                ).map((msgText: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-1.5">
+                    <Input
+                      value={msgText}
+                      onChange={(e) => {
+                        const msgs = [...(p.messages as string[])];
+                        msgs[idx] = e.target.value;
+                        updateProp("messages", msgs);
+                      }}
+                      placeholder="Texte du bandeau défilant..."
+                      className="h-7 text-xs flex-1"
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const msgs = [...(p.messages as string[])];
+                        msgs.splice(idx, 1);
+                        updateProp("messages", msgs);
+                      }}
+                      className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {(!Array.isArray(p.messages) || p.messages.length === 0) && (
+                  <p className="text-[11px] text-muted-foreground italic">
+                    Utilise les messages globaux définis dans les réglages du site.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 20. PROMO BANNER (PHASE 43) */}
+          {block.type === "promo_banner" && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Texte du bandeau promotionnel :</Label>
+                <Input
+                  value={String(p.text || "")}
+                  onChange={(e) => updateProp("text", e.target.value)}
+                  placeholder="Profitez de -15% sur toutes les stations de travail !"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Code Promotionnel :</Label>
+                  <Input
+                    value={String(p.code || "")}
+                    onChange={(e) => updateProp("code", e.target.value)}
+                    placeholder="ex: KATECH15"
+                    className="h-7 text-xs font-mono uppercase"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Libellé du Bouton :</Label>
+                  <Input
+                    value={String(p.label || "")}
+                    onChange={(e) => updateProp("label", e.target.value)}
+                    placeholder="En profiter"
+                    className="h-7 text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Lien URL de redirection :</Label>
+                <Input
+                  value={String(p.href || "")}
+                  onChange={(e) => updateProp("href", e.target.value)}
+                  placeholder="/category/solutions"
+                  className="h-7 text-xs font-mono"
+                />
+              </div>
             </div>
           )}
         </div>

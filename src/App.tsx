@@ -14,7 +14,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DataModeBadge } from "@/components/DataModeBadge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-import { useSiteSettings } from "@/data-provider";
+import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { useAdminRoles } from "@/lib/admin-auth";
 import { useI18n } from "@/lib/i18n";
 import { Link } from "react-router-dom";
@@ -175,6 +175,21 @@ export default function App() {
   const isAdmin = pathname.startsWith("/admin");
   const isAuthRoute = pathname === "/auth" || pathname === "/reset-password";
   const { data: siteSettings } = useSiteSettings();
+  const { data: siteContent } = useSiteContent();
+
+  // Détection des directives de mise en page personnalisée (Phase 43)
+  const currentSlug = pathname.startsWith("/p/")
+    ? pathname.slice(3)
+    : pathname.startsWith("/")
+      ? pathname.slice(1)
+      : "";
+  const dynamicPage = siteContent?.customPages?.find(
+    (p) => p.slug.toLowerCase() === currentSlug.toLowerCase() && p.isPublished,
+  );
+  const hideHeader = Boolean(dynamicPage?.layout?.hideHeader);
+  const hideFooter = Boolean(dynamicPage?.layout?.hideFooter);
+  const hideTicker = Boolean(dynamicPage?.layout?.hideTicker);
+  const hideFloatingContact = Boolean(dynamicPage?.layout?.hideFloatingContact);
 
   // Maintenance gate: full-screen for public visitors; admins & auth routes stay accessible.
   if (siteSettings.maintenance && !isAdmin && !isAuthRoute) {
@@ -189,9 +204,9 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
-      {!isAdmin && <PromoBanner />}
-      {!isAdmin && <Ticker />}
-      {!isAdmin && <Header />}
+      {!isAdmin && !hideTicker && <PromoBanner />}
+      {!isAdmin && !hideTicker && <Ticker />}
+      {!isAdmin && !hideHeader && <Header />}
       <main className="pb-16 md:pb-0">
         <PageTransition>
           {/* `key={pathname}` : une navigation réinitialise le filet, sinon une
@@ -279,9 +294,9 @@ export default function App() {
           </ErrorBoundary>
         </PageTransition>
       </main>
-      {!isAdmin && <Footer />}
-      {!isAdmin && <FloatingWhatsApp />}
-      {!isAdmin && <MobileBottomBar />}
+      {!isAdmin && !hideFooter && <Footer />}
+      {!isAdmin && !hideFloatingContact && <FloatingWhatsApp />}
+      {!isAdmin && !hideFooter && <MobileBottomBar />}
       <Toaster />
       <DataModeBadge />
     </>

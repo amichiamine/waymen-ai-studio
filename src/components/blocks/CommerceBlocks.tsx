@@ -78,13 +78,17 @@ export function WhyUsBlock({ config }: { config: BlockConfig }) {
   return <WhyUs override={config.props as Partial<SiteContent["whyUs"]>} />;
 }
 
-export function BuilderTeaserBlock({ config: _config }: { config: BlockConfig }) {
+export function BuilderTeaserBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   const { data: siteSettings } = useSiteSettings();
   if (siteContent.builderTeaser?.enabled === false || siteSettings.builderEnabled === false) {
     return null;
   }
-  return <BuilderTeaser />;
+  return (
+    <BuilderTeaser
+      override={config.props as Partial<SiteContent["builderTeaser"] & { bannerSrc?: string }>}
+    />
+  );
 }
 
 export function ReviewsGridBlock({ config }: { config: BlockConfig }) {
@@ -99,12 +103,34 @@ export function ContactCtaBlock({ config }: { config: BlockConfig }) {
   return <ContactCTA override={config.props as Partial<SiteContent["contactCta"]>} />;
 }
 
-export function TickerBarBlock({ config: _config }: { config: BlockConfig }) {
-  return <Ticker />;
+export function TickerBarBlock({ config }: { config: BlockConfig }) {
+  const p = config.props || {};
+  return (
+    <Ticker
+      override={{
+        messages: Array.isArray(p.messages) ? (p.messages as string[]) : undefined,
+        speed: (p.speed as "normal" | "slow" | "fast") || undefined,
+      }}
+    />
+  );
 }
 
-export function PromoBannerBlock({ config: _config }: { config: BlockConfig }) {
+export function PromoBannerBlock({ config }: { config: BlockConfig }) {
   const { data: siteSettings } = useSiteSettings();
-  if (siteSettings.showPromoBanner === false) return null;
-  return <PromoBanner />;
+  if (siteSettings.showPromoBanner === false && !config.props?.text) return null;
+  const p = config.props || {};
+  return (
+    <PromoBanner
+      override={
+        p.text || p.code
+          ? {
+              text: String(p.text || ""),
+              label: p.label ? String(p.label) : undefined,
+              href: p.href ? String(p.href) : undefined,
+              code: p.code ? String(p.code) : undefined,
+            }
+          : undefined
+      }
+    />
+  );
 }

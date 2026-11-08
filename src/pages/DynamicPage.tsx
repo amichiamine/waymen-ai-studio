@@ -39,16 +39,33 @@ export default function DynamicPage() {
 
   const pageTitle = L(page.title) || page.slug;
   const pageDesc = L(page.description) || "";
-  const metaTitle = `${pageTitle} — ${storeName}`;
+  const metaTitle = (page.seo?.metaTitle && L(page.seo.metaTitle)) || `${pageTitle} — ${storeName}`;
+  const metaDescription = (page.seo?.metaDescription && L(page.seo.metaDescription)) || pageDesc;
+  const ogImage = page.seo?.ogImage;
+  const canonicalUrl = page.seo?.canonicalUrl || `${window.location.origin}/${page.slug}`;
+  const noIndex = Boolean(page.seo?.noIndex);
 
   const enabledBlocks = (page.blocks || []).filter((b) => b.enabled);
 
+  const pageBgClass =
+    page.layout?.pageBg === "dark"
+      ? "bg-[#0a0f1d] text-white min-h-[80vh]"
+      : page.layout?.pageBg === "surface"
+        ? "bg-card min-h-[80vh]"
+        : page.layout?.pageBg === "muted"
+          ? "bg-muted/30 min-h-[80vh]"
+          : page.layout?.pageBg === "gradient"
+            ? "bg-gradient-to-b from-background via-muted/20 to-background min-h-[80vh]"
+            : "min-h-[80vh]";
+
   return (
-    <>
+    <div className={pageBgClass}>
       <Helmet>
         <title>{metaTitle}</title>
-        {pageDesc && <meta name="description" content={pageDesc} />}
-        <link rel="canonical" href={`${window.location.origin}/${page.slug}`} />
+        {metaDescription && <meta name="description" content={metaDescription} />}
+        {ogImage && <meta property="og:image" content={ogImage} />}
+        <link rel="canonical" href={canonicalUrl} />
+        {noIndex && <meta name="robots" content="noindex, nofollow" />}
       </Helmet>
 
       {enabledBlocks.length === 0 ? (
@@ -61,6 +78,6 @@ export default function DynamicPage() {
           {enabledBlocks.map((block) => renderBlock(block))}
         </div>
       )}
-    </>
+    </div>
   );
 }

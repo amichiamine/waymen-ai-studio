@@ -56,6 +56,18 @@ export interface BlockStyleConfig {
   margin?: "none" | "compact" | "normal" | "ample";
   anchorId?: string;
   customClassName?: string;
+  // 🎛️ Sous-éléments Atomiques (Phase 43)
+  cardStyle?: "default" | "flat" | "elevated" | "bordered" | "glass" | "gradient";
+  cardHover?: "none" | "lift" | "glow" | "zoom" | "border-accent";
+  gridColsDesktop?: 1 | 2 | 3 | 4 | 5 | 6;
+  gridColsMobile?: 1 | 2;
+  gridGap?: "none" | "compact" | "normal" | "ample";
+  ctaVariant?: "default" | "secondary" | "outline" | "ghost" | "gradient" | "glow";
+  ctaSize?: "sm" | "md" | "lg";
+  headerBadge?: Localized<string>;
+  headerBadgeIcon?: string;
+  headerTitleSize?: "h1" | "h2" | "h3" | "h4";
+  headerTitleGradient?: boolean;
 }
 
 export interface BlockConfig {
@@ -64,6 +76,23 @@ export interface BlockConfig {
   enabled: boolean;
   props?: Record<string, unknown>;
   style?: BlockStyleConfig;
+}
+
+export interface PageLayoutConfig {
+  hideHeader?: boolean;
+  transparentHeader?: boolean;
+  hideFooter?: boolean;
+  hideTicker?: boolean;
+  hideFloatingContact?: boolean;
+  pageBg?: "default" | "dark" | "surface" | "gradient" | "muted";
+}
+
+export interface PageSeoConfig {
+  metaTitle?: Localized<string>;
+  metaDescription?: Localized<string>;
+  ogImage?: string;
+  canonicalUrl?: string;
+  noIndex?: boolean;
 }
 
 export interface CustomPageDefinition {
@@ -76,6 +105,8 @@ export interface CustomPageDefinition {
   inNavbar: boolean;
   inFooter?: boolean;
   navOrder: number;
+  layout?: PageLayoutConfig;
+  seo?: PageSeoConfig;
   createdAt: string;
   updatedAt: string;
 }
