@@ -449,24 +449,58 @@ export default function PagesManager() {
   // Volets rétractables & Mode Plein Écran Zen
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
-  const isZenMode = leftCollapsed && rightCollapsed;
+
+  // 🗖 Mode de Focalisation et Disposition Universelle (Phase 50)
+  // "split" = Tri-volets standard partagés (3 - 6 - 3 cols)
+  // "tree" = Structure seule plein écran (12 cols — 100% largeur)
+  // "canvas" = Aperçu Live seul plein écran (12 cols — 100% largeur / Zen)
+  // "inspector" = Inspecteur seul plein écran (12 cols — 100% largeur)
+  const [desktopFocusMode, setDesktopFocusMode] = useState<
+    "split" | "tree" | "canvas" | "inspector"
+  >("split");
+
+  const isZenMode = desktopFocusMode === "canvas" || (leftCollapsed && rightCollapsed);
 
   const handleToggleZen = () => {
-    if (isZenMode) {
+    if (desktopFocusMode === "canvas") {
+      setDesktopFocusMode("split");
       setLeftCollapsed(false);
       setRightCollapsed(false);
     } else {
+      setDesktopFocusMode("canvas");
       setLeftCollapsed(true);
       setRightCollapsed(true);
     }
   };
 
+  const handleToggleTreeFullscreen = () => {
+    if (desktopFocusMode === "tree") {
+      setDesktopFocusMode("split");
+    } else {
+      setDesktopFocusMode("tree");
+      setLeftCollapsed(false);
+    }
+  };
+
+  const handleToggleInspectorFullscreen = () => {
+    if (desktopFocusMode === "inspector") {
+      setDesktopFocusMode("split");
+    } else {
+      setDesktopFocusMode("inspector");
+      setRightCollapsed(false);
+    }
+  };
+
   const canvasColsClass =
-    leftCollapsed && rightCollapsed
+    desktopFocusMode === "canvas"
       ? "lg:col-span-12"
-      : leftCollapsed || rightCollapsed
-        ? "lg:col-span-9"
-        : "lg:col-span-6";
+      : desktopFocusMode === "tree" || desktopFocusMode === "inspector"
+        ? "lg:hidden"
+        : leftCollapsed && rightCollapsed
+          ? "lg:col-span-12"
+          : leftCollapsed || rightCollapsed
+            ? "lg:col-span-9"
+            : "lg:col-span-6";
 
   // Dialog création / paramètres de page
   const [pageModalOpen, setPageModalOpen] = useState(false);
@@ -972,6 +1006,86 @@ export default function PagesManager() {
 
       {activeStudioTab === "views" && studioViewMode === "canvas" && (
         <>
+          {/* 🗖 Barre de Focalisation & Disposition Universelle Desktop (Phase 50) */}
+          <div className="hidden lg:flex items-center justify-between p-1.5 rounded-xl border border-border bg-muted/30 my-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-2">
+                Disposition :
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setDesktopFocusMode("split");
+                  setLeftCollapsed(false);
+                  setRightCollapsed(false);
+                }}
+                className={cn(
+                  "py-1 px-3 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 border",
+                  desktopFocusMode === "split"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-background text-muted-foreground border-border/60 hover:text-foreground",
+                )}
+              >
+                <LayoutTemplate className="size-3.5" />
+                <span>3 Volets Partagés</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDesktopFocusMode("tree")}
+                className={cn(
+                  "py-1 px-3 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 border",
+                  desktopFocusMode === "tree"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-background text-muted-foreground border-border/60 hover:text-foreground",
+                )}
+              >
+                <Layers className="size-3.5" />
+                <span>Structure Seule (100%)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDesktopFocusMode("canvas")}
+                className={cn(
+                  "py-1 px-3 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 border",
+                  desktopFocusMode === "canvas"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-background text-muted-foreground border-border/60 hover:text-foreground",
+                )}
+              >
+                <Eye className="size-3.5" />
+                <span>Aperçu Seul (100%)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDesktopFocusMode("inspector")}
+                className={cn(
+                  "py-1 px-3 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 border",
+                  desktopFocusMode === "inspector"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-background text-muted-foreground border-border/60 hover:text-foreground",
+                )}
+              >
+                <Settings className="size-3.5" />
+                <span>Inspecteur Seul (100%)</span>
+              </button>
+            </div>
+
+            {desktopFocusMode !== "split" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setDesktopFocusMode("split")}
+                className="h-7 text-xs font-semibold gap-1 text-primary hover:bg-primary/10"
+              >
+                <Minimize2 className="size-3.5" />
+                <span>Restaurer l'affichage 3 volets</span>
+              </Button>
+            )}
+          </div>
+
           {/* Sélecteur de mode tactile / mobile / tablette (< 1024px) avec ancrage sticky */}
           <div className="flex lg:hidden sticky top-2 z-30 shadow-md backdrop-blur-md bg-background/95 items-center p-1 rounded-xl border border-border gap-1 my-2">
             <button
@@ -1017,11 +1131,13 @@ export default function PagesManager() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-12 text-start items-start">
-            {/* Colonne Gauche (3 cols) : Sélecteur de Vue & Arborescence des Blocs */}
-            {!leftCollapsed && (
+            {/* Colonne Gauche : Sélecteur de Vue & Arborescence des Blocs (3 cols ou 12 cols plein écran) */}
+            {(desktopFocusMode === "tree" || (!leftCollapsed && desktopFocusMode === "split")) && (
               <div
                 className={cn(
-                  "lg:col-span-3 space-y-4",
+                  "space-y-4",
+                  desktopFocusMode === "tree" ? "lg:col-span-12" : "lg:col-span-3",
+                  desktopFocusMode !== "tree" && desktopFocusMode !== "split" && "lg:hidden",
                   mobileStudioView !== "tree" && "hidden lg:block",
                 )}
               >
@@ -1040,6 +1156,23 @@ export default function PagesManager() {
                         >
                           <Plus className="size-3" />
                           <span>Nouvelle</span>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6 text-muted-foreground hover:text-foreground"
+                          onClick={handleToggleTreeFullscreen}
+                          title={
+                            desktopFocusMode === "tree"
+                              ? "Restaurer l'affichage partagé"
+                              : "Agrandir la structure sur toute la page"
+                          }
+                        >
+                          {desktopFocusMode === "tree" ? (
+                            <Minimize2 className="size-3.5" />
+                          ) : (
+                            <Maximize2 className="size-3.5" />
+                          )}
                         </Button>
                         <Button
                           size="icon"
@@ -1257,11 +1390,14 @@ export default function PagesManager() {
               />
             </div>
 
-            {/* Colonne Droite (3 cols) : Inspecteur Bi-Mode [ Bloc Actif ] / [ Paramètres Vue ] */}
-            {!rightCollapsed && (
+            {/* Colonne Droite : Inspecteur Bi-Mode (3 cols ou 12 cols plein écran) */}
+            {(desktopFocusMode === "inspector" ||
+              (!rightCollapsed && desktopFocusMode === "split")) && (
               <div
                 className={cn(
-                  "lg:col-span-3 h-[calc(100vh-13rem)] min-h-[520px] max-h-[850px]",
+                  "h-[calc(100vh-13rem)] min-h-[520px] max-h-[850px]",
+                  desktopFocusMode === "inspector" ? "lg:col-span-12" : "lg:col-span-3",
+                  desktopFocusMode !== "inspector" && desktopFocusMode !== "split" && "lg:hidden",
                   mobileStudioView !== "inspector" && "hidden lg:block",
                 )}
               >
@@ -1334,6 +1470,24 @@ export default function PagesManager() {
                               </Button>
                             </>
                           )}
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-6 text-muted-foreground hover:text-foreground"
+                            onClick={handleToggleInspectorFullscreen}
+                            title={
+                              desktopFocusMode === "inspector"
+                                ? "Restaurer l'affichage partagé"
+                                : "Agrandir l'inspecteur sur toute la page"
+                            }
+                          >
+                            {desktopFocusMode === "inspector" ? (
+                              <Minimize2 className="size-3.5" />
+                            ) : (
+                              <Maximize2 className="size-3.5" />
+                            )}
+                          </Button>
 
                           <Button
                             size="icon"

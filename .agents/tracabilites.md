@@ -2978,3 +2978,46 @@
 - **Livrables :**
   - Plan validé : 📄 [`49_plan_grand_parachevement_universel_360_toutes_vues_autosave_sqlite_et_inspecteur_bimode.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/49_plan_grand_parachevement_universel_360_toutes_vues_autosave_sqlite_et_inspecteur_bimode.md)
   - Archives horodatées : 📦 [katech-site-08112026-2120.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2120.zip) & 📦 [katech-data-08112026-2120.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2120.zip)
+
+---
+
+## Phase 50 : Déploiement Plein Écran de l'Inspecteur Desktop, Structure Déployable & Focalisation 360° Universelle
+
+- **Date :** 08 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** Livré, testé et validé sur main
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 50 (`50_plan_deploiement_plein_ecran_inspecteur_desktop_et_focalisation_360.md`).
+- **Contexte & Enjeux :**
+  Alors que les écrans mobiles et tablettes disposaient d'un sélecteur tactile permettant à chaque volet (Structure, Canvas, Inspecteur) d'occuper 100% de la largeur d'écran, la grille Desktop restait figée sur une répartition contraignante où l'Inspecteur droit était confiné à 3 colonnes sur 12 (`lg:col-span-3`).
+  ArchiSys3.0 a relevé cette asymétrie et exigé la possibilité de déployer l'Inspecteur en pleine largeur (12 colonnes) sur Desktop, tout en offrant la même liberté pour la Structure et le Canvas.
+- **Actions Réalisées :**
+  - **Étape 50.1 (État Réactif de Focalisation `desktopFocusMode`) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout de l'état `desktopFocusMode: "split" | "tree" | "canvas" | "inspector"`.
+      - Calcul dynamique des portées de grille : `lg:col-span-12` pour le volet actif lors d'une focalisation exclusive, et masquage automatique des volets concurrents.
+  - **Étape 50.2 (Boutons d'Agrandissement Dédiés `Maximize2` / `Minimize2`) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Intégration dans l'en-tête de l'Inspecteur d'un bouton `Maximize2` / `Minimize2` permettant en un clic de passer de 3 colonnes à 12 colonnes (100% de la largeur d'écran), et de revenir à la vue partagée.
+      - Intégration dans l'en-tête de la Structure d'un bouton `Maximize2` / `Minimize2` symétrique étendant la liste des vues et l'arborescence à 12 colonnes.
+      - Maintien du bouton Zen plein écran sur le Canvas.
+  - **Étape 50.3 (Barre de Focalisation Rapide Universelle) :**
+    - Modification de [`src/pages/admin/PagesManager.tsx`](file:///c:/xampp/htdocs/ka-tech/src/pages/admin/PagesManager.tsx) :
+      - Ajout dans le bandeau supérieur d'une barre de disposition rapide :
+        `[ ⊞ 3 Volets Partagés ]` | `[ ◧ Structure Seule (100%) ]` | `[ 🗖 Aperçu Seul (100%) ]` | `[ ◨ Inspecteur Seul (100%) ]`.
+      - Bouton de restauration contextuel `Restaurer l'affichage 3 volets` dès qu'un volet est maximisé.
+      - Maintien et synchronisation fluide avec le sélecteur tactile mobile/tablette (< 1024px).
+  - **Étape 50.4 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : parité FR/EN/AR 100% stricte (0 clé manquante, 0 erreur).
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier (isolation devis préservée).
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : Compilation Vite réussie avec bundle de production complet (`dist/`).
+    - `bun run paqueter:data` : Nouvelle archive SQLite produite (`katech-data-08112026-2131.zip`).
+- **Résultats de Recette :**
+  - En Desktop, l'Inspecteur (bi-mode blocs et paramètres de vue) peut être déployé sur toute la page (`100%` de largeur), offrant un confort de saisie optimal pour les textes trilingues, les métadonnées SEO, les atmosphères de fond et les switchs.
+  - La Structure peut également être visualisée en pleine largeur pour réorganiser les blocs de longues pages sans défilement étriqué.
+  - Le retour au mode 3 volets est instantané en un clic sur le bouton de réduction ou dans la barre de disposition.
+- **Livrables :**
+  - Plan validé : 📄 [`50_plan_deploiement_plein_ecran_inspecteur_desktop_et_focalisation_360.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/50_plan_deploiement_plein_ecran_inspecteur_desktop_et_focalisation_360.md)
+  - Archives horodatées : 📦 [katech-site-08112026-2131.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2131.zip) & 📦 [katech-data-08112026-2131.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2131.zip)
