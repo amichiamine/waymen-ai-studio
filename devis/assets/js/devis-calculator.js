@@ -44,7 +44,9 @@
     function formatCentimes(amountDZD) {
       const millions = amountDZD / 10000;
       const lang = getActiveLang();
-      const formatted = Number.isInteger(millions) ? millions.toString() : millions.toFixed(1).replace(".", ",");
+      const formatted = Number.isInteger(millions)
+        ? millions.toString()
+        : millions.toFixed(1).replace(".", ",");
 
       if (lang === "ar") {
         return formatted + " مليون سنتيم";
@@ -61,7 +63,9 @@
         const input = card.querySelector('input[type="checkbox"], input[type="radio"]');
         if (input && input.checked) {
           const price = parseInt(input.getAttribute("data-price") || "0", 10);
-          const name = input.getAttribute("data-name") || card.querySelector(".option-title").textContent.trim();
+          const name =
+            input.getAttribute("data-name") ||
+            card.querySelector(".option-title").textContent.trim();
           const id = input.id || input.name;
           selected.push({ id, name, price, input });
         }
@@ -193,7 +197,9 @@
 
       const encoded = encodeURIComponent(msg);
       const phone = config.whatsappPhone ? config.whatsappPhone.replace(/[^0-9]/g, "") : "";
-      whatsappBtn.href = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+      whatsappBtn.href = phone
+        ? `https://wa.me/${phone}?text=${encoded}`
+        : `https://wa.me/?text=${encoded}`;
     }
 
     // Événements sur les cartes

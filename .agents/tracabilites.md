@@ -63,8 +63,8 @@
 | **Phase 41** | 08/11/2026 | Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, 5 Nouveaux Blocs                                                                                  | 📄 [`41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md`](Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md)                     | 🟢 **Livré & Validé** |
 | **Phase 42** | 08/11/2026 | Ergonomie & Réactivité 360° du Studio Visuel : Sidebar Rétractable, Mode Mobile/Tablette, Auto-Scroll & Inspecteur Ultra-Fin                                                      | 📄 [`42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md`](Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)       | 🟢 **Livré & Validé** |
 | **Phase 43** | 08/11/2026 | Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments, Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite | 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md) | 🟢 **Livré & Validé** |
-| **Phase 44** | 08/11/2026 | Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)                                                                                                     | 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)                                                                                                       | 🟢 **Livré & Validé** |
-| **Phase 45** | 08/11/2026 | Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`                                                                                                | 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)                                                                                               | 🟢 **Livré & Validé** |
+| **Phase 44** | 08/11/2026 | Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)                                                                                                   | 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)                                                                                                       | 🟢 **Livré & Validé** |
+| **Phase 45** | 08/11/2026 | Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`                                                                                               | 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)                                                                                               | 🟢 **Livré & Validé** |
 
 ---
 
@@ -2334,7 +2334,7 @@
 
 - **Contexte & Enjeux :**  
   ArchiSys3.0 a requis la formalisation d'une suite commerciale autonome et détachable du projet, hébergée dans un répertoire [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis) à la racine du dépôt. Cette suite doit proposer des devis chiffrés et des calculateurs interactifs sur-mesure pour chaque typologie de clients algériens (produits digitaux, commerce retail, entreprise B2B, services/indépendants, configurateur intégral), en garantissant une discrétion commerciale absolue (zéro mention de "paliers") et un étalonnage proportionnel des options par profil.
-- **Décisions d'ArchiSys3.0 :**  
+- **Décisions d'ArchiSys3.0 :**
   - Approbation intégrale de la grille d'estimation révisée basée sur les 4 piliers du marché algérien (TJM, benchmark sur-mesure React, complexité technique, ROI client).
   - Validation du principe d'étalonnage proportionnel des calculateurs (barèmes d'options contextualisés par devis).
   - Approbation formelle du plan d'implémentation [`.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md).
@@ -2367,7 +2367,6 @@
   - Feuille de Styles & Print PDF : 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
   - Moteur Universel de Calcul : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
   - Plan Miroir Validé : 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)
-
 
 #### Sous-Phase 41.1 : Audit Forensique, Éradication des 4 Angles Morts & Consolidation Intégrale de la Persistance BD Directe
 
@@ -2613,7 +2612,7 @@
 
 - **Contexte & Enjeux :**  
   ArchiSys3.0 a requis la formalisation d'une suite commerciale autonome et détachable du projet, hébergée dans un répertoire [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis) à la racine du dépôt. Cette suite doit proposer des devis chiffrés et des calculateurs interactifs sur-mesure pour chaque typologie de clients algériens (produits digitaux, commerce retail, entreprise B2B, services/indépendants, configurateur intégral), en garantissant une discrétion commerciale absolue (zéro mention de "paliers") et un étalonnage proportionnel des options par profil.
-- **Décisions d'ArchiSys3.0 :**  
+- **Décisions d'ArchiSys3.0 :**
   - Approbation intégrale de la grille d'estimation révisée basée sur les 4 piliers du marché algérien (TJM, benchmark sur-mesure React, complexité technique, ROI client).
   - Validation du principe d'étalonnage proportionnel des calculateurs (barèmes d'options contextualisés par devis).
   - Approbation formelle du plan d'implémentation [`.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md).
@@ -2647,14 +2646,13 @@
   - Moteur Universel de Calcul : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
   - Plan Miroir Validé : 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)
 
-
 ---
 
 ### Phase 45 : Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`
 
 - **Contexte & Enjeux :**  
   ArchiSys3.0 a mandaté l'implémentation de l'internationalisation 360° trilingue (Français, Anglais, Arabe avec support natif RTL) sur l'intégralité du dossier autonome [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis). L'exigence absolue était d'adopter l'Option A (moteur dynamique Vanilla JS léger, dictionnaire centralisé, zéro duplication de fichiers, bascule 0 ms et portabilité 100% hors-ligne).
-- **Décisions d'ArchiSys3.0 :**  
+- **Décisions d'ArchiSys3.0 :**
   - Validation formelle de l'Option A (Vanilla JS avec sélecteur de langue dynamique).
   - Approbation du plan interactif [`.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md).
 - **Actions Réalisées :**
@@ -2663,7 +2661,7 @@
   - **Étape 2 (Feuille de Style & Support RTL Natif) :**
     - Modification de [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) : ajout des styles du sélecteur `.lang-selector` et des règles `html[dir="rtl"]` pour inverser naturellement la disposition des cartes d'options, les grilles tarifaires, les en-têtes et le panneau récapitulatif sticky sans rupture visuelle.
   - **Étape 3 (Synchronisation du Calculateur & WhatsApp) :**
-    - Mise à jour de [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js) : réactivité au changement de langue, formatage localisé des montants en centimes (ex: *« 10,5 Millions de centimes »* / *« 10.5 Million centimes »* / *« 10.5 مليون سنتيم »*), et rédaction du message pré-rempli WhatsApp dans la langue active.
+    - Mise à jour de [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js) : réactivité au changement de langue, formatage localisé des montants en centimes (ex: _« 10,5 Millions de centimes »_ / _« 10.5 Million centimes »_ / _« 10.5 مليون سنتيم »_), et rédaction du message pré-rempli WhatsApp dans la langue active.
   - **Étape 4 (Injection sur les 6 Fichiers HTML) :**
     - Raccordement du script `devis-i18n.js` et des attributs `data-i18n` sur [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html), [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html), [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html), [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html), [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html) et [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html).
 - **Résultats de Recette :**
@@ -2679,3 +2677,35 @@
   - Calculateur Multilingue : 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
   - 6 Fichiers HTML Localisés : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
   - Plan Miroir Validé : 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)
+
+---
+
+### Sous-Phase 45.1 : Complétude Exhaustive 100% de l'i18n Trilingue (FR / EN / AR RTL) sur l'Intégralité des Cartes, Options, Descriptions et Tableaux
+
+- **Contexte & Audit Suite au Retour d'ArchiSys3.0 :**  
+  ArchiSys3.0 a relevé avec pertinence que la première passe de la Phase 45 s'était focalisée sur les en-têtes et structures globales sans traduire le contenu métier détaillé des cartes d'options et descriptions.
+- **Actions Réalisées :**
+  - **Dictionnaire Exhaustif (276 clés uniques) :**
+    - Enrichissement de [`devis/assets/js/devis-i18n.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-i18n.js) couvrant absolument toutes les descriptions, métadonnées, garanties, blocs du Page Builder et l'ensemble de la matrice comparative du portail.
+    - Passage de l'injection dynamique en `el.innerHTML = TRANSLATIONS[key][lang]` pour supporter nativement le gras `<strong>`, les emojis et le formatage sémantique.
+    - Support dynamique de `input[data-i18n-name]` pour synchroniser les libellés récapitulatifs du devis et le message WhatsApp dans la langue sélectionnée.
+  - **Balisage Intégral des 6 Fichiers HTML :**
+    - [`devis/index.html`](file:///c:/xampp/htdocs/ka-tech/devis/index.html) : 75 clés uniques (4 cartes d'orientation, fourchettes, listes de fonctionnalités, bannière compositeur, et les 40 cellules du tableau comparatif).
+    - [`devis/solution-digitale.html`](file:///c:/xampp/htdocs/ka-tech/devis/solution-digitale.html) : 48 clés uniques (socle inclus 6 items, options, badges, garantie, métadonnées).
+    - [`devis/boutique-commerce.html`](file:///c:/xampp/htdocs/ka-tech/devis/boutique-commerce.html) : 48 clés uniques (socle 58 Wilayas COD, 6 options commerce, garantie, métadonnées).
+    - [`devis/plateforme-entreprise.html`](file:///c:/xampp/htdocs/ka-tech/devis/plateforme-entreprise.html) : 48 clés uniques (socle entreprise, 6 extensions stratégiques B2B/stocks, garantie, métadonnées).
+    - [`devis/presence-professionnelle.html`](file:///c:/xampp/htdocs/ka-tech/devis/presence-professionnelle.html) : 46 clés uniques (socle autorité, 5 options de valorisation, garantie, métadonnées).
+    - [`devis/configurateur-sur-mesure.html`](file:///c:/xampp/htdocs/ka-tech/devis/configurateur-sur-mesure.html) : 62 clés uniques (socle universel, 10 modules majeurs, 4 packs de blocs composables, garantie).
+  - **Validation Automatisée par Script Dédié :**
+    - Audit complet validant que 100% des attributs `data-i18n` et `data-i18n-name` existent fidèlement en Français, Anglais et Arabe (RTL). Zéro clé manquante.
+  - **Contrôle Qualité Projet Hôte :**
+    - `bunx tsc --noEmit` : 0 erreur de typage.
+    - `bun run build` : Compilation Vite et empaquetage réussis (`katech-site-08112026-1852.zip`).
+- **Résultats de Recette :**
+  - 100% du contenu textuel de chaque page bascule instantanément lors du clic sur FR, EN ou العربية.
+  - Le récapitulatif sticky et le message WhatsApp intègrent les libellés traduits des options cochées.
+  - Direction RTL parfaite sur l'ensemble des éléments sans superposition ni décalage.
+- **Livrables :**
+  - Dictionnaire 276 clés : 📄 [`devis/assets/js/devis-i18n.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-i18n.js)
+  - 6 Fichiers HTML 100% Localisés : 📂 [`devis/`](file:///c:/xampp/htdocs/ka-tech/devis)
+  - Archive horodatée : 📦 [katech-site-08112026-1852.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-1852.zip)

@@ -1,443 +1,803 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guide d'Orientation des Solutions Digitales — StacGate Platform</title>
-  <link rel="stylesheet" href="assets/css/devis-style.css">
-  <script src="assets/js/devis-i18n.js"></script>
-  <style>
-    .portal-hero {
-      text-align: center;
-      padding: 2.5rem 1rem 2rem 1rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .portal-hero h1 {
-      font-size: 2.25rem;
-      font-weight: 900;
-      color: var(--secondary);
-      letter-spacing: -0.03em;
-      line-height: 1.2;
-      margin-bottom: 1rem;
-    }
-    .portal-hero p {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-    .solutions-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.75rem;
-      margin-top: 2rem;
-    }
-    .solution-card {
-      background: var(--bg-card);
-      border: 1.5px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.2s ease-in-out;
-      box-shadow: var(--shadow-sm);
-      position: relative;
-    }
-    .solution-card:hover {
-      border-color: var(--primary);
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-lg);
-    }
-    .solution-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-md);
-      background: var(--primary-light);
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.25rem;
-    }
-    .solution-card h3 {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--secondary);
-      margin-bottom: 0.5rem;
-    }
-    .solution-card p.desc {
-      color: var(--text-muted);
-      font-size: 0.92rem;
-      line-height: 1.5;
-      margin-bottom: 1.5rem;
-    }
-    .feature-points {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1.75rem;
-      font-size: 0.88rem;
-      color: var(--text-main);
-    }
-    .feature-points li {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .feature-points li svg {
-      color: var(--success);
-      flex-shrink: 0;
-    }
-    .pricing-pill {
-      background: var(--bg-page);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 0.75rem 1rem;
-      margin-bottom: 1.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-    .pricing-pill .amount {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    .pricing-pill .centimes {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #065f46;
-    }
-    .cta-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      width: 100%;
-      padding: 0.85rem 1.25rem;
-      background: var(--primary);
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 0.92rem;
-      border-radius: var(--radius-md);
-      text-decoration: none;
-      transition: background 0.15s ease-in-out;
-    }
-    .cta-button:hover {
-      background: var(--primary-hover);
-    }
-    .master-composer-banner {
-      margin-top: 3rem;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      border-radius: var(--radius-lg);
-      padding: 2.5rem 2rem;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      align-items: center;
-      text-align: center;
-    }
-    .master-composer-banner h2 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #ffffff;
-    }
-    .master-composer-banner p {
-      color: #94a3b8;
-      max-width: 700px;
-      font-size: 0.98rem;
-      line-height: 1.6;
-    }
-    .matrix-section {
-      margin-top: 3.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 2rem;
-      box-shadow: var(--shadow-sm);
-    }
-    .matrix-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1.25rem;
-      font-size: 0.88rem;
-    }
-    .matrix-table th, .matrix-table td {
-      padding: 0.85rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .matrix-table th {
-      background: var(--bg-page);
-      color: var(--secondary);
-      font-weight: 700;
-    }
-    @media (max-width: 768px) {
-      .matrix-table {
-        display: block;
-        overflow-x: auto;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guide d'Orientation des Solutions Digitales — StacGate Platform</title>
+    <link rel="stylesheet" href="assets/css/devis-style.css" />
+    <script src="assets/js/devis-i18n.js"></script>
+    <style>
+      .portal-hero {
+        text-align: center;
+        padding: 2.5rem 1rem 2rem 1rem;
+        max-width: 800px;
+        margin: 0 auto;
       }
-    }
-  </style>
-</head>
-<body>
+      .portal-hero h1 {
+        font-size: 2.25rem;
+        font-weight: 900;
+        color: var(--secondary);
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+      }
+      .portal-hero p {
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+      .solutions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.75rem;
+        margin-top: 2rem;
+      }
+      .solution-card {
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.2s ease-in-out;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+      }
+      .solution-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+      }
+      .solution-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.25rem;
+      }
+      .solution-card h3 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+      }
+      .solution-card p.desc {
+        color: var(--text-muted);
+        font-size: 0.92rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+      }
+      .feature-points {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.75rem;
+        font-size: 0.88rem;
+        color: var(--text-main);
+      }
+      .feature-points li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .feature-points li svg {
+        color: var(--success);
+        flex-shrink: 0;
+      }
+      .pricing-pill {
+        background: var(--bg-page);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .pricing-pill .amount {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .pricing-pill .centimes {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #065f46;
+      }
+      .cta-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.85rem 1.25rem;
+        background: var(--primary);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.92rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: background 0.15s ease-in-out;
+      }
+      .cta-button:hover {
+        background: var(--primary-hover);
+      }
+      .master-composer-banner {
+        margin-top: 3rem;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem 2rem;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        align-items: center;
+        text-align: center;
+      }
+      .master-composer-banner h2 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #ffffff;
+      }
+      .master-composer-banner p {
+        color: #94a3b8;
+        max-width: 700px;
+        font-size: 0.98rem;
+        line-height: 1.6;
+      }
+      .matrix-section {
+        margin-top: 3.5rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+      }
+      .matrix-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.25rem;
+        font-size: 0.88rem;
+      }
+      .matrix-table th,
+      .matrix-table td {
+        padding: 0.85rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .matrix-table th {
+        background: var(--bg-page);
+        color: var(--secondary);
+        font-weight: 700;
+      }
+      @media (max-width: 768px) {
+        .matrix-table {
+          display: block;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="devis-container">
+      <!-- En-tête du Portail Client -->
+      <header class="portal-hero">
+        <div
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+          "
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          <span data-i18n="portal.badge">StacGate Platform • Écosystème Haute Performance</span>
+        </div>
+        <h1 data-i18n="portal.hero_title">Quel est le modèle de votre projet ?</h1>
+        <p data-i18n="portal.hero_desc">
+          Explorez nos architectures logicielles pré-calibrées par modèle d'affaires. Chaque
+          proposition inclut son calculateur interactif pour composer exactement vos fonctionnalités
+          selon vos besoins réels.
+        </p>
+      </header>
 
-  <div class="devis-container">
-
-    <!-- En-tête du Portail Client -->
-    <header class="portal-hero">
-      <div style="display:inline-flex; align-items:center; gap:0.5rem; background:var(--primary-light); color:var(--primary); padding:0.35rem 0.85rem; border-radius:9999px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-        <span data-i18n="portal.badge">StacGate Platform • Écosystème Haute Performance</span>
-      </div>
-      <h1 data-i18n="portal.hero_title">Quel est le modèle de votre projet ?</h1>
-      <p data-i18n="portal.hero_desc">
-        Explorez nos architectures logicielles pré-calibrées par modèle d'affaires. Chaque proposition inclut son calculateur interactif pour composer exactement vos fonctionnalités selon vos besoins réels.
-      </p>
-    </header>
-
-    <!-- Grille des 4 Solutions Métiers -->
-    <div class="solutions-grid">
-
-      <!-- Carte 1 : Digital & Abonnements -->
-      <div class="solution-card">
-        <div>
-          <div class="solution-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-          </div>
-          <h3>1. Produits Digitaux & Abonnements</h3>
-          <p class="desc">
-            Pour la vente en ligne de clés d'activation logicielle, crédits IA (ChatGPT, Claude), abonnements streaming, licences et recharges sans logistique physique.
-          </p>
-
-          <div class="pricing-pill">
-            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Estimation</span>
-            <div style="text-align:right;">
-              <div class="amount">dès 60 000 DZD</div>
-              <div class="centimes">6,0 Millions de centimes</div>
+      <!-- Grille des 4 Solutions Métiers -->
+      <div class="solutions-grid">
+        <!-- Carte 1 : Digital & Abonnements -->
+        <div class="solution-card">
+          <div>
+            <div class="solution-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
             </div>
+            <h3 data-i18n="portal.card1.title">1. Produits Digitaux & Abonnements</h3>
+            <p class="desc" data-i18n="portal.card1.desc">
+              Pour la vente en ligne de clés d'activation logicielle, crédits IA (ChatGPT, Claude),
+              abonnements streaming, licences et recharges sans logistique physique.
+            </p>
+
+            <div class="pricing-pill">
+              <span
+                style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase"
+                data-i18n="portal.estimation"
+                >Estimation</span
+              >
+              <div style="text-align: right">
+                <div class="amount">60 000 DZD</div>
+                <div class="centimes">6,0 Millions de centimes</div>
+              </div>
+            </div>
+
+            <ul class="feature-points">
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card1.f1">Catalogue numérique dématérialisé</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card1.f2">Commande rapide BaridiMob / CCP / WhatsApp</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card1.f3">Back-office de délivrance des accès et clés</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card1.f4">Zéro frais de livraison, zéro commission</span>
+              </li>
+            </ul>
           </div>
 
-          <ul class="feature-points">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Catalogue numérique dématérialisé</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Commande rapide BaridiMob / CCP / WhatsApp</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Back-office de délivrance des accès et clés</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Zéro frais de livraison, zéro commission</li>
-          </ul>
+          <a href="solution-digitale.html" class="cta-button">
+            <span data-i18n="portal.card1.btn">Composer mon Devis Digital</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
         </div>
 
-        <a href="solution-digitale.html" class="cta-button">
-          Composer mon Devis Digital
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <!-- Carte 2 : Boutique Retail & Mode -->
+        <div class="solution-card">
+          <div>
+            <div class="solution-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+            </div>
+            <h3 data-i18n="portal.card2.title">2. Boutique Retail & 58 Wilayas</h3>
+            <p class="desc" data-i18n="portal.card2.desc">
+              Pour le commerce de détail : prêt-à-porter, cosmétiques, parfumerie, bijoux, artisanat
+              ou commerces de proximité avec expédition sur toute l'Algérie.
+            </p>
+
+            <div class="pricing-pill">
+              <span
+                style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase"
+                data-i18n="portal.estimation"
+                >Estimation</span
+              >
+              <div style="text-align: right">
+                <div class="amount">90 000 DZD</div>
+                <div class="centimes">9,0 Millions de centimes</div>
+              </div>
+            </div>
+
+            <ul class="feature-points">
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card2.f1">Tunnel d'achat Cash-on-Delivery (COD)</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card2.f2">Module 58 Wilayas (frais domicile / relais)</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card2.f3">Suivi de colis en direct sans compte</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card2.f4"
+                  >Variantes produits (tailles, couleurs, stock)</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <a href="boutique-commerce.html" class="cta-button">
+            <span data-i18n="portal.card2.btn">Composer ma Boutique Retail</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Carte 3 : Entreprise & Grossiste B2B -->
+        <div class="solution-card">
+          <div>
+            <div class="solution-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                ></polygon>
+              </svg>
+            </div>
+            <h3 data-i18n="portal.card3.title">3. Plateforme Entreprise & B2B</h3>
+            <p class="desc" data-i18n="portal.card3.desc">
+              Pour magasins informatique/tech, pièces de rechange, quincaillerie industrielle,
+              distributeurs et grossistes avec gros volume et gestion des stocks.
+            </p>
+
+            <div class="pricing-pill">
+              <span
+                style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase"
+                data-i18n="portal.estimation"
+                >Estimation</span
+              >
+              <div style="text-align: right">
+                <div class="amount">160 000 DZD</div>
+                <div class="centimes">16,0 Millions de centimes</div>
+              </div>
+            </div>
+
+            <ul class="feature-points">
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card3.f1">Dashboard KPI exécutif (CA, paniers, LTV)</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card3.f2">Stocks atomiques et alertes anti-rupture</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card3.f3">Module de facturation et fiches de colisage</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card3.f4">Base de données sous votre contrôle total</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="plateforme-entreprise.html" class="cta-button">
+            <span data-i18n="portal.card3.btn">Composer ma Solution Entreprise</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Carte 4 : Présence Pro & Services -->
+        <div class="solution-card">
+          <div>
+            <div class="solution-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <h3 data-i18n="portal.card4.title">4. Présence Pro, Services & Formations</h3>
+            <p class="desc" data-i18n="portal.card4.desc">
+              Pour consultants, formateurs, bureaux d'études, experts, architectes et cabinets de
+              services souhaitant asseoir leur autorité et capter des clients.
+            </p>
+
+            <div class="pricing-pill">
+              <span
+                style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase"
+                data-i18n="portal.estimation"
+                >Estimation</span
+              >
+              <div style="text-align: right">
+                <div class="amount">85 000 DZD</div>
+                <div class="centimes">8,5 Millions de centimes</div>
+              </div>
+            </div>
+
+            <ul class="feature-points">
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card4.f1">Portfolio de réalisations & études de cas</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card4.f2">Blog d'autorité Markdown & Vidéos R&D</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card4.f3">Preuve sociale & Témoignages vérifiés</span>
+              </li>
+              <li>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="portal.card4.f4">Formulaire de demande de devis sur-mesure</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="presence-professionnelle.html" class="cta-button">
+            <span data-i18n="portal.card4.btn">Composer ma Présence Pro</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Bannière Grand Compositeur Sur-Mesure -->
+      <div class="master-composer-banner">
+        <span
+          style="
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #38bdf8;
+          "
+          data-i18n="portal.master_banner_badge"
+        >
+          Besoin d'une Architecture Mixte ou Hors-Norme ?
+        </span>
+        <h2 data-i18n="portal.master_banner_title">Grand Compositeur Intégral StacGate</h2>
+        <p data-i18n="portal.master_banner_desc">
+          Accédez à l'ensemble des 29 blocs modulaires du Studio Visuel et à tous les modules
+          applicatifs (E-Commerce physique, Digital, Multilingue FR/EN/AR RTL, Prérendu SEO
+          Playwright, Stocks atomiques). Composez votre plateforme pièce par pièce avec chiffrage en
+          direct.
+        </p>
+        <a
+          href="configurateur-sur-mesure.html"
+          class="btn btn-primary"
+          style="max-width: 320px; font-size: 1rem; padding: 1rem 1.5rem"
+          data-i18n="portal.master_banner_btn"
+        >
+          Lancer le Grand Compositeur
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </a>
       </div>
 
-      <!-- Carte 2 : Boutique Retail & Mode -->
-      <div class="solution-card">
-        <div>
-          <div class="solution-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-          </div>
-          <h3>2. Boutique Retail & 58 Wilayas</h3>
-          <p class="desc">
-            Pour le commerce de détail : prêt-à-porter, cosmétiques, parfumerie, bijoux, artisanat ou commerces de proximité avec expédition sur toute l'Algérie.
-          </p>
+      <!-- Tableau Comparatif Transverse -->
+      <section class="matrix-section">
+        <h2
+          style="font-size: 1.35rem; font-weight: 800; color: var(--secondary)"
+          data-i18n="portal.matrix_title"
+        >
+          Matrice Comparative des Équipements Inclus
+        </h2>
+        <p
+          style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem"
+          data-i18n="portal.matrix_desc"
+        >
+          Toutes nos solutions bénéficient de la même rigueur technique et de la cession intégrale
+          du code source :
+        </p>
 
-          <div class="pricing-pill">
-            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Estimation</span>
-            <div style="text-align:right;">
-              <div class="amount">dès 90 000 DZD</div>
-              <div class="centimes">9,0 Millions de centimes</div>
-            </div>
-          </div>
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th data-i18n="portal.matrix.th_feature">Capacité / Équipement</th>
+              <th data-i18n="portal.matrix.th_digital">Digital & Clés</th>
+              <th data-i18n="portal.matrix.th_retail">Boutique Retail</th>
+              <th data-i18n="portal.matrix.th_enterprise">Entreprise & B2B</th>
+              <th data-i18n="portal.matrix.th_pro">Présence Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong data-i18n="portal.matrix.r1_label">Technologie Front-End</strong></td>
+              <td data-i18n="portal.matrix.r1_val">React 19 / TypeScript</td>
+              <td data-i18n="portal.matrix.r1_val">React 19 / TypeScript</td>
+              <td data-i18n="portal.matrix.r1_val">React 19 / TypeScript</td>
+              <td data-i18n="portal.matrix.r1_val">React 19 / TypeScript</td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="portal.matrix.r2_label">API & Base de Données</strong></td>
+              <td data-i18n="portal.matrix.r2_v1">PHP 8.2+ REST / SQLite</td>
+              <td data-i18n="portal.matrix.r2_v1">PHP 8.2+ REST / SQLite</td>
+              <td data-i18n="portal.matrix.r2_v2">PHP 8.2+ REST / Multi-BDD</td>
+              <td data-i18n="portal.matrix.r2_v1">PHP 8.2+ REST / SQLite</td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="portal.matrix.r3_label">Mode de Livraison</strong></td>
+              <td data-i18n="portal.matrix.r3_v1">Email / WhatsApp / Écran</td>
+              <td data-i18n="portal.matrix.r3_v2">Colis 58 Wilayas (COD)</td>
+              <td data-i18n="portal.matrix.r3_v3">58 Wilayas + Gros & Devis</td>
+              <td data-i18n="portal.matrix.r3_v4">Prestation / En ligne</td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="portal.matrix.r4_label">Suivi de Commande Direct</strong></td>
+              <td data-i18n="portal.matrix.r4_v1">Option par token</td>
+              <td data-i18n="portal.matrix.r4_v2">Inclus sans compte</td>
+              <td data-i18n="portal.matrix.r4_v3">Inclus avec facturation</td>
+              <td data-i18n="portal.matrix.r4_v4">Sur demande de devis</td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="portal.matrix.r5_label">Gestion des Stocks</strong></td>
+              <td data-i18n="portal.matrix.r5_v1">Quantités numériques</td>
+              <td data-i18n="portal.matrix.r5_v2">Stocks physiques & Variantes</td>
+              <td data-i18n="portal.matrix.r5_v3">Stocks atomiques + Alertes</td>
+              <td data-i18n="portal.matrix.r5_v4">Créneaux / Disponibilité</td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="portal.matrix.r6_label">Moteur Multilingue (RTL)</strong></td>
+              <td data-i18n="portal.matrix.r6_v1">Option Arabe RTL</td>
+              <td data-i18n="portal.matrix.r6_v1">Option Arabe RTL</td>
+              <td data-i18n="portal.matrix.r6_v2">Inclus Trilingue 360°</td>
+              <td data-i18n="portal.matrix.r6_v1">Option Arabe RTL</td>
+            </tr>
+            <tr>
+              <td>
+                <strong data-i18n="portal.matrix.r7_label">Studio Visuel Page Builder</strong>
+              </td>
+              <td data-i18n="portal.matrix.r7_v1">Option Bannières</td>
+              <td data-i18n="portal.matrix.r7_v2">Option Carrousels</td>
+              <td data-i18n="portal.matrix.r7_v3">Inclus (29 Blocs)</td>
+              <td data-i18n="portal.matrix.r7_v4">Option Pages d'offres</td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="portal.matrix.r8_label">Propriété du Code</strong></td>
+              <td data-i18n="portal.matrix.r8_val">100% Cession libre</td>
+              <td data-i18n="portal.matrix.r8_val">100% Cession libre</td>
+              <td data-i18n="portal.matrix.r8_val">100% Cession libre</td>
+              <td data-i18n="portal.matrix.r8_val">100% Cession libre</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-          <ul class="feature-points">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Tunnel d'achat Cash-on-Delivery (COD)</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Module 58 Wilayas (frais domicile / relais)</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Suivi de colis en direct sans compte</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Variantes produits (tailles, couleurs, stock)</li>
-          </ul>
-        </div>
-
-        <a href="boutique-commerce.html" class="cta-button">
-          Composer ma Boutique Retail
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </a>
-      </div>
-
-      <!-- Carte 3 : Entreprise & Grossiste B2B -->
-      <div class="solution-card">
-        <div>
-          <div class="solution-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          </div>
-          <h3>3. Plateforme Entreprise & B2B</h3>
-          <p class="desc">
-            Pour magasins informatique/tech, pièces de rechange, quincaillerie industrielle, distributeurs et grossistes avec gros volume et gestion des stocks.
-          </p>
-
-          <div class="pricing-pill">
-            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Estimation</span>
-            <div style="text-align:right;">
-              <div class="amount">dès 160 000 DZD</div>
-              <div class="centimes">16,0 Millions de centimes</div>
-            </div>
-          </div>
-
-          <ul class="feature-points">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Dashboard KPI exécutif (CA, paniers, LTV)</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Stocks atomiques et alertes anti-rupture</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Module de facturation et fiches de colisage</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Base de données sous votre contrôle total</li>
-          </ul>
-        </div>
-
-        <a href="plateforme-entreprise.html" class="cta-button">
-          Composer ma Solution Entreprise
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </a>
-      </div>
-
-      <!-- Carte 4 : Présence Pro & Services -->
-      <div class="solution-card">
-        <div>
-          <div class="solution-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-          <h3>4. Présence Pro, Services & Formations</h3>
-          <p class="desc">
-            Pour consultants, formateurs, bureaux d'études, experts, architectes et cabinets de services souhaitant asseoir leur autorité et capter des clients.
-          </p>
-
-          <div class="pricing-pill">
-            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Estimation</span>
-            <div style="text-align:right;">
-              <div class="amount">dès 85 000 DZD</div>
-              <div class="centimes">8,5 Millions de centimes</div>
-            </div>
-          </div>
-
-          <ul class="feature-points">
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Portfolio de réalisations & études de cas</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Blog d'autorité Markdown & Vidéos R&D</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Preuve sociale & Témoignages vérifiés</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Formulaire de demande de devis sur-mesure</li>
-          </ul>
-        </div>
-
-        <a href="presence-professionnelle.html" class="cta-button">
-          Composer ma Présence Pro
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </a>
-      </div>
-
+      <!-- Pied de page -->
+      <footer class="devis-footer">
+        <p data-i18n="footer.text">
+          StacGate Platform • Solutions d'Ingénierie Logicielle & Architectures Web Haute
+          Performance
+        </p>
+        <p
+          style="margin-top: 0.35rem; font-size: 0.75rem; color: var(--text-light)"
+          data-i18n="footer.sub"
+        >
+          Conçu, Architecturé et Validé par ArchiSys3.0 • Zéro redevance mensuelle • Données 100%
+          souveraines
+        </p>
+      </footer>
     </div>
-
-    <!-- Bannière Grand Compositeur Sur-Mesure -->
-    <div class="master-composer-banner">
-      <span style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:0.25rem 0.75rem; border-radius:9999px; font-size:0.82rem; font-weight:700; color:#38bdf8;" data-i18n="portal.master_banner_badge">
-        Besoin d'une Architecture Mixte ou Hors-Norme ?
-      </span>
-      <h2 data-i18n="portal.master_banner_title">Grand Compositeur Intégral StacGate</h2>
-      <p data-i18n="portal.master_banner_desc">
-        Accédez à l'ensemble des 29 blocs modulaires du Studio Visuel et à tous les modules applicatifs (E-Commerce physique, Digital, Multilingue FR/EN/AR RTL, Prérendu SEO Playwright, Stocks atomiques). Composez votre plateforme pièce par pièce avec chiffrage en direct.
-      </p>
-      <a href="configurateur-sur-mesure.html" class="btn btn-primary" style="max-width:320px; font-size:1rem; padding:1rem 1.5rem;" data-i18n="portal.master_banner_btn">
-        Lancer le Grand Compositeur
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </a>
-    </div>
-
-    <!-- Tableau Comparatif Transverse -->
-    <section class="matrix-section">
-      <h2 style="font-size:1.35rem; font-weight:800; color:var(--secondary);" data-i18n="portal.matrix_title">
-        Matrice Comparative des Équipements Inclus
-      </h2>
-      <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.25rem;" data-i18n="portal.matrix_desc">
-        Toutes nos solutions bénéficient de la même rigueur technique et de la cession intégrale du code source :
-      </p>
-
-      <table class="matrix-table">
-        <thead>
-          <tr>
-            <th>Capacité / Équipement</th>
-            <th>Digital & Clés</th>
-            <th>Boutique Retail</th>
-            <th>Entreprise & B2B</th>
-            <th>Présence Pro</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Technologie Front-End</strong></td>
-            <td>React 19 / TypeScript</td>
-            <td>React 19 / TypeScript</td>
-            <td>React 19 / TypeScript</td>
-            <td>React 19 / TypeScript</td>
-          </tr>
-          <tr>
-            <td><strong>API & Base de Données</strong></td>
-            <td>PHP 8.2+ REST / SQLite</td>
-            <td>PHP 8.2+ REST / SQLite</td>
-            <td>PHP 8.2+ REST / Multi-BDD</td>
-            <td>PHP 8.2+ REST / SQLite</td>
-          </tr>
-          <tr>
-            <td><strong>Mode de Livraison</strong></td>
-            <td>Email / WhatsApp / Écran</td>
-            <td>Colis 58 Wilayas (COD)</td>
-            <td>58 Wilayas + Gros & Devis</td>
-            <td>Prestation / En ligne</td>
-          </tr>
-          <tr>
-            <td><strong>Suivi de Commande Direct</strong></td>
-            <td>Option par token</td>
-            <td>Inclus sans compte</td>
-            <td>Inclus avec facturation</td>
-            <td>Sur demande de devis</td>
-          </tr>
-          <tr>
-            <td><strong>Gestion des Stocks</strong></td>
-            <td>Quantités numériques</td>
-            <td>Stocks physiques & Variantes</td>
-            <td>Stocks atomiques + Alertes</td>
-            <td>Créneaux / Disponibilité</td>
-          </tr>
-          <tr>
-            <td><strong>Moteur Multilingue (RTL)</strong></td>
-            <td>Option Arabe RTL</td>
-            <td>Option Arabe RTL</td>
-            <td>Inclus Trilingue 360°</td>
-            <td>Option Arabe RTL</td>
-          </tr>
-          <tr>
-            <td><strong>Studio Visuel Page Builder</strong></td>
-            <td>Option Bannières</td>
-            <td>Option Carrousels</td>
-            <td>Inclus (29 Blocs)</td>
-            <td>Option Pages d'offres</td>
-          </tr>
-          <tr>
-            <td><strong>Propriété du Code</strong></td>
-            <td>100% Cession libre</td>
-            <td>100% Cession libre</td>
-            <td>100% Cession libre</td>
-            <td>100% Cession libre</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Pied de page -->
-    <footer class="devis-footer">
-      <p data-i18n="footer.text">StacGate Platform • Solutions d'Ingénierie Logicielle & Architectures Web Haute Performance</p>
-      <p style="margin-top:0.35rem; font-size:0.75rem; color:var(--text-light);" data-i18n="footer.sub">Conçu, Architecturé et Validé par ArchiSys3.0 • Zéro redevance mensuelle • Données 100% souveraines</p>
-    </footer>
-
-  </div>
-
-</body>
+  </body>
 </html>

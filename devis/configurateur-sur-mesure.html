@@ -1,361 +1,678 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configurateur Sur-Mesure — Studio & Architectures Modulaires StacGate</title>
-  <link rel="stylesheet" href="assets/css/devis-style.css">
-  <script src="assets/js/devis-i18n.js"></script>
-  <style>
-    .bloc-category-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--secondary);
-      margin: 1.5rem 0 0.75rem 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      border-bottom: 1px dashed var(--border-color);
-      padding-bottom: 0.4rem;
-    }
-    .options-grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 0.85rem;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="devis-container">
-
-    <!-- En-tête officiel du configurateur -->
-    <header class="devis-header">
-      <div class="devis-header-top">
-        <div class="devis-brand">
-          <h1>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            <span data-i18n="portal.master_banner_title">StacGate Platform — Grand Compositeur</span>
-          </h1>
-          <p data-i18n="brand.tagline">Conception & Chiffrage Modulaire en Direct (Code Source Réel)</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configurateur Sur-Mesure — Studio & Architectures Modulaires StacGate</title>
+    <link rel="stylesheet" href="assets/css/devis-style.css" />
+    <script src="assets/js/devis-i18n.js"></script>
+    <style>
+      .bloc-category-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--secondary);
+        margin: 1.5rem 0 0.75rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 1px dashed var(--border-color);
+        padding-bottom: 0.4rem;
+      }
+      .options-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="devis-container">
+      <!-- En-tête officiel du configurateur -->
+      <header class="devis-header">
+        <div class="devis-header-top">
+          <div class="devis-brand">
+            <h1>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--primary)"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                ></polygon>
+              </svg>
+              <span data-i18n="portal.master_banner_title"
+                >StacGate Platform — Grand Compositeur</span
+              >
+            </h1>
+            <p data-i18n="brand.tagline">
+              Conception & Chiffrage Modulaire en Direct (Code Source Réel)
+            </p>
+          </div>
+          <div>
+            <span class="devis-badge-type" data-i18n="custom.badge"
+              >Configurateur Universel Tout-en-Un</span
+            >
+          </div>
         </div>
-        <div>
-          <span class="devis-badge-type">Configurateur Universel Tout-en-Un</span>
+
+        <div class="devis-meta-grid">
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.master_core">Socle Maître</span>
+            <span class="val" data-i18n="custom.meta_core_val"
+              >React 19 / TypeScript Strict / API REST PHP 8.2+</span
+            >
+          </div>
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.composability">Composabilité</span>
+            <span class="val" data-i18n="custom.meta_comp_val"
+              >29 Blocs Atomiques & 53 Écrans Applicatifs</span
+            >
+          </div>
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.persistence">Persistance</span>
+            <span class="val" data-i18n="custom.meta_pers_val"
+              >Multi-Pilote : SQLite Souverain / MySQL / Postgres</span
+            >
+          </div>
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.cession_mode">Mode de Cession</span>
+            <span class="val" data-i18n="meta.ownership.val"
+              >Cession Totale du Code 100% sans Abonnement</span
+            >
+          </div>
         </div>
+      </header>
+
+      <!-- Corps du Configurateur -->
+      <div class="devis-grid">
+        <!-- Colonne Gauche : Sélection des Briques -->
+        <main>
+          <!-- Socle de Base Inclus -->
+          <section class="section-card">
+            <h2>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--success)"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span data-i18n="section.core_universal">1. Socle d'Ingénierie Universel Inclus</span>
+            </h2>
+            <p class="desc" data-i18n="custom.desc_inc">
+              Chaque solution bénéficie de la fondation technique ultra-rapide et sécurisée :
+            </p>
+            <div class="included-list">
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="custom.inc1.title">Application Web SPA React 19</strong
+                  ><span data-i18n="custom.inc1.desc">Performance 60 FPS, zéro rechargement.</span>
+                </div>
+              </div>
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="custom.inc2.title">API REST PHP 8.2+ Natif</strong
+                  ><span data-i18n="custom.inc2.desc"
+                    >Ultra-légère, zéro serveur Node.js en prod.</span
+                  >
+                </div>
+              </div>
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="custom.inc3.title">Installateur Web 1-Clic</strong
+                  ><span data-i18n="custom.inc3.desc"
+                    >Initialisation automatique (`install.php`).</span
+                  >
+                </div>
+              </div>
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="custom.inc4.title">Sécurité Argon2id & CSP</strong
+                  ><span data-i18n="custom.inc4.desc"
+                    >Protection maximale des données et sessions.</span
+                  >
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Modules Métiers Majeurs -->
+          <section class="section-card">
+            <h2>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--primary)"
+              >
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span data-i18n="section.major_modules">2. Modules Applicatifs Majeurs</span>
+            </h2>
+            <p class="desc" data-i18n="custom.desc_mod">
+              Cochez les briques fonctionnelles requises pour votre écosystème :
+            </p>
+
+            <div class="options-grid-2">
+              <!-- E-Commerce Physique & COD -->
+              <label class="option-card" for="mod-ecommerce">
+                <input
+                  type="checkbox"
+                  id="mod-ecommerce"
+                  data-price="45000"
+                  data-name="Boutique E-Commerce Physique & 58 Wilayas COD"
+                  data-i18n-name="custom.mod.ecommerce.title"
+                  checked
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.ecommerce.title">
+                      E-Commerce & 58 Wilayas
+                    </div>
+                    <div class="option-price">+45 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.ecommerce.desc">
+                    Catalogue physique, panier, suivi sans compte et paiement à la livraison.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Produits Dématérialisés & Clés -->
+              <label class="option-card" for="mod-digital">
+                <input
+                  type="checkbox"
+                  id="mod-digital"
+                  data-price="25000"
+                  data-name="Catalogue Dématérialisé (Clés, IA, Abonnements)"
+                  data-i18n-name="custom.mod.digital.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.digital.title">
+                      Produits Digitaux & Clés
+                    </div>
+                    <div class="option-price">+25 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.digital.desc">
+                    Vente de licences logicielles, crédits IA et abonnements en ligne.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Stocks Atomiques -->
+              <label class="option-card" for="mod-stock">
+                <input
+                  type="checkbox"
+                  id="mod-stock"
+                  data-price="15000"
+                  data-name="Gestion Atomique des Stocks & Alertes"
+                  data-i18n-name="custom.mod.stock.title"
+                  checked
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.stock.title">
+                      Stocks Atomiques
+                    </div>
+                    <div class="option-price">+15 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.stock.desc">
+                    Verrouillage anti-survente et alertes automatiques de réapprovisionnement.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Dashboard Direction & KPI -->
+              <label class="option-card" for="mod-dashboard">
+                <input
+                  type="checkbox"
+                  id="mod-dashboard"
+                  data-price="20000"
+                  data-name="Dashboard Direction & Graphiques KPI"
+                  data-i18n-name="custom.mod.dashboard.title"
+                  checked
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.dashboard.title">
+                      Dashboard Analytique
+                    </div>
+                    <div class="option-price">+20 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.dashboard.desc">
+                    Graphiques Recharts : CA, panier moyen, volume commandes et LTV.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Multilingue Arabe RTL -->
+              <label class="option-card" for="mod-rtl">
+                <input
+                  type="checkbox"
+                  id="mod-rtl"
+                  data-price="20000"
+                  data-name="Pack Bilingue Français + Arabe RTL"
+                  data-i18n-name="custom.mod.rtl.title"
+                  checked
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.rtl.title">
+                      Bilingue Arabe (RTL)
+                    </div>
+                    <div class="option-price">+20 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.rtl.desc">
+                    Inversion bidirectionnelle parfaite LTR / RTL sur tout le site.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Pack Trilingue Anglais -->
+              <label class="option-card" for="mod-trilingue">
+                <input
+                  type="checkbox"
+                  id="mod-trilingue"
+                  data-price="10000"
+                  data-name="Extension Trilingue avec Anglais"
+                  data-i18n-name="custom.mod.trilingue.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.trilingue.title">
+                      Extension Anglais (EN)
+                    </div>
+                    <div class="option-price">+10 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.trilingue.desc">
+                    Ajout de la langue anglaise pour les clients et partenaires internationaux.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Blog Multimédia -->
+              <label class="option-card" for="mod-blog">
+                <input
+                  type="checkbox"
+                  id="mod-blog"
+                  data-price="15000"
+                  data-name="Blog d'Entreprise Multimédia & Vidéos"
+                  data-i18n-name="custom.mod.blog.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.blog.title">
+                      Blog Markdown & Vidéos
+                    </div>
+                    <div class="option-price">+15 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.blog.desc">
+                    Publication d'articles formatés et intégration de vidéos YouTube.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Coupons & Promotions -->
+              <label class="option-card" for="mod-coupons">
+                <input
+                  type="checkbox"
+                  id="mod-coupons"
+                  data-price="10000"
+                  data-name="Gestionnaire de Coupons & Ventes Flash"
+                  data-i18n-name="custom.mod.coupons.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.coupons.title">
+                      Coupons & Ventes Flash
+                    </div>
+                    <div class="option-price">+10 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.coupons.desc">
+                    Codes de réduction, remises automatiques et comptes à rebours.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Prérendu SEO Playwright -->
+              <label class="option-card" for="mod-seo">
+                <input
+                  type="checkbox"
+                  id="mod-seo"
+                  data-price="20000"
+                  data-name="Moteur de Prérendu SEO Playwright"
+                  data-i18n-name="custom.mod.seo.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.seo.title">
+                      SEO Statique Playwright
+                    </div>
+                    <div class="option-price">+20 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.seo.desc">
+                    Génération des pages pré-rendues pour un classement Google immédiat.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Mode Maintenance VIP -->
+              <label class="option-card" for="mod-vip">
+                <input
+                  type="checkbox"
+                  id="mod-vip"
+                  data-price="10000"
+                  data-name="Page Maintenance VIP & Accès Privé Code"
+                  data-i18n-name="custom.mod.vip.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.mod.vip.title">
+                      Maintenance VIP & Code
+                    </div>
+                    <div class="option-price">+10 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.mod.vip.desc">
+                    Page d'attente soignée avec code secret pour prévisualisation clients.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <!-- Blocs du Visual Page Builder -->
+          <section class="section-card">
+            <h2>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--primary)"
+              >
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span data-i18n="section.builder_packs"
+                >3. Packs de Blocs du Visual Page Builder</span
+              >
+            </h2>
+            <p class="desc" data-i18n="custom.desc_packs">
+              Activez le studio visuel et choisissez vos familles de blocs composables (29 blocs
+              disponibles au total) :
+            </p>
+
+            <div class="options-group">
+              <!-- Pack Studio Visuel Intégré -->
+              <label class="option-card" for="pack-builder-core">
+                <input
+                  type="checkbox"
+                  id="pack-builder-core"
+                  data-price="25000"
+                  data-name="Studio Visuel Page Builder (Cockpit Live Canvas)"
+                  data-i18n-name="custom.pack.builder.title"
+                  checked
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title">
+                      <span data-i18n="custom.pack.builder.title"
+                        >Cockpit Page Builder & Live Canvas WYSIWYG</span
+                      >
+                      <span class="option-badge" data-i18n="badge.recommended">Recommandé</span>
+                    </div>
+                    <div class="option-price">+25 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.pack.builder.desc">
+                    Éditeur visuel autonome permettant de concevoir, réorganiser et modifier les
+                    pages en direct avec prévisualisation Mobile / Tablette / PC.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Blocs Identité & CV -->
+              <label class="option-card" for="pack-blocks-identity">
+                <input
+                  type="checkbox"
+                  id="pack-blocks-identity"
+                  data-price="12000"
+                  data-name="Pack Blocs Identité (Profil CV, Timeline, Compétences, Projets)"
+                  data-i18n-name="custom.pack.identity.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.pack.identity.title">
+                      Pack Blocs Identité & Portfolio (7 Blocs)
+                    </div>
+                    <div class="option-price">+12 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.pack.identity.desc">
+                    Profil exécutif, Frise chronologique, Matrice de compétences, Vitrine de
+                    projets, Histoire d'entreprise, Valeurs et Zone Markdown libre.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Blocs Commerce & Vitrine -->
+              <label class="option-card" for="pack-blocks-commerce">
+                <input
+                  type="checkbox"
+                  id="pack-blocks-commerce"
+                  data-price="15000"
+                  data-name="Pack Blocs Commerce (Ventes Flash, Catégories, Best Sellers, Onglets)"
+                  data-i18n-name="custom.pack.commerce.title"
+                  checked
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.pack.commerce.title">
+                      Pack Blocs Commerce & Vitrine (9 Blocs)
+                    </div>
+                    <div class="option-price">+15 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.pack.commerce.desc">
+                    Héros interactif, Ventes flash avec compte à rebours, Cartes catégories, Filtres
+                    chips, Meilleures ventes, Onglets par univers, Défilement marques partenaires et
+                    Grille tarifaire.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Blocs Interaction & Confiance -->
+              <label class="option-card" for="pack-blocks-trust">
+                <input
+                  type="checkbox"
+                  id="pack-blocks-trust"
+                  data-price="10000"
+                  data-name="Pack Blocs Confiance & Interaction (Avis, Citations, FAQ, Formulaires)"
+                  data-i18n-name="custom.pack.trust.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="custom.pack.trust.title">
+                      Pack Blocs Confiance & Interaction (8 Blocs)
+                    </div>
+                    <div class="option-price">+10 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="custom.pack.trust.desc">
+                    Témoignages vérifiés, Citation star vedette, Articles de blog récents,
+                    Formulaire de contact/devis, Cartes coordonnées directes, FAQ accordéon, Ticker
+                    défilant et Bandeau promo.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </section>
+        </main>
+
+        <!-- Colonne Droite : Total Dynamique & Actions -->
+        <aside>
+          <div class="summary-sticky">
+            <h3 data-i18n="summary.title">Votre Devis Composé</h3>
+
+            <div class="summary-rows" id="summary-dynamic-rows">
+              <!-- Rempli dynamiquement -->
+            </div>
+
+            <div class="summary-total">
+              <span class="total-label" data-i18n="summary.total_label"
+                >Investissement Total Estimé</span
+              >
+              <div class="total-amount-dzd" id="total-dzd">180 000 DZD</div>
+              <div class="total-amount-centimes" id="total-centimes">18,0 Millions de centimes</div>
+            </div>
+
+            <div class="action-buttons">
+              <a href="#" class="btn btn-whatsapp" id="btn-whatsapp" target="_blank">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path
+                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
+                  ></path>
+                </svg>
+                <span data-i18n="btn.whatsapp">Valider & Échanger sur WhatsApp</span>
+              </a>
+
+              <button type="button" class="btn btn-outline" id="btn-print">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path
+                    d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+                  ></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                <span data-i18n="btn.print">Imprimer / Enregistrer en PDF</span>
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-outline"
+                id="btn-reset"
+                style="font-size: 0.8rem; padding: 0.5rem"
+                data-i18n="btn.reset"
+              >
+                Réinitialiser les sélections
+              </button>
+            </div>
+
+            <div class="guarantee-note" data-i18n="guarantee.custom">
+              ⭐ <strong>Architecture Découplée & Évolutive :</strong> Vous pouvez ajouter de
+              nouvelles briques à tout moment sans réécrire l'existant.
+            </div>
+          </div>
+        </aside>
       </div>
 
-      <div class="devis-meta-grid">
-        <div class="devis-meta-item">
-          <span class="label">Socle Maître</span>
-          <span class="val">React 19 / TypeScript Strict / API REST PHP 8.2+</span>
-        </div>
-        <div class="devis-meta-item">
-          <span class="label">Composabilité</span>
-          <span class="val">29 Blocs Atomiques & 53 Écrans Applicatifs</span>
-        </div>
-        <div class="devis-meta-item">
-          <span class="label">Persistance</span>
-          <span class="val">Multi-Pilote : SQLite Souverain / MySQL / Postgres</span>
-        </div>
-        <div class="devis-meta-item">
-          <span class="label" data-i18n="meta.ownership">Mode de Cession</span>
-          <span class="val" data-i18n="meta.ownership.val">Cession Totale du Code 100% sans Abonnement</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Corps du Configurateur -->
-    <div class="devis-grid">
-
-      <!-- Colonne Gauche : Sélection des Briques -->
-      <main>
-
-        <!-- Socle de Base Inclus -->
-        <section class="section-card">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <span data-i18n="section.included">1. Socle d'Ingénierie Universel Inclus</span>
-          </h2>
-          <p class="desc">Chaque solution bénéficie de la fondation technique ultra-rapide et sécurisée :</p>
-          <div class="included-list">
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div><strong>Application Web SPA React 19</strong><span>Performance 60 FPS, zéro rechargement.</span></div>
-            </div>
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div><strong>API REST PHP 8.2+ Natif</strong><span>Ultra-légère, zéro serveur Node.js en prod.</span></div>
-            </div>
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div><strong>Installateur Web 1-Clic</strong><span>Initialisation automatique (`install.php`).</span></div>
-            </div>
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div><strong>Sécurité Argon2id & CSP</strong><span>Protection maximale des données et sessions.</span></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Modules Métiers Majeurs -->
-        <section class="section-card">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            2. Modules Applicatifs Majeurs
-          </h2>
-          <p class="desc">Cochez les briques fonctionnelles requises pour votre écosystème :</p>
-
-          <div class="options-grid-2">
-
-            <!-- E-Commerce Physique & COD -->
-            <label class="option-card" for="mod-ecommerce">
-              <input type="checkbox" id="mod-ecommerce" data-price="45000" data-name="Boutique E-Commerce Physique & 58 Wilayas COD" checked>
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">E-Commerce & 58 Wilayas</div>
-                  <div class="option-price">+45 000 DZD</div>
-                </div>
-                <div class="option-desc">Catalogue physique, panier, suivi sans compte et paiement à la livraison.</div>
-              </div>
-            </label>
-
-            <!-- Produits Dématérialisés & Clés -->
-            <label class="option-card" for="mod-digital">
-              <input type="checkbox" id="mod-digital" data-price="25000" data-name="Catalogue Dématérialisé (Clés, IA, Abonnements)">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Produits Digitaux & Clés</div>
-                  <div class="option-price">+25 000 DZD</div>
-                </div>
-                <div class="option-desc">Vente de licences logicielles, crédits IA et abonnements en ligne.</div>
-              </div>
-            </label>
-
-            <!-- Stocks Atomiques -->
-            <label class="option-card" for="mod-stock">
-              <input type="checkbox" id="mod-stock" data-price="15000" data-name="Gestion Atomique des Stocks & Alertes" checked>
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Stocks Atomiques</div>
-                  <div class="option-price">+15 000 DZD</div>
-                </div>
-                <div class="option-desc">Verrouillage anti-survente et alertes automatiques de réapprovisionnement.</div>
-              </div>
-            </label>
-
-            <!-- Dashboard Direction & KPI -->
-            <label class="option-card" for="mod-dashboard">
-              <input type="checkbox" id="mod-dashboard" data-price="20000" data-name="Dashboard Direction & Graphiques KPI" checked>
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Dashboard Analytique</div>
-                  <div class="option-price">+20 000 DZD</div>
-                </div>
-                <div class="option-desc">Graphiques Recharts : CA, panier moyen, volume commandes et LTV.</div>
-              </div>
-            </label>
-
-            <!-- Multilingue Arabe RTL -->
-            <label class="option-card" for="mod-rtl">
-              <input type="checkbox" id="mod-rtl" data-price="20000" data-name="Pack Bilingue Français + Arabe RTL" checked>
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Bilingue Arabe (RTL)</div>
-                  <div class="option-price">+20 000 DZD</div>
-                </div>
-                <div class="option-desc">Inversion bidirectionnelle parfaite LTR / RTL sur tout le site.</div>
-              </div>
-            </label>
-
-            <!-- Pack Trilingue Anglais -->
-            <label class="option-card" for="mod-trilingue">
-              <input type="checkbox" id="mod-trilingue" data-price="10000" data-name="Extension Trilingue avec Anglais">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Extension Anglais (EN)</div>
-                  <div class="option-price">+10 000 DZD</div>
-                </div>
-                <div class="option-desc">Ajout de la langue anglaise pour les clients et partenaires internationaux.</div>
-              </div>
-            </label>
-
-            <!-- Blog Multimédia -->
-            <label class="option-card" for="mod-blog">
-              <input type="checkbox" id="mod-blog" data-price="15000" data-name="Blog d'Entreprise Multimédia & Vidéos">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Blog Markdown & Vidéos</div>
-                  <div class="option-price">+15 000 DZD</div>
-                </div>
-                <div class="option-desc">Publication d'articles formatés et intégration de vidéos YouTube.</div>
-              </div>
-            </label>
-
-            <!-- Coupons & Promotions -->
-            <label class="option-card" for="mod-coupons">
-              <input type="checkbox" id="mod-coupons" data-price="10000" data-name="Gestionnaire de Coupons & Ventes Flash">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Coupons & Ventes Flash</div>
-                  <div class="option-price">+10 000 DZD</div>
-                </div>
-                <div class="option-desc">Codes de réduction, remises automatiques et comptes à rebours.</div>
-              </div>
-            </label>
-
-            <!-- Prérendu SEO Playwright -->
-            <label class="option-card" for="mod-seo">
-              <input type="checkbox" id="mod-seo" data-price="20000" data-name="Moteur de Prérendu SEO Playwright">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">SEO Statique Playwright</div>
-                  <div class="option-price">+20 000 DZD</div>
-                </div>
-                <div class="option-desc">Génération des pages pré-rendues pour un classement Google immédiat.</div>
-              </div>
-            </label>
-
-            <!-- Mode Maintenance VIP -->
-            <label class="option-card" for="mod-vip">
-              <input type="checkbox" id="mod-vip" data-price="10000" data-name="Page Maintenance VIP & Accès Privé Code">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Maintenance VIP & Code</div>
-                  <div class="option-price">+10 000 DZD</div>
-                </div>
-                <div class="option-desc">Page d'attente soignée avec code secret pour prévisualisation clients.</div>
-              </div>
-            </label>
-
-          </div>
-        </section>
-
-        <!-- Blocs du Visual Page Builder -->
-        <section class="section-card">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-            3. Packs de Blocs du Visual Page Builder
-          </h2>
-          <p class="desc">Activez le studio visuel et choisissez vos familles de blocs composables (29 blocs disponibles au total) :</p>
-
-          <div class="options-group">
-
-            <!-- Pack Studio Visuel Intégré -->
-            <label class="option-card" for="pack-builder-core">
-              <input type="checkbox" id="pack-builder-core" data-price="25000" data-name="Studio Visuel Page Builder (Cockpit Live Canvas)" checked>
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Cockpit Page Builder & Live Canvas WYSIWYG <span class="option-badge" data-i18n="badge.recommended">Recommandé</span></div>
-                  <div class="option-price">+25 000 DZD</div>
-                </div>
-                <div class="option-desc">Éditeur visuel autonome permettant de concevoir, réorganiser et modifier les pages en direct avec prévisualisation Mobile / Tablette / PC.</div>
-              </div>
-            </label>
-
-            <!-- Blocs Identité & CV -->
-            <label class="option-card" for="pack-blocks-identity">
-              <input type="checkbox" id="pack-blocks-identity" data-price="12000" data-name="Pack Blocs Identité (Profil CV, Timeline, Compétences, Projets)">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Pack Blocs Identité & Portfolio (7 Blocs)</div>
-                  <div class="option-price">+12 000 DZD</div>
-                </div>
-                <div class="option-desc">Profil exécutif, Frise chronologique, Matrice de compétences, Vitrine de projets, Histoire d'entreprise, Valeurs et Zone Markdown libre.</div>
-              </div>
-            </label>
-
-            <!-- Blocs Commerce & Vitrine -->
-            <label class="option-card" for="pack-blocks-commerce">
-              <input type="checkbox" id="pack-blocks-commerce" data-price="15000" data-name="Pack Blocs Commerce (Ventes Flash, Catégories, Best Sellers, Onglets)" checked>
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Pack Blocs Commerce & Vitrine (9 Blocs)</div>
-                  <div class="option-price">+15 000 DZD</div>
-                </div>
-                <div class="option-desc">Héros interactif, Ventes flash avec compte à rebours, Cartes catégories, Filtres chips, Meilleures ventes, Onglets par univers, Défilement marques partenaires et Grille tarifaire.</div>
-              </div>
-            </label>
-
-            <!-- Blocs Interaction & Confiance -->
-            <label class="option-card" for="pack-blocks-trust">
-              <input type="checkbox" id="pack-blocks-trust" data-price="10000" data-name="Pack Blocs Confiance & Interaction (Avis, Citations, FAQ, Formulaires)">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Pack Blocs Confiance & Interaction (8 Blocs)</div>
-                  <div class="option-price">+10 000 DZD</div>
-                </div>
-                <div class="option-desc">Témoignages vérifiés, Citation star vedette, Articles de blog récents, Formulaire de contact/devis, Cartes coordonnées directes, FAQ accordéon, Ticker défilant et Bandeau promo.</div>
-              </div>
-            </label>
-
-          </div>
-        </section>
-
-      </main>
-
-      <!-- Colonne Droite : Total Dynamique & Actions -->
-      <aside>
-        <div class="summary-sticky">
-          <h3 data-i18n="summary.title">Votre Devis Composé</h3>
-
-          <div class="summary-rows" id="summary-dynamic-rows">
-            <!-- Rempli dynamiquement -->
-          </div>
-
-          <div class="summary-total">
-            <span class="total-label" data-i18n="summary.total_label">Investissement Total Estimé</span>
-            <div class="total-amount-dzd" id="total-dzd">180 000 DZD</div>
-            <div class="total-amount-centimes" id="total-centimes">18,0 Millions de centimes</div>
-          </div>
-
-          <div class="action-buttons">
-            <a href="#" class="btn btn-whatsapp" id="btn-whatsapp" target="_blank">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-              <span data-i18n="btn.whatsapp">Valider & Échanger sur WhatsApp</span>
-            </a>
-
-            <button type="button" class="btn btn-outline" id="btn-print">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-              <span data-i18n="btn.print">Imprimer / Enregistrer en PDF</span>
-            </button>
-
-            <button type="button" class="btn btn-outline" id="btn-reset" style="font-size:0.8rem; padding:0.5rem;" data-i18n="btn.reset">
-              Réinitialiser les sélections
-            </button>
-          </div>
-
-          <div class="guarantee-note">
-            ⭐ <strong>Architecture Découplée & Évolutive :</strong> Vous pouvez ajouter de nouvelles briques à tout moment sans réécrire l'existant.
-          </div>
-        </div>
-      </aside>
-
+      <!-- Pied de Page -->
+      <footer class="devis-footer">
+        <p data-i18n="footer.text">
+          StacGate Platform • Compositeur Modulaire d'Ingénierie Logicielle • Conçu et Validé par
+          ArchiSys3.0
+        </p>
+        <p
+          style="margin-top: 0.35rem; font-size: 0.75rem; color: var(--text-light)"
+          data-i18n="footer.sub"
+        >
+          Ce configurateur génère une proposition technique détaillée pour cadrage de projet.
+        </p>
+      </footer>
     </div>
 
-    <!-- Pied de Page -->
-    <footer class="devis-footer">
-      <p data-i18n="footer.text">StacGate Platform • Compositeur Modulaire d'Ingénierie Logicielle • Conçu et Validé par ArchiSys3.0</p>
-      <p style="margin-top:0.35rem; font-size:0.75rem; color:var(--text-light);" data-i18n="footer.sub">Ce configurateur génère une proposition technique détaillée pour cadrage de projet.</p>
-    </footer>
-
-  </div>
-
-  <!-- Configuration du Devis & Moteur de Calcul -->
-  <script>
-    window.DEVIS_CONFIG = {
-      profileId: "configurateur-sur-mesure",
-      pageTitle: "Architecture Sur-Mesure StacGate",
-      baseTitle: "Socle Universel (React 19 / PHP API REST / BDD)",
-      baseTitleTr: {
-        fr: "Socle Universel (React 19 / PHP API REST / BDD)",
-        en: "Universal Core (React 19 / PHP REST API / DB)",
-        ar: "الأساس الشامل (React 19 / واجهة برمجة PHP / قاعدة بيانات)"
-      },
-      basePrice: 50000,
-      currency: "DZD",
-      whatsappPhone: "+213000000000"
-    };
-  </script>
-  <script src="assets/js/devis-calculator.js"></script>
-</body>
+    <!-- Configuration du Devis & Moteur de Calcul -->
+    <script>
+      window.DEVIS_CONFIG = {
+        profileId: "configurateur-sur-mesure",
+        pageTitle: "Architecture Sur-Mesure StacGate",
+        baseTitle: "Socle Universel (React 19 / PHP API REST / BDD)",
+        baseTitleTr: {
+          fr: "Socle Universel (React 19 / PHP API REST / BDD)",
+          en: "Universal Core (React 19 / PHP REST API / DB)",
+          ar: "الأساس الشامل (React 19 / واجهة برمجة PHP / قاعدة بيانات)",
+        },
+        basePrice: 50000,
+        currency: "DZD",
+        whatsappPhone: "+213000000000",
+      };
+    </script>
+    <script src="assets/js/devis-calculator.js"></script>
+  </body>
 </html>

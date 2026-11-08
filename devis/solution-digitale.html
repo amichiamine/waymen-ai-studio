@@ -1,266 +1,507 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Proposition Commerciale & Devis — Plateforme Digitale & Abonnements</title>
-  <link rel="stylesheet" href="assets/css/devis-style.css">
-  <script src="assets/js/devis-i18n.js"></script>
-</head>
-<body>
-
-  <div class="devis-container">
-
-    <!-- En-tête officiel du devis -->
-    <header class="devis-header">
-      <div class="devis-header-top">
-        <div class="devis-brand">
-          <h1>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-            <span data-i18n="brand.platform">StacGate Platform</span>
-          </h1>
-          <p data-i18n="brand.tagline">Proposition d'ingénierie logicielle & architecture sur-mesure</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proposition Commerciale & Devis — Plateforme Digitale & Abonnements</title>
+    <link rel="stylesheet" href="assets/css/devis-style.css" />
+    <script src="assets/js/devis-i18n.js"></script>
+  </head>
+  <body>
+    <div class="devis-container">
+      <!-- En-tête officiel du devis -->
+      <header class="devis-header">
+        <div class="devis-header-top">
+          <div class="devis-brand">
+            <h1>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--primary)"
+              >
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+              <span data-i18n="brand.platform">StacGate Platform</span>
+            </h1>
+            <p data-i18n="brand.tagline">
+              Proposition d'ingénierie logicielle & architecture sur-mesure
+            </p>
+          </div>
+          <div>
+            <span class="devis-badge-type" data-i18n="digital.badge"
+              >Offre Spécialisée : Produits Digitaux & Abonnements</span
+            >
+          </div>
         </div>
-        <div>
-          <span class="devis-badge-type">Offre Spécialisée : Produits Digitaux & Abonnements</span>
+
+        <div class="devis-meta-grid">
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.object">Objet du Devis</span>
+            <span class="val" data-i18n="digital.meta_obj"
+              >Plateforme E-Commerce Dématérialisée (Clés, IA, Abonnements)</span
+            >
+          </div>
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.architecture">Architecture</span>
+            <span class="val" data-i18n="meta.arch.digital"
+              >React 19 + TypeScript / API PHP 8.2+ REST</span
+            >
+          </div>
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.ownership">Propriété du Code</span>
+            <span class="val" data-i18n="meta.ownership.val"
+              >Cession Intégrale 100% Propriétaire (Zéro abonnement)</span
+            >
+          </div>
+          <div class="devis-meta-item">
+            <span class="label" data-i18n="meta.validity">Validité de l'Offre</span>
+            <span class="val" data-i18n="meta.validity.val">30 jours à compter de l'émission</span>
+          </div>
         </div>
+      </header>
+
+      <!-- Corps du Devis & Calculateur -->
+      <div class="devis-grid">
+        <!-- Colonne Gauche : Socle Inclus & Options -->
+        <main>
+          <!-- Socle Inclus -->
+          <section class="section-card">
+            <h2>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--success)"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span data-i18n="section.included">1. Socle Métier Inclus de Base</span>
+            </h2>
+            <p class="desc" data-i18n="digital.desc_inc">
+              Toutes les fondations techniques indispensables au commerce de produits dématérialisés
+              sont prêtes et opérationnelles :
+            </p>
+
+            <div class="included-list">
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="digital.inc1.title">Application React 19 / TypeScript</strong>
+                  <span data-i18n="digital.inc1.desc"
+                    >Affichage instantané, expérience ultra-fluide sur mobile & PC.</span
+                  >
+                </div>
+              </div>
+
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="digital.inc2.title">Catalogue Dématérialisé Dédié</strong>
+                  <span data-i18n="digital.inc2.desc"
+                    >Fiches pour comptes IA, clés logicielles, licences et recharges sans frais de
+                    livraison inutiles.</span
+                  >
+                </div>
+              </div>
+
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="digital.inc3.title">Tunnel de Commande Express</strong>
+                  <span data-i18n="digital.inc3.desc"
+                    >Formulaire simplifié (Nom, Téléphone, Email/WhatsApp) adapté à la vente rapide
+                    en ligne.</span
+                  >
+                </div>
+              </div>
+
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="digital.inc4.title"
+                    >Paiement Local BaridiMob / CCP / Cash</strong
+                  >
+                  <span data-i18n="digital.inc4.desc"
+                    >Instructions de virement claires avec confirmation de paiement et traitement
+                    des reçus.</span
+                  >
+                </div>
+              </div>
+
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="digital.inc5.title"
+                    >Back-Office de Gestion des Commandes</strong
+                  >
+                  <span data-i18n="digital.inc5.desc"
+                    >Espace administrateur sécurisé pour délivrer les clés/comptes et valider les
+                    statuts.</span
+                  >
+                </div>
+              </div>
+
+              <div class="included-item">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <div>
+                  <strong data-i18n="digital.inc6.title">Architecture Sans Frais Récurrents</strong>
+                  <span data-i18n="digital.inc6.desc"
+                    >Tourne sur un hébergement mutualisé standard, zéro dépendance SaaS payante en
+                    devises.</span
+                  >
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Compositeur d'Options -->
+          <section class="section-card">
+            <h2>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--primary)"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
+              </svg>
+              <span data-i18n="section.custom"
+                >2. Personnalisez votre Solution (Options à la Carte)</span
+              >
+            </h2>
+            <p class="desc" data-i18n="digital.desc_opt">
+              Cochez ou décochez les modules pour calibrer exactement la plateforme à votre activité
+              :
+            </p>
+
+            <div class="options-group">
+              <!-- Option 1 : Multilingue Arabe RTL -->
+              <label class="option-card" for="opt-rtl">
+                <input
+                  type="checkbox"
+                  id="opt-rtl"
+                  data-price="10000"
+                  data-name="Pack Bilingue Français + Arabe (RTL)"
+                  data-i18n-name="digital.opt.rtl.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title">
+                      <span data-i18n="digital.opt.rtl.title"
+                        >Pack Bilingue Français + Arabe Natif (RTL)</span
+                      >
+                      <span class="option-badge" data-i18n="badge.popular"
+                        >Fortement Recommandé</span
+                      >
+                    </div>
+                    <div class="option-price">+10 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="digital.opt.rtl.desc">
+                    Affichage bilingue complet avec inversion directionnelle parfaite de droite à
+                    gauche pour maximiser vos conversions auprès de la clientèle arabophone.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option 2 : Page Builder & Bannières -->
+              <label class="option-card" for="opt-builder">
+                <input
+                  type="checkbox"
+                  id="opt-builder"
+                  data-price="6000"
+                  data-name="Studio Visuel & Bannières Promos"
+                  data-i18n-name="digital.opt.builder.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="digital.opt.builder.title">
+                      Studio Visuel & Bannières Promotionnelles
+                    </div>
+                    <div class="option-price">+6 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="digital.opt.builder.desc">
+                    Éditeur visuel intégré pour modifier vos bannières, afficher des comptes à
+                    rebours de promotions temporaires et mettre en avant vos nouveautés en 1 clic.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option 3 : Bouton Direct WhatsApp de Commande -->
+              <label class="option-card" for="opt-whatsapp">
+                <input
+                  type="checkbox"
+                  id="opt-whatsapp"
+                  data-price="4000"
+                  data-name="Bouton Commande WhatsApp Directe"
+                  data-i18n-name="digital.opt.whatsapp.title"
+                  checked
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="digital.opt.whatsapp.title">
+                      Bouton Commande WhatsApp Directe
+                    </div>
+                    <div class="option-price">+4 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="digital.opt.whatsapp.desc">
+                    Permet au client de finaliser et transmettre sa commande directement sur votre
+                    numéro WhatsApp avec message pré-rempli contenant les références de l'article.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option 4 : Suivi de Statut par Token -->
+              <label class="option-card" for="opt-tracking">
+                <input
+                  type="checkbox"
+                  id="opt-tracking"
+                  data-price="7000"
+                  data-name="Suivi de Commande en Direct sans Compte"
+                  data-i18n-name="digital.opt.tracking.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="digital.opt.tracking.title">
+                      Suivi de Commande en Direct sans Compte
+                    </div>
+                    <div class="option-price">+7 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="digital.opt.tracking.desc">
+                    Module public permettant aux acheteurs de consulter l'avancement de leur
+                    activation ou livraison de clé en saisissant simplement leur numéro de téléphone
+                    ou code commande.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option 5 : Blog & Nouveautés IA -->
+              <label class="option-card" for="opt-blog">
+                <input
+                  type="checkbox"
+                  id="opt-blog"
+                  data-price="8000"
+                  data-name="Blog & Tutoriels Multimédia"
+                  data-i18n-name="digital.opt.blog.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="digital.opt.blog.title">
+                      Espace Blog & Tutoriels d'Activation
+                    </div>
+                    <div class="option-price">+8 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="digital.opt.blog.desc">
+                    Publiez des guides explicatifs, vidéos tutoriels et actualités sur vos services
+                    pour rassurer vos clients et améliorer votre visibilité sur Google.
+                  </div>
+                </div>
+              </label>
+
+              <!-- Option 6 : Volume Catalogue Illimité -->
+              <label class="option-card" for="opt-volume">
+                <input
+                  type="checkbox"
+                  id="opt-volume"
+                  data-price="5000"
+                  data-name="Gestion Catalogue Grand Volume (+100 items)"
+                  data-i18n-name="digital.opt.volume.title"
+                />
+                <div class="option-info">
+                  <div class="option-header">
+                    <div class="option-title" data-i18n="digital.opt.volume.title">
+                      Gestion Catalogue Étendu (+100 Références)
+                    </div>
+                    <div class="option-price">+5 000 DZD</div>
+                  </div>
+                  <div class="option-desc" data-i18n="digital.opt.volume.desc">
+                    Catégorisation avancée avec filtres multicritères pour organiser un large
+                    éventail d'abonnements et de logiciels.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </section>
+        </main>
+
+        <!-- Colonne Droite : Total Dynamique & Actions -->
+        <aside>
+          <div class="summary-sticky">
+            <h3 data-i18n="summary.title">Récapitulatif de l'Offre</h3>
+
+            <div class="summary-rows" id="summary-dynamic-rows">
+              <!-- Rempli dynamiquement par devis-calculator.js -->
+            </div>
+
+            <div class="summary-total">
+              <span class="total-label" data-i18n="summary.total_label"
+                >Investissement Total Estimé</span
+              >
+              <div class="total-amount-dzd" id="total-dzd">64 000 DZD</div>
+              <div class="total-amount-centimes" id="total-centimes">6,4 Millions de centimes</div>
+            </div>
+
+            <div class="action-buttons">
+              <a href="#" class="btn btn-whatsapp" id="btn-whatsapp" target="_blank">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path
+                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
+                  ></path>
+                </svg>
+                <span data-i18n="btn.whatsapp">Valider & Échanger sur WhatsApp</span>
+              </a>
+
+              <button type="button" class="btn btn-outline" id="btn-print">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path
+                    d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+                  ></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                <span data-i18n="btn.print">Imprimer / Enregistrer en PDF</span>
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-outline"
+                id="btn-reset"
+                style="font-size: 0.8rem; padding: 0.5rem"
+                data-i18n="btn.reset"
+              >
+                Réinitialiser les options
+              </button>
+            </div>
+
+            <div class="guarantee-note" data-i18n="guarantee.digital">
+              🛡️ <strong>Garantie Sans Frais Cachés :</strong> Vous êtes propriétaire exclusif du
+              code source livré. Zéro abonnement mensuel prélevé.
+            </div>
+          </div>
+        </aside>
       </div>
 
-      <div class="devis-meta-grid">
-        <div class="devis-meta-item">
-          <span class="label" data-i18n="meta.object">Objet du Devis</span>
-          <span class="val">Plateforme E-Commerce Dématérialisée (Clés, IA, Abonnements)</span>
-        </div>
-        <div class="devis-meta-item">
-          <span class="label" data-i18n="meta.architecture">Architecture</span>
-          <span class="val">React 19 + TypeScript / API PHP 8.2+ REST</span>
-        </div>
-        <div class="devis-meta-item">
-          <span class="label" data-i18n="meta.ownership">Propriété du Code</span>
-          <span class="val" data-i18n="meta.ownership.val">Cession Intégrale 100% Propriétaire (Zéro abonnement)</span>
-        </div>
-        <div class="devis-meta-item">
-          <span class="label" data-i18n="meta.validity">Validité de l'Offre</span>
-          <span class="val" data-i18n="meta.validity.val">30 jours à compter de l'émission</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Corps du Devis & Calculateur -->
-    <div class="devis-grid">
-
-      <!-- Colonne Gauche : Socle Inclus & Options -->
-      <main>
-
-        <!-- Socle Inclus -->
-        <section class="section-card">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <span data-i18n="section.included">1. Socle Métier Inclus de Base</span>
-          </h2>
-          <p class="desc">Toutes les fondations techniques indispensables au commerce de produits dématérialisés sont prêtes et opérationnelles :</p>
-
-          <div class="included-list">
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div>
-                <strong>Application React 19 / TypeScript</strong>
-                <span>Affichage instantané, expérience ultra-fluide sur mobile & PC.</span>
-              </div>
-            </div>
-
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div>
-                <strong>Catalogue Dématérialisé Dédié</strong>
-                <span>Fiches pour comptes IA, clés logicielles, licences et recharges sans frais de livraison inutiles.</span>
-              </div>
-            </div>
-
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div>
-                <strong>Tunnel de Commande Express</strong>
-                <span>Formulaire simplifié (Nom, Téléphone, Email/WhatsApp) adapté à la vente rapide en ligne.</span>
-              </div>
-            </div>
-
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div>
-                <strong>Paiement Local BaridiMob / CCP / Cash</strong>
-                <span>Instructions de virement claires avec confirmation de paiement et traitement des reçus.</span>
-              </div>
-            </div>
-
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div>
-                <strong>Back-Office de Gestion des Commandes</strong>
-                <span>Espace administrateur sécurisé pour délivrer les clés/comptes et valider les statuts.</span>
-              </div>
-            </div>
-
-            <div class="included-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <div>
-                <strong>Architecture Sans Frais Récurrents</strong>
-                <span>Tourne sur un hébergement mutualisé standard, zéro dépendance SaaS payante en devises.</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Compositeur d'Options -->
-        <section class="section-card">
-          <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            <span data-i18n="section.custom">2. Personnalisez votre Solution (Options à la Carte)</span>
-          </h2>
-          <p class="desc">Cochez ou décochez les modules pour calibrer exactement la plateforme à votre activité :</p>
-
-          <div class="options-group">
-
-            <!-- Option 1 : Multilingue Arabe RTL -->
-            <label class="option-card" for="opt-rtl">
-              <input type="checkbox" id="opt-rtl" data-price="10000" data-name="Pack Bilingue Français + Arabe (RTL)">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Pack Bilingue Français + Arabe Natif (RTL) <span class="option-badge" data-i18n="badge.popular">Fortement Recommandé</span></div>
-                  <div class="option-price">+10 000 DZD</div>
-                </div>
-                <div class="option-desc">Affichage bilingue complet avec inversion directionnelle parfaite de droite à gauche pour maximiser vos conversions auprès de la clientèle arabophone.</div>
-              </div>
-            </label>
-
-            <!-- Option 2 : Page Builder & Bannières -->
-            <label class="option-card" for="opt-builder">
-              <input type="checkbox" id="opt-builder" data-price="6000" data-name="Studio Visuel & Bannières Promos">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Studio Visuel & Bannières Promotionnelles</div>
-                  <div class="option-price">+6 000 DZD</div>
-                </div>
-                <div class="option-desc">Éditeur visuel intégré pour modifier vos bannières, afficher des comptes à rebours de promotions temporaires et mettre en avant vos nouveautés en 1 clic.</div>
-              </div>
-            </label>
-
-            <!-- Option 3 : Bouton Direct WhatsApp de Commande -->
-            <label class="option-card" for="opt-whatsapp">
-              <input type="checkbox" id="opt-whatsapp" data-price="4000" data-name="Bouton Commande WhatsApp Directe" checked>
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Bouton Commande WhatsApp Directe</div>
-                  <div class="option-price">+4 000 DZD</div>
-                </div>
-                <div class="option-desc">Permet au client de finaliser et transmettre sa commande directement sur votre numéro WhatsApp avec message pré-rempli contenant les références de l'article.</div>
-              </div>
-            </label>
-
-            <!-- Option 4 : Suivi de Statut par Token -->
-            <label class="option-card" for="opt-tracking">
-              <input type="checkbox" id="opt-tracking" data-price="7000" data-name="Suivi de Commande en Direct sans Compte">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Suivi de Commande en Direct sans Compte</div>
-                  <div class="option-price">+7 000 DZD</div>
-                </div>
-                <div class="option-desc">Module public permettant aux acheteurs de consulter l'avancement de leur activation ou livraison de clé en saisissant simplement leur numéro de téléphone ou code commande.</div>
-              </div>
-            </label>
-
-            <!-- Option 5 : Blog & Nouveautés IA -->
-            <label class="option-card" for="opt-blog">
-              <input type="checkbox" id="opt-blog" data-price="8000" data-name="Blog & Tutoriels Multimédia">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Espace Blog & Tutoriels d'Activation</div>
-                  <div class="option-price">+8 000 DZD</div>
-                </div>
-                <div class="option-desc">Publiez des guides explicatifs, vidéos tutoriels et actualités sur vos services pour rassurer vos clients et améliorer votre visibilité sur Google.</div>
-              </div>
-            </label>
-
-            <!-- Option 6 : Volume Catalogue Illimité -->
-            <label class="option-card" for="opt-volume">
-              <input type="checkbox" id="opt-volume" data-price="5000" data-name="Gestion Catalogue Grand Volume (+100 items)">
-              <div class="option-info">
-                <div class="option-header">
-                  <div class="option-title">Gestion Catalogue Étendu (+100 Références)</div>
-                  <div class="option-price">+5 000 DZD</div>
-                </div>
-                <div class="option-desc">Catégorisation avancée avec filtres multicritères pour organiser un large éventail d'abonnements et de logiciels.</div>
-              </div>
-            </label>
-
-          </div>
-        </section>
-
-      </main>
-
-      <!-- Colonne Droite : Total Dynamique & Actions -->
-      <aside>
-        <div class="summary-sticky">
-          <h3 data-i18n="summary.title">Récapitulatif de l'Offre</h3>
-
-          <div class="summary-rows" id="summary-dynamic-rows">
-            <!-- Rempli dynamiquement par devis-calculator.js -->
-          </div>
-
-          <div class="summary-total">
-            <span class="total-label" data-i18n="summary.total_label">Investissement Total Estimé</span>
-            <div class="total-amount-dzd" id="total-dzd">64 000 DZD</div>
-            <div class="total-amount-centimes" id="total-centimes">6,4 Millions de centimes</div>
-          </div>
-
-          <div class="action-buttons">
-            <a href="#" class="btn btn-whatsapp" id="btn-whatsapp" target="_blank">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-              <span data-i18n="btn.whatsapp">Valider & Échanger sur WhatsApp</span>
-            </a>
-
-            <button type="button" class="btn btn-outline" id="btn-print">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-              <span data-i18n="btn.print">Imprimer / Enregistrer en PDF</span>
-            </button>
-
-            <button type="button" class="btn btn-outline" id="btn-reset" style="font-size:0.8rem; padding:0.5rem;" data-i18n="btn.reset">
-              Réinitialiser les options
-            </button>
-          </div>
-
-          <div class="guarantee-note" data-i18n="guarantee.digital">
-            🛡️ <strong>Garantie Sans Frais Cachés :</strong> Vous êtes propriétaire exclusif du code source livré. Zéro abonnement mensuel prélevé.
-          </div>
-        </div>
-      </aside>
-
+      <!-- Pied de Page -->
+      <footer class="devis-footer">
+        <p data-i18n="footer.text">
+          StacGate Platform • Ingénierie Logicielle & Architecture Digitale • Conçu et Validé par
+          ArchiSys3.0
+        </p>
+        <p
+          style="margin-top: 0.35rem; font-size: 0.75rem; color: var(--text-light)"
+          data-i18n="footer.sub"
+        >
+          Ce document constitue une proposition commerciale technique non contractuelle avant
+          validation conjointe du cahier des charges.
+        </p>
+      </footer>
     </div>
 
-    <!-- Pied de Page -->
-    <footer class="devis-footer">
-      <p data-i18n="footer.text">StacGate Platform • Ingénierie Logicielle & Architecture Digitale • Conçu et Validé par ArchiSys3.0</p>
-      <p style="margin-top:0.35rem; font-size:0.75rem; color:var(--text-light);" data-i18n="footer.sub">Ce document constitue une proposition commerciale technique non contractuelle avant validation conjointe du cahier des charges.</p>
-    </footer>
-
-  </div>
-
-  <!-- Configuration du Devis & Moteur de Calcul -->
-  <script>
-    window.DEVIS_CONFIG = {
-      profileId: "solution-digitale",
-      pageTitle: "Solution E-Commerce Digitale & Abonnements",
-      baseTitle: "Socle Applicatif Produits Digitaux (React 19 / PHP)",
-      baseTitleTr: {
-        fr: "Socle Applicatif Produits Digitaux (React 19 / PHP)",
-        en: "Digital Products Core Platform (React 19 / PHP)",
-        ar: "المنصة الأساسية للمنتجات الرقمية (React 19 / PHP)"
-      },
-      basePrice: 60000,
-      currency: "DZD",
-      whatsappPhone: "+213000000000"
-    };
-  </script>
-  <script src="assets/js/devis-calculator.js"></script>
-</body>
+    <!-- Configuration du Devis & Moteur de Calcul -->
+    <script>
+      window.DEVIS_CONFIG = {
+        profileId: "solution-digitale",
+        pageTitle: "Solution E-Commerce Digitale & Abonnements",
+        baseTitle: "Socle Applicatif Produits Digitaux (React 19 / PHP)",
+        baseTitleTr: {
+          fr: "Socle Applicatif Produits Digitaux (React 19 / PHP)",
+          en: "Digital Products Core Platform (React 19 / PHP)",
+          ar: "المنصة الأساسية للمنتجات الرقمية (React 19 / PHP)",
+        },
+        basePrice: 60000,
+        currency: "DZD",
+        whatsappPhone: "+213000000000",
+      };
+    </script>
+    <script src="assets/js/devis-calculator.js"></script>
+  </body>
 </html>
