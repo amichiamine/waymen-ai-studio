@@ -21,10 +21,17 @@ export function Ticker({ override }: TickerProps = {}) {
   if (!override?.messages && (loading || tickerMessages.length === 0)) return null;
   if (customMessages.length === 0) return null;
 
+  const speedClass =
+    override?.speed === "slow"
+      ? "animate-marquee-slow"
+      : override?.speed === "fast"
+        ? "animate-marquee-fast"
+        : "animate-marquee";
+
   const items = customMessages;
   return (
     <div className="bg-announcement-bg text-announcement-fg marquee-viewport">
-      <div className="marquee-track animate-marquee h-9 text-xs" aria-hidden="true">
+      <div className={`marquee-track ${speedClass} h-9 text-xs`} aria-hidden="true">
         {[0, 1].map((group) => (
           <div key={group} className="marquee-group">
             {items.map((tx, i) => (

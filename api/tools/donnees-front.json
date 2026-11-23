@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T10:51:07.063Z",
+  "generatedAt": "2026-11-23T11:38:25.547Z",
   "categories": [
     {
       "slug": "llm-assistants",
@@ -7,8 +7,8 @@
       "description": "Abonnements et accès officiels aux meilleurs modèles de langage du marché.",
       "cover": "media/service-chatgpt-plus.webp",
       "position": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "creative-media",
@@ -16,8 +16,8 @@
       "description": "Génération d'images haute résolution, vidéo générative et synthèse vocale IA.",
       "cover": "media/service-midjourney-std.webp",
       "position": 1,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "code-engineering",
@@ -25,8 +25,8 @@
       "description": "Assistants de programmation d'élite, complétion de code et agents d'ingénierie.",
       "cover": "media/service-cursor-pro.webp",
       "position": 2,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "productivity-cloud",
@@ -34,8 +34,8 @@
       "description": "Workspace IA, bases de connaissances intelligentes et outils collaboratifs.",
       "cover": "media/service-canva-pro.webp",
       "position": 3,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "formations-academy",
@@ -43,8 +43,8 @@
       "description": "Formations concrètes, tutoriels pas-à-pas et coaching personnalisé tous niveaux.",
       "cover": "media/service-formation-ia-zero.webp",
       "position": 4,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "packs-bundles",
@@ -52,8 +52,8 @@
       "description": "Formules groupées économiques combinant abonnements et formations clés-en-main.",
       "cover": "media/service-pack-ultimate-creator.webp",
       "position": 5,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "streaming-medias",
@@ -61,8 +61,8 @@
       "description": "Abonnements officiels Netflix 4K, Spotify Premium, YouTube Premium et Disney+.",
       "cover": "media/service-netflix-premium.webp",
       "position": 6,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "gaming-consoles",
@@ -70,8 +70,8 @@
       "description": "Cartes PlayStation Plus, Xbox Game Pass Ultimate et recharges Steam Wallet.",
       "cover": "media/service-playstation-plus.webp",
       "position": 7,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "slug": "cartes-cadeaux",
@@ -79,8 +79,8 @@
       "description": "Cartes de recharge Apple, Google Play Store et Razer Gold à activation immédiate.",
       "cover": "media/service-card-apple.webp",
       "position": 8,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     }
   ],
   "brands": [
@@ -90,8 +90,8 @@
       "description": "Écosystème officiel OpenAI activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/openai.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "anthropic",
@@ -99,8 +99,8 @@
       "description": "Écosystème officiel Anthropic activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/anthropic.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "google",
@@ -108,8 +108,8 @@
       "description": "Écosystème officiel Google activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/google.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "perplexity",
@@ -117,8 +117,8 @@
       "description": "Écosystème officiel Perplexity activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/perplexity.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "midjourney",
@@ -126,8 +126,8 @@
       "description": "Écosystème officiel Midjourney activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/midjourney.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "runway",
@@ -135,8 +135,8 @@
       "description": "Écosystème officiel Runway activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/runway.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "elevenlabs",
@@ -144,8 +144,8 @@
       "description": "Écosystème officiel ElevenLabs activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/elevenlabs.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "cursor",
@@ -153,8 +153,8 @@
       "description": "Écosystème officiel Cursor activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/cursor.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "microsoft",
@@ -162,8 +162,8 @@
       "description": "Écosystème officiel Microsoft activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/microsoft.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "canva",
@@ -171,8 +171,8 @@
       "description": "Écosystème officiel Canva activé par WaYmen AI Studio.",
       "country": "Australie",
       "logo": "media/brands/canva.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "notion",
@@ -180,8 +180,8 @@
       "description": "Écosystème officiel Notion activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/notion.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "waymen-academy",
@@ -189,8 +189,8 @@
       "description": "Écosystème officiel WaYmen Academy activé par WaYmen AI Studio.",
       "country": "Algérie / International",
       "logo": "media/brands/waymen-academy.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "waymen-vip",
@@ -198,8 +198,8 @@
       "description": "Écosystème officiel WaYmen VIP activé par WaYmen AI Studio.",
       "country": "Algérie / International",
       "logo": "media/brands/waymen-vip.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "netflix",
@@ -207,8 +207,8 @@
       "description": "Écosystème officiel Netflix activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/netflix.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "spotify",
@@ -216,8 +216,8 @@
       "description": "Écosystème officiel Spotify activé par WaYmen AI Studio.",
       "country": "Suède",
       "logo": "media/brands/spotify.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "youtube",
@@ -225,8 +225,8 @@
       "description": "Écosystème officiel YouTube activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/youtube.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "disney-",
@@ -234,8 +234,8 @@
       "description": "Écosystème officiel Disney+ activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/disney-.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "sony-playstation",
@@ -243,8 +243,8 @@
       "description": "Écosystème officiel Sony PlayStation activé par WaYmen AI Studio.",
       "country": "Japon",
       "logo": "media/brands/sony-playstation.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "xbox",
@@ -252,8 +252,8 @@
       "description": "Écosystème officiel Xbox activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/xbox.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "steam",
@@ -261,8 +261,8 @@
       "description": "Écosystème officiel Steam activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/steam.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "apple",
@@ -270,8 +270,8 @@
       "description": "Écosystème officiel Apple activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/apple.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "google-play",
@@ -279,8 +279,8 @@
       "description": "Écosystème officiel Google Play activé par WaYmen AI Studio.",
       "country": "États-Unis",
       "logo": "media/brands/google-play.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "razer",
@@ -288,8 +288,8 @@
       "description": "Écosystème officiel Razer activé par WaYmen AI Studio.",
       "country": "États-Unis / Singapour",
       "logo": "media/brands/razer.svg",
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     }
   ],
   "products": [
@@ -334,8 +334,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "chatgpt-plus-3m",
@@ -378,8 +378,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "chatgpt-plus-1y",
@@ -422,8 +422,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "chatgpt-team",
@@ -466,8 +466,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "claude-pro-1m",
@@ -510,8 +510,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "claude-pro-1y",
@@ -554,8 +554,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "google-gemini-advanced",
@@ -598,8 +598,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "perplexity-pro-1m",
@@ -642,8 +642,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "midjourney-std-1m",
@@ -686,8 +686,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "midjourney-pro-1m",
@@ -730,8 +730,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "runway-gen3-alpha",
@@ -774,8 +774,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "elevenlabs-creator",
@@ -818,8 +818,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "cursor-pro-1m",
@@ -862,8 +862,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "cursor-pro-1y",
@@ -906,8 +906,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "github-copilot-indiv",
@@ -950,8 +950,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "canva-pro-team",
@@ -994,8 +994,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "notion-ai-unlimited",
@@ -1038,8 +1038,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "formation-ia-zero-expert",
@@ -1086,8 +1086,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "formation-dev-cursor",
@@ -1134,8 +1134,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "formation-creatifs-video",
@@ -1182,8 +1182,8 @@
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "coaching-vip-entreprise",
@@ -1230,8 +1230,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "pack-ultimate-creator",
@@ -1274,8 +1274,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "pack-fullstack-engineer",
@@ -1318,8 +1318,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "netflix-premium-4k",
@@ -1366,8 +1366,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "spotify-premium-1m",
@@ -1414,8 +1414,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "youtube-premium-1m",
@@ -1462,8 +1462,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "disney-plus-1m",
@@ -1510,8 +1510,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "ps-plus-essential-1m",
@@ -1558,8 +1558,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "xbox-game-pass-ultimate",
@@ -1606,8 +1606,8 @@
       "best_seller": 1,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "steam-wallet-20usd",
@@ -1654,8 +1654,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "apple-gift-card-15",
@@ -1702,8 +1702,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "google-play-card-25",
@@ -1750,8 +1750,8 @@
       "best_seller": 1,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "razer-gold-20",
@@ -1798,8 +1798,8 @@
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-23T10:51:07.063Z",
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "created_at": "2026-11-23T11:38:25.547Z",
+      "updated_at": "2026-11-23T11:38:25.547Z"
     }
   ],
   "blogPosts": [
@@ -1825,9 +1825,9 @@
       "author": "Équipe WaYmen AI Studio",
       "tags": ["ia", "comparatif", "chatgpt", "claude"],
       "status": "published",
-      "published_at": "2026-10-24T10:51:07.106Z",
-      "created_at": "2026-10-24T10:51:07.106Z",
-      "updated_at": "2026-10-24T10:51:07.106Z"
+      "published_at": "2026-10-24T11:38:25.590Z",
+      "created_at": "2026-10-24T11:38:25.590Z",
+      "updated_at": "2026-10-24T11:38:25.590Z"
     },
     {
       "id": "blog_101",
@@ -1851,9 +1851,9 @@
       "author": "Équipe WaYmen AI Studio",
       "tags": ["developpement", "cursor", "copilot", "code"],
       "status": "published",
-      "published_at": "2026-10-30T10:51:07.106Z",
-      "created_at": "2026-10-30T10:51:07.106Z",
-      "updated_at": "2026-10-30T10:51:07.106Z"
+      "published_at": "2026-10-30T11:38:25.590Z",
+      "created_at": "2026-10-30T11:38:25.590Z",
+      "updated_at": "2026-10-30T11:38:25.590Z"
     },
     {
       "id": "blog_102",
@@ -1877,9 +1877,9 @@
       "author": "Équipe WaYmen AI Studio",
       "tags": ["design", "midjourney", "runway", "video"],
       "status": "published",
-      "published_at": "2026-11-05T10:51:07.106Z",
-      "created_at": "2026-11-05T10:51:07.106Z",
-      "updated_at": "2026-11-05T10:51:07.106Z"
+      "published_at": "2026-11-05T11:38:25.590Z",
+      "created_at": "2026-11-05T11:38:25.590Z",
+      "updated_at": "2026-11-05T11:38:25.590Z"
     },
     {
       "id": "blog_103",
@@ -1903,9 +1903,9 @@
       "author": "Équipe WaYmen AI Studio",
       "tags": ["audio", "elevenlabs", "voix", "podcast"],
       "status": "published",
-      "published_at": "2026-11-11T10:51:07.106Z",
-      "created_at": "2026-11-11T10:51:07.106Z",
-      "updated_at": "2026-11-11T10:51:07.106Z"
+      "published_at": "2026-11-11T11:38:25.590Z",
+      "created_at": "2026-11-11T11:38:25.590Z",
+      "updated_at": "2026-11-11T11:38:25.590Z"
     },
     {
       "id": "blog_104",
@@ -1929,9 +1929,9 @@
       "author": "Équipe WaYmen AI Studio",
       "tags": ["formation", "academy", "coaching", "entreprise"],
       "status": "published",
-      "published_at": "2026-11-17T10:51:07.106Z",
-      "created_at": "2026-11-17T10:51:07.106Z",
-      "updated_at": "2026-11-17T10:51:07.106Z"
+      "published_at": "2026-11-17T11:38:25.590Z",
+      "created_at": "2026-11-17T11:38:25.590Z",
+      "updated_at": "2026-11-17T11:38:25.590Z"
     }
   ],
   "shippingRates": [
@@ -1939,355 +1939,355 @@
       "wilaya_code": "*",
       "home": 800,
       "desk": 400,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "01",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "02",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "03",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "04",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "05",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "06",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "07",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "08",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "09",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "10",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "11",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "12",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "13",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "14",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "15",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "16",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "17",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "18",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "19",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "20",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "21",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "22",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "23",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "24",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "25",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "26",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "27",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "28",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "29",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "30",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "31",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "32",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "33",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "34",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "35",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "36",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "37",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "38",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "39",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "40",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "41",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "42",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "43",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "44",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "45",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "46",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "47",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "48",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "49",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "50",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "51",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "52",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "53",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "54",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "55",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "56",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "57",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "wilaya_code": "58",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     }
   ],
   "paymentMethods": [
@@ -2297,7 +2297,7 @@
       "instructions": "Réglez votre commande en espèces au livreur.",
       "active": 1,
       "position": 0,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "bank",
@@ -2305,7 +2305,7 @@
       "instructions": "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.",
       "active": 1,
       "position": 1,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "card",
@@ -2313,7 +2313,7 @@
       "instructions": "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).",
       "active": 1,
       "position": 2,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     },
     {
       "id": "store",
@@ -2321,7 +2321,7 @@
       "instructions": "Retirez et réglez votre commande à notre point de vente d'Alger.",
       "active": 0,
       "position": 3,
-      "updated_at": "2026-11-23T10:51:07.063Z"
+      "updated_at": "2026-11-23T11:38:25.547Z"
     }
   ],
   "siteContent": {
@@ -3172,11 +3172,18 @@
                 "ar": "عروض استثنائية"
               },
               "subtitle": {
-                "fr": "Remises immédiates sur une sélection de machines prêtes à l'emploi.",
-                "en": "Instant discounts on selected ready-to-ship machines.",
-                "ar": "خصومات فورية على أجهزة مختارة جاهزة للتسليم."
+                "fr": "Remises exceptionnelles sur une sélection d'abonnements IA et formations.",
+                "en": "Instant discounts on selected AI subscriptions and masterclasses.",
+                "ar": "خصومات استثنائية على اشتراكات الذكاء الاصطناعي والدورات المختارة."
               },
-              "endsAt": "2026-12-31T23:59:59Z"
+              "endsAt": "2026-12-31T23:59:59Z",
+              "countdownHours": 72,
+              "viewAllLabel": {
+                "fr": "Voir Toutes les Promos",
+                "en": "View All Deals",
+                "ar": "عرض جميع العروض"
+              },
+              "viewAllHref": "/catalogue"
             },
             "style": {
               "padding": "normal",

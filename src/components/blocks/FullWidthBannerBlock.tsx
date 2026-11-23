@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useLocalize, type Localized } from "@/lib/i18n";
 import type { BlockConfig } from "@/types/pages";
 import { Button } from "@/components/ui/button";
+import { resoudreUrlMedia } from "@/components/media-url";
 
 export function FullWidthBannerBlock({ config }: { config: BlockConfig }) {
   const L = useLocalize();
@@ -28,8 +29,9 @@ export function FullWidthBannerBlock({ config }: { config: BlockConfig }) {
         }) || "",
       );
 
-  const bannerSrc =
+  const rawBannerSrc =
     typeof p.bannerSrc === "string" && p.bannerSrc ? p.bannerSrc : "/media/waymen-og-banner.webp";
+  const bannerSrc = resoudreUrlMedia(rawBannerSrc);
 
   const height = p.height || "normal";
   const heightClass =

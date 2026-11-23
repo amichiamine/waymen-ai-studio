@@ -21,7 +21,52 @@ import type { SiteContent } from "@/lib/site-content";
 export function HeroBannerBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   if (siteContent.hero?.enabled === false) return null;
-  return <Hero override={config.props as Partial<SiteContent["hero"]>} />;
+  const p = (config.props || {}) as Record<string, unknown>;
+
+  // Normalisation intelligente : support des props plates du Studio ET des props structurées
+  const primaryCta =
+    (p.primaryCta as { label?: unknown; href?: string }) ||
+    (p.primaryCtaText || p.primaryCtaHref
+      ? {
+          label: p.primaryCtaText || siteContent.hero.primaryCta.label,
+          href:
+            typeof p.primaryCtaHref === "string"
+              ? p.primaryCtaHref
+              : siteContent.hero.primaryCta.href,
+        }
+      : siteContent.hero.primaryCta);
+
+  const secondaryCta =
+    (p.secondaryCta as { label?: unknown; href?: string }) ||
+    (p.secondaryCtaText || p.secondaryCtaHref
+      ? {
+          label: p.secondaryCtaText || siteContent.hero.secondaryCta.label,
+          href:
+            typeof p.secondaryCtaHref === "string"
+              ? p.secondaryCtaHref
+              : siteContent.hero.secondaryCta.href,
+        }
+      : siteContent.hero.secondaryCta);
+
+  const kpis = Array.isArray(p.kpis) && p.kpis.length > 0 ? p.kpis : siteContent.hero.kpis;
+  const showImage =
+    typeof p.showImage === "boolean" ? p.showImage : (siteContent.hero.showImage ?? true);
+  const imageSrc =
+    typeof p.imageSrc === "string" && p.imageSrc ? p.imageSrc : siteContent.hero.imageSrc;
+
+  const override: Partial<SiteContent["hero"]> = {
+    badge: (p.badge as Localized<string>) || siteContent.hero.badge,
+    title1: (p.title1 as Localized<string>) || siteContent.hero.title1,
+    title2: (p.title2 as Localized<string>) || siteContent.hero.title2,
+    subtitle: (p.subtitle as Localized<string>) || siteContent.hero.subtitle,
+    primaryCta: primaryCta as SiteContent["hero"]["primaryCta"],
+    secondaryCta: secondaryCta as SiteContent["hero"]["secondaryCta"],
+    kpis: kpis as SiteContent["hero"]["kpis"],
+    showImage,
+    imageSrc,
+  };
+
+  return <Hero override={override} />;
 }
 
 export function FlashSaleBlock({ config }: { config: BlockConfig }) {
@@ -44,7 +89,23 @@ export function FlashSaleBlock({ config }: { config: BlockConfig }) {
       </section>
     );
   }
-  return <FlashSale override={config.props as Partial<SiteContent["flashSale"]>} />;
+
+  const p = (config.props || {}) as Record<string, unknown>;
+  const override: Partial<SiteContent["flashSale"]> = {
+    badge: (p.badge as Localized<string>) || siteContent.flashSale.badge,
+    title: (p.title as Localized<string>) || siteContent.flashSale.title,
+    subtitle: (p.subtitle as Localized<string>) || siteContent.flashSale.subtitle,
+    viewAllLabel: (p.viewAllLabel as Localized<string>) || siteContent.flashSale.viewAllLabel,
+    viewAllHref:
+      typeof p.viewAllHref === "string" ? p.viewAllHref : siteContent.flashSale.viewAllHref,
+    countdownHours:
+      typeof p.countdownHours === "number"
+        ? p.countdownHours
+        : siteContent.flashSale.countdownHours || 72,
+    endsAt: typeof p.endsAt === "string" && p.endsAt ? p.endsAt : siteContent.flashSale.endsAt,
+  };
+
+  return <FlashSale override={override} />;
 }
 
 export function CategoryCardsBlock({ config }: { config: BlockConfig }) {
@@ -180,12 +241,18 @@ export function ContactCtaBlock({ config }: { config: BlockConfig }) {
 }
 
 export function TickerBarBlock({ config }: { config: BlockConfig }) {
-  const p = config.props || {};
+  const p = (config.props || {}) as Record<string, unknown>;
+  const speed =
+    p.speed === "slow" || p.speed === "normal" || p.speed === "fast"
+      ? (p.speed as "normal" | "slow" | "fast")
+      : undefined;
+
   return (
     <Ticker
       override={{
-        messages: Array.isArray(p.messages) ? (p.messages as string[]) : undefined,
-        speed: (p.speed as "normal" | "slow" | "fast") || undefined,
+        messages:
+          Array.isArray(p.messages) && p.messages.length > 0 ? (p.messages as string[]) : undefined,
+        speed,
       }}
     />
   );

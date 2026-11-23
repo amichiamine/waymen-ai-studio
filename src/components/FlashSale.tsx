@@ -28,7 +28,15 @@ function useCountdown(targetMs: number) {
 export function FlashSale({ override }: { override?: Partial<SiteContent["flashSale"]> } = {}) {
   const { data: siteContent } = useSiteContent();
   const cfg = override ? { ...siteContent.flashSale, ...override } : siteContent.flashSale;
-  const [target] = useState(() => Date.now() + Math.max(1, cfg.countdownHours) * 3_600_000);
+  const [target] = useState(() => {
+    if (cfg.endsAt) {
+      const parsed = new Date(cfg.endsAt).getTime();
+      if (!isNaN(parsed) && parsed > Date.now()) {
+        return parsed;
+      }
+    }
+    return Date.now() + Math.max(1, cfg.countdownHours || 72) * 3_600_000;
+  });
   const t = useCountdown(target);
   const { t: tr } = useI18n();
   const L = useLocalize();
@@ -58,6 +66,11 @@ export function FlashSale({ override }: { override?: Partial<SiteContent["flashS
               <Flame className="size-3.5" /> {L(cfg.badge)}
             </span>
             <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">{L(cfg.title)}</h2>
+            {cfg.subtitle && (
+              <p className="text-sm sm:text-base text-white/80 max-w-xl mx-auto lg:mx-0">
+                {L(cfg.subtitle)}
+              </p>
+            )}
           </div>
           <div
             className="flex items-center justify-center gap-1.5 md:gap-2 mx-auto lg:mx-0"

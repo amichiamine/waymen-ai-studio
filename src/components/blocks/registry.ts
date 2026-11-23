@@ -74,11 +74,18 @@ export const BLOCK_REGISTRY: BlockMeta[] = [
         ar: "عروض استثنائية",
       },
       subtitle: {
-        fr: "Remises immédiates sur une sélection de machines prêtes à l'emploi.",
-        en: "Instant discounts on selected ready-to-ship machines.",
-        ar: "خصومات فورية على أجهزة مختارة جاهزة للتسليم.",
+        fr: "Remises exceptionnelles sur une sélection d'abonnements IA et formations.",
+        en: "Instant discounts on selected AI subscriptions and masterclasses.",
+        ar: "خصومات استثنائية على اشتراكات الذكاء الاصطناعي والدورات المختارة.",
       },
       endsAt: "2026-12-31T23:59:59Z",
+      countdownHours: 72,
+      viewAllLabel: {
+        fr: "Voir Toutes les Promos",
+        en: "View All Deals",
+        ar: "عرض جميع العروض",
+      },
+      viewAllHref: "/catalogue",
     },
   },
   {

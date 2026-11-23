@@ -795,22 +795,80 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                   placeholder="VENTE FLASH"
                 />
               </div>
-              <div className="space-y-1 max-w-xs">
-                <Label className="text-xs font-semibold">
-                  Durée du compte à rebours (heures) :
-                </Label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={720}
-                  value={
-                    typeof p.countdownHours === "number"
-                      ? p.countdownHours
-                      : siteContent.flashSale.countdownHours || 72
-                  }
-                  onChange={(e) => updateProp("countdownHours", parseInt(e.target.value, 10) || 72)}
-                  className="h-8 text-xs w-28 font-mono"
+
+              <LocalizedFieldEditor
+                label="Sous-titre descriptif"
+                value={p.subtitle ?? siteContent.flashSale.subtitle}
+                onChange={(val) => updateProp("subtitle", val)}
+                isTextarea
+                rows={2}
+                placeholder="Remises exceptionnelles sur une sélection de services et formations..."
+              />
+
+              <div className="grid gap-2 sm:grid-cols-2 pt-2 border-t border-border/40">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">
+                    Date & Heure de Fin (Échéance Fixe) :
+                  </Label>
+                  <Input
+                    type="datetime-local"
+                    value={
+                      typeof p.endsAt === "string" && p.endsAt
+                        ? p.endsAt.replace("Z", "").slice(0, 16)
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value ? new Date(e.target.value).toISOString() : "";
+                      updateProp("endsAt", val);
+                    }}
+                    className="h-8 text-xs font-mono"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Prioritaire : si définie, le compte à rebours est fixe jusqu'à cette échéance.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">
+                    Durée relative de repli (heures) :
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={720}
+                    value={
+                      typeof p.countdownHours === "number"
+                        ? p.countdownHours
+                        : siteContent.flashSale.countdownHours || 72
+                    }
+                    onChange={(e) =>
+                      updateProp("countdownHours", parseInt(e.target.value, 10) || 72)
+                    }
+                    className="h-8 text-xs font-mono"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Utilisé si aucune date fixe n'est sélectionnée.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2 pt-2 border-t border-border/40">
+                <LocalizedFieldEditor
+                  label="Bouton « Voir tout »"
+                  value={p.viewAllLabel ?? siteContent.flashSale.viewAllLabel}
+                  onChange={(val) => updateProp("viewAllLabel", val)}
+                  placeholder="Voir toutes les offres"
                 />
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Lien de destination :</Label>
+                  <Input
+                    value={String(
+                      p.viewAllHref ?? siteContent.flashSale.viewAllHref ?? "/catalogue",
+                    )}
+                    onChange={(e) => updateProp("viewAllHref", e.target.value)}
+                    placeholder="/catalogue"
+                    className="h-8 text-xs font-mono"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -2779,9 +2837,9 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Code Promotionnel :</Label>
                   <Input
-                    value={String(p.code || "KATECH15")}
+                    value={String(p.code || "WAYMEN15")}
                     onChange={(e) => updateProp("code", e.target.value)}
-                    placeholder="ex: KATECH15"
+                    placeholder="ex: WAYMEN15"
                     className="h-7 text-xs font-mono uppercase"
                   />
                 </div>

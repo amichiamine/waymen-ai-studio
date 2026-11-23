@@ -178,9 +178,11 @@ export type SiteContent = {
     enabled?: boolean;
     badge: LS;
     title: LS;
+    subtitle?: LS;
     viewAllLabel: LS;
     viewAllHref: string;
     countdownHours: number;
+    endsAt?: string;
   };
   brandsMarquee: { enabled?: boolean; title: LS };
   whyUs: {

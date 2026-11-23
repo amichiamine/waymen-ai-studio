@@ -78,7 +78,8 @@
 | **Phase 56** | 23/11/2026 | Téléchargement des Vrais Logos Officiels SVG du Web (Simple Icons / Wikimedia), Élaboration Visuels HD Produits & Assainissement Console DEV                                                           | 📄 [`56_plan_logos_officiels_authentiques_visuels_hd_et_assainissement_console.md`](Implementations_Plans/56_plan_logos_officiels_authentiques_visuels_hd_et_assainissement_console.md)                                                 | 🟢 **Livré & Validé** |
 | **Phase 57** | 23/11/2026 | Intégration Native Colonne Logo dans Schémas SQL (Résolution Échec install.php), Éradication Synchronisation Inversée Client/Serveur & Bouton Purge Cache                                              | 📄 [`57_plan_resolution_import_install_et_souverainete_serveur.md`](Implementations_Plans/57_plan_resolution_import_install_et_souverainete_serveur.md)                                                                                 | 🟢 **Livré & Validé** |
 | **Phase 58** | 23/11/2026 | Thème Light d'Usine Universel (extraire-donnees-front, donnees-front.json, SQLite), Purge Complète ka-theme & Nouveaux Paquets Zip                                                                     | 📄 [`58_plan_theme_light_usine_universel_et_purge_preferences.md`](Implementations_Plans/58_plan_theme_light_usine_universel_et_purge_preferences.md)                                                                                   | 🟢 **Livré & Validé** |
-| **Phase 59** | 23/11/2026 | Packages ZIP Officiels `waymen-*`, Dissociation de l'Ancien Dépôt GitHub ka-tech, Création et Push Initial sur Nouveau Dépôt `waymen-ai-studio`                                                         | 📄 [`59_plan_packages_waymen_dissociation_et_nouveau_repo_github.md`](Implementations_Plans/59_plan_packages_waymen_dissociation_et_nouveau_repo_github.md)                                                                             | 🟢 **Livré & Validé** |
+| **Phase 59** | 23/11/2026 | Packages ZIP Officiels `waymen-*`, Dissociation de l'Ancien Dépôt GitHub ka-tech, Création et Push Initial sur Nouveau Dépôt `waymen-ai-studio`                                                        | 📄 [`59_plan_packages_waymen_dissociation_et_nouveau_repo_github.md`](Implementations_Plans/59_plan_packages_waymen_dissociation_et_nouveau_repo_github.md)                                                                             | 🟢 **Livré & Validé** |
+| **Phase 60** | 23/11/2026 | Harmonisation Universelle des Propriétés du Studio, Persistance Intégrale BD & Raccordement Fidèle des Composants Visuels (Hero, Ventes Flash, Bandes Défilantes, Bannières)                           | 📄 [`60_plan_harmonisation_persistance_props_studio_et_composants.md`](Implementations_Plans/60_plan_harmonisation_persistance_props_studio_et_composants.md)                                                                             | 🟢 **Livré & Validé** |
 
 ---
 
@@ -3582,7 +3583,7 @@ Répondre avec une rigueur d'ingénierie absolue à l'ensemble des points soulev
 2. **Dissociation Totale & Étanche de l'Ancien Dépôt GitHub :**  
    Suppression du lien distant origin pointant vers `amichiamine/ka-tech` afin de sanctuariser l'historique et le code de l'ancien projet.
 3. **Création du Nouveau Dépôt GitHub Dédié :**  
-   Création du dépôt public `amichiamine/waymen-ai-studio` via GitHub CLI (`gh repo create`) avec description officielle : *"WaYmen AI Studio — Plateforme Universelle d'Abonnements Numériques, Activations IA & Formations d'Élite"*.
+   Création du dépôt public `amichiamine/waymen-ai-studio` via GitHub CLI (`gh repo create`) avec description officielle : _"WaYmen AI Studio — Plateforme Universelle d'Abonnements Numériques, Activations IA & Formations d'Élite"_.
 4. **Commit d'Intégration & Push Initial :**  
    Consolidation dans le commit `05a124d` de l'ensemble des transformations majeures des Phases 53 à 59 (Branding, Logos vectoriels SVG officiels, Visuels HD, Schémas SQL avec colonne `logo`, Thème Light natif et scripts de packaging) et synchronisation vers la branche `main` du nouveau dépôt distant.
 
@@ -3598,3 +3599,40 @@ Répondre avec une rigueur d'ingénierie absolue à l'ensemble des points soulev
   - Commit global `05a124d` créé sans encombre.
   - Nouveau dépôt créé et poussé : [https://github.com/amichiamine/waymen-ai-studio](https://github.com/amichiamine/waymen-ai-studio).
   - Statut git final : `branch 'main' set up to track 'origin/main'`, `working tree clean`.
+
+---
+
+## [Phase 60] — Harmonisation Universelle des Propriétés du Studio, Persistance Intégrale BD & Raccordement Fidèle des Composants Visuels
+
+- **Date :** 23/11/2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré & Validé**
+- **Plan Associé :** 📄 [`60_plan_harmonisation_persistance_props_studio_et_composants.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/60_plan_harmonisation_persistance_props_studio_et_composants.md)
+
+### Contexte & Objectifs de la Phase
+
+1. **Normalisation du Contrat de Données & Mappeur Hero (`hero_banner`) :**  
+   Prise en charge unifiée des props plates (`primaryCtaText`, `primaryCtaHref`) et structurées (`primaryCta: { label, href }`) dans [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/CommerceBlocks.tsx). Les modifications de boutons effectuées dans le Studio sont désormais 100% transmises et affichées par `Hero.tsx`.
+2. **Modernisation Ventes Flash & Compte à Rebours (`flash_sale`) :**  
+   - Prise en charge d'une échéance fixe absolue persistée (`endsAt` ISO) dans [`src/components/FlashSale.tsx`](file:///c:/xampp/htdocs/waymen/src/components/FlashSale.tsx) (fin de la réinitialisation parasite à chaque reload).
+   - Affichage visuel du sous-titre descriptif trilingue (`subtitle`) sous le titre de vente flash.
+   - Éditeur Studio enrichi dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/waymen/src/components/admin/BlockPropsEditor.tsx) : sélecteur de date/heure cible `endsAt`, sous-titre et lien de redirection "Voir tout".
+3. **Bandes Défilantes (`ticker_bar` & `brands_marquee`) :**  
+   - Raccordement effectif du réglage de vitesse (`override.speed`) dans le JSX de [`src/components/Ticker.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Ticker.tsx) avec les classes CSS dédiées (`animate-marquee-slow`, `animate-marquee`, `animate-marquee-fast`).
+4. **Bannières & Visuels (`brand_banner`, `full_width_banner`, `promo_banner`) :**  
+   - Résolution trilingue de `altText` via `useLocalize()` dans [`src/components/blocks/BrandBannerBlock.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/BrandBannerBlock.tsx).
+   - Encapsulation des URLs d'images par `resoudreUrlMedia()` pour sécuriser les médias téléversés.
+   - Suppression du reliquat `KATECH15` au profit de `WAYMEN15`.
+5. **Mise à Jour de la Base SQLite Locale & Données d'Usine :**  
+   Actualisation du payload de `b_home_flash` dans `customPages` et ré-extraction de `donnees-front.json`.
+
+### Actions Techniques Réalisées & Preuves de Recette
+
+- **Validation CI Complète :**
+  - `bun run verifier-i18n` : 100% de parité trilingue FR/EN/AR.
+  - `bunx tsc --noEmit` : 0 erreur TypeScript.
+  - `bun run format` : 100% conforme Prettier.
+  - `bun run lint` : 0 erreur ESLint.
+  - `bun run build` : archive [`waymen-site-23112026-1242.zip`](file:///c:/xampp/htdocs/waymen/waymen-site-23112026-1242.zip) générée avec succès.
+  - `bun run paqueter:data` : archive [`waymen-data-23112026-1242.zip`](file:///c:/xampp/htdocs/waymen/waymen-data-23112026-1242.zip) synchronisée.
