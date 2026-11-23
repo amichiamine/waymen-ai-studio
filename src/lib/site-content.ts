@@ -203,7 +203,15 @@ export type SiteContent = {
     items: { id: string; icon: IconName; title: LS; subtitle: LS }[];
   };
   reviews: { enabled?: boolean; title: LS; subtitle: LS };
-  contactCta: { enabled?: boolean; title: LS; subtitle: LS; whatsappLabel: LS };
+  contactCta: {
+    enabled?: boolean;
+    badge?: LS;
+    title: LS;
+    subtitle: LS;
+    whatsappLabel: LS;
+    buttonText?: LS;
+    buttonHref?: string;
+  };
   floatingWhatsApp: { enabled: boolean; ariaLabel: LS };
   mobileBottomBar: {
     items: {

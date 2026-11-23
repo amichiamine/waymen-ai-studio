@@ -218,7 +218,14 @@ export function WhyUsBlock({ config }: { config: BlockConfig }) {
 export function BuilderTeaserBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
   const { data: siteSettings } = useSiteSettings();
-  if (siteContent.builderTeaser?.enabled === false || siteSettings.builderEnabled === false) {
+  const p = (config.props || {}) as Record<string, unknown>;
+
+  // Si le bloc est personnalisé dans le Studio, il peut s'afficher librement comme vitrine de packs IA
+  const isCustomizedInStudio = Boolean(p.title || p.badge);
+  if (
+    !isCustomizedInStudio &&
+    (siteContent.builderTeaser?.enabled === false || siteSettings.builderEnabled === false)
+  ) {
     return null;
   }
   return (
@@ -236,8 +243,18 @@ export function ReviewsGridBlock({ config }: { config: BlockConfig }) {
 
 export function ContactCtaBlock({ config }: { config: BlockConfig }) {
   const { data: siteContent } = useSiteContent();
-  if (siteContent.contactCta?.enabled === false) return null;
-  return <ContactCTA override={config.props as Partial<SiteContent["contactCta"]>} />;
+  if (siteContent.contactCta?.enabled === false && !config.props?.title) return null;
+  const p = (config.props || {}) as Record<string, unknown>;
+  const override: Partial<SiteContent["contactCta"]> = {
+    badge: (p.badge as Localized<string>) || siteContent.contactCta?.badge,
+    title: (p.title as Localized<string>) || siteContent.contactCta?.title,
+    subtitle: (p.subtitle as Localized<string>) || siteContent.contactCta?.subtitle,
+    whatsappLabel: (p.whatsappLabel as Localized<string>) || siteContent.contactCta?.whatsappLabel,
+    buttonText: (p.buttonText as Localized<string>) || siteContent.contactCta?.buttonText,
+    buttonHref:
+      typeof p.buttonHref === "string" ? p.buttonHref : siteContent.contactCta?.buttonHref,
+  };
+  return <ContactCTA override={override} />;
 }
 
 export function TickerBarBlock({ config }: { config: BlockConfig }) {

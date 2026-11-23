@@ -1035,6 +1035,12 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
           {block.type === "contact_cta" && (
             <div className="space-y-3">
               <LocalizedFieldEditor
+                label="Badge d'accroche (Optionnel)"
+                value={p.badge ?? siteContent.contactCta.badge}
+                onChange={(val) => updateProp("badge", val)}
+                placeholder="Conseil & Accompagnement"
+              />
+              <LocalizedFieldEditor
                 label="Titre d'accroche"
                 value={p.title ?? siteContent.contactCta.title}
                 onChange={(val) => updateProp("title", val)}
@@ -1046,6 +1052,24 @@ export function BlockPropsEditor({ block, onChange, onStyleChange }: BlockPropsE
                 onChange={(val) => updateProp("subtitle", val)}
                 placeholder="Nos techniciens répondent directement sur WhatsApp"
               />
+
+              <div className="grid gap-2 sm:grid-cols-2 pt-2 border-t border-border/40">
+                <LocalizedFieldEditor
+                  label="Libellé du bouton principal"
+                  value={p.buttonText ?? siteContent.contactCta.buttonText}
+                  onChange={(val) => updateProp("buttonText", val)}
+                  placeholder="Contacter un Expert"
+                />
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Lien de destination du bouton :</Label>
+                  <Input
+                    value={String(p.buttonHref ?? siteContent.contactCta.buttonHref ?? "/contact")}
+                    onChange={(e) => updateProp("buttonHref", e.target.value)}
+                    placeholder="/contact"
+                    className="h-8 text-xs font-mono"
+                  />
+                </div>
+              </div>
             </div>
           )}
 

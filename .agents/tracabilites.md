@@ -79,7 +79,8 @@
 | **Phase 57** | 23/11/2026 | Intégration Native Colonne Logo dans Schémas SQL (Résolution Échec install.php), Éradication Synchronisation Inversée Client/Serveur & Bouton Purge Cache                                              | 📄 [`57_plan_resolution_import_install_et_souverainete_serveur.md`](Implementations_Plans/57_plan_resolution_import_install_et_souverainete_serveur.md)                                                                                 | 🟢 **Livré & Validé** |
 | **Phase 58** | 23/11/2026 | Thème Light d'Usine Universel (extraire-donnees-front, donnees-front.json, SQLite), Purge Complète ka-theme & Nouveaux Paquets Zip                                                                     | 📄 [`58_plan_theme_light_usine_universel_et_purge_preferences.md`](Implementations_Plans/58_plan_theme_light_usine_universel_et_purge_preferences.md)                                                                                   | 🟢 **Livré & Validé** |
 | **Phase 59** | 23/11/2026 | Packages ZIP Officiels `waymen-*`, Dissociation de l'Ancien Dépôt GitHub ka-tech, Création et Push Initial sur Nouveau Dépôt `waymen-ai-studio`                                                        | 📄 [`59_plan_packages_waymen_dissociation_et_nouveau_repo_github.md`](Implementations_Plans/59_plan_packages_waymen_dissociation_et_nouveau_repo_github.md)                                                                             | 🟢 **Livré & Validé** |
-| **Phase 60** | 23/11/2026 | Harmonisation Universelle des Propriétés du Studio, Persistance Intégrale BD & Raccordement Fidèle des Composants Visuels (Hero, Ventes Flash, Bandes Défilantes, Bannières)                           | 📄 [`60_plan_harmonisation_persistance_props_studio_et_composants.md`](Implementations_Plans/60_plan_harmonisation_persistance_props_studio_et_composants.md)                                                                             | 🟢 **Livré & Validé** |
+| **Phase 60** | 23/11/2026 | Harmonisation Universelle des Propriétés du Studio, Persistance Intégrale BD & Raccordement Fidèle des Composants Visuels (Hero, Ventes Flash, Bandes Défilantes, Bannières)                           | 📄 [`60_plan_harmonisation_persistance_props_studio_et_composants.md`](Implementations_Plans/60_plan_harmonisation_persistance_props_studio_et_composants.md)                                                                           | 🟢 **Livré & Validé** |
+| **Phase 61** | 23/11/2026 | Éradication Définitive des Derniers Angles Morts des Blocs Studio : Raccordement Universel de ContactCTA (Bouton d'Action + WhatsApp) & Émancipation Vitrine de BuilderTeaser                           | 📄 [`61_plan_eradication_derniers_angles_morts_blocs_studio.md`](Implementations_Plans/61_plan_eradication_derniers_angles_morts_blocs_studio.md)                                                                                       | 🟢 **Livré & Validé** |
 
 ---
 
@@ -3614,13 +3615,13 @@ Répondre avec une rigueur d'ingénierie absolue à l'ensemble des points soulev
 
 1. **Normalisation du Contrat de Données & Mappeur Hero (`hero_banner`) :**  
    Prise en charge unifiée des props plates (`primaryCtaText`, `primaryCtaHref`) et structurées (`primaryCta: { label, href }`) dans [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/CommerceBlocks.tsx). Les modifications de boutons effectuées dans le Studio sont désormais 100% transmises et affichées par `Hero.tsx`.
-2. **Modernisation Ventes Flash & Compte à Rebours (`flash_sale`) :**  
+2. **Modernisation Ventes Flash & Compte à Rebours (`flash_sale`) :**
    - Prise en charge d'une échéance fixe absolue persistée (`endsAt` ISO) dans [`src/components/FlashSale.tsx`](file:///c:/xampp/htdocs/waymen/src/components/FlashSale.tsx) (fin de la réinitialisation parasite à chaque reload).
    - Affichage visuel du sous-titre descriptif trilingue (`subtitle`) sous le titre de vente flash.
    - Éditeur Studio enrichi dans [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/waymen/src/components/admin/BlockPropsEditor.tsx) : sélecteur de date/heure cible `endsAt`, sous-titre et lien de redirection "Voir tout".
-3. **Bandes Défilantes (`ticker_bar` & `brands_marquee`) :**  
+3. **Bandes Défilantes (`ticker_bar` & `brands_marquee`) :**
    - Raccordement effectif du réglage de vitesse (`override.speed`) dans le JSX de [`src/components/Ticker.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Ticker.tsx) avec les classes CSS dédiées (`animate-marquee-slow`, `animate-marquee`, `animate-marquee-fast`).
-4. **Bannières & Visuels (`brand_banner`, `full_width_banner`, `promo_banner`) :**  
+4. **Bannières & Visuels (`brand_banner`, `full_width_banner`, `promo_banner`) :**
    - Résolution trilingue de `altText` via `useLocalize()` dans [`src/components/blocks/BrandBannerBlock.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/BrandBannerBlock.tsx).
    - Encapsulation des URLs d'images par `resoudreUrlMedia()` pour sécuriser les médias téléversés.
    - Suppression du reliquat `KATECH15` au profit de `WAYMEN15`.
@@ -3636,3 +3637,32 @@ Répondre avec une rigueur d'ingénierie absolue à l'ensemble des points soulev
   - `bun run lint` : 0 erreur ESLint.
   - `bun run build` : archive [`waymen-site-23112026-1242.zip`](file:///c:/xampp/htdocs/waymen/waymen-site-23112026-1242.zip) générée avec succès.
   - `bun run paqueter:data` : archive [`waymen-data-23112026-1242.zip`](file:///c:/xampp/htdocs/waymen/waymen-data-23112026-1242.zip) synchronisée.
+
+---
+
+## [Phase 61] — Éradication Définitive des Derniers Angles Morts des Blocs Studio : Raccordement Universel de ContactCTA (Bouton d'Action + WhatsApp) & Émancipation Vitrine de BuilderTeaser
+
+- **Date :** 23/11/2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré & Validé**
+- **Plan Associé :** 📄 [`61_plan_eradication_derniers_angles_morts_blocs_studio.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/61_plan_eradication_derniers_angles_morts_blocs_studio.md)
+
+### Contexte & Objectifs de la Phase
+
+1. **Raccordement Universel du Bloc Appel à l'Action Contact (`contact_cta`) :**
+   - Intégration du badge d'accroche (`c.badge`), du titre et sous-titre trilingues dans [`src/components/ContactCTA.tsx`](file:///c:/xampp/htdocs/waymen/src/components/ContactCTA.tsx).
+   - Affichage du bouton d'action principal (`buttonText`, `buttonHref` pointant vers `/contact` ou n'importe quelle URL interne) combiné harmonieusement au bouton WhatsApp direct en duo si `siteSettings.whatsapp` est configuré.
+   - Enrichissement du contrat d'interface `SiteContent["contactCta"]` dans [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/waymen/src/lib/site-content.ts) et des champs d'édition de [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/waymen/src/components/admin/BlockPropsEditor.tsx).
+2. **Émancipation Vitrine du Bloc Configurateur Pack (`builder_teaser`) :**
+   - Suppression du verrou bloquant `builderEnabled === false` dans [`src/components/blocks/CommerceBlocks.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/CommerceBlocks.tsx). Le bloc peut désormais s'afficher fidèlement comme vitrine d'accroche pour les packs IA dès lors qu'il est activé et configuré dans le Studio.
+
+### Actions Techniques Réalisées & Preuves de Recette
+
+- **Validation CI Complète :**
+  - `bun run verifier-i18n` : 100% conforme.
+  - `bunx tsc --noEmit` : 0 erreur TypeScript.
+  - `bun run format` : 100% conforme Prettier.
+  - `bun run lint` : 0 erreur ESLint.
+  - `bun run build` : archive [`waymen-site-23112026-1256.zip`](file:///c:/xampp/htdocs/waymen/waymen-site-23112026-1256.zip) générée avec succès.
+  - `bun run paqueter:data` : archive [`waymen-data-23112026-1256.zip`](file:///c:/xampp/htdocs/waymen/waymen-data-23112026-1256.zip) synchronisée.
