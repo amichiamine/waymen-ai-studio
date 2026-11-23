@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, Clock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "./Logo";
+import signatureSrc from "@/assets/Signature-ArchiSys30.png";
 import {
   useSiteContent,
   useSiteSettings,
@@ -207,12 +208,20 @@ export function Footer() {
               siteSettings.storeName?.trim() || "Boutique",
             )}
           </span>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <Link to="/track" className="hover:text-primary transition-colors font-medium">
               {t("track.title")}
             </Link>
             <span>·</span>
-            <span>{L(f.madeIn)}</span>
+            <div className="inline-flex items-center gap-2">
+              <span>{L(f.madeIn)}</span>
+              <img
+                src={signatureSrc}
+                alt="Signature ArchiSys3.0"
+                className="h-5 lg:h-6 w-auto object-contain opacity-75 hover:opacity-100 transition-opacity drop-shadow-sm filter contrast-125 select-none"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </div>

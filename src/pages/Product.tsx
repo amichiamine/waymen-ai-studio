@@ -45,6 +45,10 @@ const specKeyMap: Record<SpecKey, TKey> = {
   motherboard: "spec.motherboard",
   psu: "spec.psu",
   camera: "spec.camera",
+  duration: "spec.duration",
+  delivery: "spec.delivery",
+  support: "spec.support",
+  accountType: "spec.accountType",
 };
 
 export default function Product({

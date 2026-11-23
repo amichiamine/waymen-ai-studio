@@ -73,3 +73,6 @@ backups/
 # Artefact binaire, regenerable a la demande, ne doit pas polluer le depot.
 katech-site*.zip
 katech-data*.zip
+waymen-site*.zip
+waymen-data*.zip
+devis.zip

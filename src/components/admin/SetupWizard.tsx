@@ -150,7 +150,7 @@ export function SetupWizard({
   const [logoUrl, setLogoUrl] = useState(siteSettings.logoUrl || "");
   const [faviconUrl, setFaviconUrl] = useState(siteSettings.faviconUrl || "");
   const [defaultTheme, setDefaultTheme] = useState<"dark" | "light" | "system">(
-    siteSettings.defaultTheme || "dark",
+    siteSettings.defaultTheme || "light",
   );
   const [primaryColor, setPrimaryColor] = useState(siteSettings.primaryColor || "#0284c7");
   const [secondaryColor, setSecondaryColor] = useState(siteSettings.secondaryColor || "#10b981");
@@ -187,7 +187,7 @@ export function SetupWizard({
       setSlogan(siteSettings.promoBannerText || "");
       setLogoUrl(siteSettings.logoUrl || "");
       setFaviconUrl(siteSettings.faviconUrl || "");
-      setDefaultTheme(siteSettings.defaultTheme || "dark");
+      setDefaultTheme(siteSettings.defaultTheme || "light");
       setPrimaryColor(siteSettings.primaryColor || "#0284c7");
       setSecondaryColor(siteSettings.secondaryColor || "#10b981");
       setAccentColor(siteSettings.accentColor || "#f59e0b");

@@ -1,13 +1,13 @@
-import archisysBannerSrc from "@/assets/stacgate-archisys-banner.webp";
+import defaultBannerSrc from "@/assets/waymen-og-banner.webp";
 import type { BlockConfig } from "@/types/pages";
 
 export function BrandBannerBlock({ config }: { config: BlockConfig }) {
   const p = config.props || {};
-  const bannerSrc = typeof p.bannerSrc === "string" ? p.bannerSrc : archisysBannerSrc;
+  const bannerSrc = typeof p.bannerSrc === "string" ? p.bannerSrc : defaultBannerSrc;
   const altText =
     typeof p.altText === "string"
       ? p.altText
-      : "StacGate Platform — Conçu et Validé par ArchiSys3.0";
+      : "WaYmen AI Studio — Abonnements, Activations & Formations IA";
 
   return (
     <section className="container-page py-6 md:py-10">

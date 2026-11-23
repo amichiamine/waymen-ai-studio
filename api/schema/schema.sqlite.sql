@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS brands (
   name          TEXT NOT NULL,
   description   TEXT NULL,
   country       TEXT NULL,
+  logo          TEXT NULL,
   created_at    TEXT NOT NULL,
   updated_at    TEXT NOT NULL
 );

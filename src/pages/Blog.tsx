@@ -7,6 +7,7 @@ import { useBlogPostList, useSiteSettings, useSiteContent } from "@/data-provide
 import { useI18n, useLocalize, type Localized } from "@/lib/i18n";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { renderBlock } from "@/components/blocks";
+import NotFound from "@/pages/NotFound";
 
 /** Toutes les variantes d'un champ localisé, en minuscules — base de recherche. */
 const haystack = (v: Localized<string> | undefined): string =>
@@ -49,6 +50,11 @@ export default function Blog({
         p.tags.some((tg) => tg.toLowerCase().includes(needle)),
     );
   }, [blogPosts, q]);
+
+  // Si le blog est explicitement dépublié depuis le panel admin
+  if (systemPage && systemPage.isPublished === false) {
+    return <NotFound />;
+  }
 
   const pageBgClass =
     systemPage?.layout?.pageBg === "dark"

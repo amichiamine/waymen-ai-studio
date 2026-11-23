@@ -29,9 +29,7 @@ export function FullWidthBannerBlock({ config }: { config: BlockConfig }) {
       );
 
   const bannerSrc =
-    typeof p.bannerSrc === "string" && p.bannerSrc
-      ? p.bannerSrc
-      : "/media/stacgate-archisys-combined.webp";
+    typeof p.bannerSrc === "string" && p.bannerSrc ? p.bannerSrc : "/media/waymen-og-banner.webp";
 
   const height = p.height || "normal";
   const heightClass =

@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS brands (
   name          VARCHAR(191) NOT NULL,
   description   TEXT NULL,
   country       VARCHAR(96) NULL,
+  logo          TEXT NULL,
   created_at    VARCHAR(32) NOT NULL,
   updated_at    VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

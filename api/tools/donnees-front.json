@@ -1,581 +1,1937 @@
 {
-  "generatedAt": "2026-11-08T20:57:50.372Z",
+  "generatedAt": "2026-11-23T10:51:07.063Z",
   "categories": [
     {
-      "slug": "laptops",
-      "label": "Ordinateurs portables",
-      "description": "Laptops pour le travail, les études et le gaming.",
-      "cover": "media/p-rog.webp",
+      "slug": "llm-assistants",
+      "label": "Assistants & LLM",
+      "description": "Abonnements et accès officiels aux meilleurs modèles de langage du marché.",
+      "cover": "media/service-chatgpt-plus.webp",
       "position": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "slug": "desktops",
-      "label": "Ordinateurs de bureau",
-      "description": "Tours et mini-PC de bureau.",
-      "cover": "media/p-optiplex.webp",
+      "slug": "creative-media",
+      "label": "Création & Médias",
+      "description": "Génération d'images haute résolution, vidéo générative et synthèse vocale IA.",
+      "cover": "media/service-midjourney-std.webp",
       "position": 1,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "slug": "builds",
-      "label": "Configurations PC",
-      "description": "Configurations sur-mesure KA Build.",
-      "cover": "media/p-build-mid.webp",
+      "slug": "code-engineering",
+      "label": "Code & Ingénierie",
+      "description": "Assistants de programmation d'élite, complétion de code et agents d'ingénierie.",
+      "cover": "media/service-cursor-pro.webp",
       "position": 2,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "slug": "phones",
-      "label": "Smartphones",
-      "description": "Smartphones Android et iOS.",
-      "cover": "media/p-galaxy.webp",
+      "slug": "productivity-cloud",
+      "label": "Productivité & Bureautique",
+      "description": "Workspace IA, bases de connaissances intelligentes et outils collaboratifs.",
+      "cover": "media/service-canva-pro.webp",
       "position": 3,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "slug": "formations-academy",
+      "label": "Waymen Academy",
+      "description": "Formations concrètes, tutoriels pas-à-pas et coaching personnalisé tous niveaux.",
+      "cover": "media/service-formation-ia-zero.webp",
+      "position": 4,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "slug": "packs-bundles",
+      "label": "Packs & Bundles IA",
+      "description": "Formules groupées économiques combinant abonnements et formations clés-en-main.",
+      "cover": "media/service-pack-ultimate-creator.webp",
+      "position": 5,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "slug": "streaming-medias",
+      "label": "Streaming & Médias",
+      "description": "Abonnements officiels Netflix 4K, Spotify Premium, YouTube Premium et Disney+.",
+      "cover": "media/service-netflix-premium.webp",
+      "position": 6,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "slug": "gaming-consoles",
+      "label": "Gaming & Consoles / PC",
+      "description": "Cartes PlayStation Plus, Xbox Game Pass Ultimate et recharges Steam Wallet.",
+      "cover": "media/service-playstation-plus.webp",
+      "position": 7,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "slug": "cartes-cadeaux",
+      "label": "Cartes Cadeaux & Recharges",
+      "description": "Cartes de recharge Apple, Google Play Store et Razer Gold à activation immédiate.",
+      "cover": "media/service-card-apple.webp",
+      "position": 8,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     }
   ],
   "brands": [
     {
-      "id": "asus",
-      "name": "ASUS",
-      "description": "Marque ASUS distribuée par KA Tech.",
-      "country": "Taïwan",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "hp",
-      "name": "HP",
-      "description": "Marque HP distribuée par KA Tech.",
+      "id": "openai",
+      "name": "OpenAI",
+      "description": "Écosystème officiel OpenAI activé par WaYmen AI Studio.",
       "country": "États-Unis",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "logo": "media/brands/openai.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "id": "lenovo",
-      "name": "Lenovo",
-      "description": "Marque Lenovo distribuée par KA Tech.",
-      "country": "Chine",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "id": "anthropic",
+      "name": "Anthropic",
+      "description": "Écosystème officiel Anthropic activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/anthropic.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "description": "Écosystème officiel Google activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/google.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "description": "Écosystème officiel Perplexity activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/perplexity.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "midjourney",
+      "name": "Midjourney",
+      "description": "Écosystème officiel Midjourney activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/midjourney.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "runway",
+      "name": "Runway",
+      "description": "Écosystème officiel Runway activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/runway.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "elevenlabs",
+      "name": "ElevenLabs",
+      "description": "Écosystème officiel ElevenLabs activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/elevenlabs.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "description": "Écosystème officiel Cursor activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/cursor.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "description": "Écosystème officiel Microsoft activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/microsoft.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "canva",
+      "name": "Canva",
+      "description": "Écosystème officiel Canva activé par WaYmen AI Studio.",
+      "country": "Australie",
+      "logo": "media/brands/canva.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "description": "Écosystème officiel Notion activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/notion.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "waymen-academy",
+      "name": "WaYmen Academy",
+      "description": "Écosystème officiel WaYmen Academy activé par WaYmen AI Studio.",
+      "country": "Algérie / International",
+      "logo": "media/brands/waymen-academy.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "waymen-vip",
+      "name": "WaYmen VIP",
+      "description": "Écosystème officiel WaYmen VIP activé par WaYmen AI Studio.",
+      "country": "Algérie / International",
+      "logo": "media/brands/waymen-vip.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "description": "Écosystème officiel Netflix activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/netflix.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "description": "Écosystème officiel Spotify activé par WaYmen AI Studio.",
+      "country": "Suède",
+      "logo": "media/brands/spotify.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "description": "Écosystème officiel YouTube activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/youtube.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "disney-",
+      "name": "Disney+",
+      "description": "Écosystème officiel Disney+ activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/disney-.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "sony-playstation",
+      "name": "Sony PlayStation",
+      "description": "Écosystème officiel Sony PlayStation activé par WaYmen AI Studio.",
+      "country": "Japon",
+      "logo": "media/brands/sony-playstation.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "xbox",
+      "name": "Xbox",
+      "description": "Écosystème officiel Xbox activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/xbox.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "steam",
+      "name": "Steam",
+      "description": "Écosystème officiel Steam activé par WaYmen AI Studio.",
+      "country": "États-Unis",
+      "logo": "media/brands/steam.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "id": "apple",
       "name": "Apple",
-      "description": "Marque Apple distribuée par KA Tech.",
+      "description": "Écosystème officiel Apple activé par WaYmen AI Studio.",
       "country": "États-Unis",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "logo": "media/brands/apple.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "id": "dell",
-      "name": "Dell",
-      "description": "Marque Dell distribuée par KA Tech.",
+      "id": "google-play",
+      "name": "Google Play",
+      "description": "Écosystème officiel Google Play activé par WaYmen AI Studio.",
       "country": "États-Unis",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "logo": "media/brands/google-play.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "id": "ka-build",
-      "name": "KA Build",
-      "description": "Marque KA Build distribuée par KA Tech.",
-      "country": "Algérie",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "samsung",
-      "name": "Samsung",
-      "description": "Marque Samsung distribuée par KA Tech.",
-      "country": "Corée du Sud",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "xiaomi",
-      "name": "Xiaomi",
-      "description": "Marque Xiaomi distribuée par KA Tech.",
-      "country": "Chine",
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "id": "razer",
+      "name": "Razer",
+      "description": "Écosystème officiel Razer activé par WaYmen AI Studio.",
+      "country": "États-Unis / Singapour",
+      "logo": "media/brands/razer.svg",
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     }
   ],
   "products": [
     {
-      "id": "rog-strix-g16",
-      "name": "ASUS ROG Strix G16",
-      "brand": "ASUS",
-      "category": "laptops",
-      "use_tags": ["gaming", "edit"],
-      "spec_line": "Intel i9 · RTX 4070 · 32GB · 1TB",
-      "specs": {
-        "cpu": "Intel Core i9-13980HX",
-        "ram": "32GB DDR5",
-        "storage": "1TB NVMe SSD",
-        "gpu": "NVIDIA RTX 4070 8GB",
-        "screen": "16\" QHD+ 240Hz",
-        "os": "Windows 11 Pro",
-        "battery": "90Wh",
-        "weight": "2.5 kg"
-      },
-      "price": 289000,
-      "old_price": 319000,
-      "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-rog.webp",
-      "best_seller": 1,
-      "sale": 1,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "hp-pavilion-15",
-      "name": "HP Pavilion 15",
-      "brand": "HP",
-      "category": "laptops",
-      "use_tags": ["study", "home"],
-      "spec_line": "Intel i5 · 8GB · 512GB SSD",
-      "specs": {
-        "cpu": "Intel Core i5-1335U",
-        "ram": "8GB DDR4",
-        "storage": "512GB NVMe SSD",
-        "gpu": "Intel Iris Xe",
-        "screen": "15.6\" FHD IPS",
-        "os": "Windows 11",
-        "battery": "41Wh",
-        "weight": "1.75 kg"
-      },
-      "price": 89000,
-      "old_price": null,
-      "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-pavilion.webp",
-      "best_seller": 1,
-      "sale": 0,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "thinkpad-x1-carbon",
-      "name": "Lenovo ThinkPad X1 Carbon",
-      "brand": "Lenovo",
-      "category": "laptops",
-      "use_tags": ["work"],
-      "spec_line": "Intel i7 · 16GB · 1TB SSD",
-      "specs": {
-        "cpu": "Intel Core i7-1365U vPro",
-        "ram": "16GB LPDDR5",
-        "storage": "1TB NVMe SSD",
-        "gpu": "Intel Iris Xe",
-        "screen": "14\" 2.8K OLED",
-        "os": "Windows 11 Pro",
-        "battery": "57Wh",
-        "weight": "1.12 kg"
-      },
-      "price": 195000,
-      "old_price": null,
-      "stock": "low",
-      "stock_qty": 3,
-      "image": "media/p-thinkpad.webp",
-      "best_seller": 1,
-      "sale": 0,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "macbook-air-m3",
-      "name": "MacBook Air M3",
-      "brand": "Apple",
-      "category": "laptops",
+      "id": "chatgpt-plus-1m",
+      "name": "ChatGPT Plus (1 Mois)",
+      "brand": "OpenAI",
+      "category": "llm-assistants",
       "use_tags": ["work", "study", "edit"],
-      "spec_line": "Apple M3 · 16GB · 512GB",
+      "spec_line": {
+        "fr": "GPT-4o illimité · DALL·E 3 · Canvas · Navigation Web",
+        "en": "Unlimited GPT-4o · DALL·E 3 · Canvas · Web Browsing",
+        "ar": "شات جي بي تي بلس · وصول كامل لـ GPT-4o وتوليد الصور والبحث"
+      },
       "specs": {
-        "cpu": "Apple M3 (8-core)",
-        "ram": "16GB Unified",
-        "storage": "512GB SSD",
-        "gpu": "10-core GPU",
-        "screen": "13.6\" Liquid Retina",
-        "os": "macOS Sonoma",
-        "battery": {
-          "fr": "Jusqu'à 18 heures",
-          "en": "Up to 18 hours",
-          "ar": "حتى 18 ساعة"
+        "duration": {
+          "fr": "1 Mois (30 Jours)",
+          "en": "1 Month (30 Days)",
+          "ar": "شهر واحد (30 يوم)"
         },
-        "weight": "1.24 kg"
-      },
-      "price": 245000,
-      "old_price": 265000,
-      "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-macbook.webp",
-      "best_seller": 1,
-      "sale": 1,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "dell-optiplex-5000",
-      "name": "Dell OptiPlex 5000",
-      "brand": "Dell",
-      "category": "desktops",
-      "use_tags": ["work", "home"],
-      "spec_line": "Core i5 · 8GB · 256GB SSD",
-      "specs": {
-        "cpu": "Intel Core i5-12500",
-        "ram": "8GB DDR4",
-        "storage": "256GB NVMe SSD",
-        "gpu": "Intel UHD 770",
-        "form": "Mini Tower",
-        "os": "Windows 11 Pro"
-      },
-      "price": 75000,
-      "old_price": null,
-      "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-optiplex.webp",
-      "best_seller": 1,
-      "sale": 0,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "hp-omen-45l",
-      "name": "HP Omen 45L",
-      "brand": "HP",
-      "category": "desktops",
-      "use_tags": ["gaming", "edit"],
-      "spec_line": "Ryzen 9 · RTX 4080 · 32GB",
-      "specs": {
-        "cpu": "AMD Ryzen 9 7900X",
-        "ram": "32GB DDR5",
-        "storage": "1TB SSD + 2TB HDD",
-        "gpu": "NVIDIA RTX 4080 16GB",
-        "form": "Full Tower",
-        "os": "Windows 11"
-      },
-      "price": 420000,
-      "old_price": 460000,
-      "stock": "low",
-      "stock_qty": 3,
-      "image": "media/p-omen.webp",
-      "best_seller": 0,
-      "sale": 1,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "build-mid-gaming",
-      "name": {
-        "fr": "Configuration Gaming Mid-Range",
-        "en": "Mid-Range Gaming Build",
-        "ar": "تجميعة ألعاب متوسطة المستوى"
-      },
-      "brand": "KA Build",
-      "category": "builds",
-      "use_tags": ["gaming"],
-      "spec_line": "Ryzen 5 · RX 6600 · 16GB · 500GB",
-      "specs": {
-        "cpu": "AMD Ryzen 5 5600",
-        "ram": "16GB DDR4 3200",
-        "storage": "500GB NVMe SSD",
-        "gpu": "AMD RX 6600 8GB",
-        "motherboard": "B550M",
-        "psu": "650W 80+ Bronze"
-      },
-      "price": 120000,
-      "old_price": null,
-      "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-build-mid.webp",
-      "best_seller": 1,
-      "sale": 0,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "build-pro-editing",
-      "name": {
-        "fr": "Configuration Montage Pro",
-        "en": "Pro Editing Build",
-        "ar": "تجميعة مونتاج احترافية"
-      },
-      "brand": "KA Build",
-      "category": "builds",
-      "use_tags": ["edit", "work"],
-      "spec_line": "Ryzen 9 · RTX 4070 Ti · 64GB · 2TB",
-      "specs": {
-        "cpu": "AMD Ryzen 9 7950X",
-        "ram": "64GB DDR5 6000",
-        "storage": "2TB NVMe Gen4",
-        "gpu": "NVIDIA RTX 4070 Ti 12GB",
-        "motherboard": "X670E",
-        "psu": "850W 80+ Gold"
-      },
-      "price": 380000,
-      "old_price": null,
-      "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-build-pro.webp",
-      "best_seller": 0,
-      "sale": 0,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "galaxy-s25-ultra",
-      "name": "Samsung Galaxy S25 Ultra",
-      "brand": "Samsung",
-      "category": "phones",
-      "use_tags": ["work", "edit"],
-      "spec_line": "12GB · 256GB · 200MP",
-      "specs": {
-        "cpu": "Snapdragon 8 Gen 4",
-        "ram": "12GB",
-        "storage": "256GB",
-        "screen": "6.9\" Dynamic AMOLED 2X",
-        "camera": "200MP + 50MP + 12MP",
-        "battery": "5000 mAh",
-        "os": "Android 15 / One UI 7"
-      },
-      "price": 135000,
-      "old_price": 145000,
-      "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-galaxy.webp",
-      "best_seller": 1,
-      "sale": 1,
-      "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
-    },
-    {
-      "id": "iphone-16-pro-max",
-      "name": "iPhone 16 Pro Max",
-      "brand": "Apple",
-      "category": "phones",
-      "use_tags": ["work", "edit"],
-      "spec_line": "256GB · A18 Pro · Titanium",
-      "specs": {
-        "cpu": "Apple A18 Pro",
-        "ram": "8GB",
-        "storage": "256GB",
-        "screen": "6.9\" Super Retina XDR",
-        "camera": "48MP + 48MP UW + 12MP",
-        "battery": {
-          "fr": "Jusqu'à 33h de vidéo",
-          "en": "Up to 33h video playback",
-          "ar": "حتى 33 ساعة تشغيل فيديو"
+        "delivery": {
+          "fr": "Instantané sous 15 min",
+          "en": "Instant within 15 min",
+          "ar": "فوري خلال 15 دقيقة"
         },
-        "os": "iOS 18"
+        "accountType": {
+          "fr": "Compte personnel officiel",
+          "en": "Official personal account",
+          "ar": "حساب شخصي رسمي"
+        },
+        "support": {
+          "fr": "Garantie intégrale 30 jours",
+          "en": "Full 30-day warranty",
+          "ar": "ضمان كامل لمدة 30 يوم"
+        }
       },
-      "price": 175000,
-      "old_price": null,
-      "stock": "low",
-      "stock_qty": 3,
-      "image": "media/p-iphone.webp",
+      "price": 3500,
+      "old_price": 4200,
+      "stock": "in",
+      "stock_qty": 48,
+      "image": "media/service-chatgpt-plus.webp",
       "best_seller": 1,
-      "sale": 0,
+      "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "id": "xiaomi-14t-pro",
-      "name": "Xiaomi 14T Pro",
-      "brand": "Xiaomi",
-      "category": "phones",
-      "use_tags": ["work", "home"],
-      "spec_line": "12GB · 512GB · Leica",
-      "specs": {
-        "cpu": "MediaTek Dimensity 9300+",
-        "ram": "12GB",
-        "storage": "512GB",
-        "screen": "6.67\" CrystalRes AMOLED",
-        "camera": "Leica 50MP + 50MP + 12MP",
-        "battery": "5000 mAh + 120W",
-        "os": "Android 14 / HyperOS"
+      "id": "chatgpt-plus-3m",
+      "name": "ChatGPT Plus (3 Mois - Pack Trimestriel)",
+      "brand": "OpenAI",
+      "category": "llm-assistants",
+      "use_tags": ["work", "study"],
+      "spec_line": {
+        "fr": "Pack 3 Mois · GPT-4o · DALL·E 3 · Voix Avancée",
+        "en": "3-Month Pack · GPT-4o · DALL·E 3 · Advanced Voice",
+        "ar": "باقة 3 أشهر · اشتراك مستمر مع توفير ممتاز"
       },
-      "price": 85000,
+      "specs": {
+        "duration": {
+          "fr": "3 Mois (90 Jours)",
+          "en": "3 Months (90 Days)",
+          "ar": "3 أشهر (90 يوم)"
+        },
+        "delivery": {
+          "fr": "Activation directe par email",
+          "en": "Direct email activation",
+          "ar": "تفعيل مباشر عبر البريد"
+        },
+        "accountType": {
+          "fr": "Compte dédié garanti",
+          "en": "Guaranteed dedicated account",
+          "ar": "حساب مخصص ومضمون"
+        },
+        "support": {
+          "fr": "Support WhatsApp 7j/7",
+          "en": "7/7 WhatsApp support",
+          "ar": "دعم واتساب 7/7"
+        }
+      },
+      "price": 9800,
+      "old_price": 11500,
+      "stock": "in",
+      "stock_qty": 25,
+      "image": "media/service-chatgpt-plus.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "chatgpt-plus-1y",
+      "name": "ChatGPT Plus (1 An - Formule Annuelle VIP)",
+      "brand": "OpenAI",
+      "category": "llm-assistants",
+      "use_tags": ["work", "edit"],
+      "spec_line": {
+        "fr": "Abonnement Annuel 365 Jours · Tarif Privilège VIP",
+        "en": "365-Day Annual Subscription · VIP Special Rate",
+        "ar": "اشتراك سنوي 365 يوم · السعر الأفضل مع راحة بال تامة"
+      },
+      "specs": {
+        "duration": {
+          "fr": "12 Mois (1 An)",
+          "en": "12 Months (1 Year)",
+          "ar": "12 شهرًا (سنة كاملة)"
+        },
+        "delivery": {
+          "fr": "Sous 30 min avec guide VIP",
+          "en": "Within 30 min with VIP guide",
+          "ar": "خلال 30 دقيقة مع دليل التفعيل"
+        },
+        "accountType": {
+          "fr": "Personnel renouvelable",
+          "en": "Renewable personal",
+          "ar": "شخصي قابل للتجديد"
+        },
+        "support": {
+          "fr": "Garantie 365 jours continue",
+          "en": "Continuous 365-day warranty",
+          "ar": "ضمان مستمر طوال السنة"
+        }
+      },
+      "price": 36000,
+      "old_price": 42000,
+      "stock": "in",
+      "stock_qty": 15,
+      "image": "media/service-chatgpt-plus.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "chatgpt-team",
+      "name": "ChatGPT Team (Espace d'Équipe Collaboratif)",
+      "brand": "OpenAI",
+      "category": "llm-assistants",
+      "use_tags": ["work"],
+      "spec_line": {
+        "fr": "Workspace Dédié · Quotas 2x Plus Élevés · Console Admin",
+        "en": "Dedicated Workspace · 2x Higher Limits · Admin Console",
+        "ar": "مساحة عمل مخصصة للفرق والشركات مع حدود استخدام مضاعفة"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois renouvelable",
+          "en": "1 Month renewable",
+          "ar": "شهر واحد قابل للتجديد"
+        },
+        "delivery": {
+          "fr": "Invitation espace entreprise",
+          "en": "Company workspace invitation",
+          "ar": "دعوة رسمية لمساحة العمل"
+        },
+        "accountType": {
+          "fr": "Multi-utilisateurs pro",
+          "en": "Multi-user pro",
+          "ar": "متعدد المستخدمين للشركات"
+        },
+        "support": {
+          "fr": "Assistance déploiement équipe",
+          "en": "Team setup assistance",
+          "ar": "مساعدة في تهيئة الفريق"
+        }
+      },
+      "price": 5500,
       "old_price": null,
       "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-xiaomi.webp",
+      "stock_qty": 20,
+      "image": "media/service-chatgpt-team.webp",
       "best_seller": 0,
       "sale": 0,
       "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
-      "id": "redmi-note-13-pro",
-      "name": "Redmi Note 13 Pro",
-      "brand": "Xiaomi",
-      "category": "phones",
-      "use_tags": ["study", "home"],
-      "spec_line": "8GB · 256GB · 200MP",
+      "id": "claude-pro-1m",
+      "name": "Claude Pro (1 Mois)",
+      "brand": "Anthropic",
+      "category": "llm-assistants",
+      "use_tags": ["work", "study", "edit"],
+      "spec_line": {
+        "fr": "Claude 3.5 Sonnet & Opus · Artifacts · Capacité 200k tokens",
+        "en": "Claude 3.5 Sonnet & Opus · Artifacts · 200k Token Context",
+        "ar": "كلود برو من أنثروبيك · أقوى نموذج في البرمجة والتحليل المعقد"
+      },
       "specs": {
-        "cpu": "Snapdragon 7s Gen 2",
-        "ram": "8GB",
-        "storage": "256GB",
-        "screen": "6.67\" AMOLED 120Hz",
-        "camera": "200MP + 8MP + 2MP",
-        "battery": "5100 mAh + 67W",
-        "os": "Android 13 / MIUI 14"
+        "duration": {
+          "fr": "1 Mois (30 Jours)",
+          "en": "1 Month (30 Days)",
+          "ar": "شهر واحد (30 يوم)"
+        },
+        "delivery": {
+          "fr": "Activation express < 15 min",
+          "en": "Express activation < 15 min",
+          "ar": "تفعيل فوري في أقل من 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Compte Anthropic officiel",
+          "en": "Official Anthropic account",
+          "ar": "حساب أنثروبيك رسمي"
+        },
+        "support": {
+          "fr": "Garantie complète 30j",
+          "en": "Full 30d warranty",
+          "ar": "ضمان 30 يومًا"
+        }
+      },
+      "price": 3600,
+      "old_price": 4200,
+      "stock": "in",
+      "stock_qty": 35,
+      "image": "media/service-claude-pro.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "claude-pro-1y",
+      "name": "Claude Pro (1 An - Formule Annuelle)",
+      "brand": "Anthropic",
+      "category": "llm-assistants",
+      "use_tags": ["work", "edit"],
+      "spec_line": {
+        "fr": "Année Complète · Claude 3.5 Sonnet illimité · Support Prioritaire",
+        "en": "Full Year · Unlimited Claude 3.5 Sonnet · Priority Support",
+        "ar": "اشتراك سنوي كامل لأفضل نموذج ذكاء اصطناعي للمطورين والمحللين"
+      },
+      "specs": {
+        "duration": {
+          "fr": "12 Mois",
+          "en": "12 Months",
+          "ar": "12 شهرًا"
+        },
+        "delivery": {
+          "fr": "Activation sous 30 min",
+          "en": "Within 30 min",
+          "ar": "خلال 30 دقيقة"
+        },
+        "accountType": {
+          "fr": "Compte personnel garanti",
+          "en": "Guaranteed personal",
+          "ar": "حساب شخصي مضمون"
+        },
+        "support": {
+          "fr": "Garantie totale 1 an",
+          "en": "Full 1-year warranty",
+          "ar": "ضمان كامل لمدة عام"
+        }
       },
       "price": 38000,
-      "old_price": 45000,
+      "old_price": 44000,
       "stock": "in",
-      "stock_qty": 50,
-      "image": "media/p-redmi.webp",
+      "stock_qty": 10,
+      "image": "media/service-claude-pro.webp",
       "best_seller": 0,
       "sale": 1,
       "custom_build": 0,
-      "created_at": "2026-11-08T20:57:50.372Z",
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "google-gemini-advanced",
+      "name": "Google Gemini Advanced + Google One 2TB",
+      "brand": "Google",
+      "category": "llm-assistants",
+      "use_tags": ["work", "study", "home"],
+      "spec_line": {
+        "fr": "Gemini 1.5 Pro · 2TB Cloud Drive · Intégration Docs & Gmail",
+        "en": "Gemini 1.5 Pro · 2TB Cloud Storage · Docs & Gmail Integration",
+        "ar": "جوجل جيمني أدفانسد مع سعة 2 تيرابايت وتكامل في مستندات وجيميل"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Activation sur votre Gmail",
+          "en": "Activation on your Gmail",
+          "ar": "تفعيل رسمي على بريدك جيميل"
+        },
+        "accountType": {
+          "fr": "Google One Famille / Personnel",
+          "en": "Google One Family / Personal",
+          "ar": "جوجل ون رسمي"
+        },
+        "support": {
+          "fr": "Garantie Google officielle",
+          "en": "Official Google warranty",
+          "ar": "ضمان جوجل الرسمي"
+        }
+      },
+      "price": 3400,
+      "old_price": null,
+      "stock": "in",
+      "stock_qty": 40,
+      "image": "media/service-gemini-advanced.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "perplexity-pro-1m",
+      "name": "Perplexity Pro (Recherche & Synthèse IA)",
+      "brand": "Perplexity",
+      "category": "llm-assistants",
+      "use_tags": ["study", "work"],
+      "spec_line": {
+        "fr": "Recherches Pro illimitées · Modèles Claude 3.5 & GPT-4o inclus",
+        "en": "Unlimited Pro Searches · Claude 3.5 & GPT-4o models included",
+        "ar": "محرك البحث الفائق بالذكاء الاصطناعي مع وصول لجميع النماذج الكبرى"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Envoi accès sous 15 min",
+          "en": "Access sent in 15 min",
+          "ar": "إرسال البيانات خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Compte Pro dédié",
+          "en": "Dedicated Pro account",
+          "ar": "حساب برو مخصص"
+        },
+        "support": {
+          "fr": "Garantie 30 jours",
+          "en": "30-day warranty",
+          "ar": "ضمان 30 يوم"
+        }
+      },
+      "price": 3200,
+      "old_price": null,
+      "stock": "in",
+      "stock_qty": 30,
+      "image": "media/service-perplexity-pro.webp",
+      "best_seller": 1,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "midjourney-std-1m",
+      "name": "Midjourney V6.1 Plan Standard",
+      "brand": "Midjourney",
+      "category": "creative-media",
+      "use_tags": ["edit", "work"],
+      "spec_line": {
+        "fr": "15h Fast GPU · Générations Relax illimitées · Droits commerciaux",
+        "en": "15h Fast GPU · Unlimited Relax Hours · Commercial Rights",
+        "ar": "ميدجورني القياسي لتوليد الصور والتصاميم الفنية بجودة سينمائية خيالية"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois (30 Jours)",
+          "en": "1 Month (30 Days)",
+          "ar": "شهر واحد (30 يوم)"
+        },
+        "delivery": {
+          "fr": "Compte Discord / Web officiel",
+          "en": "Official Discord / Web account",
+          "ar": "حساب ديسكورد / ويب رسمي"
+        },
+        "accountType": {
+          "fr": "Privé avec droits commerciaux",
+          "en": "Private with commercial rights",
+          "ar": "خاص بحقوق استخدام تجاري"
+        },
+        "support": {
+          "fr": "Garantie Midjourney intégrale",
+          "en": "Full Midjourney warranty",
+          "ar": "ضمان كامل للمدة"
+        }
+      },
+      "price": 5200,
+      "old_price": 5900,
+      "stock": "in",
+      "stock_qty": 25,
+      "image": "media/service-midjourney-std.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "midjourney-pro-1m",
+      "name": "Midjourney Plan Pro (30h Fast + Stealth Mode)",
+      "brand": "Midjourney",
+      "category": "creative-media",
+      "use_tags": ["edit", "work"],
+      "spec_line": {
+        "fr": "30h Fast GPU · Mode Furtif Privé · 12 tâches simultanées",
+        "en": "30h Fast GPU · Stealth Mode (Private) · 12 concurrent jobs",
+        "ar": "الخطة الاحترافية للمصممين والوكالات مع ميزة إخفاء الصور وحفظ الخصوصية"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Sous 20 min par WhatsApp/Mail",
+          "en": "In 20 min via WhatsApp/Mail",
+          "ar": "خلال 20 دقيقة عبر الواتساب/الإيميل"
+        },
+        "accountType": {
+          "fr": "Compte Pro Indépendant",
+          "en": "Independent Pro account",
+          "ar": "حساب برو مستقل"
+        },
+        "support": {
+          "fr": "Support prioritaire 7j/7",
+          "en": "7/7 Priority support",
+          "ar": "دعم مخصص 7/7"
+        }
+      },
+      "price": 9900,
+      "old_price": null,
+      "stock": "in",
+      "stock_qty": 12,
+      "image": "media/service-midjourney-std.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "runway-gen3-alpha",
+      "name": "Runway Gen-3 Alpha (Studio Vidéo IA)",
+      "brand": "Runway",
+      "category": "creative-media",
+      "use_tags": ["edit", "work"],
+      "spec_line": {
+        "fr": "Génération Vidéo 4K Ultra-Réaliste · Text-to-Video & Motion Brush",
+        "en": "Ultra-Realistic 4K Video Generation · Text-to-Video & Motion Brush",
+        "ar": "استوديو رانوي الرائد في توليد المقاطع والمشاهد السينمائية بالذكاء الاصطناعي"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois (Crédits Standard)",
+          "en": "1 Month (Standard Credits)",
+          "ar": "شهر واحد (رصيد قياسي)"
+        },
+        "delivery": {
+          "fr": "Activation immédiate",
+          "en": "Immediate activation",
+          "ar": "تفعيل مباشر"
+        },
+        "accountType": {
+          "fr": "Compte Créateur dédié",
+          "en": "Dedicated Creator account",
+          "ar": "حساب صانع محتوى مخصص"
+        },
+        "support": {
+          "fr": "Garantie et tutoriel inclus",
+          "en": "Warranty & tutorial included",
+          "ar": "ضمان وشرح استخدام مرفق"
+        }
+      },
+      "price": 4800,
+      "old_price": null,
+      "stock": "in",
+      "stock_qty": 18,
+      "image": "media/service-runway-gen3.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "elevenlabs-creator",
+      "name": "ElevenLabs Creator (Voix IA & Clonage Vocal)",
+      "brand": "ElevenLabs",
+      "category": "creative-media",
+      "use_tags": ["edit", "work"],
+      "spec_line": {
+        "fr": "100 000 caractères/mois · Clonage vocal instantané · Voix arabes & multilingues",
+        "en": "100k chars/mo · Instant voice cloning · Arabic & multilingual voices",
+        "ar": "أقوى تقنية لتوليد الصوت البشري والدبلجة واستنساخ الأصوات بدقة مذهلة"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Sous 15 min",
+          "en": "Within 15 min",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Licence Commerciale incluse",
+          "en": "Commercial license included",
+          "ar": "مرخص للاستخدام التجاري"
+        },
+        "support": {
+          "fr": "Garantie 30 jours",
+          "en": "30-day warranty",
+          "ar": "ضمان 30 يوم"
+        }
+      },
+      "price": 4200,
+      "old_price": null,
+      "stock": "in",
+      "stock_qty": 22,
+      "image": "media/service-elevenlabs-audio.webp",
+      "best_seller": 1,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "cursor-pro-1m",
+      "name": "Cursor Pro (1 Mois - IDE IA Développeur)",
+      "brand": "Cursor",
+      "category": "code-engineering",
+      "use_tags": ["work"],
+      "spec_line": {
+        "fr": "500 requêtes Claude 3.5 rapides/mois · Composer multi-fichiers illimité",
+        "en": "500 fast Claude 3.5 queries/mo · Unlimited multi-file Composer",
+        "ar": "محرر الأكواد الأقوى عالميًا المدمج بالذكاء الاصطناعي لكتابة وتصحيح البرمجيات"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois (30 Jours)",
+          "en": "1 Month (30 Days)",
+          "ar": "شهر واحد (30 يوم)"
+        },
+        "delivery": {
+          "fr": "Activation directe < 15 min",
+          "en": "Direct activation < 15 min",
+          "ar": "تفعيل فوري خلال دقائق"
+        },
+        "accountType": {
+          "fr": "Compte Pro Développeur",
+          "en": "Pro Developer account",
+          "ar": "حساب مطور برو رسمي"
+        },
+        "support": {
+          "fr": "Support technique développeur",
+          "en": "Developer tech support",
+          "ar": "دعم فني خاص بالمطورين"
+        }
+      },
+      "price": 3500,
+      "old_price": 4200,
+      "stock": "in",
+      "stock_qty": 45,
+      "image": "media/service-cursor-pro.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "cursor-pro-1y",
+      "name": "Cursor Pro (1 An - Formule Annuelle Développeur)",
+      "brand": "Cursor",
+      "category": "code-engineering",
+      "use_tags": ["work"],
+      "spec_line": {
+        "fr": "Abonnement Annuel Développeur · Quotas rapides continus sur 12 mois",
+        "en": "Annual Developer Subscription · Continuous fast quotas for 12 months",
+        "ar": "الاشتراك السنوي الأمثل للمبرمجين مع توفير كبير واستقرار في العمل"
+      },
+      "specs": {
+        "duration": {
+          "fr": "12 Mois",
+          "en": "12 Months",
+          "ar": "12 شهرًا"
+        },
+        "delivery": {
+          "fr": "Sous 30 min avec pack de prompts",
+          "en": "In 30 min with prompt pack",
+          "ar": "خلال 30 دقيقة مع حزمة توجيهات برمجية"
+        },
+        "accountType": {
+          "fr": "Personnel dédié",
+          "en": "Dedicated personal",
+          "ar": "شخصي مخصص"
+        },
+        "support": {
+          "fr": "Garantie 365 jours",
+          "en": "365-day warranty",
+          "ar": "ضمان كامل للسنة"
+        }
+      },
+      "price": 36000,
+      "old_price": 44000,
+      "stock": "in",
+      "stock_qty": 15,
+      "image": "media/service-cursor-pro.webp",
+      "best_seller": 0,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "github-copilot-indiv",
+      "name": "GitHub Copilot Individuel (1 An)",
+      "brand": "Microsoft",
+      "category": "code-engineering",
+      "use_tags": ["work"],
+      "spec_line": {
+        "fr": "Autocomplétion intelligente dans VS Code, JetBrains & Copilot Chat",
+        "en": "Smart code completions in VS Code, JetBrains & Copilot Chat",
+        "ar": "مساعد جيت هاب الرسمي للبرمجة مع تكامل كامل في VS Code وبيئات العمل"
+      },
+      "specs": {
+        "duration": {
+          "fr": "12 Mois (1 An)",
+          "en": "12 Months (1 Year)",
+          "ar": "سنة كاملة (12 شهر)"
+        },
+        "delivery": {
+          "fr": "Activation sur votre compte GitHub",
+          "en": "Activation on your GitHub account",
+          "ar": "تفعيل على حسابك في GitHub"
+        },
+        "accountType": {
+          "fr": "GitHub Student/Pro officiel",
+          "en": "Official GitHub Pro/Student",
+          "ar": "رسمي ومفعل بحسابك"
+        },
+        "support": {
+          "fr": "Garantie annuelle",
+          "en": "Annual warranty",
+          "ar": "ضمان سنوي كامل"
+        }
+      },
+      "price": 18000,
+      "old_price": null,
+      "stock": "in",
+      "stock_qty": 20,
+      "image": "media/service-github-copilot.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "canva-pro-team",
+      "name": "Canva Pro Équipe (Accès Annuel 12 Mois)",
+      "brand": "Canva",
+      "category": "productivity-cloud",
+      "use_tags": ["work", "study", "edit"],
+      "spec_line": {
+        "fr": "100+ Millions d'éléments premium · Détourage en 1 clic · Outils IA Magic Studio",
+        "en": "100M+ premium assets · 1-click BG remover · Magic Studio AI tools",
+        "ar": "كانفا برو السنوي الرسمي مع وصول غير محدود لجميع القوالب وأدوات الذكاء الاصطناعي"
+      },
+      "specs": {
+        "duration": {
+          "fr": "12 Mois (1 An)",
+          "en": "12 Months (1 Year)",
+          "ar": "12 شهرًا (سنة كاملة)"
+        },
+        "delivery": {
+          "fr": "Invitation sur votre email Canva",
+          "en": "Invitation to your Canva email",
+          "ar": "دعوة رسمية على إيميلك في كانفا"
+        },
+        "accountType": {
+          "fr": "Espace Équipe Premium",
+          "en": "Premium Team Space",
+          "ar": "مساحة فريق متميزة مع حفظ تصاميمك الخاصة"
+        },
+        "support": {
+          "fr": "Garantie 365 jours",
+          "en": "365-day warranty",
+          "ar": "ضمان 365 يوم"
+        }
+      },
+      "price": 2900,
+      "old_price": 4500,
+      "stock": "in",
+      "stock_qty": 80,
+      "image": "media/service-canva-pro.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "notion-ai-unlimited",
+      "name": "Notion AI Illimité & Workspace Pro",
+      "brand": "Notion",
+      "category": "productivity-cloud",
+      "use_tags": ["work", "study"],
+      "spec_line": {
+        "fr": "Génération de texte illimitée · Synthèse de notes · Q&A sur vos documents",
+        "en": "Unlimited text generation · Note summarization · Q&A on your docs",
+        "ar": "مساعد نوشن للذكاء الاصطناعي لتنظيم المشاريع وصياغة المحتوى وإدارة المعرفة"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois renouvelable",
+          "en": "1 Month renewable",
+          "ar": "شهر واحد قابل للتجديد"
+        },
+        "delivery": {
+          "fr": "Activation sous 15 min",
+          "en": "In 15 min",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Personnel / Équipe",
+          "en": "Personal / Team",
+          "ar": "شخصي / فريق"
+        },
+        "support": {
+          "fr": "Support et templates offerts",
+          "en": "Support & free templates",
+          "ar": "دعم مع قوالب مجانية"
+        }
+      },
+      "price": 2800,
+      "old_price": null,
+      "stock": "in",
+      "stock_qty": 25,
+      "image": "media/service-notion-ai.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "formation-ia-zero-expert",
+      "name": {
+        "fr": "Masterclass Complète : Maîtriser l'IA de Zéro à Expert",
+        "en": "Complete Masterclass: Master AI from Zero to Expert",
+        "ar": "الدورة الشاملة: احتراف الذكاء الاصطناعي من الصفر إلى الاحتراف"
+      },
+      "brand": "WaYmen Academy",
+      "category": "formations-academy",
+      "use_tags": ["study", "work", "home"],
+      "spec_line": {
+        "fr": "18h de formation vidéo HD · Prompt Engineering avancé · Accès à vie + Certificat",
+        "en": "18h HD video training · Advanced Prompt Engineering · Lifetime access + Certificate",
+        "ar": "18 ساعة فيديو تطبيقي · هندسة الأوامر المتقدمة · وصول دائم مدى الحياة مع شهادة"
+      },
+      "specs": {
+        "duration": {
+          "fr": "Accès illimité à vie",
+          "en": "Unlimited lifetime access",
+          "ar": "وصول غير محدود مدى الحياة"
+        },
+        "delivery": {
+          "fr": "Accès plateforme privée sous 10 min",
+          "en": "Private platform in 10 min",
+          "ar": "رابط الدخول لمنصة التدريب خلال 10 دقائق"
+        },
+        "accountType": {
+          "fr": "Espace membre individuel",
+          "en": "Individual member space",
+          "ar": "حساب عضوية شخصي"
+        },
+        "support": {
+          "fr": "Groupe privé d'entraide Discord/Telegram",
+          "en": "Private Discord/Telegram community",
+          "ar": "مجتمع خاص للمتابعة والإجابة على الأسئلة"
+        }
+      },
+      "price": 12000,
+      "old_price": 18000,
+      "stock": "in",
+      "stock_qty": 50,
+      "image": "media/service-formation-ia-zero.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "formation-dev-cursor",
+      "name": {
+        "fr": "Formation Développeur : Coder 10x plus vite avec Cursor & Copilot",
+        "en": "Developer Training: Code 10x Faster with Cursor & Copilot",
+        "ar": "دورة المبرمجين: مضاعفة الإنتاجية 10 أضعاف مع كورسور وكوبايلوت"
+      },
+      "brand": "WaYmen Academy",
+      "category": "formations-academy",
+      "use_tags": ["work"],
+      "spec_line": {
+        "fr": "Ateliers réels Full-Stack · Refactoring IA · Tests automatisés · Workflow pro",
+        "en": "Hands-on Full-Stack labs · AI Refactoring · Automated tests · Pro workflow",
+        "ar": "تطبيقات عملية لبناء مشاريع حقيقية وهيكلة الكود وفحصه بالذكاء الاصطناعي"
+      },
+      "specs": {
+        "duration": {
+          "fr": "10h de contenu + projets sources",
+          "en": "10h content + source projects",
+          "ar": "10 ساعات مع مستودعات الأكواد الجاهزة"
+        },
+        "delivery": {
+          "fr": "Espace de formation en ligne",
+          "en": "Online learning space",
+          "ar": "وصول رقمي فوري"
+        },
+        "accountType": {
+          "fr": "Accès développeur à vie",
+          "en": "Lifetime dev access",
+          "ar": "وصول مطور دائم"
+        },
+        "support": {
+          "fr": "Code reviews et sessions live",
+          "en": "Code reviews and live sessions",
+          "ar": "مراجعة أكواد وجلسات تفاعلية"
+        }
+      },
+      "price": 15000,
+      "old_price": 22000,
+      "stock": "in",
+      "stock_qty": 30,
+      "image": "media/service-formation-dev-ia.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "formation-creatifs-video",
+      "name": {
+        "fr": "Formation Créatifs : Création Visuelle, Vidéo & Spots Publicitaires IA",
+        "en": "Creative Training: Visual Design, Video & Commercial Ads with AI",
+        "ar": "دورة صناع المحتوى: التصميم والمونتاج والإعلانات التجارية بالذكاء الاصطناعي"
+      },
+      "brand": "WaYmen Academy",
+      "category": "formations-academy",
+      "use_tags": ["edit", "work"],
+      "spec_line": {
+        "fr": "Midjourney avancé · Runway Gen-3 · ElevenLabs · Montage & Exports 4K",
+        "en": "Advanced Midjourney · Runway Gen-3 · ElevenLabs · 4K Video Exports",
+        "ar": "صناعة المشاهد الإعلانية، تحريك الصور، توليد التعليق الصوتي والمؤثرات"
+      },
+      "specs": {
+        "duration": {
+          "fr": "12h d'ateliers pratiques",
+          "en": "12h practical labs",
+          "ar": "12 ساعة تطبيق عملي"
+        },
+        "delivery": {
+          "fr": "Immédiat par email",
+          "en": "Immediate via email",
+          "ar": "إرسال البيانات فورًا"
+        },
+        "accountType": {
+          "fr": "Licence apprenant à vie",
+          "en": "Lifetime learner license",
+          "ar": "ترخيص متدرب مدى الحياة"
+        },
+        "support": {
+          "fr": "Banque de prompts offerte",
+          "en": "Free prompt library included",
+          "ar": "مكتبة أوامر جاهزة كهدية"
+        }
+      },
+      "price": 14000,
+      "old_price": 20000,
+      "stock": "in",
+      "stock_qty": 35,
+      "image": "media/service-formation-creatif-ia.webp",
+      "best_seller": 0,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "coaching-vip-entreprise",
+      "name": {
+        "fr": "Coaching Privé 1-to-1 : Intégration IA pour Dirigeants & Équipes",
+        "en": "Private 1-on-1 Coaching: AI Integration for Leaders & Teams",
+        "ar": "تدريب استشاري خاص 1-على-1: دمج الذكاء الاصطناعي للشركات والمدراء"
+      },
+      "brand": "WaYmen Academy",
+      "category": "formations-academy",
+      "use_tags": ["work"],
+      "spec_line": {
+        "fr": "4 Sessions de 1h30 en direct · Audit de vos processus · Automatisation sur-mesure",
+        "en": "4 Live 1h30 sessions · Workflow audit · Custom automation",
+        "ar": "4 جلسات خاصة مباشرة مدتها 6 ساعات · تحليل عملك وتطبيق حلول أتمتة مخصصة"
+      },
+      "specs": {
+        "duration": {
+          "fr": "Programme 1 Mois (4 Sessions)",
+          "en": "1 Month program (4 sessions)",
+          "ar": "برنامج شهر واحد (4 جلسات زووم/ميت)"
+        },
+        "delivery": {
+          "fr": "Prise de rendez-vous sous 24h",
+          "en": "Appointment within 24h",
+          "ar": "تحديد المواعيد خلال 24 ساعة"
+        },
+        "accountType": {
+          "fr": "Accompagnement VIP dédié",
+          "en": "Dedicated VIP coaching",
+          "ar": "مرافقة شخصية واستشارية"
+        },
+        "support": {
+          "fr": "Ligne WhatsApp directe avec l'expert",
+          "en": "Direct WhatsApp hotline with expert",
+          "ar": "تواصل مباشر مع الخبير طوال الشهر"
+        }
+      },
+      "price": 35000,
+      "old_price": null,
+      "stock": "low",
+      "stock_qty": 5,
+      "image": "media/service-coaching-vip-ia.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "pack-ultimate-creator",
+      "name": "Pack Ultimate AI Creator (ChatGPT Plus + Midjourney + ElevenLabs)",
+      "brand": "WaYmen VIP",
+      "category": "packs-bundles",
+      "use_tags": ["edit", "work"],
+      "spec_line": {
+        "fr": "Trio Créatif Absolu · Rédaction, Image & Voix · Économisez 1 400 DA",
+        "en": "Ultimate Creative Trio · Text, Image & Voice · Save 1 400 DA",
+        "ar": "الباقة الإبداعية الثلاثية الشاملة لكتابة وتصميم وهندسة المحتوى الصوتي"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois sur les 3 outils",
+          "en": "1 Month on all 3 tools",
+          "ar": "شهر كامل على المنصات الثلاث"
+        },
+        "delivery": {
+          "fr": "Activation globale sous 20 min",
+          "en": "Global activation in 20 min",
+          "ar": "تفعيل شامل في 20 دقيقة"
+        },
+        "accountType": {
+          "fr": "Accès officiels garantis",
+          "en": "Guaranteed official access",
+          "ar": "اشتراكات رسمية مضمونة"
+        },
+        "support": {
+          "fr": "Support VIP unifié",
+          "en": "Unified VIP support",
+          "ar": "دعم فني موحد لجميع الأدوات"
+        }
+      },
+      "price": 11500,
+      "old_price": 12900,
+      "stock": "in",
+      "stock_qty": 20,
+      "image": "media/service-pack-ultimate-creator.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "pack-fullstack-engineer",
+      "name": "Pack Full-Stack AI Engineer (Claude Pro + Cursor Pro + Copilot)",
+      "brand": "WaYmen VIP",
+      "category": "packs-bundles",
+      "use_tags": ["work"],
+      "spec_line": {
+        "fr": "La Boîte à Outils Développeur Ultime · Raisonnement, IDE & Complétion",
+        "en": "Ultimate Developer Toolset · Reasoning, IDE & Completions",
+        "ar": "باقة مهندسي البرمجيات المتكاملة: كلود برو + كورسور برو + جيت هاب كوبايلوت"
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois combiné",
+          "en": "1 Month combined",
+          "ar": "شهر مجمع للمطورين"
+        },
+        "delivery": {
+          "fr": "Activation express sous 15 min",
+          "en": "Express activation in 15 min",
+          "ar": "تفعيل سريع في 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Développeur Pro certifié",
+          "en": "Certified Dev Pro",
+          "ar": "تراخيص مطور احترافية"
+        },
+        "support": {
+          "fr": "Garantie continue 30j",
+          "en": "Continuous 30d warranty",
+          "ar": "ضمان مستمر لكافة الخدمات"
+        }
+      },
+      "price": 8900,
+      "old_price": 10500,
+      "stock": "in",
+      "stock_qty": 18,
+      "image": "media/service-pack-fullstack-dev.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "netflix-premium-4k",
+      "name": {
+        "fr": "Abonnement Netflix Premium 4K UHD",
+        "en": "Netflix Premium 4K UHD Subscription",
+        "ar": "اشتراك نتفليكس بريميوم 4K UHD"
+      },
+      "brand": "Netflix",
+      "category": "streaming-medias",
+      "use_tags": ["home", "work"],
+      "spec_line": {
+        "fr": "Accès complet 4K HDR avec son spatial, 4 écrans simultanés, profil privé avec code PIN. Activation sous 15 minutes.",
+        "en": "Full 4K HDR access with spatial audio, 4 simultaneous screens, private profile with PIN. Activated within 15 minutes.",
+        "ar": "وصول كامل بدقة 4K HDR مع صوت مكاني، 4 شاشات متزامنة، ملف شخصي برقم سري خاص. تفعيل خلال 15 دقيقة."
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois renouvelable",
+          "en": "1 Month renewable",
+          "ar": "شهر قابل للتجديد"
+        },
+        "delivery": {
+          "fr": "Sous 15 minutes",
+          "en": "Within 15 minutes",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Profil Privé PIN 4K UHD",
+          "en": "Private PIN Profile 4K",
+          "ar": "ملف خاص برمز سري 4K"
+        },
+        "support": {
+          "fr": "Garantie 30 jours",
+          "en": "30-day warranty",
+          "ar": "ضمان 30 يوماً"
+        }
+      },
+      "price": 1400,
+      "old_price": 1700,
+      "stock": "in",
+      "stock_qty": 30,
+      "image": "media/service-netflix-premium.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "spotify-premium-1m",
+      "name": {
+        "fr": "Spotify Premium Individuel",
+        "en": "Spotify Premium Individual",
+        "ar": "سبوتيفاي بريميوم فردي"
+      },
+      "brand": "Spotify",
+      "category": "streaming-medias",
+      "use_tags": ["work", "study", "home"],
+      "spec_line": {
+        "fr": "Musique illimitée sans publicité, écoute hors ligne en très haute qualité sonore, zapping illimité sur tous vos appareils.",
+        "en": "Unlimited ad-free music, offline listening in high quality, unlimited skips across all devices.",
+        "ar": "موسيقى غير محدودة بدون إعلانات، استماع بدون إنترنت بجودة عالية جداً، وتخطي غير محدود على جميع أجهزتك."
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Sous 15 minutes",
+          "en": "Within 15 minutes",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Activation sur votre compte personnel",
+          "en": "Personal account upgrade",
+          "ar": "تفعيل على حسابك الشخصي"
+        },
+        "support": {
+          "fr": "Garantie 30 jours",
+          "en": "30-day warranty",
+          "ar": "ضمان 30 يوماً"
+        }
+      },
+      "price": 950,
+      "old_price": 1200,
+      "stock": "in",
+      "stock_qty": 25,
+      "image": "media/service-spotify-premium.webp",
+      "best_seller": 1,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "youtube-premium-1m",
+      "name": {
+        "fr": "YouTube Premium + YouTube Music",
+        "en": "YouTube Premium + YouTube Music",
+        "ar": "يوتيوب بريميوم + يوتيوب ميوزك"
+      },
+      "brand": "YouTube",
+      "category": "streaming-medias",
+      "use_tags": ["home", "work", "study"],
+      "spec_line": {
+        "fr": "Zéro publicité sur YouTube, lecture en arrière-plan écran éteint, téléchargements hors ligne et accès complet YouTube Music.",
+        "en": "Zero ads on YouTube, background play with screen off, offline downloads and full YouTube Music access.",
+        "ar": "بدون إعلانات على يوتيوب، تشغيل في الخلفية مع قفل الشاشة، تنزيلات للمشاهدة بدون إنترنت ووصول كامل لتطبيق يوتيوب ميوزك."
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Sous 15 minutes",
+          "en": "Within 15 minutes",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Invitation Famille Officielle",
+          "en": "Official Family Invite",
+          "ar": "دعوة عائلية رسمية"
+        },
+        "support": {
+          "fr": "Garantie 30 jours",
+          "en": "30-day warranty",
+          "ar": "ضمان 30 يوماً"
+        }
+      },
+      "price": 1200,
+      "old_price": 1500,
+      "stock": "in",
+      "stock_qty": 40,
+      "image": "media/service-youtube-premium.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "disney-plus-1m",
+      "name": {
+        "fr": "Disney+ Standard & Premium",
+        "en": "Disney+ Standard & Premium",
+        "ar": "ديزني بلس ستاندرد وبريميوم"
+      },
+      "brand": "Disney+",
+      "category": "streaming-medias",
+      "use_tags": ["home"],
+      "spec_line": {
+        "fr": "Tous les univers Disney, Pixar, Marvel, Star Wars, National Geographic et Star en streaming illimité haute définition.",
+        "en": "All Disney, Pixar, Marvel, Star Wars, National Geographic and Star worlds in unlimited high-definition streaming.",
+        "ar": "عوالم ديزني، بيكسار، مارفل، حرب النجوم، ناشيونال جيوغرافيك وستار في بث غير محدود بدقة عالية."
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Sous 15 minutes",
+          "en": "Within 15 minutes",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Profil Dédié avec PIN",
+          "en": "Dedicated PIN Profile",
+          "ar": "ملف مخصص برمز PIN"
+        },
+        "support": {
+          "fr": "Garantie 30 jours",
+          "en": "30-day warranty",
+          "ar": "ضمان 30 يوماً"
+        }
+      },
+      "price": 1500,
+      "old_price": 1800,
+      "stock": "in",
+      "stock_qty": 20,
+      "image": "media/service-disney-plus.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "ps-plus-essential-1m",
+      "name": {
+        "fr": "PlayStation Plus Essential / Extra",
+        "en": "PlayStation Plus Essential / Extra",
+        "ar": "بلايستيشن بلس إسنشل / إكسترا"
+      },
+      "brand": "Sony PlayStation",
+      "category": "gaming-consoles",
+      "use_tags": ["gaming", "home"],
+      "spec_line": {
+        "fr": "Multijoueur en ligne PS4/PS5, jeux mensuels offerts, réductions exclusives PlayStation Store et catalogue de jeux Extra.",
+        "en": "Online multiplayer on PS4/PS5, free monthly games, exclusive PlayStation Store discounts and Extra game catalog.",
+        "ar": "ألعاب جماعية أونلاين على PS4/PS5، ألعاب شهرية مجانية، خصومات حصرية على متجر بلايستيشن وكتالوج ألعاب إكسترا."
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois / 12 Mois",
+          "en": "1 Month / 12 Months",
+          "ar": "شهر / 12 شهراً"
+        },
+        "delivery": {
+          "fr": "Sous 15 minutes",
+          "en": "Within 15 minutes",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Compte PSN Principal",
+          "en": "Primary PSN Account",
+          "ar": "حساب بلايستيشن رئيسي"
+        },
+        "support": {
+          "fr": "Garantie complète",
+          "en": "Full warranty",
+          "ar": "ضمان كامل"
+        }
+      },
+      "price": 2500,
+      "old_price": 3200,
+      "stock": "in",
+      "stock_qty": 15,
+      "image": "media/service-playstation-plus.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "xbox-game-pass-ultimate",
+      "name": {
+        "fr": "Xbox Game Pass Ultimate (PC & Console)",
+        "en": "Xbox Game Pass Ultimate (PC & Console)",
+        "ar": "إكس بوكس غيم باس ألتيميت (كمبيوتر ومنصات)"
+      },
+      "brand": "Xbox",
+      "category": "gaming-consoles",
+      "use_tags": ["gaming", "work"],
+      "spec_line": {
+        "fr": "Accès à plus de 400 jeux de premier plan sur PC, Xbox et Cloud Gaming, incluant EA Play et les sorties Day One.",
+        "en": "Access to 400+ premier games on PC, Xbox & Cloud Gaming, including EA Play and Day One releases.",
+        "ar": "وصول إلى أكثر من 400 لعبة رائدة على الكمبيوتر وإكس بوكس وسحابة اللعب، بما في ذلك EA Play وإصدارات اليوم الأول."
+      },
+      "specs": {
+        "duration": {
+          "fr": "1 Mois",
+          "en": "1 Month",
+          "ar": "شهر واحد"
+        },
+        "delivery": {
+          "fr": "Sous 15 minutes",
+          "en": "Within 15 minutes",
+          "ar": "خلال 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Code d'activation officiel",
+          "en": "Official activation code",
+          "ar": "كود تفعيل رسمي"
+        },
+        "support": {
+          "fr": "Garantie 30 jours",
+          "en": "30-day warranty",
+          "ar": "ضمان 30 يوماً"
+        }
+      },
+      "price": 2900,
+      "old_price": 3500,
+      "stock": "in",
+      "stock_qty": 22,
+      "image": "media/service-xbox-game-pass.webp",
+      "best_seller": 1,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "steam-wallet-20usd",
+      "name": {
+        "fr": "Carte Steam Wallet 20$ USD (Recharge)",
+        "en": "Steam Wallet Card $20 USD (Top-up)",
+        "ar": "بطاقة ستيم 20 دولار (شحن المحفظة)"
+      },
+      "brand": "Steam",
+      "category": "gaming-consoles",
+      "use_tags": ["gaming"],
+      "spec_line": {
+        "fr": "Code numérique officiel pour créditer instantanément votre compte Steam. Valable pour tous les jeux, DLC et contenus du store.",
+        "en": "Official digital code to top up your Steam wallet instantly. Valid for all games, DLCs and community market items.",
+        "ar": "كود رقمي رسمي لشحن محفظة ستيم الخاصة بك فوراً. صالح لجميع الألعاب والإضافات ومحتويات المتجر."
+      },
+      "specs": {
+        "duration": {
+          "fr": "Crédit permanent sans expiration",
+          "en": "Permanent balance, no expiry",
+          "ar": "رصيد دائم بدون انتهاء"
+        },
+        "delivery": {
+          "fr": "Instantané sous 5 minutes",
+          "en": "Instant within 5 minutes",
+          "ar": "فوري خلال 5 دقائق"
+        },
+        "accountType": {
+          "fr": "Code numérique Global / US",
+          "en": "Digital Global / US code",
+          "ar": "كود رقمي عالمي / أمريكي"
+        },
+        "support": {
+          "fr": "Garantie activation 100%",
+          "en": "100% activation guarantee",
+          "ar": "ضمان تفعيل 100%"
+        }
+      },
+      "price": 4700,
+      "old_price": 5200,
+      "stock": "in",
+      "stock_qty": 50,
+      "image": "media/service-steam-wallet.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "apple-gift-card-15",
+      "name": {
+        "fr": "Apple Gift Card 15$ (App Store & iTunes)",
+        "en": "Apple Gift Card $15 (App Store & iTunes)",
+        "ar": "بطاقة آبل 15 دولار (آب ستور وآيتونز)"
+      },
+      "brand": "Apple",
+      "category": "cartes-cadeaux",
+      "use_tags": ["work", "study", "home"],
+      "spec_line": {
+        "fr": "Rechargez votre solde Apple pour vos applications, abonnements iCloud+, Apple Arcade, livres et contenus multimédias.",
+        "en": "Top up your Apple account for apps, iCloud+ storage, Apple Arcade, books and media purchases.",
+        "ar": "اشحن رصيد حسابك على آبل لتطبيقاتك، اشتراكات iCloud+، آبل آركيد والمحتويات الرقمية."
+      },
+      "specs": {
+        "duration": {
+          "fr": "Sans expiration",
+          "en": "No expiry",
+          "ar": "بدون تاريخ انتهاء"
+        },
+        "delivery": {
+          "fr": "Sous 5 à 15 minutes",
+          "en": "Within 5-15 minutes",
+          "ar": "خلال 5 إلى 15 دقيقة"
+        },
+        "accountType": {
+          "fr": "Code officiel US Store",
+          "en": "Official US Store code",
+          "ar": "كود رسمي للمتجر الأمريكي"
+        },
+        "support": {
+          "fr": "Assistance activation",
+          "en": "Activation assistance",
+          "ar": "دعم التفعيل الفوري"
+        }
+      },
+      "price": 3600,
+      "old_price": 4000,
+      "stock": "in",
+      "stock_qty": 35,
+      "image": "media/service-card-apple.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "google-play-card-25",
+      "name": {
+        "fr": "Google Play Gift Card 25$ USD",
+        "en": "Google Play Gift Card $25 USD",
+        "ar": "بطاقة غوغل بلاي 25 دولار"
+      },
+      "brand": "Google Play",
+      "category": "cartes-cadeaux",
+      "use_tags": ["gaming", "home"],
+      "spec_line": {
+        "fr": "Code de recharge Google Play Store US pour acheter des jeux, diamants Free Fire, pièces TikTok et applications Android.",
+        "en": "Google Play Store US top-up code to buy games, in-game currencies and Android premium apps.",
+        "ar": "كود شحن متجر غوغل بلاي الأمريكي لشراء الألعاب والعملات الرقمية للألعاب وتطبيقات أندرويد."
+      },
+      "specs": {
+        "duration": {
+          "fr": "Solde permanent",
+          "en": "Permanent balance",
+          "ar": "رصيد دائم"
+        },
+        "delivery": {
+          "fr": "Sous 10 minutes",
+          "en": "Within 10 minutes",
+          "ar": "خلال 10 دقائق"
+        },
+        "accountType": {
+          "fr": "Code US Play Store",
+          "en": "US Play Store Code",
+          "ar": "كود متجر غوغل بلاي أمريكي"
+        },
+        "support": {
+          "fr": "Garantie 100%",
+          "en": "100% guarantee",
+          "ar": "ضمان 100%"
+        }
+      },
+      "price": 5800,
+      "old_price": 6300,
+      "stock": "in",
+      "stock_qty": 28,
+      "image": "media/service-card-googleplay.webp",
+      "best_seller": 1,
+      "sale": 1,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
+    },
+    {
+      "id": "razer-gold-20",
+      "name": {
+        "fr": "Razer Gold PIN 20$ USD",
+        "en": "Razer Gold PIN $20 USD",
+        "ar": "بطاقة رايزر غولد 20 دولار"
+      },
+      "brand": "Razer",
+      "category": "cartes-cadeaux",
+      "use_tags": ["gaming"],
+      "spec_line": {
+        "fr": "Crédits virtuels universels pour plus de 42 000 jeux et contenus numériques mondiaux (PUBG Mobile, Roblox, Genshin Impact).",
+        "en": "Universal virtual credits for over 42,000 games and entertainment titles worldwide.",
+        "ar": "رصيد افتراضي عالمي لأكثر من 42,000 لعبة ومحتوى ترفيهي رقمي حول العالم."
+      },
+      "specs": {
+        "duration": {
+          "fr": "Crédits sans expiration",
+          "en": "No expiry credits",
+          "ar": "رصيد بدون انتهاء"
+        },
+        "delivery": {
+          "fr": "Sous 5 minutes",
+          "en": "Within 5 minutes",
+          "ar": "خلال 5 دقائق"
+        },
+        "accountType": {
+          "fr": "PIN Global Razer",
+          "en": "Global Razer PIN",
+          "ar": "كود رايزر عالمي"
+        },
+        "support": {
+          "fr": "Garantie activation",
+          "en": "Activation guarantee",
+          "ar": "ضمان التفعيل الفوري"
+        }
+      },
+      "price": 4700,
+      "old_price": 5100,
+      "stock": "in",
+      "stock_qty": 40,
+      "image": "media/service-card-razer-gold.webp",
+      "best_seller": 0,
+      "sale": 0,
+      "custom_build": 0,
+      "created_at": "2026-11-23T10:51:07.063Z",
+      "updated_at": "2026-11-23T10:51:07.063Z"
     }
   ],
   "blogPosts": [
     {
       "id": "blog_100",
-      "slug": "guide-achat-laptop-2026",
+      "slug": "chatgpt-plus-vs-claude-pro-2026",
       "title": {
-        "fr": "Guide d'achat : bien choisir son ordinateur portable en 2026",
-        "en": "Buying guide: how to choose the right laptop in 2026",
-        "ar": "دليل الشراء: كيف تختار حاسوبك المحمول في 2026"
+        "fr": "Quel assistant IA choisir en 2026 ? Comparatif ChatGPT Plus vs Claude 3.5 Sonnet",
+        "en": "Which AI assistant to choose in 2026? ChatGPT Plus vs Claude 3.5 Sonnet",
+        "ar": "أي مساعد ذكاء اصطناعي تختار في 2026؟ مقارنة ChatGPT Plus و Claude 3.5 Sonnet"
       },
       "excerpt": {
-        "fr": "CPU, GPU, RAM, écran — les critères qui comptent vraiment selon votre usage.",
-        "en": "CPU, GPU, RAM, screen — the criteria that truly matter for your use case.",
-        "ar": "CPU، GPU، RAM، الشاشة — المعايير التي تهم فعلاً حسب استخدامك."
+        "fr": "Capacités de raisonnement, artifacts de code, analyse de documents — quel modèle correspond à vos besoins réels ?",
+        "en": "Reasoning capabilities, code artifacts, document analysis — which model fits your actual needs?",
+        "ar": "قدرات الاستنتاج، نوافذ الأكواد، تحليل المستندات — أي نموذج يلبي احتياجاتك الفعلية؟"
       },
       "content": {
-        "fr": "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez KA Tech, tous nos laptops sont sous garantie officielle.",
-        "en": "# Choosing the right laptop in 2026\n\nIn 2026, the laptop market is richer than ever. Here are the 5 criteria you should not overlook:\n\n1. **The processor**: go for an Intel Core Ultra or an AMD Ryzen 7000+.\n2. **RAM**: 16 GB minimum, 32 GB for creative work.\n3. **The SSD**: NVMe Gen4, 512 GB minimum.\n4. **The screen**: IPS or OLED panel, 100% sRGB for accurate colour.\n5. **The warranty**: at KA Tech, all our laptops come with an official warranty.",
-        "ar": "# كيف تختار حاسوبك المحمول في 2026\n\nفي 2026، سوق الحواسيب المحمولة أثرى من أي وقت مضى. إليك 5 معايير لا ينبغي إغفالها:\n\n1. **المعالج**: اختر Intel Core Ultra أو AMD Ryzen 7000+.\n2. **الذاكرة RAM**: 16 غيغابايت كحد أدنى، و32 غيغابايت للإبداع والمونتاج.\n3. **القرص SSD**: NVMe Gen4، 512 غيغابايت كحد أدنى.\n4. **الشاشة**: لوحة IPS أو OLED، 100% sRGB لدقة الألوان.\n5. **الضمان**: في KA Tech، جميع حواسيبنا المحمولة تأتي مع ضمان رسمي."
+        "fr": "# ChatGPT Plus vs Claude 3.5 Sonnet en 2026\n\nLe choix entre les deux géants de l'IA dépend de vos cas d'usage quotidiens :\n\n1. **ChatGPT Plus (GPT-4o)** : Idéal pour la polyvalence, la recherche web en direct, la génération visuelle DALL·E 3 et le mode vocal avancé.\n2. **Claude 3.5 Sonnet (Anthropic)** : Le champion incontesté de l'écriture fluide, du code et de l'analyse logique approfondie avec les Artifacts.\n3. **Notre conseil WaYmen** : Les professionnels cumulent souvent les deux abonnements ou optent pour notre Pack Ultimate pour maximiser leur productivité.",
+        "en": "# ChatGPT Plus vs Claude 3.5 Sonnet in 2026\n\nThe choice between the two AI leaders depends on your daily workflows:\n\n1. **ChatGPT Plus (GPT-4o)**: Ideal for versatility, live web search, DALL·E 3 visual generation and advanced voice mode.\n2. **Claude 3.5 Sonnet (Anthropic)**: The undisputed champion of nuanced writing, code generation and deep reasoning with Artifacts.\n3. **WaYmen Tip**: Power users often combine both tools or choose our Ultimate Pack for peak productivity.",
+        "ar": "# مقارنة ChatGPT Plus و Claude 3.5 Sonnet في 2026\n\nيعتمد الاختيار بين عملاقي الذكاء الاصطناعي على طبيعة استخدامك اليومي:\n\n1. **ChatGPT Plus (GPT-4o)**: مثالي للتنوع، والبحث المباشر على الويب، وتوليد الصور عبر DALL·E 3، والتفاعل الصوتي المتقدم.\n2. **Claude 3.5 Sonnet**: الرائد المطلق في كتابة النصوص الاحترافية والبرمجة والتحليل الدقيق عبر ميزة Artifacts.\n3. **نصيحة وايمان**: يفضل المحترفون الجمع بين النموذجين أو اختيار الباقة الشاملة لمضاعفة إنتاجيتهم."
       },
-      "cover": "media/p-rog.webp",
-      "author": "Équipe KA Tech",
-      "tags": ["laptop", "guide"],
+      "cover": "media/service-chatgpt-plus.webp",
+      "author": "Équipe WaYmen AI Studio",
+      "tags": ["ia", "comparatif", "chatgpt", "claude"],
       "status": "published",
-      "published_at": "2026-10-09T20:57:50.385Z",
-      "created_at": "2026-10-09T20:57:50.385Z",
-      "updated_at": "2026-10-09T20:57:50.385Z"
+      "published_at": "2026-10-24T10:51:07.106Z",
+      "created_at": "2026-10-24T10:51:07.106Z",
+      "updated_at": "2026-10-24T10:51:07.106Z"
     },
     {
       "id": "blog_101",
-      "slug": "gaming-pc-vs-console",
+      "slug": "developper-avec-ia-cursor-copilot",
       "title": {
-        "fr": "PC gaming vs console : le match 2026",
-        "en": "Gaming PC vs console: the 2026 showdown",
-        "ar": "PC للألعاب مقابل الكونسول: مقارنة 2026"
+        "fr": "Développer 10x plus vite : Maîtriser Cursor Pro & GitHub Copilot",
+        "en": "Develop 10x faster: Mastering Cursor Pro & GitHub Copilot",
+        "ar": "البرمجة بسرعة 10 أضعاف: احتراف Cursor Pro و GitHub Copilot"
       },
       "excerpt": {
-        "fr": "Prix, catalogue, mods, longévité — on compare les deux univers.",
-        "en": "Price, game library, mods, longevity — we compare both worlds.",
-        "ar": "السعر، مكتبة الألعاب، الإضافات، العمر الافتراضي — نقارن بين العالمين."
+        "fr": "Autocomplétion intelligente, refactorisation complète et intégration continue avec les meilleurs IDE IA.",
+        "en": "Smart code completion, full refactoring and seamless integration with top AI code editors.",
+        "ar": "إكمال الكود الذكي، إعادة الهيكلة الشاملة والتكامل مع أفضل بيئات التطوير بالذكاء الاصطناعي."
       },
       "content": {
-        "fr": "Le débat PC vs console revient chaque génération. En 2026, le PC prend l'avantage sur la modularité, le catalogue Steam et la longévité — mais la console reste imbattable sur le plug-and-play.",
-        "en": "The PC vs console debate comes back every generation. In 2026, the PC has the edge on modularity, the Steam library and longevity — but the console remains unbeatable for plug-and-play simplicity.",
-        "ar": "نقاش PC مقابل الكونسول يعود مع كل جيل. في 2026، يتفوق PC على صعيد المرونة ومكتبة Steam والعمر الافتراضي — لكن الكونسول يبقى لا يُضاهى في سهولة التشغيل الفوري."
+        "fr": "# Révolutionner son workflow de dev avec Cursor & Copilot\n\nL'intelligence artificielle transforme le développement logiciel en pratique assistée d'élite :\n\n1. **Cursor Pro** : Un éditeur complet intégrant Claude 3.5 Sonnet directement dans votre codebase pour modifier plusieurs fichiers simultanément.\n2. **GitHub Copilot** : L'extension native indispensable pour autocompléter vos fonctions sans friction.\n3. **L'activation WaYmen** : Nous assurons la mise en service immédiate de votre licence professionnelle pour coder sans limites.",
+        "en": "# Revolutionize your dev workflow with Cursor & Copilot\n\nArtificial intelligence elevates modern software development to elite levels:\n\n1. **Cursor Pro**: A dedicated editor integrating Claude 3.5 Sonnet across your entire codebase for multi-file edits.\n2. **GitHub Copilot**: The essential native autocomplete extension for fast flow state.\n3. **WaYmen Activation**: We provide instant delivery for your pro licenses to code without limits.",
+        "ar": "# إحداث ثورة في مسار البرمجة مع Cursor و Copilot\n\nيعمل الذكاء الاصطناعي على الارتقاء بتطوير البرمجيات إلى أعلى مستويات السرعة والإنتاجية:\n\n1. **Cursor Pro**: محرر أكواد متطور يدمج نموذج Claude 3.5 مباشرة مع مشروعك لتعديل عدة ملفات في آن واحد.\n2. **GitHub Copilot**: المساعد البرمجي الفوري لكتابة وتوقع الأكواد بسلاسة فائقة.\n3. **تفعيل وايمان**: نوفر لك التفعيل الفوري للاشتراك لتبدأ عملك دون قيود."
       },
-      "cover": "media/p-pavilion.webp",
-      "author": "Yacine B.",
-      "tags": ["gaming", "comparatif"],
+      "cover": "media/service-chatgpt-plus.webp",
+      "author": "Équipe WaYmen AI Studio",
+      "tags": ["developpement", "cursor", "copilot", "code"],
       "status": "published",
-      "published_at": "2026-10-13T20:57:50.385Z",
-      "created_at": "2026-10-13T20:57:50.385Z",
-      "updated_at": "2026-10-13T20:57:50.385Z"
+      "published_at": "2026-10-30T10:51:07.106Z",
+      "created_at": "2026-10-30T10:51:07.106Z",
+      "updated_at": "2026-10-30T10:51:07.106Z"
     },
     {
       "id": "blog_102",
-      "slug": "smartphone-photo-2026",
+      "slug": "creation-visuelle-midjourney-runway",
       "title": {
-        "fr": "Top 3 smartphones photo début 2026",
-        "en": "Top 3 camera smartphones of early 2026",
-        "ar": "أفضل 3 هواتف للتصوير في مطلع 2026"
+        "fr": "Création graphique & vidéo IA : Guide Midjourney V6.1 & Runway Gen-3",
+        "en": "AI visual & video creation: Midjourney V6.1 & Runway Gen-3 guide",
+        "ar": "صناعة المحتوى المرئي والفيديو بالذكاء الاصطناعي: دليل Midjourney و Runway"
       },
       "excerpt": {
-        "fr": "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro : notre verdict.",
-        "en": "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro: our verdict.",
-        "ar": "iPhone 16 Pro Max، Galaxy S25 Ultra، Xiaomi 14T Pro: حكمنا النهائي."
+        "fr": "Des visuels photoréalistes aux animations cinématiques professionnelles pour designers et créateurs.",
+        "en": "From photorealistic visuals to cinematic video animations for designers and video creators.",
+        "ar": "من الصور الواقعية الفائقة إلى مقاطع الفيديو السينمائية للمصممين وصناع المحتوى."
       },
       "content": {
-        "fr": "Trois flagships, trois philosophies photo. L'iPhone mise sur la constance vidéo, le Samsung sur la polyvalence zoom, le Xiaomi sur la signature Leica. À vous de choisir.",
-        "en": "Three flagships, three photography philosophies. The iPhone bets on video consistency, Samsung on zoom versatility, and Xiaomi on the Leica signature. The choice is yours.",
-        "ar": "ثلاثة هواتف رائدة، ثلاث فلسفات تصوير. iPhone يراهن على ثبات الفيديو، Samsung على تعدد استخدامات الزووم، Xiaomi على توقيع Leica. لك أن تختار."
+        "fr": "# Le studio créatif propulsé par l'IA\n\nPour les designers, vidéastes et agences de communication, l'IA ouvre des perspectives illimitées :\n\n1. **Midjourney V6.1** : Le standard mondial pour la direction artistique, les maquettes et le rendu hyper-réaliste.\n2. **Runway Gen-3 Alpha** : La référence cinématographique pour générer des vidéos 4K dynamiques à partir de prompts textuels ou d'images fixes.\n3. **Support WaYmen** : Accès rapide aux licences Fast GPU et tutoriels dédiés dans notre Academy.",
+        "en": "# The creative studio powered by AI\n\nFor designers, filmmakers and marketing teams, generative tools offer endless creative leverage:\n\n1. **Midjourney V6.1**: The world standard for art direction, concept art and photorealistic renders.\n2. **Runway Gen-3 Alpha**: The cinematic benchmark for 4K video clips from prompts or still imagery.\n3. **WaYmen Support**: Fast GPU allocation and dedicated tutorials within our Academy.",
+        "ar": "# استوديو الإبداع المدعوم بالذكاء الاصطناعي\n\nللمصممين والمخرجين وفرق التسويق، تفتح هذه الأدوات آفاقاً إبداعية لا حدود لها:\n\n1. **Midjourney V6.1**: المعيار العالمي للإخراج الفني، التصاميم الإعلانية والصور الواقعية.\n2. **Runway Gen-3 Alpha**: المنصة الرائدة لتوليد لقطات سينمائية عالية الدقة من النصوص أو الصور.\n3. **دعم وايمان**: تفعيل اشتراكات ساعات الحوسبة السريعة Fast GPU وإرشادات تطبيقية بالأكاديمية."
       },
-      "cover": "media/p-thinkpad.webp",
-      "author": "Équipe KA Tech",
-      "tags": ["smartphone", "photo", "top"],
+      "cover": "media/service-chatgpt-plus.webp",
+      "author": "Équipe WaYmen AI Studio",
+      "tags": ["design", "midjourney", "runway", "video"],
       "status": "published",
-      "published_at": "2026-10-17T20:57:50.385Z",
-      "created_at": "2026-10-17T20:57:50.385Z",
-      "updated_at": "2026-10-17T20:57:50.385Z"
+      "published_at": "2026-11-05T10:51:07.106Z",
+      "created_at": "2026-11-05T10:51:07.106Z",
+      "updated_at": "2026-11-05T10:51:07.106Z"
     },
     {
       "id": "blog_103",
-      "slug": "monter-son-pc-configurateur",
+      "slug": "clonage-vocal-elevenlabs-secrets",
       "title": {
-        "fr": "Monter son PC : nos conseils du configurateur KA Tech",
-        "en": "Building your PC: tips from the KA Tech configurator",
-        "ar": "تجميع حاسوبك: نصائح من مُجمِّع KA Tech"
+        "fr": "Clonage vocal et voix ultra-réalistes : Les secrets d'ElevenLabs",
+        "en": "Voice cloning and hyper-realistic audio: The secrets of ElevenLabs",
+        "ar": "استنساخ الصوت والتعليق الصوتي الواقعي: أسرار ElevenLabs للمبدعين"
       },
       "excerpt": {
-        "fr": "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.",
-        "en": "Why go for a custom-built PC and how to avoid the classic pitfalls.",
-        "ar": "لماذا تختار حاسوباً مخصصاً وكيف تتجنب الأخطاء الشائعة."
+        "fr": "Comment doubler, narrer et créer des voix personnalisées avec une expressivité bluffante.",
+        "en": "How to voiceover, narrate and build custom voices with remarkable human emotion.",
+        "ar": "كيفية دبلجة وسرد وإنشاء أصوات احترافية مخصصة بنبرة واقعية ومشاعر بشرية متطابقة."
       },
       "content": {
-        "fr": "Notre configurateur PC vous guide étape par étape. Avant de valider votre config, vérifiez : la compatibilité socket CPU/carte-mère, le TDP de l'alim (+30 % de marge), et la ventilation du boîtier.",
-        "en": "Our PC configurator walks you through every step. Before confirming your build, check: CPU/motherboard socket compatibility, the PSU TDP (+30% headroom), and the case airflow.",
-        "ar": "يرشدك مُجمِّع PC الخاص بنا خطوة بخطوة. قبل تأكيد تجميعتك، تحقق من: توافق socket المعالج مع اللوحة الأم، TDP مزود الطاقة (+30% هامش)، وتهوية الصندوق."
+        "fr": "# Voix d'élite et doublage multilingue avec ElevenLabs\n\nLa synthèse vocale a franchi un cap décisif grâce aux réseaux neuronaux d'ElevenLabs :\n\n1. **Voice Cloning** : Clonez votre propre voix ou créez des voix d'acteurs uniques pour vos podcasts, publicités et cours en ligne.\n2. **Support Multilingue** : Traduisez et doublez vos contenus en plus de 29 langues avec une fidélité émotionnelle totale.\n3. **Offre WaYmen** : Licences Creator avec quota étendu activées en 15 minutes.",
+        "en": "# Elite speech synthesis and dubbing with ElevenLabs\n\nNeural voice technology reached a whole new standard with ElevenLabs:\n\n1. **Voice Cloning**: Clone your own voice or design unique voice talents for podcasts, audiobooks and commercials.\n2. **Multilingual Dubbing**: Translate and dub voiceover into 29+ languages with complete emotional preservation.\n3. **WaYmen Offer**: Creator plan licenses with high credit quotas delivered in 15 minutes.",
+        "ar": "# الصوت الذكي والدبلجة متعددة اللغات مع ElevenLabs\n\nحققت تكنولوجيا الصوت العصبي طفرة غير مسبوقة بفضل نماذج ElevenLabs:\n\n1. **استنساخ الصوت**: أنشئ نبرة صوتك الخاصة أو أصوات شخصيات فريدة للبودكاست والإعلانات والكتب الصوتية.\n2. **الدبلجة الدولية**: ترجم ودبلج المحتوى إلى أكثر من 29 لغة مع الحفاظ الكامل على نبرة الصوت والمشاعر.\n3. **عروض وايمان**: باقات Creator مع رصيد وافر يتم تفعيلها خلال 15 دقيقة فقط."
       },
-      "cover": "media/p-macbook.webp",
-      "author": "Yacine B.",
-      "tags": ["pc-sur-mesure", "conseil"],
+      "cover": "media/service-chatgpt-team.webp",
+      "author": "Équipe WaYmen AI Studio",
+      "tags": ["audio", "elevenlabs", "voix", "podcast"],
       "status": "published",
-      "published_at": "2026-10-21T20:57:50.385Z",
-      "created_at": "2026-10-21T20:57:50.385Z",
-      "updated_at": "2026-10-21T20:57:50.385Z"
+      "published_at": "2026-11-11T10:51:07.106Z",
+      "created_at": "2026-11-11T10:51:07.106Z",
+      "updated_at": "2026-11-11T10:51:07.106Z"
     },
     {
       "id": "blog_104",
-      "slug": "livraison-58-wilayas",
+      "slug": "formations-waymen-academy-entreprises",
       "title": {
-        "fr": "Livraison en Algérie : ce qu'il faut savoir",
-        "en": "Delivery across Algeria: what you need to know",
-        "ar": "التوصيل في الجزائر: ما تحتاج معرفته"
+        "fr": "WaYmen Academy : Monter en compétences sur l'IA appliquée",
+        "en": "WaYmen Academy: Upskilling with practical applied AI",
+        "ar": "أكاديمية وايمان: اكتساب مهارات وتطبيقات الذكاء الاصطناعي للمؤسسات"
       },
       "excerpt": {
-        "fr": "Délais, tarifs, paiement à la livraison — on répond à vos questions.",
-        "en": "Lead times, rates, cash on delivery — we answer your questions.",
-        "ar": "آجال التسليم، التعريفات، الدفع عند الاستلام — نجيب على أسئلتك."
+        "fr": "Des masterclass pratiques et du mentorat 1-on-1 pour maîtriser les outils IA de zéro à expert.",
+        "en": "Hands-on masterclasses and 1-on-1 coaching to master AI tools from beginner to pro.",
+        "ar": "دورات تدريبية تطبيقية وإشراف فردي مخصص لاحتراف أدوات الذكاء الاصطناعي خطوة بخطوة."
       },
       "content": {
-        "fr": "KA Tech livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
-        "en": "KA Tech delivers to all 58 wilayas. Allow 2 to 5 business days depending on your region. Cash on delivery is available for the majority of products.",
-        "ar": "KA Tech يوصّل إلى جميع الولايات الـ58. الدفع عند الاستلام متاح لغالبية المنتجات."
+        "fr": "# Pourquoi se former avec WaYmen Academy ?\n\nDisposer des meilleurs outils ne suffit pas : il faut savoir prompter, orchestrer et automatiser pour en tirer un vrai retour sur investissement :\n\n1. **Masterclass De Zéro à Pro** : Pour tous ceux qui souhaitent intégrer l'IA dans leur quotidien professionnel.\n2. **Parcours Développeurs & Créatifs** : Des ateliers poussés sur Cursor, Midjourney et ElevenLabs.\n3. **Coaching VIP 1-on-1** : Un accompagnement sur-mesure pour intégrer l'IA dans votre entreprise.",
+        "en": "# Why train with WaYmen Academy?\n\nHaving the tools is not enough: prompting, orchestration and automation make the real business difference:\n\n1. **Zero to Pro Masterclass**: For professionals integrating AI into their daily business operations.\n2. **Developer & Creative Tracks**: In-depth hands-on workflows with Cursor, Midjourney, and ElevenLabs.\n3. **1-on-1 VIP Coaching**: Customized onboarding to transform your team's throughput.",
+        "ar": "# لماذا تختار التدريب مع أكاديمية وايمان؟\n\nامتلاك أفضل الأدوات وحده لا يكفي، بل لابد من إتقان توجيه الأوامر وأتمتة مسارات العمل لتحقيق أعلى عائد إنتاجي:\n\n1. **دورة من الصفر إلى الاحتراف**: موجهة لكل المهنيين الراغبين في تسخير الذكاء الاصطناعي في عملهم.\n2. **مسارات المطورين والمصممين**: ورشات عمل تطبيقية مكثفة على Cursor و Midjourney و ElevenLabs.\n3. **التدريب الفردي الخاص VIP**: مرافقة شاملة ومخصصة لمساعدتك وفريقك على تحقيق أهدافكم."
       },
-      "cover": "media/p-optiplex.webp",
-      "author": "Équipe KA Tech",
-      "tags": ["livraison", "faq"],
+      "cover": "media/service-claude-pro.webp",
+      "author": "Équipe WaYmen AI Studio",
+      "tags": ["formation", "academy", "coaching", "entreprise"],
       "status": "published",
-      "published_at": "2026-10-25T20:57:50.385Z",
-      "created_at": "2026-10-25T20:57:50.385Z",
-      "updated_at": "2026-10-25T20:57:50.385Z"
+      "published_at": "2026-11-17T10:51:07.106Z",
+      "created_at": "2026-11-17T10:51:07.106Z",
+      "updated_at": "2026-11-17T10:51:07.106Z"
     }
   ],
   "shippingRates": [
@@ -583,355 +1939,355 @@
       "wilaya_code": "*",
       "home": 800,
       "desk": 400,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "01",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "02",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "03",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "04",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "05",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "06",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "07",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "08",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "09",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "10",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "11",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "12",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "13",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "14",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "15",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "16",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "17",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "18",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "19",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "20",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "21",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "22",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "23",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "24",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "25",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "26",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "27",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "28",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "29",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "30",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "31",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "32",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "33",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "34",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "35",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "36",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "37",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "38",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "39",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "40",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "41",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "42",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "43",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "44",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "45",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "46",
       "home": 600,
       "desk": 350,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "47",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "48",
       "home": 900,
       "desk": 500,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "49",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "50",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "51",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "52",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "53",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "54",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "55",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "56",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "57",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "wilaya_code": "58",
       "home": 1500,
       "desk": 800,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     }
   ],
   "paymentMethods": [
@@ -941,7 +2297,7 @@
       "instructions": "Réglez votre commande en espèces au livreur.",
       "active": 1,
       "position": 0,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "id": "bank",
@@ -949,7 +2305,7 @@
       "instructions": "Un RIB vous sera envoyé après validation. La commande est expédiée dès réception du virement.",
       "active": 1,
       "position": 1,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "id": "card",
@@ -957,7 +2313,7 @@
       "instructions": "Paiement en ligne sécurisé via la plateforme SATIM (redirection après validation).",
       "active": 1,
       "position": 2,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     },
     {
       "id": "store",
@@ -965,7 +2321,7 @@
       "instructions": "Retirez et réglez votre commande à notre point de vente d'Alger.",
       "active": 0,
       "position": 3,
-      "updated_at": "2026-11-08T20:57:50.372Z"
+      "updated_at": "2026-11-23T10:51:07.063Z"
     }
   ],
   "siteContent": {
@@ -978,11 +2334,11 @@
       },
       "builderCta": {
         "label": {
-          "fr": "Configurez votre PC",
-          "en": "Build your PC",
-          "ar": "جمّع حاسوبك"
+          "fr": "Packs & Formations IA",
+          "en": "AI Packs & Courses",
+          "ar": "باقات ودورات الذكاء الاصطناعي"
         },
-        "href": "/builder"
+        "href": "/category/packs-metiers"
       },
       "primaryNav": [
         {
@@ -1097,9 +2453,9 @@
         "ar": "© 2026 {storeName} — جميع الحقوق محفوظة"
       },
       "madeIn": {
-        "fr": "Fait avec passion en Algérie",
-        "en": "Made with passion in Algeria",
-        "ar": "صُنع بشغف في الجزائر"
+        "fr": "Fait avec passion & ❤️ par ArchiSys3.0",
+        "en": "Made with passion & ❤️ by ArchiSys3.0",
+        "ar": "صُنع بشغف و ❤️ بواسطة ArchiSys3.0"
       },
       "socials": [
         {
@@ -1164,20 +2520,20 @@
             {
               "id": "fl_2",
               "label": {
-                "fr": "Configurez votre PC",
-                "en": "Build your PC",
-                "ar": "جمّع حاسوبك"
+                "fr": "Packs Métiers IA",
+                "en": "AI Pro Packs",
+                "ar": "باقات المهن الذكية"
               },
-              "href": "/builder"
+              "href": "/category/packs-metiers"
             },
             {
               "id": "fl_3",
               "label": {
-                "fr": "Offres",
-                "en": "Deals",
-                "ar": "العروض"
+                "fr": "Formations Academy",
+                "en": "Academy Courses",
+                "ar": "دورات الأكاديمية"
               },
-              "href": "/category/laptops"
+              "href": "/category/formations-academy"
             }
           ]
         },
@@ -1314,74 +2670,74 @@
     },
     "hero": {
       "badge": {
-        "fr": "Collection 2026 disponible",
-        "en": "2026 collection available",
-        "ar": "مجموعة 2026 متوفرة"
+        "fr": "Activations & Formations IA 2026",
+        "en": "Official AI Subscriptions & Academy 2026",
+        "ar": "اشتراكات الذكاء الاصطناعي والأكاديمية 2026"
       },
       "title1": {
-        "fr": "La puissance tech,",
-        "en": "Tech power,",
-        "ar": "قوة التكنولوجيا،"
+        "fr": "L'Intelligence Artificielle,",
+        "en": "Artificial Intelligence,",
+        "ar": "الذكاء الاصطناعي،"
       },
       "title2": {
-        "fr": "entre vos mains",
-        "en": "in your hands",
-        "ar": "بين يديك"
+        "fr": "activée pour vous",
+        "en": "unlocked for you",
+        "ar": "بين يديك وفريقك"
       },
       "subtitle": {
-        "fr": "Les derniers ordinateurs portables, de bureau et téléphones aux meilleurs prix, avec garantie officielle et support technique dédié.",
-        "en": "The latest laptops, desktops and phones at the best prices, with official warranty and dedicated tech support.",
-        "ar": "أحدث أجهزة الكمبيوتر المحمولة والمكتبية والهواتف بأفضل الأسعار، مع ضمان رسمي ودعم تقني مخصص."
+        "fr": "Accédez aux meilleurs outils IA mondiaux (ChatGPT Plus, Claude Pro, Midjourney, Cursor...) avec activation officielle sous 15 minutes et formez-vous à leur maîtrise.",
+        "en": "Access the world's leading AI platforms (ChatGPT Plus, Claude Pro, Midjourney, Cursor...) with official activation within 15 minutes and master them.",
+        "ar": "احصل على أقوى منصات الذكاء الاصطناعي العالمية مع تفعيل رسمي فوري خلال 15 دقيقة ودورات تدريبية عملية متخصصة."
       },
       "primaryCta": {
         "label": {
-          "fr": "Acheter maintenant",
-          "en": "Shop now",
-          "ar": "تسوق الآن"
+          "fr": "Découvrir les Abonnements",
+          "en": "Explore Subscriptions",
+          "ar": "استكشف الاشتراكات"
         },
-        "href": "/category/laptops"
+        "href": "/category/llm-assistants"
       },
       "secondaryCta": {
         "label": {
-          "fr": "Offres du jour",
-          "en": "Today's deals",
-          "ar": "عروض اليوم"
+          "fr": "Formations & Tutos",
+          "en": "Courses & Tutorials",
+          "ar": "الدورات والشروحات"
         },
-        "href": "/category/laptops"
+        "href": "/category/formations-academy"
       },
       "kpis": [
         {
           "id": "kpi_1",
           "icon": "users",
-          "value": "+5 000",
+          "value": "+12 000",
           "label": {
-            "fr": "clients satisfaits",
-            "en": "happy customers",
-            "ar": "زبون راضٍ"
+            "fr": "utilisateurs formés & activés",
+            "en": "active users & learners",
+            "ar": "مستخدم ومستفيد مفعل"
           }
         },
         {
           "id": "kpi_2",
-          "icon": "package",
-          "value": "+1 200",
+          "icon": "zap",
+          "value": "< 15 min",
           "label": {
-            "fr": "produits",
-            "en": "products",
-            "ar": "منتجات"
+            "fr": "délai d'activation",
+            "en": "activation delay",
+            "ar": "تفعيل فوري"
           }
         },
         {
           "id": "kpi_3",
-          "icon": "map-pin",
+          "icon": "shield",
           "value": {
-            "fr": "58 wilayas",
-            "en": "58 wilayas",
-            "ar": "58 ولاية"
+            "fr": "100% garanti",
+            "en": "100% guaranteed",
+            "ar": "100% رسمي ومضمون"
           },
           "label": {
-            "fr": "livraison",
-            "en": "delivery",
-            "ar": "التوصيل"
+            "fr": "comptes officiels",
+            "en": "official accounts",
+            "ar": "حسابات رسمية"
           }
         }
       ],
@@ -1389,14 +2745,14 @@
     },
     "categories": {
       "title": {
-        "fr": "Achetez par catégorie",
-        "en": "Shop by category",
-        "ar": "تسوق حسب الفئة"
+        "fr": "Nos Pôles de Compétences & Outils",
+        "en": "Our AI Tools & Academy Pillars",
+        "ar": "أقسام المنصات والدورات"
       },
       "subtitle": {
-        "fr": "Choisissez la catégorie qui vous convient",
-        "en": "Pick the category that suits you",
-        "ar": "اختر الفئة التي تناسبك"
+        "fr": "Choisissez l'abonnement ou la formation adapté à vos besoins",
+        "en": "Choose the subscription or course tailored to your needs",
+        "ar": "اختر الاشتراك أو البرنامج التدريبي الأنسب لأهدافك"
       },
       "browseLabel": {
         "fr": "Parcourir",
@@ -1413,240 +2769,236 @@
     },
     "bestSellers": {
       "title": {
-        "fr": "Meilleures ventes",
-        "en": "Best sellers",
-        "ar": "الأكثر مبيعًا"
+        "fr": "Top Abonnements & Formations",
+        "en": "Top Subscriptions & Courses",
+        "ar": "الاشتراكات والدورات الأكثر طلبًا"
       },
       "subtitle": {
-        "fr": "Les produits préférés de nos clients",
-        "en": "Our customers' favorite products",
-        "ar": "المنتجات المفضلة لدى زبائننا"
+        "fr": "Les outils et masterclass préférés de nos clients",
+        "en": "Our customers' favorite tools and masterclasses",
+        "ar": "المنصات والبرامج الأكثر تفضيلاً لدى عملائنا"
       }
     },
     "featuredTabs": {
       "title": {
-        "fr": "Produits sélectionnés",
-        "en": "Featured products",
-        "ar": "منتجات مختارة"
+        "fr": "Sélection Phare WaYmen",
+        "en": "Featured WaYmen Selection",
+        "ar": "مختارات وايمان المميزة"
       },
       "subtitle": {
-        "fr": "Découvrez les nouveautés dans chaque catégorie",
-        "en": "Discover what's new in every category",
-        "ar": "اكتشف الجديد في كل فئة"
+        "fr": "Découvrez les plateformes les plus puissantes du moment",
+        "en": "Discover the most powerful AI platforms available today",
+        "ar": "اكتشف أقوى أدوات وحزم الذكاء الاصطناعي المتاحة"
       },
       "tabs": [
         {
           "id": "t_1",
-          "categorySlug": "laptops",
+          "categorySlug": "llm-assistants",
           "label": {
-            "fr": "Portables",
-            "en": "Laptops",
-            "ar": "محمولة"
+            "fr": "Assistants LLM",
+            "en": "LLM Assistants",
+            "ar": "مساعدو LLM"
           }
         },
         {
           "id": "t_2",
-          "categorySlug": "desktops",
+          "categorySlug": "creative-media",
           "label": {
-            "fr": "Bureau",
-            "en": "Desktops",
-            "ar": "مكتبية"
+            "fr": "Création Visuelle",
+            "en": "Creative Media",
+            "ar": "التوليد الفني"
           }
         },
         {
           "id": "t_3",
-          "categorySlug": "builds",
+          "categorySlug": "code-engineering",
           "label": {
-            "fr": "Configs",
-            "en": "Builds",
-            "ar": "تجميعات"
+            "fr": "Code & Dev IA",
+            "en": "Code & Dev AI",
+            "ar": "برمجة الذكاء الاصطناعي"
           }
         },
         {
           "id": "t_4",
-          "categorySlug": "phones",
+          "categorySlug": "formations-academy",
           "label": {
-            "fr": "Téléphones",
-            "en": "Phones",
-            "ar": "هواتف"
+            "fr": "Formations IA",
+            "en": "AI Academy",
+            "ar": "دورات الأكاديمية"
           }
         }
       ]
     },
     "flashSale": {
       "badge": {
-        "fr": "Offres de la semaine",
+        "fr": "Offres Flash de la Semaine",
         "en": "Deals of the week",
         "ar": "عروض الأسبوع"
       },
       "title": {
-        "fr": "Réductions à durée limitée",
-        "en": "Limited-time discounts",
-        "ar": "تخفيضات لفترة محدودة"
+        "fr": "Tarifs Réduits sur Abonnements Annuels",
+        "en": "Discounted Rates on Annual Plans",
+        "ar": "تخفيضات استثنائية على الاشتراكات السنوية"
       },
       "viewAllLabel": {
-        "fr": "Voir toutes les offres",
-        "en": "See all deals",
-        "ar": "عرض كل العروض"
+        "fr": "Voir tous les abonnements",
+        "en": "View all subscriptions",
+        "ar": "عرض جميع الاشتراكات"
       },
-      "viewAllHref": "/category/laptops",
+      "viewAllHref": "/category/llm-assistants",
       "countdownHours": 71
     },
     "brandsMarquee": {
       "title": {
-        "fr": "Nous travaillons avec les plus grandes marques",
-        "en": "We work with the biggest brands",
-        "ar": "نتعامل مع أكبر العلامات التجارية"
+        "fr": "Partenaire des plus grands écosystèmes mondiaux de l'IA",
+        "en": "Partnering with the world's leading AI ecosystems",
+        "ar": "شريك لأقوى المنصات والشركات الرائدة عالميًا في الذكاء الاصطناعي"
       }
     },
     "whyUs": {
       "kicker": {
-        "fr": "Pourquoi nous choisir",
-        "en": "Why choose us",
-        "ar": "لماذا تختارنا"
+        "fr": "Pourquoi choisir WaYmen AI Studio",
+        "en": "Why choose WaYmen AI Studio",
+        "ar": "لماذا تختار وايمان ستوديو"
       },
       "title1": {
-        "fr": "Parce que vos projets méritent",
-        "en": "Because your projects deserve",
-        "ar": "لأن مشاريعكم تستحق"
+        "fr": "Votre partenaire de confiance",
+        "en": "Your trusted partner",
+        "ar": "شريككم الموثوق"
       },
       "title2": {
-        "fr": "un partenaire de confiance",
-        "en": "a trusted partner",
-        "ar": "شريكًا موثوقًا"
+        "fr": "pour l'ère de l'IA",
+        "en": "for the AI era",
+        "ar": "لعصر الذكاء الاصطناعي"
       },
       "subtitle": {
-        "fr": "Nous sélectionnons nos produits avec soin et nous engageons sur chaque achat.",
-        "en": "We carefully select our products and stand behind every purchase.",
-        "ar": "نختار منتجاتنا بعناية ونلتزم بكل عملية شراء."
+        "fr": "Nous garantissons des activations 100% officielles, un support continu et des formations pratiques.",
+        "en": "We guarantee 100% official activations, continuous support and hands-on training.",
+        "ar": "نضمن تفعيلات رسمية 100%، ودعمًا فنيًا مستمرًا، ودورات عملية ترتقي بمهاراتكم."
       },
       "items": [
         {
           "id": "w_1",
           "icon": "shield",
           "title": {
-            "fr": "Garantie officielle",
-            "en": "Official warranty",
-            "ar": "ضمان رسمي"
+            "fr": "Activations Officielles",
+            "en": "Official Activations",
+            "ar": "تفعيل رسمي 100%"
           },
           "description": {
-            "fr": "Garantie revendeur agréé sur tous les produits",
-            "en": "Authorized reseller warranty on all products",
-            "ar": "ضمان الموزع المعتمد على جميع المنتجات"
+            "fr": "Comptes légitimes, sans risque de suspension, garantie intégrale",
+            "en": "Legitimate accounts, zero suspension risk, full warranty",
+            "ar": "حسابات رسمية ومضمونة بدون أي انقطاع طوال فترة الاشتراك"
           }
         },
         {
           "id": "w_2",
-          "icon": "truck",
+          "icon": "zap",
           "title": {
-            "fr": "Livraison rapide",
-            "en": "Fast delivery",
-            "ar": "توصيل سريع"
+            "fr": "Activation < 15 Min",
+            "en": "Fast Delivery < 15 Min",
+            "ar": "تفعيل فوري خلال دقائق"
           },
           "description": {
-            "fr": "Livraison dans toutes les wilayas en 24-72 heures",
-            "en": "Delivery to all wilayas in 24-72 hours",
-            "ar": "توصيل لجميع الولايات في 24-72 ساعة"
+            "fr": "Réception de vos accès et guides par Email et WhatsApp sans délai",
+            "en": "Instant delivery of your credentials and guides via Email & WhatsApp",
+            "ar": "استلام فوري لبيانات التفعيل والأدلة عبر الإيميل والواتساب"
           }
         },
         {
           "id": "w_3",
           "icon": "headphones",
           "title": {
-            "fr": "Support technique",
-            "en": "Tech support",
-            "ar": "دعم تقني"
+            "fr": "Support & Tutos 7j/7",
+            "en": "7/7 Support & Guides",
+            "ar": "دعم فني وشروحات 7/7"
           },
           "description": {
-            "fr": "Une équipe dédiée avant et après l'achat",
-            "en": "A dedicated team before and after purchase",
-            "ar": "فريق مخصص قبل وبعد الشراء"
+            "fr": "Accompagnement personnalisé et assistance à l'utilisation de chaque outil",
+            "en": "Dedicated support and usage walkthroughs for every tool",
+            "ar": "متابعة مستمرة ومساعدة في تشغيل وتوظيف الأدوات بأعلى كفاءة"
           }
         },
         {
           "id": "w_4",
           "icon": "credit-card",
           "title": {
-            "fr": "Paiement sécurisé",
-            "en": "Secure payment",
-            "ar": "دفع آمن"
+            "fr": "Paiement Local Sécurisé",
+            "en": "Secure Local Payment",
+            "ar": "دفع محلي آمن ومريح"
           },
           "description": {
-            "fr": "Payez à la livraison ou via des moyens approuvés",
-            "en": "Pay on delivery or via approved methods",
-            "ar": "ادفع عند الاستلام أو بوسائل معتمدة"
+            "fr": "Règlement facile en Dinar : BaridiMob, CCP, Carte Edahabia, Virement",
+            "en": "Easy payment in DZD: BaridiMob, CCP, Edahabia Card, Bank Transfer",
+            "ar": "طرق دفع سهلة وآمنة بالدينار: بريدي موب، CCP، بطاقة الذهبية، وتحويل"
           }
         }
       ]
     },
     "builderTeaser": {
       "badge": {
-        "fr": "Outil de configuration",
-        "en": "Config tool",
-        "ar": "أداة التجميع"
+        "fr": "Configurateur de Pack IA",
+        "en": "AI Pack Builder",
+        "ar": "أداة تخصيص باقات الذكاء الاصطناعي"
       },
       "title": {
-        "fr": "Concevez votre config idéale",
-        "en": "Design your ideal build",
-        "ar": "صمم تجميعتك المثالية"
+        "fr": "Composez votre Pack IA Sur-Mesure",
+        "en": "Build your custom AI bundle",
+        "ar": "صمم باقة اشتراكاتك ودوراتك المخصصة"
       },
       "subtitle": {
-        "fr": "Sélectionnez vos composants étape par étape, vérifiez la compatibilité et voyez le prix final en direct.",
-        "en": "Pick components step by step, check compatibility and see the final price live.",
-        "ar": "اختر مكوناتك خطوة بخطوة، تحقق من التوافق وشاهد السعر النهائي مباشرة."
+        "fr": "Combinez vos outils d'IA préférés (LLM, Vidéo, Code) avec des formations ciblées et profitez d'une remise exclusive.",
+        "en": "Combine your favorite AI tools (LLM, Video, Code) with targeted training and enjoy exclusive bundle discounts.",
+        "ar": "اجمع بين منصاتك المفضلة (توليد، كود، تصميم) مع برامج تدريبية متخصصة واحصل على تخفيض فوري."
       },
       "cta": {
         "label": {
-          "fr": "Commencer la config",
-          "en": "Start building",
-          "ar": "ابدأ التجميع"
+          "fr": "Composer mon Pack",
+          "en": "Build my Pack",
+          "ar": "ابدأ بتجميع باقتك"
         },
-        "href": "/builder"
+        "href": "/category/packs-bundles"
       },
       "items": [
         {
           "id": "bt_1",
           "icon": "cpu",
           "title": {
-            "fr": "Processeurs",
-            "en": "Processors",
-            "ar": "المعالجات"
+            "fr": "Assistants LLM",
+            "en": "LLM Assistants",
+            "ar": "نماذج LLM"
           },
-          "subtitle": "Intel · AMD"
+          "subtitle": "ChatGPT · Claude · Gemini"
         },
         {
           "id": "bt_2",
-          "icon": "memory",
+          "icon": "monitor",
           "title": {
-            "fr": "Mémoire",
-            "en": "Memory",
-            "ar": "الذاكرة"
+            "fr": "Création Visuelle",
+            "en": "Visual Creation",
+            "ar": "التوليد البصري"
           },
-          "subtitle": "DDR4 · DDR5"
+          "subtitle": "Midjourney · Runway · 11Labs"
         },
         {
           "id": "bt_3",
           "icon": "hard-drive",
           "title": {
-            "fr": "Stockage",
-            "en": "Storage",
-            "ar": "التخزين"
+            "fr": "Outils Dev & Code",
+            "en": "Code & Dev Tools",
+            "ar": "أدوات المطورين"
           },
-          "subtitle": "NVMe Gen4"
+          "subtitle": "Cursor Pro · GitHub Copilot"
         },
         {
           "id": "bt_4",
-          "icon": "zap",
+          "icon": "award",
           "title": {
-            "fr": "Refroidissement",
-            "en": "Cooling",
-            "ar": "التبريد"
+            "fr": "Waymen Academy",
+            "en": "Waymen Academy",
+            "ar": "أكاديمية وايمان"
           },
-          "subtitle": {
-            "fr": "Air · Liquide",
-            "en": "Air · Liquid",
-            "ar": "هواء · سائل"
-          }
+          "subtitle": "Masterclass · Coaching"
         }
       ]
     },
@@ -1711,13 +3063,13 @@
         },
         {
           "id": "mb_3",
-          "icon": "wrench",
+          "icon": "zap",
           "label": {
-            "fr": "Configurer",
-            "en": "Build",
-            "ar": "تجميع"
+            "fr": "Packs IA",
+            "en": "AI Packs",
+            "ar": "باقات الذكاء"
           },
-          "href": "/builder",
+          "href": "/category/packs-metiers",
           "primary": true
         },
         {
@@ -1765,38 +3117,38 @@
             "enabled": true,
             "props": {
               "badge": {
-                "fr": "Plateforme Informatique Officielle",
-                "en": "Official Computing Platform",
-                "ar": "المنصة التقنية الرسمية"
+                "fr": "Activations & Formations IA 2026",
+                "en": "Official AI Subscriptions & Academy 2026",
+                "ar": "اشتراكات الذكاء الاصطناعي والأكاديمية 2026"
               },
               "title1": {
-                "fr": "L'Excellence Technologique",
-                "en": "Technological Excellence",
-                "ar": "التميز التكنولوجي"
+                "fr": "L'Intelligence Artificielle,",
+                "en": "Artificial Intelligence,",
+                "ar": "الذكاء الاصطناعي،"
               },
               "title2": {
-                "fr": "Sur Mesure",
-                "en": "Tailor-Made",
-                "ar": "حسب الطلب"
+                "fr": "activée pour vous",
+                "en": "unlocked for you",
+                "ar": "بين يديك وفريقك"
               },
               "subtitle": {
-                "fr": "Composants certifiés, stations de travail d'élite et livraison sécurisée 58 Wilayas.",
-                "en": "Certified hardware, high-end workstations and secure delivery 58 Wilayas.",
-                "ar": "مكونات معتمدة ومحطات عمل احترافية وتوصيل آمن لـ 58 ولاية."
+                "fr": "Accédez aux meilleurs outils IA mondiaux (ChatGPT Plus, Claude Pro, Midjourney, Cursor...) avec activation officielle sous 15 minutes et formez-vous à leur maîtrise.",
+                "en": "Access the world's leading AI platforms (ChatGPT Plus, Claude Pro, Midjourney, Cursor...) with official activation within 15 minutes and master them.",
+                "ar": "احصل على أقوى منصات الذكاء الاصطناعي العالمية مع تفعيل رسمي فوري خلال 15 دقيقة ودورات تدريبية عملية متخصصة."
               },
               "primaryCtaText": {
-                "fr": "Explorer le Catalogue",
-                "en": "Explore Catalog",
-                "ar": "استكشف الكتالوج"
+                "fr": "Découvrir les Abonnements",
+                "en": "Explore Subscriptions",
+                "ar": "استكشف الاشتراكات"
               },
-              "primaryCtaHref": "/category/laptops",
+              "primaryCtaHref": "/category/llm-assistants",
               "secondaryCtaText": {
-                "fr": "Configurateur PC",
-                "en": "PC Builder",
-                "ar": "تجميع حاسوب"
+                "fr": "Formations & Tutos",
+                "en": "Courses & Tutorials",
+                "ar": "الدورات والشروحات"
               },
-              "secondaryCtaHref": "/builder",
-              "imageSrc": "media/hero-laptop.webp"
+              "secondaryCtaHref": "/category/formations-academy",
+              "imageSrc": "media/waymen-og-banner.webp"
             },
             "style": {
               "padding": "normal",
@@ -1837,7 +3189,7 @@
             "type": "category_cards",
             "enabled": true,
             "props": {
-              "max": 4,
+              "max": 6,
               "title": {
                 "fr": "Nos Catégories Phares",
                 "en": "Featured Categories",
@@ -1940,14 +3292,14 @@
             "enabled": true,
             "props": {
               "title": {
-                "fr": "Pourquoi Choisir StacGate",
-                "en": "Why Choose StacGate",
-                "ar": "لماذا تختار StacGate"
+                "fr": "Pourquoi Choisir WaYmen AI Studio",
+                "en": "Why Choose WaYmen AI Studio",
+                "ar": "لماذا تختار وايمان ستوديو"
               },
               "subtitle": {
-                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
-                "en": "Four core pillars for a seamless and secure shopping experience.",
-                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+                "fr": "Quatre engagements majeurs pour vos activations numériques et formations IA.",
+                "en": "Four core commitments for your AI subscriptions and masterclasses.",
+                "ar": "أربعة التزامات أساسية لتفعيل اشتراكاتك وتدريبات الذكاء الاصطناعي."
               }
             },
             "style": {
@@ -1959,28 +3311,29 @@
           {
             "id": "b_home_builder",
             "type": "builder_teaser",
-            "enabled": true,
+            "enabled": false,
             "props": {
               "badge": {
-                "fr": "Studio Sur Mesure",
-                "en": "Custom Studio",
-                "ar": "استوديو التجميع"
+                "fr": "Pack Builder IA Sur Mesure",
+                "en": "Custom AI Pack Builder",
+                "ar": "تجميع الباقات المخصصة"
               },
               "title": {
-                "fr": "Concevez le PC de Vos Rêves",
-                "en": "Build Your Dream PC",
-                "ar": "جمّع حاسوب أحلامك"
+                "fr": "Composez Votre Pack IA Sur Mesure",
+                "en": "Build Your Custom AI Bundle",
+                "ar": "جمّع باقة أدواتك ودوراتك المفضلة"
               },
               "description": {
-                "fr": "Notre configurateur en direct vérifie la compatibilité de chaque composant et calcule votre devis en temps réel.",
-                "en": "Our live builder verifies component compatibility and computes your quote in real time.",
-                "ar": "أداة التجميع المباشر تتحقق من التوافق وتحسب السعر فورياً."
+                "fr": "Combinez vos outils IA favoris (LLM, Vidéo, Code) avec des formations ciblées et bénéficiez de remises immédiates.",
+                "en": "Combine your favorite AI tools (LLM, Video, Code) with targeted training and enjoy exclusive bundle discounts.",
+                "ar": "اجمع بين منصاتك المفضلة (توليد، كود، تصميم) مع برامج تدريبية متخصصة واحصل على تخفيض فوري."
               },
               "ctaText": {
-                "fr": "Lancer le Configurateur",
-                "en": "Launch Builder",
-                "ar": "ابدأ التجميع"
-              }
+                "fr": "Composer mon Pack",
+                "en": "Build my Pack",
+                "ar": "ابدأ بتجميع باقتك"
+              },
+              "ctaHref": "/category/packs-bundles"
             },
             "style": {
               "padding": "normal",
@@ -2071,16 +3424,16 @@
             "enabled": true,
             "props": {
               "title": {
-                "fr": "StacGate Platform — L'Ingénierie du Numérique",
-                "en": "StacGate Platform — Digital Engineering",
-                "ar": "منصة StacGate — هندسة الرقميات"
+                "fr": "WaYmen AI Studio — Hub d'Excellence IA & Formations",
+                "en": "WaYmen AI Studio — AI Excellence Hub & Academy",
+                "ar": "وايمان ستوديو — مركز التميز في الذكاء الاصطناعي والتدريب"
               },
               "subtitle": {
-                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
-                "en": "High performance modular platform for hardware and software solutions.",
-                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+                "fr": "Plateforme modulaire haute performance pour activations d'intelligence artificielle et apprentissage certifiant.",
+                "en": "High performance modular platform for AI activations and certified training.",
+                "ar": "منصة متطورة وعالية الأداء لتفعيل اشتراكات الذكاء الاصطناعي والتدريب المعتمد."
               },
-              "bannerSrc": "media/stacgate-archisys-banner.webp"
+              "bannerSrc": "media/waymen-og-banner.webp"
             },
             "style": {
               "padding": "normal",
@@ -2099,9 +3452,9 @@
                 "ar": "قصتنا وفلسفتنا"
               },
               "historyBody": {
-                "fr": "Fondée avec la volonté d'offrir une infrastructure informatique sans compromis, StacGate réunit le meilleur du matériel certifié et des architectures logicielles modernes.",
-                "en": "Founded with the vision to deliver uncompromising computing infrastructure, StacGate combines the best certified hardware with modern software architectures.",
-                "ar": "تأسست بهدف تقديم بنية تحتية تقنية لا تقبل المساومة، تجمع StacGate بين العتاد المعتمد والهندسة البرمجية الحديثة."
+                "fr": "Fondée avec la volonté de démocratiser l'intelligence artificielle la plus avancée, WaYmen AI Studio combine activations officielles garanties et accompagnement pédagogique d'élite.",
+                "en": "Founded to democratize cutting-edge artificial intelligence, WaYmen AI Studio combines guaranteed official activations with elite learning support.",
+                "ar": "تأسست بهدف تمكين الجميع من أحدث أدوات الذكاء الاصطناعي، تجمع وايمان بين التفعيل الرسمي المضمون والتدريب العملي المتقدم."
               },
               "missionTitle": {
                 "fr": "Notre Mission Métier",
@@ -2109,8 +3462,8 @@
                 "ar": "مهمتنا المهنية"
               },
               "missionBody": {
-                "fr": "Accompagner les créateurs, développeurs, gamers et entreprises dans le choix d'outils de travail puissants, durables et pérennes.",
-                "en": "Empower creators, developers, gamers and enterprises with durable, scalable high-performance tools.",
+                "fr": "Accompagner les créateurs, développeurs et entreprises dans la maîtrise opérationnelle des outils IA pour démultiplier leur productivité.",
+                "en": "Empower creators, developers and businesses to master AI tools and drastically boost their productivity.",
                 "ar": "مرافقة المبدعين والمطورين والشركات في اختيار أدوات عمل قوية ومستدامة."
               }
             },
@@ -2480,7 +3833,7 @@
                   "tags": ["React 19", "Vite", "TypeScript", "SQLite"],
                   "demoUrl": "#",
                   "codeUrl": "#",
-                  "image": "media/stacgate-archisys-combined.webp"
+                  "image": "media/waymen-og-banner.webp"
                 }
               ]
             },
@@ -2496,16 +3849,16 @@
             "enabled": true,
             "props": {
               "title": {
-                "fr": "StacGate Platform — L'Ingénierie du Numérique",
-                "en": "StacGate Platform — Digital Engineering",
-                "ar": "منصة StacGate — هندسة الرقميات"
+                "fr": "WaYmen AI Studio — Hub d'Excellence IA & Formations",
+                "en": "WaYmen AI Studio — AI Excellence Hub & Academy",
+                "ar": "وايمان ستوديو — مركز التميز في الذكاء الاصطناعي والتدريب"
               },
               "subtitle": {
-                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
-                "en": "High performance modular platform for hardware and software solutions.",
-                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+                "fr": "Plateforme modulaire haute performance pour activations d'intelligence artificielle et apprentissage certifiant.",
+                "en": "High performance modular platform for AI activations and certified training.",
+                "ar": "منصة متطورة وعالية الأداء لتفعيل اشتراكات الذكاء الاصطناعي والتدريب المعتمد."
               },
-              "bannerSrc": "media/stacgate-archisys-banner.webp"
+              "bannerSrc": "media/waymen-og-banner.webp"
             },
             "style": {
               "padding": "normal",
@@ -2574,16 +3927,16 @@
             "enabled": true,
             "props": {
               "title": {
-                "fr": "StacGate Platform — L'Ingénierie du Numérique",
-                "en": "StacGate Platform — Digital Engineering",
-                "ar": "منصة StacGate — هندسة الرقميات"
+                "fr": "WaYmen AI Studio — Hub d'Excellence IA & Formations",
+                "en": "WaYmen AI Studio — AI Excellence Hub & Academy",
+                "ar": "وايمان ستوديو — مركز التميز في الذكاء الاصطناعي والتدريب"
               },
               "subtitle": {
-                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
-                "en": "High performance modular platform for hardware and software solutions.",
-                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+                "fr": "Plateforme modulaire haute performance pour activations d'intelligence artificielle et apprentissage certifiant.",
+                "en": "High performance modular platform for AI activations and certified training.",
+                "ar": "منصة متطورة وعالية الأداء لتفعيل اشتراكات الذكاء الاصطناعي والتدريب المعتمد."
               },
-              "bannerSrc": "media/stacgate-archisys-banner.webp"
+              "bannerSrc": "media/waymen-og-banner.webp"
             },
             "style": {
               "padding": "normal",
@@ -2696,16 +4049,16 @@
             "enabled": true,
             "props": {
               "title": {
-                "fr": "StacGate Platform — L'Ingénierie du Numérique",
-                "en": "StacGate Platform — Digital Engineering",
-                "ar": "منصة StacGate — هندسة الرقميات"
+                "fr": "WaYmen AI Studio — Hub d'Excellence IA & Formations",
+                "en": "WaYmen AI Studio — AI Excellence Hub & Academy",
+                "ar": "وايمان ستوديو — مركز التميز في الذكاء الاصطناعي والتدريب"
               },
               "subtitle": {
-                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
-                "en": "High performance modular platform for hardware and software solutions.",
-                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+                "fr": "Plateforme modulaire haute performance pour activations d'intelligence artificielle et apprentissage certifiant.",
+                "en": "High performance modular platform for AI activations and certified training.",
+                "ar": "منصة متطورة وعالية الأداء لتفعيل اشتراكات الذكاء الاصطناعي والتدريب المعتمد."
               },
-              "bannerSrc": "media/stacgate-archisys-banner.webp"
+              "bannerSrc": "media/waymen-og-banner.webp"
             },
             "style": {
               "padding": "normal",
@@ -3101,14 +4454,14 @@
             },
             "props": {
               "title": {
-                "fr": "Pourquoi Choisir StacGate",
-                "en": "Why Choose StacGate",
-                "ar": "لماذا تختار StacGate"
+                "fr": "Pourquoi Choisir WaYmen AI Studio",
+                "en": "Why Choose WaYmen AI Studio",
+                "ar": "لماذا تختار وايمان ستوديو"
               },
               "subtitle": {
-                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
-                "en": "Four core pillars for a seamless and secure shopping experience.",
-                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+                "fr": "Quatre engagements majeurs pour vos activations numériques et formations IA.",
+                "en": "Four core commitments for your AI subscriptions and masterclasses.",
+                "ar": "أربعة التزامات أساسية لتفعيل اشتراكاتك وتدريبات الذكاء الاصطناعي."
               }
             }
           },
@@ -3324,14 +4677,14 @@
             },
             "props": {
               "title": {
-                "fr": "Pourquoi Choisir StacGate",
-                "en": "Why Choose StacGate",
-                "ar": "لماذا تختار StacGate"
+                "fr": "Pourquoi Choisir WaYmen AI Studio",
+                "en": "Why Choose WaYmen AI Studio",
+                "ar": "لماذا تختار وايمان ستوديو"
               },
               "subtitle": {
-                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
-                "en": "Four core pillars for a seamless and secure shopping experience.",
-                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+                "fr": "Quatre engagements majeurs pour vos activations numériques et formations IA.",
+                "en": "Four core commitments for your AI subscriptions and masterclasses.",
+                "ar": "أربعة التزامات أساسية لتفعيل اشتراكاتك وتدريبات الذكاء الاصطناعي."
               }
             }
           },
@@ -3394,16 +4747,16 @@
             },
             "props": {
               "title": {
-                "fr": "StacGate Platform — L'Ingénierie du Numérique",
-                "en": "StacGate Platform — Digital Engineering",
-                "ar": "منصة StacGate — هندسة الرقميات"
+                "fr": "WaYmen AI Studio — Hub d'Excellence IA & Formations",
+                "en": "WaYmen AI Studio — AI Excellence Hub & Academy",
+                "ar": "وايمان ستوديو — مركز التميز في الذكاء الاصطناعي والتدريب"
               },
               "subtitle": {
-                "fr": "Plateforme modulaire haute performance pour solutions matérielles et logicielles.",
-                "en": "High performance modular platform for hardware and software solutions.",
-                "ar": "منصة متطورة وعالية الأداء للحلول العتادية والبرمجية."
+                "fr": "Plateforme modulaire haute performance pour activations d'intelligence artificielle et apprentissage certifiant.",
+                "en": "High performance modular platform for AI activations and certified training.",
+                "ar": "منصة متطورة وعالية الأداء لتفعيل اشتراكات الذكاء الاصطناعي والتدريب المعتمد."
               },
-              "bannerSrc": "media/stacgate-archisys-banner.webp"
+              "bannerSrc": "media/waymen-og-banner.webp"
             }
           },
           {
@@ -3418,14 +4771,14 @@
             },
             "props": {
               "title": {
-                "fr": "Pourquoi Choisir StacGate",
-                "en": "Why Choose StacGate",
-                "ar": "لماذا تختار StacGate"
+                "fr": "Pourquoi Choisir WaYmen AI Studio",
+                "en": "Why Choose WaYmen AI Studio",
+                "ar": "لماذا تختار وايمان ستوديو"
               },
               "subtitle": {
-                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
-                "en": "Four core pillars for a seamless and secure shopping experience.",
-                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+                "fr": "Quatre engagements majeurs pour vos activations numériques et formations IA.",
+                "en": "Four core commitments for your AI subscriptions and masterclasses.",
+                "ar": "أربعة التزامات أساسية لتفعيل اشتراكاتك وتدريبات الذكاء الاصطناعي."
               }
             }
           }
@@ -3528,14 +4881,14 @@
             },
             "props": {
               "title": {
-                "fr": "Pourquoi Choisir StacGate",
-                "en": "Why Choose StacGate",
-                "ar": "لماذا تختار StacGate"
+                "fr": "Pourquoi Choisir WaYmen AI Studio",
+                "en": "Why Choose WaYmen AI Studio",
+                "ar": "لماذا تختار وايمان ستوديو"
               },
               "subtitle": {
-                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
-                "en": "Four core pillars for a seamless and secure shopping experience.",
-                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+                "fr": "Quatre engagements majeurs pour vos activations numériques et formations IA.",
+                "en": "Four core commitments for your AI subscriptions and masterclasses.",
+                "ar": "أربعة التزامات أساسية لتفعيل اشتراكاتك وتدريبات الذكاء الاصطناعي."
               }
             }
           }
@@ -3774,14 +5127,14 @@
             },
             "props": {
               "title": {
-                "fr": "Pourquoi Choisir StacGate",
-                "en": "Why Choose StacGate",
-                "ar": "لماذا تختار StacGate"
+                "fr": "Pourquoi Choisir WaYmen AI Studio",
+                "en": "Why Choose WaYmen AI Studio",
+                "ar": "لماذا تختار وايمان ستوديو"
               },
               "subtitle": {
-                "fr": "Quatre piliers fondamentaux pour une expérience d'achat en toute sérénité.",
-                "en": "Four core pillars for a seamless and secure shopping experience.",
-                "ar": "أربعة ركائز أساسية لتجربة شراء مريحة وموثوقة."
+                "fr": "Quatre engagements majeurs pour vos activations numériques et formations IA.",
+                "en": "Four core commitments for your AI subscriptions and masterclasses.",
+                "ar": "أربعة التزامات أساسية لتفعيل اشتراكاتك وتدريبات الذكاء الاصطناعي."
               }
             }
           }
@@ -3860,8 +5213,8 @@
           "id": "hrev_1",
           "name": "Amine Bensalah",
           "city": "Alger",
-          "productId": "rog-strix-g16",
-          "text": "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.",
+          "productId": "chatgpt-plus-mensuel",
+          "text": "Activation de ChatGPT Plus reçue en 8 minutes chrono ! Compte officiel et service client irréprochable.",
           "rating": 5,
           "gradient": "linear-gradient(135deg,#3b82f6,#1e40af)"
         },
@@ -3869,8 +5222,8 @@
           "id": "hrev_2",
           "name": "Yasmine A.",
           "city": "Oran",
-          "productId": "macbook-air-m3",
-          "text": "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.",
+          "productId": "claude-pro-mensuel",
+          "text": "Claude 3.5 Sonnet activé sans accroc, indispensable pour mes rédactions et mes analyses de données.",
           "rating": 5,
           "gradient": "linear-gradient(135deg,#a855f7,#6d28d9)"
         },
@@ -3878,8 +5231,8 @@
           "id": "hrev_3",
           "name": "Karim Haddad",
           "city": "Constantine",
-          "productId": "build-mid-gaming",
-          "text": "Config puissante à un prix juste, fonctionnelle dès la première utilisation.",
+          "productId": "pack-fullstack-dev",
+          "text": "Le pack Fullstack (Cursor Pro + Claude Pro + GitHub Copilot) a transformé ma productivité de dev.",
           "rating": 5,
           "gradient": "linear-gradient(135deg,#10b981,#047857)"
         }
@@ -3889,40 +5242,41 @@
       "items": [
         {
           "id": "tick_1",
-          "text": "🚚 Livraison rapide dans toutes les wilayas"
+          "text": "⚡ Activation garantie en moins de 15 minutes 7j/7"
         },
         {
           "id": "tick_2",
-          "text": "✅ Garantie officielle sur tous les produits"
+          "text": "🔐 Comptes 100% officiels & licences garanties sans coupure"
         },
         {
           "id": "tick_3",
-          "text": "🔧 Support technique 7j/7"
+          "text": "🎓 Waymen Academy : formations pratiques & tutoriels IA"
         },
         {
           "id": "tick_4",
-          "text": "💳 Paiement sécurisé à la livraison"
+          "text": "💳 Paiement local sécurisé (Edahabia, CIB, Baridimob & Cash)"
         },
         {
           "id": "tick_5",
-          "text": "🎁 Cadeau pour toute config au-dessus de 200 000 DA"
+          "text": "🎁 Pack Bundles : jusqu'à -30% sur vos outils combinés"
         }
       ]
     },
     "marquee": {
       "brands": [
-        "HP",
-        "Dell",
-        "Lenovo",
-        "ASUS",
-        "Apple",
-        "Samsung",
-        "Xiaomi",
-        "MSI",
-        "Acer",
-        "Intel",
-        "AMD",
-        "NVIDIA"
+        "OpenAI",
+        "Anthropic",
+        "Google",
+        "Midjourney",
+        "Cursor",
+        "Microsoft",
+        "Perplexity",
+        "ElevenLabs",
+        "Runway",
+        "Canva",
+        "Notion",
+        "WaYmen Academy",
+        "WaYmen VIP"
       ]
     },
     "about": {
@@ -3930,26 +5284,26 @@
         {
           "id": "val_1",
           "icon": "shield",
-          "title": "Garantie officielle",
-          "description": "Tous nos produits sont authentiques et sous garantie des revendeurs agréés."
+          "title": "Licences Officielles Garanties",
+          "description": "Toutes nos activations proviennent directement des éditeurs officiels avec garantie de continuité."
         },
         {
           "id": "val_2",
-          "icon": "truck",
-          "title": "Livraison en Algérie",
-          "description": "Livraison rapide et sécurisée dans les 58 wilayas."
+          "icon": "zap",
+          "title": "Activation Express 7j/7",
+          "description": "Livraison dématérialisée et configuration guidée en moins de 15 minutes après commande."
         },
         {
           "id": "val_3",
           "icon": "headphones",
-          "title": "Support dédié",
-          "description": "Notre équipe est disponible avant et après votre achat."
+          "title": "Support Dédié & Conseil R&D",
+          "description": "Notre équipe d'experts IA vous oriente vers les outils les plus adaptés à vos cas d'usage réels."
         },
         {
           "id": "val_4",
           "icon": "award",
-          "title": "Expérience et confiance",
-          "description": "Des années au service de milliers de clients satisfaits."
+          "title": "Waymen Academy",
+          "description": "Transfert de compétences, masterclass et tutoriels opérationnels animés par des praticiens."
         }
       ]
     },
@@ -4135,26 +5489,34 @@
     }
   },
   "siteSettings": {
-    "storeName": "StacGate Platform",
-    "contactEmail": "contact@stacgate.com",
-    "contactPhone": "+213 555 00 00 00",
-    "whatsapp": "213555000000",
-    "address": "Alger, Algérie",
-    "hours": "Dimanche → Jeudi, 9h – 19h",
+    "storeName": "WaYmen AI Studio",
+    "contactEmail": "contact@waymen-ai.com",
+    "contactPhone": "+213 555 99 88 77",
+    "whatsapp": "213555998877",
+    "address": "Alger, Algérie — Hub Numérique & Activation IA",
+    "hours": "7j/7, 8h – 23h (Support & Activations en continu)",
     "maintenance": false,
-    "maintenanceMessage": "Nous revenons très vite ! Le site est en cours de mise à jour.",
+    "maintenanceMessage": "WaYmen AI Studio est en cours de mise à jour. Nous revenons très vite !",
     "emailNotifications": true,
     "showPromoBanner": true,
-    "promoBannerText": "Livraison offerte dès 60 000 DA — jusqu'à dimanche.",
+    "promoBannerText": "Activation instantanée en moins de 15 min & Formations certifiées — Waymen AI Studio.",
     "promoBannerLabel": "Découvrir",
-    "promoBannerHref": "/category/laptops",
+    "promoBannerHref": "/category/llm-assistants",
     "lowStockThreshold": 5,
     "outOfStockThreshold": 0,
     "currencySymbol": "DA",
     "currencyPosition": "suffix",
     "currencyThousandSeparator": " ",
-    "languageSelectorEnabled": false,
-    "hideRatingWhenNoReviews": true
+    "languageSelectorEnabled": true,
+    "hideRatingWhenNoReviews": true,
+    "primaryColor": "#e6007a",
+    "secondaryColor": "#00a3ff",
+    "accentColor": "#8b5cf6",
+    "logoUrl": "media/waymen-logo.webp",
+    "faviconUrl": "favicon.ico",
+    "defaultTheme": "light",
+    "borderRadius": "modern",
+    "fontFamily": "jakarta"
   },
   "shippingSettings": {
     "freeShippingThreshold": 150000,

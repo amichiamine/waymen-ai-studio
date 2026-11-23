@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLocalize, useI18n, type Localized } from "@/lib/i18n";
 import type { BlockConfig } from "@/types/pages";
 import { Download, Mail, Github, Linkedin, ShieldCheck } from "lucide-react";
-import archisysSignatureSrc from "@/assets/stacgate-archisys-combined.webp";
+import defaultAvatarSrc from "@/assets/waymen-logo.webp";
 
 interface ProfileHeroProps {
   config: BlockConfig;
@@ -26,7 +26,7 @@ export function ProfileHeroBlock({ config }: ProfileHeroProps) {
       ? p.availability
       : L(p.availability as Localized<string> | undefined)) ||
     "Disponible pour missions d'architecture & R&D";
-  const avatarUrl = typeof p.avatarUrl === "string" ? p.avatarUrl : archisysSignatureSrc;
+  const avatarUrl = typeof p.avatarUrl === "string" ? p.avatarUrl : defaultAvatarSrc;
   const showDownloadPdf = p.showDownloadPdf !== false;
   const githubUrl = typeof p.githubUrl === "string" ? p.githubUrl : undefined;
   const linkedinUrl = typeof p.linkedinUrl === "string" ? p.linkedinUrl : undefined;

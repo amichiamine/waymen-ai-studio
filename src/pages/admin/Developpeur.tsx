@@ -47,6 +47,7 @@ import {
   type MigrationResultTable,
   type DetailAnomalie,
 } from "@/data-provider/maintenance";
+import { purgerCacheClientSiteSettings } from "@/data-provider";
 import { toApiError } from "@/data-provider/errors";
 import { KATECH_SHOW_DATA_BADGE_KEY, KATECH_TOGGLE_BADGE_EVENT } from "@/components/DataModeBadge";
 
@@ -319,18 +320,33 @@ export default function AdminDeveloppeur() {
             <CardTitle className="flex items-center gap-2">
               <Database className="h-4 w-4" /> {t("admin.systeme.developpeur.etat_titre")}
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={recharger}
-              disabled={chargementEtat}
-              aria-label={t("admin.systeme.developpeur.etat_rafraichir_aria")}
-            >
-              <RefreshCw className={`me-2 h-4 w-4 ${chargementEtat ? "animate-spin" : ""}`} />
-              {chargementEtat
-                ? t("admin.socle.commun.chargement")
-                : t("admin.systeme.developpeur.etat_rafraichir")}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  purgerCacheClientSiteSettings();
+                  toast.success("Cache local du navigateur entièrement purgé.");
+                  recharger();
+                }}
+                title="Supprime les réglages en cache du localStorage et force la synchronisation serveur"
+              >
+                <PackageOpen className="me-2 h-4 w-4 text-primary" />
+                Purger le cache local (0 résidu)
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={recharger}
+                disabled={chargementEtat}
+                aria-label={t("admin.systeme.developpeur.etat_rafraichir_aria")}
+              >
+                <RefreshCw className={`me-2 h-4 w-4 ${chargementEtat ? "animate-spin" : ""}`} />
+                {chargementEtat
+                  ? t("admin.socle.commun.chargement")
+                  : t("admin.systeme.developpeur.etat_rafraichir")}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

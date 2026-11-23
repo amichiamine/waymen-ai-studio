@@ -7,6 +7,7 @@ import { useContactMessageMutations, useSiteSettings, useSiteContent } from "@/d
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { getIcon } from "@/lib/site-content";
 import { renderBlock } from "@/components/blocks";
+import NotFound from "@/pages/NotFound";
 import {
   Accordion,
   AccordionContent,
@@ -71,11 +72,17 @@ export default function Contact() {
   const subtitle = L(contact?.subtitle) || t("contact.sub");
   const faqs = contact?.faqs && contact.faqs.length > 0 ? contact.faqs : [];
 
-  const contactCustomPage = useMemo(() => {
-    return (siteContent?.customPages || []).find(
-      (p) => p.slug.toLowerCase() === "contact" && p.isPublished !== false,
-    );
+  const contactCustomPageDef = useMemo(() => {
+    return (siteContent?.customPages || []).find((p) => p.slug.toLowerCase() === "contact");
   }, [siteContent?.customPages]);
+
+  // Si la page Contact est explicitement dépubliée depuis le panel admin
+  if (contactCustomPageDef && contactCustomPageDef.isPublished === false) {
+    return <NotFound />;
+  }
+
+  const contactCustomPage =
+    contactCustomPageDef?.isPublished !== false ? contactCustomPageDef : undefined;
 
   // Si la vue composable Contact est configurée, rendre ses blocs dynamiques
   if (

@@ -1,34 +1,28 @@
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Laptop,
-  Monitor,
-  Cpu,
-  Smartphone,
+  Bot,
+  Palette,
+  Code2,
+  Cloud,
+  GraduationCap,
+  Boxes,
   LayoutGrid,
   type LucideIcon,
 } from "lucide-react";
-import laptopsImg from "@/assets/cat-laptops.webp";
-import desktopsImg from "@/assets/cat-desktops.webp";
-import buildsImg from "@/assets/cat-builds.webp";
-import phonesImg from "@/assets/cat-phones.webp";
 import { useCategoryList, useSiteContent } from "@/data-provider";
 import { Reveal } from "@/components/Reveal";
 import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { useLocalize, useI18n } from "@/lib/i18n";
 import { categoryMeta, type BuiltinCategory } from "@/data/products";
 
-const DEFAULT_IMG: Record<string, string> = {
-  laptops: laptopsImg,
-  desktops: desktopsImg,
-  builds: buildsImg,
-  phones: phonesImg,
-};
 const DEFAULT_ICON: Record<string, LucideIcon> = {
-  laptops: Laptop,
-  desktops: Monitor,
-  builds: Cpu,
-  phones: Smartphone,
+  "llm-assistants": Bot,
+  "creative-media": Palette,
+  "code-engineering": Code2,
+  "productivity-cloud": Cloud,
+  "formations-academy": GraduationCap,
+  "packs-bundles": Boxes,
 };
 
 export function CategoryCards({ max }: { max?: number } = {}) {
@@ -46,10 +40,10 @@ export function CategoryCards({ max }: { max?: number } = {}) {
       <Reveal variant="up">
         <SectionHead title={L(cfg.title) ?? ""} sub={L(cfg.subtitle) ?? ""} />
       </Reveal>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mt-10">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-10">
         {cats.map((c, i) => {
           const Icon = DEFAULT_ICON[c.slug] ?? LayoutGrid;
-          const img = c.cover || DEFAULT_IMG[c.slug];
+          const img = c.cover;
           const label =
             L(c.label) ||
             (c.slug in categoryMeta

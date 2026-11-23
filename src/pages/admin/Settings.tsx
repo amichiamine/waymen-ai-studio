@@ -45,7 +45,7 @@ import {
   Globe,
   ArrowRight,
 } from "lucide-react";
-import defaultLogoSrc from "@/assets/stacgate-archisys-combined.webp";
+import defaultLogoSrc from "@/assets/waymen-logo.webp";
 import { resoudreUrlMedia } from "@/components/media-url";
 import { MediaPickerDialog } from "@/components/admin/MediaPickerField";
 import { BuilderStepsVisualEditor } from "@/components/admin/BuilderStepsVisualEditor";
@@ -561,7 +561,7 @@ export default function AdminSettings() {
                     <div className="space-y-1.5">
                       <Label>{t("admin.reglages.parametres.theme_defaut")}</Label>
                       <Select
-                        value={form.defaultTheme ?? "dark"}
+                        value={form.defaultTheme ?? "light"}
                         onValueChange={(val: "dark" | "light" | "system") =>
                           set("defaultTheme", val)
                         }

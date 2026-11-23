@@ -127,7 +127,12 @@ export {
 export type { ShippingSettingsMutations } from "./shipping-settings";
 export { SITE_CONTENT_RESOURCE, useSiteContent, useSiteContentMutations } from "./site-content";
 export type { SiteContentMutations } from "./site-content";
-export { SITE_SETTINGS_RESOURCE, useSiteSettings, useSiteSettingsMutations } from "./site-settings";
+export {
+  SITE_SETTINGS_RESOURCE,
+  useSiteSettings,
+  useSiteSettingsMutations,
+  purgerCacheClientSiteSettings,
+} from "./site-settings";
 export type { SiteSettingsMutations } from "./site-settings";
 export {
   STOCK_MOVEMENTS_RESOURCE,

@@ -22,7 +22,9 @@
 ## 2. Diagnostic Technique & Cause Racine de la Casse des Montants en Arabe
 
 ### Cause Racine N°1 : Double inversion Flexbox artificielle
+
 Dans [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css) :
+
 ```css
 html[dir="rtl"] .devis-header-top,
 html[dir="rtl"] .option-header,
@@ -32,9 +34,11 @@ html[dir="rtl"] .option-card {
   flex-direction: row-reverse; /* ❌ DOUBLE INVERSION */
 }
 ```
+
 Sous `html[dir="rtl"]`, le moteur Flexbox standard inverse **déjà nativement** son axe de droite à gauche. L'ajout de `row-reverse` a causé une inversion redondante qui renvoie les cases à cocher à gauche et inverse les positions relatives des libellés et des prix.
 
 ### Cause Racine N°2 : Conflit de l'algorithme Unicode BiDi (Bi-directional)
+
 En arabe, les phrases se lisent de droite à gauche, mais **les nombres et les montants s'écrivent et se lisent toujours de gauche à droite (LTR)**.  
 Sans isolation directionnelle stricte (`unicode-bidi: isolate;` et `<bdi dir="ltr">`), les chaînes mixtes (`+ 25 000 DZD`, `18,5 مليون سنتيم`) subissent des permutations anarchiques des caractères `+`, `,` et de la devise `DZD`.
 
@@ -43,6 +47,7 @@ Sans isolation directionnelle stricte (`unicode-bidi: isolate;` et `<bdi dir="lt
 ## 3. Découpage Chirurgical des Actions de la Sous-Phase 45.2
 
 ### Action 1 : Purge des `row-reverse` Superflus dans `devis-style.css`
+
 - **Fichier :** 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
 - **Modifications :**
   - Supprimer les déclarations `flex-direction: row-reverse` sur :
@@ -57,6 +62,7 @@ Sans isolation directionnelle stricte (`unicode-bidi: isolate;` et `<bdi dir="lt
   - Laisser le comportement natif Flexbox W3C opérer sous `dir="rtl"` : le point de départ (`start`) est naturellement à droite, la case à cocher est à droite, le texte se déroule vers la gauche, et les prix se calent proprement à l'extrémité gauche.
 
 ### Action 2 : Verrouillage CSS de l'Isolation LTR sur les Montants & Prix
+
 - **Fichier :** 📄 [`devis/assets/css/devis-style.css`](file:///c:/xampp/htdocs/ka-tech/devis/assets/css/devis-style.css)
 - **Modifications :**
   - Appliquer les règles d'isolation bidirectionnelle sur tous les sélecteurs de montants :
@@ -75,6 +81,7 @@ Sans isolation directionnelle stricte (`unicode-bidi: isolate;` et `<bdi dir="lt
   - En mode RTL, ces éléments conservent leur intégrité géométrique sans que le signe `+` ou la devise `DZD` ne soit déplacé à la fin.
 
 ### Action 3 : Sécurisation du Formateur des Centimes dans `devis-calculator.js`
+
 - **Fichier :** 📄 [`devis/assets/js/devis-calculator.js`](file:///c:/xampp/htdocs/ka-tech/devis/assets/js/devis-calculator.js)
 - **Modifications :**
   - Dans la fonction `formatCentimes(amountDZD)` :
@@ -92,14 +99,14 @@ Sans isolation directionnelle stricte (`unicode-bidi: isolate;` et `<bdi dir="lt
 
 ## 4. Matrice de Recette & Critères d'Acceptation
 
-| Élément | Comportement Attendu en Arabe (RTL) | Validation |
-| :--- | :--- | :---: |
-| **Cases à cocher (`.option-card`)** | Case à cocher située à l'extrême droite, libellé au centre, prix à gauche. | 🟢 Conforme |
-| **Prix unitaire (`.option-price`)** | Affichage strict LTR : `+25 000 DZD` (signe `+` à gauche, chiffres ordonnés). | 🟢 Conforme |
-| **Récapitulatif (`.summary-row`)** | Nom de l'option aligné à droite, montant aligné à gauche en LTR. | 🟢 Conforme |
-| **Total DZD (`.total-amount-dzd`)** | Chiffre en gros caractères LTR : `185 000 DZD`. | 🟢 Conforme |
-| **Total Centimes (`.total-amount-centimes`)** | Chiffre décimal stable : `18,5 مليون سنتيم` sans permutation de la virgule. | 🟢 Conforme |
-| **Boutons & Actions** | Icône et libellé orientés harmonieusement sans chevauchement. | 🟢 Conforme |
+| Élément                                       | Comportement Attendu en Arabe (RTL)                                           | Validation  |
+| :-------------------------------------------- | :---------------------------------------------------------------------------- | :---------: |
+| **Cases à cocher (`.option-card`)**           | Case à cocher située à l'extrême droite, libellé au centre, prix à gauche.    | 🟢 Conforme |
+| **Prix unitaire (`.option-price`)**           | Affichage strict LTR : `+25 000 DZD` (signe `+` à gauche, chiffres ordonnés). | 🟢 Conforme |
+| **Récapitulatif (`.summary-row`)**            | Nom de l'option aligné à droite, montant aligné à gauche en LTR.              | 🟢 Conforme |
+| **Total DZD (`.total-amount-dzd`)**           | Chiffre en gros caractères LTR : `185 000 DZD`.                               | 🟢 Conforme |
+| **Total Centimes (`.total-amount-centimes`)** | Chiffre décimal stable : `18,5 مليون سنتيم` sans permutation de la virgule.   | 🟢 Conforme |
+| **Boutons & Actions**                         | Icône et libellé orientés harmonieusement sans chevauchement.                 | 🟢 Conforme |
 
 ---
 

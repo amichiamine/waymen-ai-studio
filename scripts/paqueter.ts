@@ -1,5 +1,5 @@
 /**
- * paqueter.ts — Assemble katech-site.zip : un seul fichier à téléverser.
+ * paqueter.ts — Assemble waymen-site.zip : un seul fichier à téléverser.
  *
  * =====================================================================
  * POURQUOI CE SCRIPT EXISTE
@@ -94,7 +94,7 @@ function obtenirNomArchiveHorodatee(): string {
   const aaaa = d.getFullYear();
   const hh = pad(d.getHours());
   const min = pad(d.getMinutes());
-  return `katech-site-${jj}${mm}${aaaa}-${hh}${min}.zip`;
+  return `waymen-site-${jj}${mm}${aaaa}-${hh}${min}.zip`;
 }
 
 // ── Fichiers et dossiers à NE PAS copier depuis api/ ─────────────────────────

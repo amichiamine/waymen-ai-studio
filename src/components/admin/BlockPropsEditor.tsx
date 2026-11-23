@@ -20,9 +20,9 @@ import { getBlockMeta } from "@/components/blocks/registry";
 import { useSiteContent, useSiteSettings } from "@/data-provider";
 import { useLocalize } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import heroImg from "@/assets/hero-laptop.webp";
-import archisysBannerSrc from "@/assets/stacgate-archisys-banner.webp";
-import archisysSignatureSrc from "@/assets/stacgate-archisys-combined.webp";
+import heroImg from "@/assets/waymen-og-banner.webp";
+import archisysBannerSrc from "@/assets/waymen-og-banner.webp";
+import archisysSignatureSrc from "@/assets/waymen-logo.webp";
 
 interface BlockPropsEditorProps {
   block: BlockConfig;

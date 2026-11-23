@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <meta name="theme-color" content="#0a0d12" />
+    <meta name="theme-color" content="#ffffff" />
     <script>
       (function () {
         try {
@@ -29,29 +29,43 @@
           var savedSettings = null;
           try {
             var raw = localStorage.getItem("katech_site_settings");
-            if (raw) savedSettings = JSON.parse(raw);
+            if (raw) {
+              var parsed = JSON.parse(raw);
+              if (
+                parsed &&
+                (!parsed.storeName ||
+                  !parsed.storeName.includes("WaYmen") ||
+                  (parsed.logoUrl &&
+                    (parsed.logoUrl.includes("combined") || parsed.logoUrl.includes("stacgate"))))
+              ) {
+                localStorage.removeItem("katech_site_settings");
+                localStorage.removeItem("katech_site_settings_name");
+              } else {
+                savedSettings = parsed;
+              }
+            }
           } catch (e) {}
           var s = b || savedSettings || {};
 
           // 1. Nom du magasin
-          var n = s.storeName || localStorage.getItem("katech_site_settings_name");
+          var n =
+            s.storeName || localStorage.getItem("katech_site_settings_name") || "WaYmen AI Studio";
           if (n && n.trim()) {
-            document.title =
-              n + " — Plateforme E-Commerce, Vitrines tous produits et tous commerces";
+            document.title = n + " — Abonnements, Activations IA & Formations d'Élite";
           }
 
           // 2. Thème par défaut / préférence utilisateur (0 ms, zéro FOUC)
           var userTheme = localStorage.getItem("ka-theme");
-          var themeToApply = userTheme || s.defaultTheme || "dark";
-          var isLight =
-            themeToApply === "light" ||
+          var themeToApply = userTheme || s.defaultTheme || "light";
+          var isDark =
+            themeToApply === "dark" ||
             (themeToApply === "system" &&
               window.matchMedia &&
-              window.matchMedia("(prefers-color-scheme: light)").matches);
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
           var root = document.documentElement;
-          root.classList.toggle("light", isLight);
-          root.classList.toggle("dark", !isLight);
-          root.style.colorScheme = isLight ? "light" : "dark";
+          root.classList.toggle("dark", isDark);
+          root.classList.toggle("light", !isDark);
+          root.style.colorScheme = isDark ? "dark" : "light";
 
           // 3. Nuances chromatiques (Primaire, Secondaire, Accent)
           if (s.primaryColor && s.primaryColor.trim()) {
@@ -104,24 +118,22 @@
         } catch (e) {}
       })();
     </script>
-    <title>
-      StacGate Platform — Plateforme E-Commerce, Vitrines tous produits et tous commerces
-    </title>
+    <title>WaYmen AI Studio — Abonnements, Activations IA & Formations d'Élite</title>
     <meta
       name="description"
-      content="StacGate Platform : plateforme e-commerce et vitrine multimarques pour tous produits et tous commerces avec livraison et suivi en temps réel."
+      content="WaYmen AI Studio : Hub de référence pour les abonnements et activations d'intelligence artificielle (ChatGPT, Claude, Gemini, Midjourney, Cursor) et formations spécialisées. Conçu & Validé par ArchiSys3.0."
     />
-    <meta name="author" content="StacGate Platform" />
+    <meta name="author" content="WaYmen AI Studio & ArchiSys3.0" />
     <meta
       property="og:title"
-      content="StacGate Platform — Plateforme E-Commerce, Vitrines tous produits et tous commerces"
+      content="WaYmen AI Studio — Abonnements, Activations IA & Formations d'Élite"
     />
     <meta
       property="og:description"
-      content="Plateforme e-commerce et vitrine multimarques pour tous produits et tous commerces."
+      content="Hub d'excellence pour tous vos abonnements IA et formations certifiées. Activation instantanée et support d'experts."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="StacGate Platform" />
+    <meta property="og:site_name" content="WaYmen AI Studio" />
     <meta property="og:locale" content="fr_DZ" />
     <!-- WhatsApp — canal de vente principal en Algérie — n'accepte QUE des URL
          absolues pour og:image : un chemin relatif ne produit aucune vignette.
@@ -137,13 +149,13 @@
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="StacGate Platform — Plateforme E-Commerce, Vitrines tous produits et tous commerces"
+      content="WaYmen AI Studio — Abonnements IA & Formations — ArchiSys3.0"
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="StacGate Platform" />
+    <meta name="twitter:title" content="WaYmen AI Studio — Abonnements IA & Formations" />
     <meta
       name="twitter:description"
-      content="Plateforme e-commerce et vitrine multimarques pour tous produits et tous commerces."
+      content="Hub d'excellence pour tous vos abonnements IA et formations certifiées."
     />
     <meta name="twitter:image" content="https://katech.dz/og-image.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -156,10 +168,10 @@
       {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "StacGate Platform",
+        "name": "WaYmen AI Studio",
         "url": "https://katech.dz/",
         "logo": "https://katech.dz/og-image.png",
-        "description": "Plateforme e-commerce et vitrine multimarques pour tous produits et tous commerces.",
+        "description": "Hub d'excellence pour abonnements IA et formations certifiées.",
         "areaServed": "DZ"
       }
     </script>

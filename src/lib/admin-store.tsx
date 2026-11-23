@@ -318,6 +318,51 @@ export type ArrayKey = (typeof ARRAY_KEYS)[number];
 
 // ---------- Seed helpers ----------
 const CAT_LABELS: Record<Category, Localized<string>> = {
+  "llm-assistants": {
+    fr: "Assistants IA & LLM",
+    en: "AI Assistants & LLM",
+    ar: "مساعدو الذكاء الاصطناعي و LLM",
+  },
+  "creative-media": {
+    fr: "Création Visuelle & Audio IA",
+    en: "Creative & Audio AI",
+    ar: "التوليد البصري والصوتي بالذكاء الاصطناعي",
+  },
+  "code-engineering": {
+    fr: "Code & Ingénierie IA",
+    en: "AI Coding & Engineering",
+    ar: "البرمجة وهندسة الذكاء الاصطناعي",
+  },
+  "productivity-cloud": {
+    fr: "Productivité & Suites IA",
+    en: "Productivity & AI Suites",
+    ar: "الإنتاجية والحزم المكتبية السحابية",
+  },
+  "formations-academy": {
+    fr: "Formations & Coaching IA",
+    en: "AI Courses & Coaching",
+    ar: "الدورات والتدريب على الذكاء الاصطناعي",
+  },
+  "packs-bundles": {
+    fr: "Packs & Formules VIP",
+    en: "Packs & VIP Bundles",
+    ar: "الباقات والعروض المجمعة VIP",
+  },
+  "streaming-medias": {
+    fr: "Streaming & Médias",
+    en: "Streaming & Media",
+    ar: "البث المباشر والوسائط",
+  },
+  "gaming-consoles": {
+    fr: "Gaming & Consoles / PC",
+    en: "Gaming & Consoles / PC",
+    ar: "الألعاب والمنصات / الكمبيوتر",
+  },
+  "cartes-cadeaux": {
+    fr: "Cartes Cadeaux & Recharges",
+    en: "Gift Cards & Top-ups",
+    ar: "بطاقات الهدايا والشحن",
+  },
   laptops: {
     fr: "Ordinateurs portables",
     en: "Laptops",
@@ -340,6 +385,51 @@ const CAT_LABELS: Record<Category, Localized<string>> = {
   },
 };
 const CAT_DESC: Record<Category, Localized<string>> = {
+  "llm-assistants": {
+    fr: "ChatGPT Plus, Claude Pro, Google Gemini & Perplexity.",
+    en: "ChatGPT Plus, Claude Pro, Google Gemini & Perplexity.",
+    ar: "شات جي بي تي، كلود، جيمني، وبيربلكسيتي برو.",
+  },
+  "creative-media": {
+    fr: "Midjourney, Runway Gen-3, ElevenLabs & Studios vidéo.",
+    en: "Midjourney, Runway Gen-3, ElevenLabs & Video studios.",
+    ar: "ميدجورني، رانوي، إليفن لابس، ومختبرات الفيديو.",
+  },
+  "code-engineering": {
+    fr: "Cursor Pro, GitHub Copilot & Outils de développement.",
+    en: "Cursor Pro, GitHub Copilot & Development tools.",
+    ar: "كورسور برو، جيت هاب كوبايلوت، وأدوات البرمجة.",
+  },
+  "productivity-cloud": {
+    fr: "Canva Pro, Notion AI & Suites bureautiques cloud.",
+    en: "Canva Pro, Notion AI & Cloud productivity suites.",
+    ar: "كانفا برو، نوشن، ومايكروسوفت كوبايلوت.",
+  },
+  "formations-academy": {
+    fr: "Tutoriels, masterclass et coaching pour tous profils.",
+    en: "Tutorials, masterclasses and coaching for all profiles.",
+    ar: "دروس تدريبية متقدمة وتطبيق عملي لكافة التخصصات.",
+  },
+  "packs-bundles": {
+    fr: "Combinaisons exclusives multi-plateformes à prix réduit.",
+    en: "Exclusive multi-platform combinations at discounted rates.",
+    ar: "اشتراكات مجمعة لأقوى المنصات بأسعار مخفضة.",
+  },
+  "streaming-medias": {
+    fr: "Netflix 4K, Spotify, YouTube Premium & Disney+.",
+    en: "Netflix 4K, Spotify, YouTube Premium & Disney+.",
+    ar: "نتفليكس 4K، سبوتيفاي، يوتيوب بريميوم وديزني+.",
+  },
+  "gaming-consoles": {
+    fr: "PlayStation Plus, Xbox Game Pass & Steam Wallet.",
+    en: "PlayStation Plus, Xbox Game Pass & Steam Wallet.",
+    ar: "بلايستيشن بلس، إكس بوكس غيم باس وشحن ستيم.",
+  },
+  "cartes-cadeaux": {
+    fr: "Cartes cadeaux Apple, Google Play, PlayStation & Xbox.",
+    en: "Apple, Google Play, PlayStation & Xbox gift cards.",
+    ar: "بطاقات هدايا آبل، غوغل بلاي، بلايستيشن وإكس بوكس.",
+  },
   laptops: {
     fr: "Laptops pour le travail, les études et le gaming.",
     en: "Laptops for work, studies and high-performance gaming.",
@@ -829,99 +919,99 @@ function seedBlogPosts(): BlogPost[] {
   const d = (days: number) => new Date(now - days * 86400000).toISOString();
   const base = [
     {
-      slug: "guide-achat-laptop-2026",
+      slug: "chatgpt-plus-vs-claude-pro-2026",
       title: {
-        fr: "Guide d'achat : bien choisir son ordinateur portable en 2026",
-        en: "Buying guide: how to choose the right laptop in 2026",
-        ar: "دليل الشراء: كيف تختار حاسوبك المحمول في 2026",
+        fr: "Quel assistant IA choisir en 2026 ? Comparatif ChatGPT Plus vs Claude 3.5 Sonnet",
+        en: "Which AI assistant to choose in 2026? ChatGPT Plus vs Claude 3.5 Sonnet",
+        ar: "أي مساعد ذكاء اصطناعي تختار في 2026؟ مقارنة ChatGPT Plus و Claude 3.5 Sonnet",
       },
       excerpt: {
-        fr: "CPU, GPU, RAM, écran — les critères qui comptent vraiment selon votre usage.",
-        en: "CPU, GPU, RAM, screen — the criteria that truly matter for your use case.",
-        ar: "CPU، GPU، RAM، الشاشة — المعايير التي تهم فعلاً حسب استخدامك.",
+        fr: "Capacités de raisonnement, artifacts de code, analyse de documents — quel modèle correspond à vos besoins réels ?",
+        en: "Reasoning capabilities, code artifacts, document analysis — which model fits your actual needs?",
+        ar: "قدرات الاستنتاج، نوافذ الأكواد، تحليل المستندات — أي نموذج يلبي احتياجاتك الفعلية؟",
       },
       content: {
-        fr: "# Bien choisir son laptop en 2026\n\nEn 2026, l'offre laptop est plus riche que jamais. Voici les 5 critères à ne pas négliger :\n\n1. **Le processeur** : privilégiez un Intel Core Ultra ou un AMD Ryzen 7000+.\n2. **La RAM** : 16 Go minimum, 32 Go pour la création.\n3. **Le SSD** : NVMe Gen4, 512 Go minimum.\n4. **L'écran** : dalle IPS ou OLED, 100 % sRGB pour la couleur juste.\n5. **La garantie** : chez {storeName}, tous nos laptops sont sous garantie officielle.",
-        en: "# Choosing the right laptop in 2026\n\nIn 2026, the laptop market is richer than ever. Here are the 5 criteria you should not overlook:\n\n1. **The processor**: go for an Intel Core Ultra or an AMD Ryzen 7000+.\n2. **RAM**: 16 GB minimum, 32 GB for creative work.\n3. **The SSD**: NVMe Gen4, 512 GB minimum.\n4. **The screen**: IPS or OLED panel, 100% sRGB for accurate colour.\n5. **The warranty**: at {storeName}, all our laptops come with an official warranty.",
-        ar: "# كيف تختار حاسوبك المحمول في 2026\n\nفي 2026، سوق الحواسيب المحمولة أثرى من أي وقت مضى. إليك 5 معايير لا ينبغي إغفالها:\n\n1. **المعالج**: اختر Intel Core Ultra أو AMD Ryzen 7000+.\n2. **الذاكرة RAM**: 16 غيغابايت كحد أدنى، و32 غيغابايت للإبداع والمونتاج.\n3. **القرص SSD**: NVMe Gen4، 512 غيغابايت كحد أدنى.\n4. **الشاشة**: لوحة IPS أو OLED، 100% sRGB لدقة الألوان.\n5. **الضمان**: في {storeName}، جميع حواسيبنا المحمولة تأتي مع ضمان رسمي.",
+        fr: "# ChatGPT Plus vs Claude 3.5 Sonnet en 2026\n\nLe choix entre les deux géants de l'IA dépend de vos cas d'usage quotidiens :\n\n1. **ChatGPT Plus (GPT-4o)** : Idéal pour la polyvalence, la recherche web en direct, la génération visuelle DALL·E 3 et le mode vocal avancé.\n2. **Claude 3.5 Sonnet (Anthropic)** : Le champion incontesté de l'écriture fluide, du code et de l'analyse logique approfondie avec les Artifacts.\n3. **Notre conseil WaYmen** : Les professionnels cumulent souvent les deux abonnements ou optent pour notre Pack Ultimate pour maximiser leur productivité.",
+        en: "# ChatGPT Plus vs Claude 3.5 Sonnet in 2026\n\nThe choice between the two AI leaders depends on your daily workflows:\n\n1. **ChatGPT Plus (GPT-4o)**: Ideal for versatility, live web search, DALL·E 3 visual generation and advanced voice mode.\n2. **Claude 3.5 Sonnet (Anthropic)**: The undisputed champion of nuanced writing, code generation and deep reasoning with Artifacts.\n3. **WaYmen Tip**: Power users often combine both tools or choose our Ultimate Pack for peak productivity.",
+        ar: "# مقارنة ChatGPT Plus و Claude 3.5 Sonnet في 2026\n\nيعتمد الاختيار بين عملاقي الذكاء الاصطناعي على طبيعة استخدامك اليومي:\n\n1. **ChatGPT Plus (GPT-4o)**: مثالي للتنوع، والبحث المباشر على الويب، وتوليد الصور عبر DALL·E 3، والتفاعل الصوتي المتقدم.\n2. **Claude 3.5 Sonnet**: الرائد المطلق في كتابة النصوص الاحترافية والبرمجة والتحليل الدقيق عبر ميزة Artifacts.\n3. **نصيحة وايمان**: يفضل المحترفون الجمع بين النموذجين أو اختيار الباقة الشاملة لمضاعفة إنتاجيتهم.",
       },
-      tags: ["laptop", "guide"],
+      tags: ["ia", "comparatif", "chatgpt", "claude"],
     },
     {
-      slug: "gaming-pc-vs-console",
+      slug: "developper-avec-ia-cursor-copilot",
       title: {
-        fr: "PC gaming vs console : le match 2026",
-        en: "Gaming PC vs console: the 2026 showdown",
-        ar: "PC للألعاب مقابل الكونسول: مقارنة 2026",
+        fr: "Développer 10x plus vite : Maîtriser Cursor Pro & GitHub Copilot",
+        en: "Develop 10x faster: Mastering Cursor Pro & GitHub Copilot",
+        ar: "البرمجة بسرعة 10 أضعاف: احتراف Cursor Pro و GitHub Copilot",
       },
       excerpt: {
-        fr: "Prix, catalogue, mods, longévité — on compare les deux univers.",
-        en: "Price, game library, mods, longevity — we compare both worlds.",
-        ar: "السعر، مكتبة الألعاب، الإضافات، العمر الافتراضي — نقارن بين العالمين.",
+        fr: "Autocomplétion intelligente, refactorisation complète et intégration continue avec les meilleurs IDE IA.",
+        en: "Smart code completion, full refactoring and seamless integration with top AI code editors.",
+        ar: "إكمال الكود الذكي، إعادة الهيكلة الشاملة والتكامل مع أفضل بيئات التطوير بالذكاء الاصطناعي.",
       },
       content: {
-        fr: "Le débat PC vs console revient chaque génération. En 2026, le PC prend l'avantage sur la modularité, le catalogue Steam et la longévité — mais la console reste imbattable sur le plug-and-play.",
-        en: "The PC vs console debate comes back every generation. In 2026, the PC has the edge on modularity, the Steam library and longevity — but the console remains unbeatable for plug-and-play simplicity.",
-        ar: "نقاش PC مقابل الكونسول يعود مع كل جيل. في 2026، يتفوق PC على صعيد المرونة ومكتبة Steam والعمر الافتراضي — لكن الكونسول يبقى لا يُضاهى في سهولة التشغيل الفوري.",
+        fr: "# Révolutionner son workflow de dev avec Cursor & Copilot\n\nL'intelligence artificielle transforme le développement logiciel en pratique assistée d'élite :\n\n1. **Cursor Pro** : Un éditeur complet intégrant Claude 3.5 Sonnet directement dans votre codebase pour modifier plusieurs fichiers simultanément.\n2. **GitHub Copilot** : L'extension native indispensable pour autocompléter vos fonctions sans friction.\n3. **L'activation WaYmen** : Nous assurons la mise en service immédiate de votre licence professionnelle pour coder sans limites.",
+        en: "# Revolutionize your dev workflow with Cursor & Copilot\n\nArtificial intelligence elevates modern software development to elite levels:\n\n1. **Cursor Pro**: A dedicated editor integrating Claude 3.5 Sonnet across your entire codebase for multi-file edits.\n2. **GitHub Copilot**: The essential native autocomplete extension for fast flow state.\n3. **WaYmen Activation**: We provide instant delivery for your pro licenses to code without limits.",
+        ar: "# إحداث ثورة في مسار البرمجة مع Cursor و Copilot\n\nيعمل الذكاء الاصطناعي على الارتقاء بتطوير البرمجيات إلى أعلى مستويات السرعة والإنتاجية:\n\n1. **Cursor Pro**: محرر أكواد متطور يدمج نموذج Claude 3.5 مباشرة مع مشروعك لتعديل عدة ملفات في آن واحد.\n2. **GitHub Copilot**: المساعد البرمجي الفوري لكتابة وتوقع الأكواد بسلاسة فائقة.\n3. **تفعيل وايمان**: نوفر لك التفعيل الفوري للاشتراك لتبدأ عملك دون قيود.",
       },
-      tags: ["gaming", "comparatif"],
+      tags: ["developpement", "cursor", "copilot", "code"],
     },
     {
-      slug: "smartphone-photo-2026",
+      slug: "creation-visuelle-midjourney-runway",
       title: {
-        fr: "Top 3 smartphones photo début 2026",
-        en: "Top 3 camera smartphones of early 2026",
-        ar: "أفضل 3 هواتف للتصوير في مطلع 2026",
+        fr: "Création graphique & vidéo IA : Guide Midjourney V6.1 & Runway Gen-3",
+        en: "AI visual & video creation: Midjourney V6.1 & Runway Gen-3 guide",
+        ar: "صناعة المحتوى المرئي والفيديو بالذكاء الاصطناعي: دليل Midjourney و Runway",
       },
       excerpt: {
-        fr: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro : notre verdict.",
-        en: "iPhone 16 Pro Max, Galaxy S25 Ultra, Xiaomi 14T Pro: our verdict.",
-        ar: "iPhone 16 Pro Max، Galaxy S25 Ultra، Xiaomi 14T Pro: حكمنا النهائي.",
+        fr: "Des visuels photoréalistes aux animations cinématiques professionnelles pour designers et créateurs.",
+        en: "From photorealistic visuals to cinematic video animations for designers and video creators.",
+        ar: "من الصور الواقعية الفائقة إلى مقاطع الفيديو السينمائية للمصممين وصناع المحتوى.",
       },
       content: {
-        fr: "Trois flagships, trois philosophies photo. L'iPhone mise sur la constance vidéo, le Samsung sur la polyvalence zoom, le Xiaomi sur la signature Leica. À vous de choisir.",
-        en: "Three flagships, three photography philosophies. The iPhone bets on video consistency, Samsung on zoom versatility, and Xiaomi on the Leica signature. The choice is yours.",
-        ar: "ثلاثة هواتف رائدة، ثلاث فلسفات تصوير. iPhone يراهن على ثبات الفيديو، Samsung على تعدد استخدامات الزووم، Xiaomi على توقيع Leica. لك أن تختار.",
+        fr: "# Le studio créatif propulsé par l'IA\n\nPour les designers, vidéastes et agences de communication, l'IA ouvre des perspectives illimitées :\n\n1. **Midjourney V6.1** : Le standard mondial pour la direction artistique, les maquettes et le rendu hyper-réaliste.\n2. **Runway Gen-3 Alpha** : La référence cinématographique pour générer des vidéos 4K dynamiques à partir de prompts textuels ou d'images fixes.\n3. **Support WaYmen** : Accès rapide aux licences Fast GPU et tutoriels dédiés dans notre Academy.",
+        en: "# The creative studio powered by AI\n\nFor designers, filmmakers and marketing teams, generative tools offer endless creative leverage:\n\n1. **Midjourney V6.1**: The world standard for art direction, concept art and photorealistic renders.\n2. **Runway Gen-3 Alpha**: The cinematic benchmark for 4K video clips from prompts or still imagery.\n3. **WaYmen Support**: Fast GPU allocation and dedicated tutorials within our Academy.",
+        ar: "# استوديو الإبداع المدعوم بالذكاء الاصطناعي\n\nللمصممين والمخرجين وفرق التسويق، تفتح هذه الأدوات آفاقاً إبداعية لا حدود لها:\n\n1. **Midjourney V6.1**: المعيار العالمي للإخراج الفني، التصاميم الإعلانية والصور الواقعية.\n2. **Runway Gen-3 Alpha**: المنصة الرائدة لتوليد لقطات سينمائية عالية الدقة من النصوص أو الصور.\n3. **دعم وايمان**: تفعيل اشتراكات ساعات الحوسبة السريعة Fast GPU وإرشادات تطبيقية بالأكاديمية.",
       },
-      tags: ["smartphone", "photo", "top"],
+      tags: ["design", "midjourney", "runway", "video"],
     },
     {
-      slug: "monter-son-pc-configurateur",
+      slug: "clonage-vocal-elevenlabs-secrets",
       title: {
-        fr: "Monter son PC : nos conseils du configurateur {storeName}",
-        en: "Building your PC: tips from the {storeName} configurator",
-        ar: "تجميع حاسوبك: نصائح من مُجمِّع {storeName}",
+        fr: "Clonage vocal et voix ultra-réalistes : Les secrets d'ElevenLabs",
+        en: "Voice cloning and hyper-realistic audio: The secrets of ElevenLabs",
+        ar: "استنساخ الصوت والتعليق الصوتي الواقعي: أسرار ElevenLabs للمبدعين",
       },
       excerpt: {
-        fr: "Pourquoi passer par un PC sur-mesure et comment éviter les pièges classiques.",
-        en: "Why go for a custom-built PC and how to avoid the classic pitfalls.",
-        ar: "لماذا تختار حاسوباً مخصصاً وكيف تتجنب الأخطاء الشائعة.",
+        fr: "Comment doubler, narrer et créer des voix personnalisées avec une expressivité bluffante.",
+        en: "How to voiceover, narrate and build custom voices with remarkable human emotion.",
+        ar: "كيفية دبلجة وسرد وإنشاء أصوات احترافية مخصصة بنبرة واقعية ومشاعر بشرية متطابقة.",
       },
       content: {
-        fr: "Notre configurateur PC vous guide étape par étape. Avant de valider votre config, vérifiez : la compatibilité socket CPU/carte-mère, le TDP de l'alim (+30 % de marge), et la ventilation du boîtier.",
-        en: "Our PC configurator walks you through every step. Before confirming your build, check: CPU/motherboard socket compatibility, the PSU TDP (+30% headroom), and the case airflow.",
-        ar: "يرشدك مُجمِّع PC الخاص بنا خطوة بخطوة. قبل تأكيد تجميعتك، تحقق من: توافق socket المعالج مع اللوحة الأم، TDP مزود الطاقة (+30% هامش)، وتهوية الصندوق.",
+        fr: "# Voix d'élite et doublage multilingue avec ElevenLabs\n\nLa synthèse vocale a franchi un cap décisif grâce aux réseaux neuronaux d'ElevenLabs :\n\n1. **Voice Cloning** : Clonez votre propre voix ou créez des voix d'acteurs uniques pour vos podcasts, publicités et cours en ligne.\n2. **Support Multilingue** : Traduisez et doublez vos contenus en plus de 29 langues avec une fidélité émotionnelle totale.\n3. **Offre WaYmen** : Licences Creator avec quota étendu activées en 15 minutes.",
+        en: "# Elite speech synthesis and dubbing with ElevenLabs\n\nNeural voice technology reached a whole new standard with ElevenLabs:\n\n1. **Voice Cloning**: Clone your own voice or design unique voice talents for podcasts, audiobooks and commercials.\n2. **Multilingual Dubbing**: Translate and dub voiceover into 29+ languages with complete emotional preservation.\n3. **WaYmen Offer**: Creator plan licenses with high credit quotas delivered in 15 minutes.",
+        ar: "# الصوت الذكي والدبلجة متعددة اللغات مع ElevenLabs\n\nحققت تكنولوجيا الصوت العصبي طفرة غير مسبوقة بفضل نماذج ElevenLabs:\n\n1. **استنساخ الصوت**: أنشئ نبرة صوتك الخاصة أو أصوات شخصيات فريدة للبودكاست والإعلانات والكتب الصوتية.\n2. **الدبلجة الدولية**: ترجم ودبلج المحتوى إلى أكثر من 29 لغة مع الحفاظ الكامل على نبرة الصوت والمشاعر.\n3. **عروض وايمان**: باقات Creator مع رصيد وافر يتم تفعيلها خلال 15 دقيقة فقط.",
       },
-      tags: ["pc-sur-mesure", "conseil"],
+      tags: ["audio", "elevenlabs", "voix", "podcast"],
     },
     {
-      slug: "livraison-58-wilayas",
+      slug: "formations-waymen-academy-entreprises",
       title: {
-        fr: "Livraison en Algérie : ce qu'il faut savoir",
-        en: "Delivery across Algeria: what you need to know",
-        ar: "التوصيل في الجزائر: ما تحتاج معرفته",
+        fr: "WaYmen Academy : Monter en compétences sur l'IA appliquée",
+        en: "WaYmen Academy: Upskilling with practical applied AI",
+        ar: "أكاديمية وايمان: اكتساب مهارات وتطبيقات الذكاء الاصطناعي للمؤسسات",
       },
       excerpt: {
-        fr: "Délais, tarifs, paiement à la livraison — on répond à vos questions.",
-        en: "Lead times, rates, cash on delivery — we answer your questions.",
-        ar: "آجال التسليم، التعريفات، الدفع عند الاستلام — نجيب على أسئلتك.",
+        fr: "Des masterclass pratiques et du mentorat 1-on-1 pour maîtriser les outils IA de zéro à expert.",
+        en: "Hands-on masterclasses and 1-on-1 coaching to master AI tools from beginner to pro.",
+        ar: "دورات تدريبية تطبيقية وإشراف فردي مخصص لاحتراف أدوات الذكاء الاصطناعي خطوة بخطوة.",
       },
       content: {
-        fr: "{storeName} livre dans les 58 wilayas. Comptez 2 à 5 jours ouvrés selon votre région. Le paiement à la livraison est disponible pour la majorité des produits.",
-        en: "{storeName} delivers to all 58 wilayas. Allow 2 to 5 business days depending on your region. Cash on delivery is available for the majority of products.",
-        ar: "{storeName} يوصّل إلى جميع الولايات الـ58. توقع من 2 إلى 5 أيام عمل حسب منطقتك: الجزائر، وهران، قسنطينة، عنابة، سطيف، تيزي وزو، البليدة، باتنة، وجميع الولايات الأخرى. الدفع عند الاستلام متاح لغالبية المنتجات.",
+        fr: "# Pourquoi se former avec WaYmen Academy ?\n\nDisposer des meilleurs outils ne suffit pas : il faut savoir prompter, orchestrer et automatiser pour en tirer un vrai retour sur investissement :\n\n1. **Masterclass De Zéro à Pro** : Pour tous ceux qui souhaitent intégrer l'IA dans leur quotidien professionnel.\n2. **Parcours Développeurs & Créatifs** : Des ateliers poussés sur Cursor, Midjourney et ElevenLabs.\n3. **Coaching VIP 1-on-1** : Un accompagnement sur-mesure pour intégrer l'IA dans votre entreprise.",
+        en: "# Why train with WaYmen Academy?\n\nHaving the tools is not enough: prompting, orchestration and automation make the real business difference:\n\n1. **Zero to Pro Masterclass**: For professionals integrating AI into their daily business operations.\n2. **Developer & Creative Tracks**: In-depth hands-on workflows with Cursor, Midjourney, and ElevenLabs.\n3. **1-on-1 VIP Coaching**: Customized onboarding to transform your team's throughput.",
+        ar: "# لماذا تختار التدريب مع أكاديمية وايمان؟\n\nامتلاك أفضل الأدوات وحده لا يكفي، بل لابد من إتقان توجيه الأوامر وأتمتة مسارات العمل لتحقيق أعلى عائد إنتاجي:\n\n1. **دورة من الصفر إلى الاحتراف**: موجهة لكل المهنيين الراغبين في تسخير الذكاء الاصطناعي في عملهم.\n2. **مسارات المطورين والمصممين**: ورشات عمل تطبيقية مكثفة على Cursor و Midjourney و ElevenLabs.\n3. **التدريب الفردي الخاص VIP**: مرافقة شاملة ومخصصة لمساعدتك وفريقك على تحقيق أهدافكم.",
       },
-      tags: ["livraison", "faq"],
+      tags: ["formation", "academy", "coaching", "entreprise"],
     },
   ];
   return base.map((b, i) => ({
@@ -942,28 +1032,28 @@ function seedHomeReviews(): HomeReview[] {
       id: "hrev_1",
       name: "Amine Bensalah",
       city: "Alger",
-      productId: "rog-strix-g16",
-      text: "Excellente expérience d'achat, livraison rapide et produit authentique avec facture.",
+      productId: "chatgpt-plus",
+      text: "Activation reçue en moins de 10 minutes ! Parfait pour mon travail quotidien avec GPT-4o.",
       rating: 5,
-      gradient: "linear-gradient(135deg,#3b82f6,#1e40af)",
+      gradient: "linear-gradient(135deg,#10a37f,#059669)",
     },
     {
       id: "hrev_2",
       name: "Yasmine A.",
       city: "Oran",
-      productId: "macbook-air-m3",
-      text: "Service client vraiment réactif, ils m'ont aidé à choisir le bon modèle.",
+      productId: "claude-pro",
+      text: "Claude 3.5 Sonnet activé sans accroc. Le support client WaYmen est super réactif !",
       rating: 5,
-      gradient: "linear-gradient(135deg,#a855f7,#6d28d9)",
+      gradient: "linear-gradient(135deg,#d97706,#b45309)",
     },
     {
       id: "hrev_3",
       name: "Karim Haddad",
       city: "Constantine",
-      productId: "build-mid-gaming",
-      text: "Config puissante à un prix juste, fonctionnelle dès la première utilisation.",
+      productId: "cursor-pro",
+      text: "Incontournable pour mes développements. Code assisté par IA d'une efficacité redoutable.",
       rating: 5,
-      gradient: "linear-gradient(135deg,#10b981,#047857)",
+      gradient: "linear-gradient(135deg,#8b5cf6,#6d28d9)",
     },
   ];
 }
@@ -1111,22 +1201,22 @@ function seedBuilderSteps(): BuilderStep[] {
 
 function seedSiteSettings(): SiteSettings {
   return {
-    storeName: "StacGate Platform",
-    contactEmail: "contact@stacgate.com",
-    contactPhone: "+213 555 00 00 00",
-    whatsapp: "213555000000",
-    address: "Alger, Algérie",
-    hours: "Dimanche → Jeudi, 9h – 19h",
+    storeName: "WaYmen AI Studio",
+    contactEmail: "contact@waymen.dz",
+    contactPhone: "+213 550 00 00 00",
+    whatsapp: "213550000000",
+    address: "Alger, Algérie • Activations & Formations 58 Wilayas",
+    hours: "7j/7, 8h – 23h (Support Continu)",
     maintenance: false,
-    maintenanceMessage: "Nous revenons très vite ! Le site est en cours de mise à jour.",
+    maintenanceMessage: "Nous revenons très vite ! La plateforme est en cours de mise à jour.",
     maintenanceTitle: "",
     maintenanceEstimatedReturn: "",
     maintenanceShowWhatsApp: true,
     emailNotifications: true,
     showPromoBanner: true,
-    promoBannerText: "Livraison offerte dès 60 000 DA — jusqu'à dimanche.",
+    promoBannerText: "Activations expresses en moins de 15 minutes par Email & WhatsApp.",
     promoBannerLabel: "Découvrir",
-    promoBannerHref: "/category/laptops",
+    promoBannerHref: "/category/llm-assistants",
     lowStockThreshold: 5,
     outOfStockThreshold: 0,
     currencySymbol: "DA",
@@ -1134,14 +1224,14 @@ function seedSiteSettings(): SiteSettings {
     currencyThousandSeparator: " ",
     languageSelectorEnabled: true,
     hideRatingWhenNoReviews: true,
-    defaultTheme: "dark",
-    primaryColor: "",
-    secondaryColor: "",
-    accentColor: "",
+    defaultTheme: "light",
+    primaryColor: "#e6007a",
+    secondaryColor: "#00a3ff",
+    accentColor: "#8b5cf6",
     borderRadius: "soft",
     fontFamily: "system",
     buttonStyle: "subtle",
-    faviconUrl: "",
+    faviconUrl: "favicon.svg",
     builderEnabled: true,
     onboardingCompleted: true,
   };
@@ -1172,7 +1262,7 @@ function emptySiteSettings(): SiteSettings {
     currencyThousandSeparator: " ",
     languageSelectorEnabled: true,
     hideRatingWhenNoReviews: true,
-    defaultTheme: "dark",
+    defaultTheme: "light",
     primaryColor: "",
     secondaryColor: "",
     accentColor: "",
@@ -1418,7 +1508,7 @@ function seedSubscribers(): Subscriber[] {
 }
 
 // ---------- Store ----------
-const LS_KEY = "katech.admin.state.v1";
+const LS_KEY = "waymen.admin.state.v2";
 
 /**
  * Rattrape les états déjà enregistrés dans le `localStorage`.

@@ -13,6 +13,7 @@ import { ImageCatalogue } from "@/components/ImageCatalogue";
 import { MarkdownRenderer } from "@/components/blog/MarkdownRenderer";
 import { renderBlock } from "@/components/blocks";
 import { cn } from "@/lib/utils";
+import NotFound from "@/pages/NotFound";
 
 export default function BlogArticle({
   suppressCustomBlocks = false,
@@ -30,12 +31,21 @@ export default function BlogArticle({
   const { data: post, loading, error } = useBlogPostDetail(effectiveSlug);
   const { data: siteSettings } = useSiteSettings();
   const { data: siteContent } = useSiteContent();
+  const { t, lang } = useI18n();
+  const L = useLocalize();
+  const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
+  const brand = siteSettings.storeName?.trim() || "Boutique";
 
   const systemPage = siteContent?.customPages?.find(
     (pg) =>
       pg.isSystem &&
       (pg.systemKey === "blog_article" || pg.slug === "blog/:slug" || pg.slug === "blog-article"),
   );
+
+  // Si le blog ou les articles sont dépubliés depuis l'admin
+  if (systemPage && systemPage.isPublished === false) {
+    return <NotFound />;
+  }
   const blocks = suppressCustomBlocks ? [] : systemPage?.blocks?.filter((b) => b.enabled) || [];
   const topBlocks = blocks.filter((b) => (b.style?.placement || "top") === "top");
   const bottomBlocks = blocks.filter((b) => b.style?.placement === "bottom");
@@ -50,10 +60,6 @@ export default function BlogArticle({
           : systemPage?.layout?.pageBg === "gradient"
             ? "bg-gradient-to-b from-background via-muted/20 to-background"
             : "";
-  const brand = siteSettings.storeName?.trim() || "Boutique";
-  const { t, lang } = useI18n();
-  const L = useLocalize();
-  const locale = lang === "ar" ? "ar-DZ" : lang === "en" ? "en-US" : "fr-FR";
 
   // 1. Chargement
   if (loading) {

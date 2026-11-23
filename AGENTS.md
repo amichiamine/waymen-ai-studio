@@ -28,7 +28,7 @@
 
 ## 0. Contexte du projet
 
-- **Dépôt / branche de travail** : `amichiamine/ka-tech` — `main`
+- **Dépôt / branche de travail** : `amichiamine/waymen-ai-studio` — `main`
 - **Nature** : SPA e-commerce/vitrine 100 % client — React 19 + Vite 7 + TypeScript,
   Tailwind 4, shadcn/Radix, React Router 6, TanStack Query, Zod. Aucun backend :
   `bun run build` produit un `dist/` statique.

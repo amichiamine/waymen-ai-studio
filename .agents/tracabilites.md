@@ -18,53 +18,66 @@
 
 ## Registre des Phases d'Implémentation (Parité Stricte 1:1)
 
-|   N° Phase   |    Date    | Intitulé de la Phase                                                                                                                                                              | Plan Associé dans `.agents/Implementations_Plans/`                                                                                                                                                                                  |        Statut         |
-| :----------: | :--------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------: |
-| **Phase 01** | 20/10/2026 | Activation du Prérendu Playwright via Jonction Locale NTFS & Build de Production Complet                                                                                          | 📄 [`01_activation_prerendu_playwright_jonction_locale.md`](Implementations_Plans/01_activation_prerendu_playwright_jonction_locale.md)                                                                                             | 🟢 **Livré & Validé** |
-| **Phase 02** | 20/10/2026 | Horodatage Dynamique du Package Zip de Déploiement & Sécurisation Git                                                                                                             | 📄 [`02_horodatage_archive_deploiement_et_securisation_git.md`](Implementations_Plans/02_horodatage_archive_deploiement_et_securisation_git.md)                                                                                     | 🟢 **Livré & Validé** |
-| **Phase 03** | 20/10/2026 | Sécurisation Authentification & Endpoint Profil Utilisateur                                                                                                                       | 📄 [`03_securisation_auth_et_endpoint_profil_utilisateur.md`](Implementations_Plans/03_securisation_auth_et_endpoint_profil_utilisateur.md)                                                                                         | 🟢 **Livré & Validé** |
-| **Phase 04** | 20/10/2026 | Assainissement Ergonomie Notifications & Récupération                                                                                                                             | 📄 [`04_assainissement_ergonomie_notifications_et_recuperation.md`](Implementations_Plans/04_assainissement_ergonomie_notifications_et_recuperation.md)                                                                             | 🟢 **Livré & Validé** |
-| **Phase 05** | 20/10/2026 | Cohérence UI/UX Suivi des Commandes & Paramètres                                                                                                                                  | 📄 [`05_plan_coherence_ui_ux_suivi_commandes_et_parametres.md`](Implementations_Plans/05_plan_coherence_ui_ux_suivi_commandes_et_parametres.md)                                                                                     | 🟢 **Livré & Validé** |
-| **Phase 06** | 20/10/2026 | Découplage Settings/Content, Logo Dynamique & Scroll Restoration                                                                                                                  | 📄 [`06_plan_decouplage_settings_content_logo_dynamique_et_scroll_restoration.md`](Implementations_Plans/06_plan_decouplage_settings_content_logo_dynamique_et_scroll_restoration.md)                                               | 🟢 **Livré & Validé** |
-| **Phase 07** | 20/10/2026 | Bootstrapping White-Label Authentique & Éradication du FOUC (0 ms)                                                                                                                | 📄 [`07_plan_bootstrapping_white_label_et_eradication_fouc.md`](Implementations_Plans/07_plan_bootstrapping_white_label_et_eradication_fouc.md)                                                                                     | 🟢 **Livré & Validé** |
-| **Phase 08** | 04/11/2026 | Fiabilisation Intégrale de la Persistance Serveur & Backstage (SQLite, Apache, API, Mutations)                                                                                    | 📄 [`08_plan_fiabilisation_persistance_serveur_sqlite_et_backstage.md`](Implementations_Plans/08_plan_fiabilisation_persistance_serveur_sqlite_et_backstage.md)                                                                     | 🟢 **Livré & Validé** |
-| **Phase 09** | 04/11/2026 | Résolution Définitive des Médias Téléversés (Uploads & Logo) et Accessibilité Radix UI                                                                                            | 📄 [`09_plan_resolution_upload_medias_logo_et_accessibilite_radix.md`](Implementations_Plans/09_plan_resolution_upload_medias_logo_et_accessibilite_radix.md)                                                                       | 🟢 **Livré & Validé** |
-| **Phase 10** | 05/11/2026 | Branding 360°, Thème Dynamique (Dark/Light/System) & Modularité Métier (White-Label)                                                                                              | 📄 [`10_plan_branding_360_theme_dynamique_et_modularite.md`](Implementations_Plans/10_plan_branding_360_theme_dynamique_et_modularite.md)                                                                                           | 🟢 **Livré & Validé** |
-| **Phase 11** | 05/11/2026 | Universalisation du Catalogue (Tous Produits Physiques & Services Immatériels)                                                                                                    | 📄 [`11_plan_universalisation_catalogue_produits_et_services.md`](Implementations_Plans/11_plan_universalisation_catalogue_produits_et_services.md)                                                                                 | 🟢 **Livré & Validé** |
-| **Phase 12** | 05/11/2026 | Dé-spécialisation Éditoriale Complète & Assistant d'Initialisation (Setup Wizard)                                                                                                 | 📄 [`12_plan_editorial_universel_et_setup_wizard_onboarding.md`](Implementations_Plans/12_plan_editorial_universel_et_setup_wizard_onboarding.md)                                                                                   | 🟢 **Livré & Validé** |
-| **Phase 13** | 05/11/2026 | Unification du Setup Wizard, Résolution du Mode Maintenance & Contrôleurs Visuels Backstore                                                                                       | 📄 [`13_plan_unification_wizard_maintenance_et_editeurs_visuels.md`](Implementations_Plans/13_plan_unification_wizard_maintenance_et_editeurs_visuels.md)                                                                           | 🟢 **Livré & Validé** |
-| **Phase 14** | 05/11/2026 | Page de Maintenance Enrichie (VIP / Teasing), Déblocage Redirection Admin & Déclencheur                                                                                           | 📄 [`14_plan_page_maintenance_enrichie_et_wizard_universel.md`](Implementations_Plans/14_plan_page_maintenance_enrichie_et_wizard_universel.md)                                                                                     | 🟢 **Livré & Validé** |
-| **Phase 15** | 05/11/2026 | Synchronisation Atomique du Statut de Stock & Raccordement Notifications E-mail                                                                                                   | 📄 [`15_plan_synchronisation_stock_et_raccordement_notifications.md`](Implementations_Plans/15_plan_synchronisation_stock_et_raccordement_notifications.md)                                                                         | 🟢 **Livré & Validé** |
-| **Phase 16** | 05/11/2026 | Résolution ParseError PHP, Support Windows CLI (Backup 503) & Complétude i18n                                                                                                     | 📄 [`16_plan_resolution_parse_error_backup_cli_et_i18n.md`](Implementations_Plans/16_plan_resolution_parse_error_backup_cli_et_i18n.md)                                                                                             | 🟢 **Livré & Validé** |
-| **Phase 17** | 05/11/2026 | Raccordement Serveur de la Réinitialisation et du Vidage des Données (`/admin/reset`)                                                                                             | 📄 [`17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md`](Implementations_Plans/17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md)                                                                 | 🟢 **Livré & Validé** |
-| **Phase 18** | 05/11/2026 | Grand Audit d'Assurance Qualité & Consolidation Intégrale de la Persistance Serveur                                                                                               | 📄 [`18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md`](Implementations_Plans/18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md)                                                       | 🟢 **Livré & Validé** |
-| **Phase 19** | 05/11/2026 | Assainissement Ultime des Angles Noirs Vitrine, Accessibilité RTL & Universalité 100%                                                                                             | 📄 [`19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md`](Implementations_Plans/19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md)                                                   | 🟢 **Livré & Validé** |
-| **Phase 20** | 05/11/2026 | Parachèvement Intégral : Contrat API home-reviews, Vitrine Base Vide & Parcours Clients                                                                                           | 📄 [`20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md`](Implementations_Plans/20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md)                                 | 🟢 **Livré & Validé** |
-| **Phase 21** | 06/11/2026 | Persistance Souveraine Base de Données, Bootstrap Universel Plug & Play                                                                                                           | 📄 [`21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md`](Implementations_Plans/21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md)                                                         | 🟢 **Livré & Validé** |
-| **Phase 22** | 06/11/2026 | Administration Éditoriale Intégrale (« À propos ») & Sélecteur Universel de Médias                                                                                                | 📄 [`22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md`](Implementations_Plans/22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md)                                               | 🟢 **Livré & Validé** |
-| **Phase 23** | 06/11/2026 | Refonte Ergonomique du Backstage, Éditeur Builder, Aperçus Médias Défaut & Correctif F5                                                                                           | 📄 [`23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md`](Implementations_Plans/23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md)                                               | 🟢 **Livré & Validé** |
-| **Phase 24** | 06/11/2026 | Consolidation Réglages, Logos Marques, Sauvegarde BD, Sécurité CSP & Aperçu Live Mode VIP                                                                                         | 📄 [`24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md`](Implementations_Plans/24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md)                                                                         | 🟢 **Livré & Validé** |
-| **Phase 25** | 06/11/2026 | Restauration de la Souveraineté de DB_SQLITE_PATH & Relocalisation dans katech-data/                                                                                              | 📄 [`25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md`](Implementations_Plans/25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md)                                                             | 🟢 **Livré & Validé** |
-| **Phase 26** | 06/11/2026 | Universalisation 360°, Moteur de Thème Avancé, Setup Wizard VIP & Granularité Éditoriale                                                                                          | 📄 [`26_plan_universalisation_360_theme_wizard_vip_et_granularite_editoriale.md`](Implementations_Plans/26_plan_universalisation_360_theme_wizard_vip_et_granularite_editoriale.md)                                                 | 🟢 **Livré & Validé** |
-| **Phase 27** | 06/11/2026 | Raccordement Pages & Textes, Page Contact & FAQ Dynamique, Assainissement Éditorial                                                                                               | 📄 [`27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md`](Implementations_Plans/27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md)                               | 🟢 **Livré & Validé** |
-| **Phase 28** | 06/11/2026 | Universalisation Catalogue, Auteur Blog & Éditeur Multimédia Markdown (Vidéos YouTube/MP4)                                                                                        | 📄 [`28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md`](Implementations_Plans/28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md)                                                       | 🟢 **Livré & Validé** |
-| **Phase 29** | 06/11/2026 | Personnalisation du Dossier de Données et du Fichier SQLite dans l'Installateur Web                                                                                               | 📄 [`29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md`](Implementations_Plans/29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md)                                                                 | 🟢 **Livré & Validé** |
-| **Phase 30** | 06/11/2026 | Universalisation Intégrale Marque Blanche "StacGate Platform" & Accessibilité Pied de Page                                                                                        | 📄 [`30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md`](Implementations_Plans/30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md)                                                           | 🟢 **Livré & Validé** |
-| **Phase 31** | 06/11/2026 | Génération Actifs Multiformats (StacGate Platform) & Image Hybride Officielle (ArchiSys3.0)                                                                                       | 📄 [`31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md`](Implementations_Plans/31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md)                                                     | 🟢 **Livré & Validé** |
-| **Phase 32** | 07/11/2026 | Blindage Universel Uploads Médias, Embarquement uploads/ & Initialisation Installateur                                                                                            | 📄 [`32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md`](Implementations_Plans/32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md)                                               | 🟢 **Livré & Validé** |
-| **Phase 33** | 07/11/2026 | Universalisation Linguistique 360° : Persistance BD Trilingue, Vitrine & Backstage                                                                                                | 📄 [`33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md`](Implementations_Plans/33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md)                                           | 🟢 **Livré & Validé** |
-| **Phase 34** | 07/11/2026 | Composition Logo Combiné Horizontal Officiel StacGate × ArchiSys3.0 & Déploiement Maître 360°                                                                                     | 📄 [`34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md`](Implementations_Plans/34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md)                         | 🟢 **Livré & Validé** |
-| **Phase 35** | 07/11/2026 | Blindage Médias Blog, Déblocage CSP Vidéos, Anti-Reflow & Déclinaisons Multi-Formats                                                                                              | 📄 [`35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md`](Implementations_Plans/35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md)                                 | 🟢 **Livré & Validé** |
-| **Phase 36** | 07/11/2026 | Refonte Épurée Logo Combiné en Anglais (Référence Directe Signature) & Déploiement Multi-Formats                                                                                  | 📄 [`36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md`](Implementations_Plans/36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md)                                                         | 🟢 **Livré & Validé** |
-| **Phase 37** | 08/11/2026 | Moteur Universel de Pages Dynamiques & Catalogue de 24 Blocs Composables (Zéro Régression)                                                                                        | 📄 [`37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md`](Implementations_Plans/37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md)                                   | 🟢 **Livré & Validé** |
-| **Phase 38** | 08/11/2026 | Studio de Conception Visuelle Unifié & Harmonisation Ergonomique Backstage 360°                                                                                                   | 📄 [`38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md`](Implementations_Plans/38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md)                                                       | 🟢 **Livré & Validé** |
-| **Phase 39** | 08/11/2026 | Universalisation des Vues Composables 360° (Accueil, À propos, Contact & Catalogue Global)                                                                                        | 📄 [`39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md`](Implementations_Plans/39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md)                                           | 🟢 **Livré & Validé** |
-| **Phase 40** | 08/11/2026 | Grand Studio Visuel Interactif (Live Canvas WYSYWIG, Inspecteur Fin & Styles)                                                                                                     | 📄 [`40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md`](Implementations_Plans/40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md)                                                       | 🟢 **Livré & Validé** |
-| **Phase 41** | 08/11/2026 | Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, 5 Nouveaux Blocs                                                                                  | 📄 [`41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md`](Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md)                     | 🟢 **Livré & Validé** |
-| **Phase 42** | 08/11/2026 | Ergonomie & Réactivité 360° du Studio Visuel : Sidebar Rétractable, Mode Mobile/Tablette, Auto-Scroll & Inspecteur Ultra-Fin                                                      | 📄 [`42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md`](Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)       | 🟢 **Livré & Validé** |
-| **Phase 43** | 08/11/2026 | Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments, Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite | 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md) | 🟢 **Livré & Validé** |
-| **Phase 44** | 08/11/2026 | Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)                                                                                                   | 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)                                                                                                       | 🟢 **Livré & Validé** |
-| **Phase 45** | 08/11/2026 | Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`                                                                                               | 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)                                                                                               | 🟢 **Livré & Validé** |
+|   N° Phase   |    Date    | Intitulé de la Phase                                                                                                                                                                                   | Plan Associé dans `.agents/Implementations_Plans/`                                                                                                                                                                                      |        Statut         |
+| :----------: | :--------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------: |
+| **Phase 01** | 20/10/2026 | Activation du Prérendu Playwright via Jonction Locale NTFS & Build de Production Complet                                                                                                               | 📄 [`01_activation_prerendu_playwright_jonction_locale.md`](Implementations_Plans/01_activation_prerendu_playwright_jonction_locale.md)                                                                                                 | 🟢 **Livré & Validé** |
+| **Phase 02** | 20/10/2026 | Horodatage Dynamique du Package Zip de Déploiement & Sécurisation Git                                                                                                                                  | 📄 [`02_horodatage_archive_deploiement_et_securisation_git.md`](Implementations_Plans/02_horodatage_archive_deploiement_et_securisation_git.md)                                                                                         | 🟢 **Livré & Validé** |
+| **Phase 03** | 20/10/2026 | Sécurisation Authentification & Endpoint Profil Utilisateur                                                                                                                                            | 📄 [`03_securisation_auth_et_endpoint_profil_utilisateur.md`](Implementations_Plans/03_securisation_auth_et_endpoint_profil_utilisateur.md)                                                                                             | 🟢 **Livré & Validé** |
+| **Phase 04** | 20/10/2026 | Assainissement Ergonomie Notifications & Récupération                                                                                                                                                  | 📄 [`04_assainissement_ergonomie_notifications_et_recuperation.md`](Implementations_Plans/04_assainissement_ergonomie_notifications_et_recuperation.md)                                                                                 | 🟢 **Livré & Validé** |
+| **Phase 05** | 20/10/2026 | Cohérence UI/UX Suivi des Commandes & Paramètres                                                                                                                                                       | 📄 [`05_plan_coherence_ui_ux_suivi_commandes_et_parametres.md`](Implementations_Plans/05_plan_coherence_ui_ux_suivi_commandes_et_parametres.md)                                                                                         | 🟢 **Livré & Validé** |
+| **Phase 06** | 20/10/2026 | Découplage Settings/Content, Logo Dynamique & Scroll Restoration                                                                                                                                       | 📄 [`06_plan_decouplage_settings_content_logo_dynamique_et_scroll_restoration.md`](Implementations_Plans/06_plan_decouplage_settings_content_logo_dynamique_et_scroll_restoration.md)                                                   | 🟢 **Livré & Validé** |
+| **Phase 07** | 20/10/2026 | Bootstrapping White-Label Authentique & Éradication du FOUC (0 ms)                                                                                                                                     | 📄 [`07_plan_bootstrapping_white_label_et_eradication_fouc.md`](Implementations_Plans/07_plan_bootstrapping_white_label_et_eradication_fouc.md)                                                                                         | 🟢 **Livré & Validé** |
+| **Phase 08** | 04/11/2026 | Fiabilisation Intégrale de la Persistance Serveur & Backstage (SQLite, Apache, API, Mutations)                                                                                                         | 📄 [`08_plan_fiabilisation_persistance_serveur_sqlite_et_backstage.md`](Implementations_Plans/08_plan_fiabilisation_persistance_serveur_sqlite_et_backstage.md)                                                                         | 🟢 **Livré & Validé** |
+| **Phase 09** | 04/11/2026 | Résolution Définitive des Médias Téléversés (Uploads & Logo) et Accessibilité Radix UI                                                                                                                 | 📄 [`09_plan_resolution_upload_medias_logo_et_accessibilite_radix.md`](Implementations_Plans/09_plan_resolution_upload_medias_logo_et_accessibilite_radix.md)                                                                           | 🟢 **Livré & Validé** |
+| **Phase 10** | 05/11/2026 | Branding 360°, Thème Dynamique (Dark/Light/System) & Modularité Métier (White-Label)                                                                                                                   | 📄 [`10_plan_branding_360_theme_dynamique_et_modularite.md`](Implementations_Plans/10_plan_branding_360_theme_dynamique_et_modularite.md)                                                                                               | 🟢 **Livré & Validé** |
+| **Phase 11** | 05/11/2026 | Universalisation du Catalogue (Tous Produits Physiques & Services Immatériels)                                                                                                                         | 📄 [`11_plan_universalisation_catalogue_produits_et_services.md`](Implementations_Plans/11_plan_universalisation_catalogue_produits_et_services.md)                                                                                     | 🟢 **Livré & Validé** |
+| **Phase 12** | 05/11/2026 | Dé-spécialisation Éditoriale Complète & Assistant d'Initialisation (Setup Wizard)                                                                                                                      | 📄 [`12_plan_editorial_universel_et_setup_wizard_onboarding.md`](Implementations_Plans/12_plan_editorial_universel_et_setup_wizard_onboarding.md)                                                                                       | 🟢 **Livré & Validé** |
+| **Phase 13** | 05/11/2026 | Unification du Setup Wizard, Résolution du Mode Maintenance & Contrôleurs Visuels Backstore                                                                                                            | 📄 [`13_plan_unification_wizard_maintenance_et_editeurs_visuels.md`](Implementations_Plans/13_plan_unification_wizard_maintenance_et_editeurs_visuels.md)                                                                               | 🟢 **Livré & Validé** |
+| **Phase 14** | 05/11/2026 | Page de Maintenance Enrichie (VIP / Teasing), Déblocage Redirection Admin & Déclencheur                                                                                                                | 📄 [`14_plan_page_maintenance_enrichie_et_wizard_universel.md`](Implementations_Plans/14_plan_page_maintenance_enrichie_et_wizard_universel.md)                                                                                         | 🟢 **Livré & Validé** |
+| **Phase 15** | 05/11/2026 | Synchronisation Atomique du Statut de Stock & Raccordement Notifications E-mail                                                                                                                        | 📄 [`15_plan_synchronisation_stock_et_raccordement_notifications.md`](Implementations_Plans/15_plan_synchronisation_stock_et_raccordement_notifications.md)                                                                             | 🟢 **Livré & Validé** |
+| **Phase 16** | 05/11/2026 | Résolution ParseError PHP, Support Windows CLI (Backup 503) & Complétude i18n                                                                                                                          | 📄 [`16_plan_resolution_parse_error_backup_cli_et_i18n.md`](Implementations_Plans/16_plan_resolution_parse_error_backup_cli_et_i18n.md)                                                                                                 | 🟢 **Livré & Validé** |
+| **Phase 17** | 05/11/2026 | Raccordement Serveur de la Réinitialisation et du Vidage des Données (`/admin/reset`)                                                                                                                  | 📄 [`17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md`](Implementations_Plans/17_plan_raccordement_serveur_reinitialisation_et_vidage_donnees.md)                                                                     | 🟢 **Livré & Validé** |
+| **Phase 18** | 05/11/2026 | Grand Audit d'Assurance Qualité & Consolidation Intégrale de la Persistance Serveur                                                                                                                    | 📄 [`18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md`](Implementations_Plans/18_plan_grand_audit_assurance_qualite_et_consolidation_integrale_360.md)                                                           | 🟢 **Livré & Validé** |
+| **Phase 19** | 05/11/2026 | Assainissement Ultime des Angles Noirs Vitrine, Accessibilité RTL & Universalité 100%                                                                                                                  | 📄 [`19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md`](Implementations_Plans/19_plan_assainissement_ultime_angles_noirs_vitrine_et_universalite_100.md)                                                       | 🟢 **Livré & Validé** |
+| **Phase 20** | 05/11/2026 | Parachèvement Intégral : Contrat API home-reviews, Vitrine Base Vide & Parcours Clients                                                                                                                | 📄 [`20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md`](Implementations_Plans/20_plan_parachevement_integral_parcours_clients_contrat_home_reviews_et_vitrine.md)                                     | 🟢 **Livré & Validé** |
+| **Phase 21** | 06/11/2026 | Persistance Souveraine Base de Données, Bootstrap Universel Plug & Play                                                                                                                                | 📄 [`21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md`](Implementations_Plans/21_plan_persistance_souveraine_bd_bootstrap_universel_plug_and_play.md)                                                             | 🟢 **Livré & Validé** |
+| **Phase 22** | 06/11/2026 | Administration Éditoriale Intégrale (« À propos ») & Sélecteur Universel de Médias                                                                                                                     | 📄 [`22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md`](Implementations_Plans/22_plan_administration_editoriale_a_propos_et_selecteur_universel_medias.md)                                                   | 🟢 **Livré & Validé** |
+| **Phase 23** | 06/11/2026 | Refonte Ergonomique du Backstage, Éditeur Builder, Aperçus Médias Défaut & Correctif F5                                                                                                                | 📄 [`23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md`](Implementations_Plans/23_plan_refonte_ergonomique_backstage_contenu_parametres_et_correctif_f5.md)                                                   | 🟢 **Livré & Validé** |
+| **Phase 24** | 06/11/2026 | Consolidation Réglages, Logos Marques, Sauvegarde BD, Sécurité CSP & Aperçu Live Mode VIP                                                                                                              | 📄 [`24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md`](Implementations_Plans/24_plan_consolidation_reglages_marques_sauvegarde_bd_et_csp.md)                                                                             | 🟢 **Livré & Validé** |
+| **Phase 25** | 06/11/2026 | Restauration de la Souveraineté de DB_SQLITE_PATH & Relocalisation dans katech-data/                                                                                                                   | 📄 [`25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md`](Implementations_Plans/25_plan_souverainete_db_sqlite_path_et_relocalisation_katech_data.md)                                                                 | 🟢 **Livré & Validé** |
+| **Phase 26** | 06/11/2026 | Universalisation 360°, Moteur de Thème Avancé, Setup Wizard VIP & Granularité Éditoriale                                                                                                               | 📄 [`26_plan_universalisation_360_theme_wizard_vip_et_granularite_editoriale.md`](Implementations_Plans/26_plan_universalisation_360_theme_wizard_vip_et_granularite_editoriale.md)                                                     | 🟢 **Livré & Validé** |
+| **Phase 27** | 06/11/2026 | Raccordement Pages & Textes, Page Contact & FAQ Dynamique, Assainissement Éditorial                                                                                                                    | 📄 [`27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md`](Implementations_Plans/27_plan_raccordement_pages_textes_contact_faq_assainissement_i18n_et_performance.md)                                   | 🟢 **Livré & Validé** |
+| **Phase 28** | 06/11/2026 | Universalisation Catalogue, Auteur Blog & Éditeur Multimédia Markdown (Vidéos YouTube/MP4)                                                                                                             | 📄 [`28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md`](Implementations_Plans/28_plan_universalisation_catalogue_editeur_blog_multimedia_et_videos.md)                                                           | 🟢 **Livré & Validé** |
+| **Phase 29** | 06/11/2026 | Personnalisation du Dossier de Données et du Fichier SQLite dans l'Installateur Web                                                                                                                    | 📄 [`29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md`](Implementations_Plans/29_plan_personnalisation_dossier_et_fichier_sqlite_installateur.md)                                                                     | 🟢 **Livré & Validé** |
+| **Phase 30** | 06/11/2026 | Universalisation Intégrale Marque Blanche "StacGate Platform" & Accessibilité Pied de Page                                                                                                             | 📄 [`30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md`](Implementations_Plans/30_plan_universalisation_stacgate_platform_et_accessibilite_footer.md)                                                               | 🟢 **Livré & Validé** |
+| **Phase 31** | 06/11/2026 | Génération Actifs Multiformats (StacGate Platform) & Image Hybride Officielle (ArchiSys3.0)                                                                                                            | 📄 [`31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md`](Implementations_Plans/31_plan_generation_actifs_multiformats_stacgate_et_signature_archisys.md)                                                         | 🟢 **Livré & Validé** |
+| **Phase 32** | 07/11/2026 | Blindage Universel Uploads Médias, Embarquement uploads/ & Initialisation Installateur                                                                                                                 | 📄 [`32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md`](Implementations_Plans/32_plan_blindage_universel_uploads_medias_et_initialisation_installateur.md)                                                   | 🟢 **Livré & Validé** |
+| **Phase 33** | 07/11/2026 | Universalisation Linguistique 360° : Persistance BD Trilingue, Vitrine & Backstage                                                                                                                     | 📄 [`33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md`](Implementations_Plans/33_plan_universalisation_linguistique_360_persistance_bd_vitrine_backstage.md)                                               | 🟢 **Livré & Validé** |
+| **Phase 34** | 07/11/2026 | Composition Logo Combiné Horizontal Officiel StacGate × ArchiSys3.0 & Déploiement Maître 360°                                                                                                          | 📄 [`34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md`](Implementations_Plans/34_plan_composition_logo_combine_horizontal_stacgate_archisys_et_deploiement_maitre.md)                             | 🟢 **Livré & Validé** |
+| **Phase 35** | 07/11/2026 | Blindage Médias Blog, Déblocage CSP Vidéos, Anti-Reflow & Déclinaisons Multi-Formats                                                                                                                   | 📄 [`35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md`](Implementations_Plans/35_plan_blindage_blog_medias_deblocage_csp_youtube_et_declinaisons_multiformats.md)                                     | 🟢 **Livré & Validé** |
+| **Phase 36** | 07/11/2026 | Refonte Épurée Logo Combiné en Anglais (Référence Directe Signature) & Déploiement Multi-Formats                                                                                                       | 📄 [`36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md`](Implementations_Plans/36_plan_composition_logo_combine_epure_anglais_et_signature_directe.md)                                                             | 🟢 **Livré & Validé** |
+| **Phase 37** | 08/11/2026 | Moteur Universel de Pages Dynamiques & Catalogue de 24 Blocs Composables (Zéro Régression)                                                                                                             | 📄 [`37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md`](Implementations_Plans/37_plan_moteur_universel_pages_dynamiques_et_blocs_composables_zero_regression.md)                                       | 🟢 **Livré & Validé** |
+| **Phase 38** | 08/11/2026 | Studio de Conception Visuelle Unifié & Harmonisation Ergonomique Backstage 360°                                                                                                                        | 📄 [`38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md`](Implementations_Plans/38_plan_studio_conception_visuelle_unifie_et_harmonisation_backstage.md)                                                           | 🟢 **Livré & Validé** |
+| **Phase 39** | 08/11/2026 | Universalisation des Vues Composables 360° (Accueil, À propos, Contact & Catalogue Global)                                                                                                             | 📄 [`39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md`](Implementations_Plans/39_plan_universalisation_vues_composables_accueil_et_institutionnelles_360.md)                                               | 🟢 **Livré & Validé** |
+| **Phase 40** | 08/11/2026 | Grand Studio Visuel Interactif (Live Canvas WYSYWIG, Inspecteur Fin & Styles)                                                                                                                          | 📄 [`40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md`](Implementations_Plans/40_plan_grand_studio_visuel_interactif_live_canvas_et_inspecteur_360.md)                                                           | 🟢 **Livré & Validé** |
+| **Phase 41** | 08/11/2026 | Grande Unification 360° du Studio Visuel : Cockpit Unique, Volets Rétractables, 5 Nouveaux Blocs                                                                                                       | 📄 [`41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md`](Implementations_Plans/41_plan_grande_unification_studio_360_cockpit_unique_persistance_bd_et_nouveaux_blocs.md)                         | 🟢 **Livré & Validé** |
+| **Phase 42** | 08/11/2026 | Ergonomie & Réactivité 360° du Studio Visuel : Sidebar Rétractable, Mode Mobile/Tablette, Auto-Scroll & Inspecteur Ultra-Fin                                                                           | 📄 [`42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md`](Implementations_Plans/42_plan_studio_visuel_responsive_360_sidebar_retractable_auto_scroll_et_inspecteur_ultra_fin.md)           | 🟢 **Livré & Validé** |
+| **Phase 43** | 08/11/2026 | Grand Studio de Conception Atomique 360° : Contrôles Avancés des Sous-Éléments, Complétude des 29 Blocs, Paramètres de Vues Dédiés (SEO & Layout) & Persistance Souveraine SQLite                      | 📄 [`43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md`](Implementations_Plans/43_plan_grand_studio_conception_atomique_360_controles_avances_sous_elements_et_parametres_vues.md)     | 🟢 **Livré & Validé** |
+| **Phase 44** | 08/11/2026 | Suite Autonome de Devis Ciblés & Calculateurs Interactifs Sur-Mesure (`devis/`)                                                                                                                        | 📄 [`44_plan_devis_autonomes_calculateurs_paliers.md`](Implementations_Plans/44_plan_devis_autonomes_calculateurs_paliers.md)                                                                                                           | 🟢 **Livré & Validé** |
+| **Phase 45** | 08/11/2026 | Internationalisation 360° Trilingue (FR / EN / AR RTL) du Dossier Autonome `devis/`                                                                                                                    | 📄 [`45_plan_internationalisation_trilingue_devis_rtl.md`](Implementations_Plans/45_plan_internationalisation_trilingue_devis_rtl.md)                                                                                                   | 🟢 **Livré & Validé** |
+| **Phase 46** | 08/11/2026 | Universalisation Complète du Dossier Devis : Formulaire de Contact, Configuration Centralisée, Signature ArchiSys3.0 & Packaging                                                                       | 📄 [`46_plan_universalisation_complete_devis_contact_et_signature.md`](Implementations_Plans/46_plan_universalisation_complete_devis_contact_et_signature.md)                                                                           | 🟢 **Livré & Validé** |
+| **Phase 47** | 08/11/2026 | Restauration & Universalisation de la Vue Vitrine de Devis (`/devis`), Cohérence 360° et Menu Visiteur                                                                                                 | 📄 [`47_plan_restauration_vue_vitrine_devis_et_coherence_360.md`](Implementations_Plans/47_plan_restauration_vue_vitrine_devis_et_coherence_360.md)                                                                                     | 🟢 **Livré & Validé** |
+| **Phase 48** | 08/11/2026 | Studio : Vraies Vues Connectées, Contrats 1:1, Navigation Mobile & Persistance BD                                                                                                                      | 📄 [`48_plan_vraies_vues_connectees_contrats_1_1_navigation_mobile_et_persistance_bd.md`](Implementations_Plans/48_plan_vraies_vues_connectees_contrats_1_1_navigation_mobile_et_persistance_bd.md)                                     | 🟢 **Livré & Validé** |
+| **Phase 49** | 08/11/2026 | Contrôles Fins du Studio de Conception Visuelle : Typographie, Espacements, Coins Arrondis & Visibilité d'Éléments                                                                                     | 📄 [`49_plan_controles_fins_studio_typographie_espacements_coins_et_visibilite.md`](Implementations_Plans/49_plan_controles_fins_studio_typographie_espacements_coins_et_visibilite.md)                                                 | 🟢 **Livré & Validé** |
+| **Phase 50** | 08/11/2026 | Éradication de la Régression de Traduction des Noms de Blocs dans le Studio Visuel & Parité Trilingue FR/EN/AR 100%                                                                                    | 📄 [`50_plan_eradication_regression_traduction_noms_blocs_studio.md`](Implementations_Plans/50_plan_eradication_regression_traduction_noms_blocs_studio.md)                                                                             | 🟢 **Livré & Validé** |
+| **Phase 51** | 08/11/2026 | Grand Verrouillage de la Persistance SQLite 360° & Synchronisation Automatisée des Blocs Composables Studio                                                                                            | 📄 [`51_plan_grand_verrouillage_persistance_sqlite_360_et_synchronisation_blocs.md`](Implementations_Plans/51_plan_grand_verrouillage_persistance_sqlite_360_et_synchronisation_blocs.md)                                               | 🟢 **Livré & Validé** |
+| **Phase 52** | 08/11/2026 | Auto-Bascule Réactive de l'Aperçu Live Studio en Mode Mobile pour Tailles Mobile & Tablette (< 1024px) avec Écouteur Dynamique de Redimensionnement                                                    | 📄 [`52_plan_auto_bascule_apercu_mobile_tablette_et_ecouteur_redimensionnement.md`](Implementations_Plans/52_plan_auto_bascule_apercu_mobile_tablette_et_ecouteur_redimensionnement.md)                                                 | 🟢 **Livré & Validé** |
+| **Phase 53** | 22/11/2026 | Transformation Intégrale Branding 360°, Traitement Logo Officiel & Déploiement Catalogue Clé-en-Main WaYmen AI Studio (Abonnements IA & Academy)                                                       | 📄 [`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`](Implementations_Plans/53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md)                                                     | 🟢 **Livré & Validé** |
+| **Phase 54** | 22/11/2026 | Éradication Complète des Reliques Hardware, Téléchargement Web des Vrais Logos Officiels IA, Réactivation du Bandeau Défilant & Sanctuarisation Exclusive de la Signature ArchiSys3.0                  | 📄 [`54_plan_eradication_reliques_logos_web_authentiques_et_reactivation_marquee.md`](Implementations_Plans/54_plan_eradication_reliques_logos_web_authentiques_et_reactivation_marquee.md)                                             | 🟢 **Livré & Validé** |
+| **Phase 55** | 23/11/2026 | Thème Light Natif au Socle CSS, Expansion Streaming & Gaming, Purification Ultime du Branding (Signature Footer Sanctuarisée), Activation/Désactivation Pages (Guards 404) & Résorption Warnings Sheet | 📄 [`55_plan_light_theme_natif_expansion_streaming_gaming_purification_branding_et_resorption_warnings.md`](Implementations_Plans/55_plan_light_theme_natif_expansion_streaming_gaming_purification_branding_et_resorption_warnings.md) | 🟢 **Livré & Validé** |
+| **Phase 56** | 23/11/2026 | Téléchargement des Vrais Logos Officiels SVG du Web (Simple Icons / Wikimedia), Élaboration Visuels HD Produits & Assainissement Console DEV                                                           | 📄 [`56_plan_logos_officiels_authentiques_visuels_hd_et_assainissement_console.md`](Implementations_Plans/56_plan_logos_officiels_authentiques_visuels_hd_et_assainissement_console.md)                                                 | 🟢 **Livré & Validé** |
+| **Phase 57** | 23/11/2026 | Intégration Native Colonne Logo dans Schémas SQL (Résolution Échec install.php), Éradication Synchronisation Inversée Client/Serveur & Bouton Purge Cache                                              | 📄 [`57_plan_resolution_import_install_et_souverainete_serveur.md`](Implementations_Plans/57_plan_resolution_import_install_et_souverainete_serveur.md)                                                                                 | 🟢 **Livré & Validé** |
+| **Phase 58** | 23/11/2026 | Thème Light d'Usine Universel (extraire-donnees-front, donnees-front.json, SQLite), Purge Complète ka-theme & Nouveaux Paquets Zip                                                                     | 📄 [`58_plan_theme_light_usine_universel_et_purge_preferences.md`](Implementations_Plans/58_plan_theme_light_usine_universel_et_purge_preferences.md)                                                                                   | 🟢 **Livré & Validé** |
 
 ---
 
@@ -3107,3 +3120,443 @@
   - Plan validé : 📄 [`52_plan_auto_bascule_apercu_mobile_tablette_et_ecouteur_redimensionnement.md`](file:///c:/xampp/htdocs/ka-tech/.agents/Implementations_Plans/52_plan_auto_bascule_apercu_mobile_tablette_et_ecouteur_redimensionnement.md)
   - Code source mis à jour : 📄 [`src/components/admin/StudioLiveCanvas.tsx`](file:///c:/xampp/htdocs/ka-tech/src/components/admin/StudioLiveCanvas.tsx)
   - Archives horodatées : 📦 [katech-site-08112026-2206.zip](file:///c:/xampp/htdocs/ka-tech/katech-site-08112026-2206.zip) & 📦 [katech-data-08112026-2207.zip](file:///c:/xampp/htdocs/ka-tech/katech-data-08112026-2207.zip)
+
+---
+
+## Phase 53 : Transformation Intégrale de Marque (Branding 360°), Traitement du Logo Source Officiel & Déploiement du Catalogue Universel Prêt à l'Emploi WaYmen AI Studio
+
+- **Date :** 22 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré, testé et validé sur main**
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 53 (`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`).
+- **Contexte & Enjeux :**
+  1. Repositionnement stratégique intégral de l'application e-commerce sous la marque **WaYmen AI Studio** (_Waymen_).
+  2. Spécialisation métier : services numériques, abonnements et licences SaaS d'intelligence artificielle de premier plan (OpenAI ChatGPT, Anthropic Claude, Google Gemini, Midjourney, Cursor Pro, GitHub Copilot, ElevenLabs, Perplexity, Canva Pro, Runway Gen-3, Notion AI) avec activations dématérialisées (mensuelles, trimestrielles, annuelles).
+  3. Pôle Academy & Formations : masterclass, formations pratiques et tutoriels spécialisés IA pour tous profils utilisateurs (débutants, développeurs, créatifs, professionnels).
+  4. Intégration chirurgicale du logo officiel fourni à la racine [`waymen-002.jpg`](file:///c:/xampp/htdocs/waymen/waymen-002.jpg) : extraction haute fidélité, détourage de l'emblème, composition horizontale épurée avec co-signature officielle de l'Architecte Décideur ArchiSys3.0, et déclinaison multiformats (Favicon, Apple Touch, PWA Manifest, OpenGraph, WebP transparents).
+  5. Déploiement d'un catalogue clé-en-main exhaustif de 23 services numériques et formations, structurés en 6 catégories majeures et parité trilingue intégrale (FR / EN / AR RTL).
+- **Actions Réalisées :**
+  - **Étape 53.1 (Traitement du Logo Officiel & Actifs Multiformats Haute Définition) :**
+    - Analyse chromatique et extraction haute fidélité de l'emblème WY et de la typographie depuis [`waymen-002.jpg`](file:///c:/xampp/htdocs/waymen/waymen-002.jpg).
+    - Mise à niveau du générateur Sharp [`scripts/generer-actifs-marque.ts`](file:///c:/xampp/htdocs/waymen/scripts/generer-actifs-marque.ts) avec composition de la signature officielle d'ArchiSys3.0.
+    - Génération de l'ensemble des déclinaisons de marque sous `public/` et `src/assets/` :
+      - Favicons : [`public/favicon.ico`](file:///c:/xampp/htdocs/waymen/public/favicon.ico) & [`public/favicon.svg`](file:///c:/xampp/htdocs/waymen/public/favicon.svg)
+      - Icônes tactiles & PWA : [`public/icone-192.png`](file:///c:/xampp/htdocs/waymen/public/icone-192.png), [`public/icone-512.png`](file:///c:/xampp/htdocs/waymen/public/icone-512.png), [`public/apple-touch-icon.png`](file:///c:/xampp/htdocs/waymen/public/apple-touch-icon.png)
+      - Bannières OpenGraph : [`public/og-image.png`](file:///c:/xampp/htdocs/waymen/public/og-image.png) et [`src/assets/waymen-og-banner.webp`](file:///c:/xampp/htdocs/waymen/src/assets/waymen-og-banner.webp) (1200x630 avec co-signature)
+      - Logos combinés horizontaux : [`src/assets/waymen-archisys-combined.webp`](file:///c:/xampp/htdocs/waymen/src/assets/waymen-archisys-combined.webp) et [`src/assets/stacgate-archisys-combined.webp`](file:///c:/xampp/htdocs/waymen/src/assets/stacgate-archisys-combined.webp) (760x160)
+  - **Étape 53.2 (Génération Automatisée des 18 Visuels de Services WebP) :**
+    - Conception et exécution du générateur automatisé [`scripts/generer-cartes-services.ts`](file:///c:/xampp/htdocs/waymen/scripts/generer-cartes-services.ts) basé sur Sharp et SVG avec badges technologiques et palettes de gradients dédiées.
+    - Production de 18 cartes visuelles haute définition publiées dans `src/assets/` et `public/media/` (`service-chatgpt-plus.webp`, `service-claude-pro.webp`, `service-cursor-pro.webp`, `service-formation-ia-zero.webp`, `service-pack-fullstack-dev.webp`, etc.).
+  - **Étape 53.3 (Catalogue Universel Prêt à l'Emploi & Parité Trilingue FR/EN/AR) :**
+    - Réécriture complète de [`src/data/products.ts`](file:///c:/xampp/htdocs/waymen/src/data/products.ts) : 23 fiches produits et services numériques prêtes à l'emploi avec `productType: "service"`, spécifications techniques adaptées (durée, activation, type de compte, assistance) et notations clients.
+    - Structuration en 6 catégories maîtresses : `llm-assistants`, `creative-media`, `code-engineering`, `productivity-cloud`, `formations-academy`, `packs-bundles`.
+    - Enrichissement des dictionnaires de traduction [`src/lib/i18n/fr.ts`](file:///c:/xampp/htdocs/waymen/src/lib/i18n/fr.ts), [`src/lib/i18n/en.ts`](file:///c:/xampp/htdocs/waymen/src/lib/i18n/en.ts), [`src/lib/i18n/ar.ts`](file:///c:/xampp/htdocs/waymen/src/lib/i18n/ar.ts) : 100% parité, 0 anomalie bloquante au banc `verifier-i18n`.
+    - Synchronisation des réglages par défaut de la marque dans [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/waymen/src/data-provider/site-settings.ts), [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/waymen/src/lib/admin-store.tsx) et [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/waymen/src/lib/site-content.ts) (palette Magenta `#e6007a` & Cyan `#00a3ff`, hero, ticker, packs, FAQ).
+  - **Étape 53.4 (Studio 360°, Métadonnées SEO & Intégration Vitrine) :**
+    - Mise à jour de [`src/components/Logo.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Logo.tsx) pour charger par défaut `waymen-archisys-combined.webp` avec repli `WaYmen AI Studio`.
+    - Actualisation de [`index.html`](file:///c:/xampp/htdocs/waymen/index.html) et [`public/manifest.webmanifest`](file:///c:/xampp/htdocs/waymen/public/manifest.webmanifest) avec les métadonnées SEO, titre et descriptions officiels de WaYmen AI Studio.
+  - **Étape 53.5 (Persistance Serveur SQLite & Extraction `donnees-front.json`) :**
+    - Mise à niveau de [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/waymen/scripts/extraire-donnees-front.ts) pour intégrer les 6 catégories et marques IA.
+    - Exécution de l'extracteur produisant [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/waymen/api/tools/donnees-front.json) (6 catégories, 13 marques, 23 produits/services, 22 sections de contenu).
+    - Hydratation de la base SQLite active via `php api/tools/importer-donnees-front.php` dans [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data).
+  - **Étape 53.6 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme (505 clés visiteur + administration paritaires dans les 3 langues).
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et pré-rendu statique réussis (`katech-site-22112026-1313.zip` produit).
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-22112026-1317.zip`](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1317.zip) générée avec succès.
+- **Résultats de Recette :**
+  - La boutique et le backstage affichent l'identité visuelle officielle complète de **WaYmen AI Studio**, rehaussée de la co-signature d'excellence de l'Architecte Décideur **ArchiSys3.0**.
+  - Le catalogue complet prêt à l'emploi propose 23 activations IA et formations professionnelles avec fiches détaillées, délais express et tarification en dinars algériens (DZD).
+  - La base SQLite physique et le système de build statique sont synchronisés et immédiatement déployables.
+- **Livrables :**
+  - Plan validé : 📄 [`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md)
+  - Actifs visuels & cartes de services : 📂 [`src/assets/`](file:///c:/xampp/htdocs/waymen/src/assets/) & 📂 [`public/media/`](file:///c:/xampp/htdocs/waymen/public/media/)
+  - Catalogue & Données : 📄 [`src/data/products.ts`](file:///c:/xampp/htdocs/waymen/src/data/products.ts) & 📄 [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/waymen/api/tools/donnees-front.json)
+  - Base SQLite physique consolidée : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data)
+  - Archives horodatées : 📦 [katech-site-22112026-1313.zip](file:///c:/xampp/htdocs/waymen/katech-site-22112026-1313.zip) & 📦 [katech-data-22112026-1317.zip](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1317.zip)
+
+---
+
+### Sous-Phase 53.1 : Purge Intégrale des Données Matérielles Résiduelles, Assainissement du Studio & Éradication Définitive des Reliquats Informatiques
+
+- **Date :** 22 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré, testé et validé sur main**
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation enrichi pour la Sous-Phase 53.1 (`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`).
+- **Contexte & Enjeux :**
+  1. Constat factuel soulevé par ArchiSys3.0 : le site et la vitrine présentaient encore des articles d'informatique matérielle (PC portables ROG/HP, tours, smartphones) et des catégories hardware obsolètes.
+  2. Diagnostic chirurgical des causes racines :
+     - **Comportement additif de l'importateur PHP :** `ImporteurDonneesFront.php` procède par `INSERT OR REPLACE` (UPSERT) sans purger les lignes de la table `products` dont les clés ne figurent plus dans le nouveau fichier JSON. Les 12 anciens PC/téléphones coexistaient donc silencieusement avec les 23 services Waymen.
+     - **Sélection par défaut dans `CategoryCards.tsx` :** le composant prenait les 4 premières catégories en base (`laptops`, `desktops`, etc.) associées à des vignettes matérielles rigides.
+     - **Props figées dans le Studio (`customPages`) :** la table `site_content` contenait pour `page_home` des props sérialisées ciblant `media/hero-laptop.webp` et des slogans d'ordinateurs sur mesure.
+     - **Section `about` dans `site-content.ts` :** narratif historique orienté vers l'assemblage de PC.
+     - **Persistance locale :** cache `localStorage` conservant les anciens états de réglages.
+- **Actions Réalisées :**
+  - **Sous-Étape 53.1.1 (Purge Physique SQLite & Ré-injection Pure) :**
+    - Exécution d'un script SQL de purge transactionnelle supprimant les 12 anciens produits hardware, les 4 catégories matérielles obsolètes (`laptops`, `desktops`, `builds`, `phones`) et les 8 marques informatiques orphelines.
+    - Ré-importation pure via `ImporteurDonneesFront` : la base active [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data) contient **strictement et exactement 6 catégories, 13 marques, 23 produits/services IA et 22 sections de contenu**.
+  - **Sous-Étape 53.1.2 (Assainissement & Refonte de `CategoryCards.tsx`) :**
+    - Modification de [`src/components/CategoryCards.tsx`](file:///c:/xampp/htdocs/waymen/src/components/CategoryCards.tsx) : débridage pour afficher jusqu'à 6 catégories majeures.
+    - Éradication des imports résiduels de vignettes de PC (`cat-laptops.webp`, `cat-desktops.webp`, `cat-phones.webp`, `cat-builds.webp`).
+    - Attribution d'icônes vectorielles Lucide sémantiques IA (`Bot`, `Palette`, `Code2`, `Cloud`, `GraduationCap`, `Boxes`).
+  - **Sous-Étape 53.1.3 (Assainissement Global du Registre des Blocs Composables) :**
+    - Modification de [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/waymen/src/components/blocks/registry.ts) : harmonisation intégrale des `defaultProps` des blocs (`hero_banner`, `builder_teaser`, `why_us`, `brand_banner`, `projects_grid`, `company_history`, `promo_banner`, `full_width_banner`) alignés sur WaYmen AI Studio et la co-signature d'ArchiSys3.0.
+  - **Sous-Étape 53.1.4 (Refonte Éditoriale de la Section `about` & Débridage `customPages`) :**
+    - Modification de [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/waymen/src/lib/site-content.ts) :
+      - Réécriture trilingue (FR/EN/AR) de la section `about` (mission, genèse d'excellence et valeurs d'activation express et support).
+      - Correction du typage strict de l'icône de valeur (`award`).
+      - Réglage du bloc `b_home_categories` à `max: 6`.
+  - **Sous-Étape 53.1.5 (Bust Cache LocalStorage & Bootstrap Client) :**
+    - Modification de [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/waymen/src/data-provider/site-settings.ts) : invalidation proactive et purge automatique du cache local si `storeName` ne reflète pas WaYmen.
+    - Incrément de clé dans [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/waymen/src/lib/admin-store.tsx) (`waymen.admin.state.v2`).
+    - Injection du script de flush de cache au bootstrap dans [`index.html`](file:///c:/xampp/htdocs/waymen/index.html).
+  - **Sous-Étape 53.1.6 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme (505 clés visiteur + administration sans erreur).
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint (94 avertissements non bloquants).
+    - `bun run build` : compilation Vite et pré-rendu statique validés (`katech-site-22112026-1356.zip`).
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-22112026-1356.zip`](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1356.zip) générée avec succès.
+- **Résultats de Recette :**
+  - **0 résidu informatique :** aucun PC, smartphone ou accessoire matériel n'apparaît sur le site, ni dans le catalogue, ni dans les filtres, ni dans la base SQLite.
+  - **Vitrine 100% WaYmen AI Studio :** mise en avant exclusive des 23 abonnements IA, licences logicielles, packs métiers et formations Academy.
+  - **Cohérence SQLite & Frontend :** alignement parfait 1:1 entre les fichiers sources TypeScript, les métadonnées Studio et la base SQLite locale sous Apache.
+- **Livrables :**
+  - Plan validé enrichi : 📄 [`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md)
+  - Données d'installation régénérées : 📄 [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/waymen/api/tools/donnees-front.json)
+  - Base SQLite physique 100% pure : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data)
+  - Nouvelles archives horodatées : 📦 [katech-site-22112026-1356.zip](file:///c:/xampp/htdocs/waymen/katech-site-22112026-1356.zip) & 📦 [katech-data-22112026-1356.zip](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1356.zip)
+
+---
+
+### Sous-Phase 53.2 : Découplage Souverain du Projet Waymen, Purge Physique de la Base Locale SQLite & Éradication des Dépendances Croisées Ka-Tech
+
+- **Date :** 22 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré, testé et validé sur main**
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation enrichi pour la Sous-Phase 53.2 (`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`).
+- **Contexte & Enjeux :**
+  1. Diagnostic chirurgical de la bascule visuelle du bouton principal (« Découvrir les Abonnements » $\rightarrow$ « Acheter maintenant » au bout de 2 à 3 secondes) et de l'absence de produits en catégorie.
+  2. Cause racine identifiée : divergence de chemin entre [`api/.env`](file:///c:/xampp/htdocs/waymen/api/.env) (qui ciblait l'ancien projet `C:/xampp/htdocs/ka-tech/`) et le serveur de dev lancé par `bun run dev` (qui servait la base locale réelle [`C:/xampp/htdocs/waymen/katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data), non purgée et datant du 08 novembre).
+  3. Exigence formelle d'ArchiSys3.0 : découpler hermétiquement et définitivement le dossier hôte `waymen` du dossier d'origine `ka-tech`, purger physiquement la base locale active et éliminer toute dépendance croisée.
+- **Actions Réalisées :**
+  - **Sous-Étape 53.2.1 (Découplage de la Configuration Serveur `api/.env`) :**
+    - Réalignement souverain de [`api/.env`](file:///c:/xampp/htdocs/waymen/api/.env) :
+      - `DB_SQLITE_PATH=C:/xampp/htdocs/waymen/katech-data/dev-a97b6b98a368.sqlite`
+      - `UPLOAD_DIR=C:/xampp/htdocs/waymen/uploads`
+    - Harmonisation de [`api/.env.example`](file:///c:/xampp/htdocs/waymen/api/.env.example).
+  - **Sous-Étape 53.2.2 (Purge Physique & Ré-injection Pure de la Base Locale de Waymen) :**
+    - Exécution d'un script SQL transactionnel ciblant directement la base active de `waymen`.
+    - Suppression intégrale des anciens produits, catégories et sections matérielles.
+    - Ré-importation pure via `ImporteurDonneesFront.php` : confirmation par sonde PDO que la base locale `waymen` compte **strictement 6 catégories IA, 13 marques IA, 23 abonnements/formations IA et 22 sections de contenu**.
+    - Vérification du hero : `primaryCta.label.fr = "Découvrir les Abonnements"`, `href = "/category/llm-assistants"`.
+  - **Sous-Étape 53.2.3 (Assainissement des Métadonnées & Indépendance du Projet) :**
+    - Renommage officiel du projet dans [`package.json`](file:///c:/xampp/htdocs/waymen/package.json) (`"name": "waymen-ai-studio"`).
+    - Correction du commentaire d'en-tête accidentel dans [`src/components/blocks/registry.ts`](file:///c:/xampp/htdocs/waymen/src/components/blocks/registry.ts).
+  - **Sous-Étape 53.2.4 (Validation Runtime de l'API Dev PHP & Vite Proxy) :**
+    - Sondage direct via requête Node.js sur `http://127.0.0.1:8160/v1/content` : renvoie fidèlement le Hero WaYmen AI Studio (`primaryCta` stable).
+    - Sondage de `http://127.0.0.1:8160/v1/products?category=llm-assistants` : renvoie instantanément 8 produits réels (ChatGPT Plus, Claude Pro, Gemini Advanced, Perplexity Pro, etc.).
+    - Sondage via le proxy Vite `http://localhost:8080/api/v1/products?category=llm-assistants` : renvoie instantanément 8 produits sur 8.
+  - **Sous-Étape 53.2.5 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint (94 avertissements non bloquants).
+    - `bun run build` : compilation Vite et pré-rendu statique validés (`katech-site-22112026-1421.zip`).
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-22112026-1421.zip`](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1421.zip) générée avec la base locale pure.
+- **Résultats de Recette :**
+  - **Souveraineté 100% garantie :** Le projet `waymen` est totalement indépendant, autonome et hermétique à `ka-tech`.
+  - **Stabilité absolue du bouton :** Le bouton d'accroche affiche _« Découvrir les Abonnements »_ dès le premier cycle et conserve cet intitulé sans aucune bascule intempestive.
+  - **Disponibilité immédiate du catalogue :** Le clic sur le bouton ouvre `/category/llm-assistants` et affiche immédiatement les 8 assistants d'élite d'OpenAI, Anthropic, Google et Perplexity.
+- **Livrables :**
+  - Plan validé enrichi : 📄 [`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md)
+  - Configuration serveur souveraine : 📄 [`api/.env`](file:///c:/xampp/htdocs/waymen/api/.env)
+  - Base SQLite physique locale 100% pure : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data)
+  - Nouvelles archives horodatées : 📦 [katech-site-22112026-1421.zip](file:///c:/xampp/htdocs/waymen/katech-site-22112026-1421.zip) & 📦 [katech-data-22112026-1421.zip](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1421.zip)
+
+---
+
+### Sous-Phase 53.3 : Épurement du Logo WaYmen, Sanctuarisation de la Signature ArchiSys3.0 dans le Footer, Déploiement des 13 Logos Vectoriels Officiels & Cartes Haute-Fidélité
+
+- **Date :** 22 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré, testé et validé sur main**
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation enrichi pour la Sous-Phase 53.3 (`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`).
+- **Contexte & Arbitrages d'ArchiSys3.0 :**
+  1. **Épurement du Logo Principal :** Le logo dans l'en-tête du site doit être 100% dédié à WaYmen AI Studio (`waymen-logo.webp`), sans co-signature ni surimpression d'un second logo.
+  2. **Sanctuarisation de la Signature ArchiSys3.0 :** La signature d'ArchiSys3.0 doit résider **exclusivement** dans le pied de page (`Footer.tsx`), discrète et élégante, avec la mention _"Fait avec passion & ❤️ par ArchiSys3.0"_ accompagnée de l'insigne officiel (`Signature-ArchiSys30.png`). Retrait absolu de tout autre emplacement (notamment le bloc sceau central de `About.tsx`).
+  3. **Identité Visuelle Officielle des Marques :** Remplacement des icônes temporaires par les 13 logos vectoriels SVG officiels et authentiques des marques IA (OpenAI, Anthropic, Google Gemini, Midjourney, Cursor, Copilot/Microsoft, Perplexity, ElevenLabs, Runway, Canva, Notion, WaYmen Academy, WaYmen VIP).
+  4. **Base de Données & Catalogue :** Synchronisation de la colonne `logo` de la table `brands` dans SQLite avec ces fichiers vectoriels et enrichissement des 18 visuels de services WebP avec les emblèmes officiels.
+- **Actions Réalisées :**
+  - **Sous-Étape 53.3.1 (Épurement du Logo & Sanctuarisation de la Signature) :**
+    - Modification de [`src/components/Logo.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Logo.tsx) : affichage exclusif de `waymen-logo.webp` avec alt text `storeName`.
+    - Retrait du bloc central sceau ArchiSys3.0 dans [`src/pages/About.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/About.tsx).
+    - Copie de l'insigne haute résolution dans [`src/assets/Signature-ArchiSys30.png`](file:///c:/xampp/htdocs/waymen/src/assets/Signature-ArchiSys30.png) et [`public/media/Signature-ArchiSys30.png`](file:///c:/xampp/htdocs/waymen/public/media/Signature-ArchiSys30.png).
+    - Mise à jour trilingue de `footer.madeIn` dans [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/waymen/src/lib/site-content.ts) (_"Fait avec passion & ❤️ par ArchiSys3.0"_).
+    - Intégration dans [`src/components/Footer.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Footer.tsx) d'une signature discrète (hauteur 20-24px, opacité 75% avec survol interactif).
+  - **Sous-Étape 53.3.2 (Génération Vectorielle des 13 Logos Officiels de Marques) :**
+    - Script [`scripts/generer-logos-marques.ts`](file:///c:/xampp/htdocs/waymen/scripts/generer-logos-marques.ts) : génération des 13 SVG authentiques dans [`public/media/brands/`](file:///c:/xampp/htdocs/waymen/public/media/brands) et [`src/assets/brands/`](file:///c:/xampp/htdocs/waymen/src/assets/brands).
+    - Mise à jour de [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/waymen/scripts/extraire-donnees-front.ts) et [`api/src/Installation/ImporteurDonneesFront.php`](file:///c:/xampp/htdocs/waymen/api/src/Installation/ImporteurDonneesFront.php) pour associer `logo: "media/brands/<slug>.svg"` à chaque marque en base SQLite.
+  - **Sous-Étape 53.3.3 (Régénération Haute-Fidélité des Visuels de Produits) :**
+    - Mise à niveau de [`scripts/generer-cartes-services.ts`](file:///c:/xampp/htdocs/waymen/scripts/generer-cartes-services.ts) intégrant directement les SVG vectoriels des marques dans le médaillon central de chaque visuel produit (1200x800).
+    - Régénération des 18 visuels WebP dans `src/assets/` et `public/media/`.
+  - **Sous-Étape 53.3.4 (Re-synchronisation SQLite & Validation des Endpoints) :**
+    - Ré-extraction des données et re-importation SQLite locale : 6 catégories, 13 marques avec logos SVG, 23 produits, 22 sections.
+    - Test direct via API proxy Vite : `http://localhost:8080/api/v1/brands` renvoie les 13 marques avec leur chemin SVG officiel et descriptions harmonisées.
+  - **Sous-Étape 53.3.5 (Contrôles Qualité CI Inviolables & Packaging) :**
+    - `bun run verifier-i18n` : 100% conforme.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et pré-rendu statique validés (`katech-site-22112026-1501.zip`).
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-22112026-1501.zip`](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1501.zip) générée avec succès.
+- **Résultats de Recette :**
+  - **Branding parfait & équilibré :** Logo épuré 100% WaYmen dans le header, signature ArchiSys3.0 sanctuarisée exclusivement dans le footer de façon harmonieuse et discrète.
+  - **Identité visuelle premium :** Vrais logos officiels vectoriels pour l'ensemble des 13 marques d'IA et visuels de cartes de services enrichis de haute fidélité.
+  - **Cohérence totale Base de Données & Administration :** La table `brands` expose proprement les logos SVG utilisables à la fois en boutique et dans le panneau d'administration.
+- **Livrables :**
+  - Plan validé enrichi : 📄 [`53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/53_plan_transformation_branding_et_catalogue_universel_waymen_ai_studio.md)
+  - Logos officiels vectoriels : 📂 [`public/media/brands/`](file:///c:/xampp/htdocs/waymen/public/media/brands) & [`src/assets/brands/`](file:///c:/xampp/htdocs/waymen/src/assets/brands)
+  - Données d'installation régénérées : 📄 [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/waymen/api/tools/donnees-front.json)
+  - Base SQLite locale synchronisée : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data)
+  - Nouvelles archives horodatées : 📦 [katech-site-22112026-1501.zip](file:///c:/xampp/htdocs/waymen/katech-site-22112026-1501.zip) & 📦 [katech-data-22112026-1501.zip](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1501.zip)
+
+---
+
+## [Phase 54] — Éradication Complète des Reliques Hardware, Téléchargement Web des Vrais Logos Officiels IA, Réactivation du Bandeau Défilant & Sanctuarisation Exclusive de la Signature ArchiSys3.0
+
+- **Date :** 22 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré, testé et validé sur main**
+- **Validation ArchiSys3.0 :** Clic « Proceed » et approbation formelle du Plan d'Implémentation Phase 54 (`54_plan_eradication_reliques_logos_web_authentiques_et_reactivation_marquee.md`).
+- **Contexte & Enjeux Traités :**
+  1. **Éradication de la signature hors footer :** L'insigne combiné subsistait en arrière-plan dans les bannières composables (`FullWidthBannerBlock`, `BrandBannerBlock`, `ProfileHeroBlock`). ArchiSys3.0 a exigé son confinement **exclusif dans le footer**.
+  2. **Éradication des reliques informatiques/PC :** Le bouton d'en-tête _"Configurez votre PC"_, le bouton central mobile _"Configurer"_, le teaser configurateur d'accueil et les liens résiduels vers `/builder` ont été reconvertis vers l'offre IA réelle (Packs Métiers & Formations).
+  3. **Réactivation & fluidité de BrandsMarquee :** Le bandeau défilant n'affichait plus les marques à cause d'une divergence de noms. Il a été câblé directement sur la table `brands` de la base de données.
+  4. **Téléchargement Web des véritables logos officiels :** Récupération directe depuis le web des vrais SVG officiels des 13 marques IA et régénération des 18 visuels de produits WebP.
+- **Actions Réalisées :**
+  - **Étape 54.1 (Confinement Signature Exclusive au Footer) :**
+    - Modification de [`src/components/blocks/BrandBannerBlock.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/BrandBannerBlock.tsx), [`src/components/blocks/FullWidthBannerBlock.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/FullWidthBannerBlock.tsx), [`src/components/blocks/ProfileHeroBlock.tsx`](file:///c:/xampp/htdocs/waymen/src/components/blocks/ProfileHeroBlock.tsx), [`src/components/admin/BlockPropsEditor.tsx`](file:///c:/xampp/htdocs/waymen/src/components/admin/BlockPropsEditor.tsx) : bascule des fallbacks sur `waymen-og-banner.webp` et `waymen-logo.webp`.
+    - Purgé dans [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/waymen/src/data-provider/site-settings.ts) (`logoUrl: "media/waymen-logo.webp"`, `builderEnabled: false`).
+    - Purgé dans [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/admin/Settings.tsx) et [`src/pages/admin/Dashboard.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/admin/Dashboard.tsx).
+    - Signature ArchiSys3.0 sanctuarisée **exclusivement dans `Footer.tsx`**.
+  - **Étape 54.2 (Éradication des Reliques Hardware & Reconversion IA) :**
+    - Modification de `header.builderCta` dans [`src/lib/site-content.ts`](file:///c:/xampp/htdocs/waymen/src/lib/site-content.ts) : reconverti en _"Packs & Formations IA"_ (`/category/packs-metiers`).
+    - Modification de `mobileBottomBar` : bouton central reconverti en _"Packs IA"_ (`sparkles`, `/category/packs-metiers`).
+    - Liens rapides footer `fl_2` et `fl_3` reconvertis vers _"Packs Métiers IA"_ et _"Formations Academy"_.
+    - Désactivation du bloc d'accueil `b_home_builder` (`enabled: false`).
+    - Clés i18n trilingues `nav.builder` mises à jour (FR, EN, AR).
+  - **Étape 54.3 (Téléchargement Web des Vrais Logos SVG & Régénération Cartes) :**
+    - Script [`scripts/telecharger-logos-officiels.ts`](file:///c:/xampp/htdocs/waymen/scripts/telecharger-logos-officiels.ts) : téléchargement web des 13 vrais SVG officiels (OpenAI, Anthropic Claude, Google Gemini, Midjourney, Cursor, Microsoft Copilot, Perplexity, ElevenLabs, Runway, Canva, Notion, WaYmen Academy, WaYmen VIP).
+    - Correction du support `xmlns:xlink` dans [`scripts/generer-cartes-services.ts`](file:///c:/xampp/htdocs/waymen/scripts/generer-cartes-services.ts) et régénération haute fidélité des 18 visuels produits WebP.
+  - **Étape 54.4 (Réactivation Dynamique de BrandsMarquee) :**
+    - Refonte de [`src/components/BrandsMarquee.tsx`](file:///c:/xampp/htdocs/waymen/src/components/BrandsMarquee.tsx) : consommation directe de `allBrands` issues de `useBrandList()`, affichage systématique du logo SVG officiel et du nom officiel en défilement infini.
+    - Synchronisation de `site_content.marquee.brands` avec la liste exacte des 13 marques en base.
+  - **Étape 54.5 (Re-synchronisation SQLite & Validation CI Complète) :**
+    - Re-synchronisation de la base SQLite locale via `extraire-donnees-front.ts` et `purger_et_reimporter_waymen.php`.
+    - `bun run verifier-i18n` : 100% conforme.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et pré-rendu statique validés (`katech-site-22112026-1529.zip`).
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-22112026-1529.zip`](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1529.zip) générée avec succès.
+- **Résultats de Recette :**
+  - **Pureté absolue de l'identité :** 0 logo combiné dans le corps du site, signature ArchiSys3.0 discrète et exclusive dans le footer.
+  - **0 relique de PC :** Navigation, en-tête, barre mobile et footer 100% dédiés aux abonnements, packs et formations IA.
+  - **Bandeau défilant fluide :** Défilement continu et spectaculaire des 13 logos officiels de marques sur l'accueil.
+  - **Qualité graphique haute fidélité :** Véritables emblèmes vectoriels officiels mondiaux et cartes de produits ultra-nettes.
+- **Livrables :**
+  - Plan validé : 📄 [`54_plan_eradication_reliques_logos_web_authentiques_et_reactivation_marquee.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/54_plan_eradication_reliques_logos_web_authentiques_et_reactivation_marquee.md)
+  - Vrais logos vectoriels : 📂 [`public/media/brands/`](file:///c:/xampp/htdocs/waymen/public/media/brands) & [`src/assets/brands/`](file:///c:/xampp/htdocs/waymen/src/assets/brands)
+  - 18 cartes studio WebP : 📂 [`public/media/`](file:///c:/xampp/htdocs/waymen/public/media) & [`src/assets/`](file:///c:/xampp/htdocs/waymen/src/assets)
+  - Base SQLite locale pure : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data)
+  - Nouvelles archives horodatées : 📦 [katech-site-22112026-1529.zip](file:///c:/xampp/htdocs/waymen/katech-site-22112026-1529.zip) & 📦 [katech-data-22112026-1529.zip](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1529.zip)
+
+---
+
+### Sous-Phase 54.1 : Assainissement Radical du Logo en Base SQLite, Purge du Cache Client & Refonte Éditoriale Complète du Blog en Thématiques IA
+
+- **Date :** 22 Novembre 2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré, testé et validé sur main**
+- **Validation ArchiSys3.0 :** Accord explicite d'ArchiSys3.0 ("oui je valide").
+- **Contexte & Cause Racine Détectée :**
+  1. **Cause racine de l'affichage combiné persistant :** Dans [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/waymen/scripts/extraire-donnees-front.ts) (ligne 774), `siteSettings.logoUrl` était résiduellement assigné à `"media/waymen-archisys-combined.webp"`. Lors de chaque ré-importation SQLite, cette valeur écrasait la table `settings` (clé `site`). L'API `/api/v1/settings/site` renvoyait donc l'image combinée que [`src/components/Logo.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Logo.tsx) affichait en priorité sur le logo par défaut. De surcroît, le navigateur mettait cette valeur en cache dans son `localStorage`.
+  2. **Angle mort éditorial :** Les 5 articles de blog (`scripts/extraire-donnees-front.ts` et `admin-store.tsx`) traitaient d'ordinateurs portables, de PC gaming et de smartphones sous l'auteur "Équipe KA Tech".
+  3. **Avis clients d'accueil :** Les avis portaient encore sur des références d'ordinateurs portables (`rog-strix-g16`, `macbook-air-m3`).
+- **Actions Réalisées :**
+  - **Sous-Étape 54.1.1 (Assainissement du Logo & Garde-Fous Inviolables) :**
+    - Modification de [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/waymen/scripts/extraire-donnees-front.ts) : `logoUrl: "media/waymen-logo.webp"`.
+    - Ajout d'un garde-fou de sécurité dans [`src/components/Logo.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Logo.tsx) : rejet automatique et inconditionnel de toute URL contenant `combined`, `Signature` ou `stacgate`, garantissant un repli absolu sur `waymen-logo.webp`.
+    - Injection d'un mécanisme de purge automatique du `localStorage` dans [`index.html`](file:///c:/xampp/htdocs/waymen/index.html) et [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/waymen/src/data-provider/site-settings.ts) si `saved.logoUrl` contient `combined` ou `stacgate`.
+  - **Sous-Étape 54.1.2 (Refonte Éditoriale des 5 Articles de Blog en Thématiques IA) :**
+    - Réécriture trilingue intégrale (FR/EN/AR) des 5 articles de blog dans [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/waymen/scripts/extraire-donnees-front.ts) et [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/waymen/src/lib/admin-store.tsx) :
+      1. `chatgpt-plus-vs-claude-pro-2026` : Comparatif ChatGPT Plus vs Claude 3.5 Sonnet.
+      2. `developper-avec-ia-cursor-copilot` : Maîtriser Cursor Pro & GitHub Copilot.
+      3. `creation-visuelle-midjourney-runway` : Guide Midjourney V6.1 & Runway Gen-3.
+      4. `clonage-vocal-elevenlabs-secrets` : Les secrets d'ElevenLabs pour créateurs.
+      5. `formations-waymen-academy-entreprises` : Monter en compétences sur l'IA appliquée.
+    - Tous les auteurs ont été harmonisés sur _"Équipe WaYmen AI Studio"_.
+  - **Sous-Étape 54.1.3 (Assainissement des Avis Clients de l'Accueil) :**
+    - Modification de `seedHomeReviews()` dans [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/waymen/src/lib/admin-store.tsx) : avis rattachés aux produits réels `chatgpt-plus`, `claude-pro` et `cursor-pro` avec retours d'utilisateurs d'IA.
+  - **Sous-Étape 54.1.4 (Re-synchronisation SQLite & Validation CI Complète) :**
+    - Ré-extraction des données et ré-importation dans SQLite locale : confirmation de `settings.logoUrl = media/waymen-logo.webp` et 5 articles IA.
+    - `bun run verifier-i18n` : 100% conforme.
+    - `bunx tsc --noEmit` : 0 erreur TypeScript.
+    - `bun run format` : 100% conforme Prettier.
+    - `bun run lint` : 0 erreur ESLint.
+    - `bun run build` : compilation Vite et pré-rendu statique validés (`katech-site-22112026-1546.zip`).
+    - `bun run paqueter:data` : archive de données horodatée [`katech-data-22112026-1546.zip`](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1546.zip) générée avec succès.
+- **Résultats de Recette :**
+  - **Logo 100% WaYmen Épuré :** L'en-tête, la navbar et l'admin affichent purement l'emblème WaYmen AI Studio, 0 image combinée sur tout le site.
+  - **Signature ArchiSys3.0 sanctuarisée :** Visible uniquement et exclusivement dans le Footer.
+  - **Blog 100% IA Studio :** Plus aucune mention de hardware, PC portables ou KA Tech. 5 articles riches et pertinents.
+  - **Cohérence SQLite & API :** `/api/v1/settings/site` renvoie `media/waymen-logo.webp` et `/api/v1/blog` renvoie les 5 articles IA.
+- **Livrables :**
+  - Plan mis à jour : 📄 [`54_plan_eradication_reliques_logos_web_authentiques_et_reactivation_marquee.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/54_plan_eradication_reliques_logos_web_authentiques_et_reactivation_marquee.md)
+  - Données d'installation régénérées : 📄 [`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/waymen/api/tools/donnees-front.json)
+  - Base SQLite locale pure : 📂 [`katech-data/dev-a97b6b98a368.sqlite`](file:///c:/xampp/htdocs/waymen/katech-data)
+  - Nouvelles archives horodatées : 📦 [katech-site-22112026-1546.zip](file:///c:/xampp/htdocs/waymen/katech-site-22112026-1546.zip) & 📦 [katech-data-22112026-1546.zip](file:///c:/xampp/htdocs/waymen/katech-data-22112026-1546.zip)
+
+---
+
+## [Phase 55] — Thème Light Natif au Socle CSS, Expansion Streaming & Gaming, Purification Ultime du Branding (Signature Footer Sanctuarisée), Activation/Désactivation Pages (Guards 404) & Résorption Warnings Sheet
+
+- **Date :** 23/11/2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré & Validé**
+- **Plan Associé :** 📄 [`55_plan_light_theme_natif_expansion_streaming_gaming_purification_branding_et_resorption_warnings.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/55_plan_light_theme_natif_expansion_streaming_gaming_purification_branding_et_resorption_warnings.md)
+
+### Contexte & Objectifs de la Phase
+
+Répondre avec une rigueur d'ingénierie absolue à l'ensemble des points soulevés par ArchiSys3.0 :
+
+1. **Éradication du logo combiné (WaYmen / ArchiSys)** dans l'ensemble des actifs générés (favicons, icônes PWA, vignettes de partage) et sanctuarisation de la signature ArchiSys3.0 **exclusivement dans le footer**.
+2. **Thème Light natif au socle CSS** : `:root, .light` porte les tokens lumineux sans surcouche ni FOUC.
+3. **Réparation des icônes de marques** (notamment `cursor.svg`) et **expansion massive du catalogue** : Streaming (Netflix, Spotify, YouTube, Disney+, Apple Music, Amazon Prime), Gaming Consoles & PC (PlayStation, Xbox, Steam, Nintendo, EA Play) et Cartes Cadeaux (Apple, Google Play, Razer Gold, PlayStation, Xbox).
+4. **Gouvernance d'activation/désactivation des pages institutionnelles** : mise en place de guards 404 stricts sur `About`, `Contact`, `Blog` et `BlogArticle` si la page est dépubliée depuis `/admin/pages`.
+5. **Résorption des warnings console Radix UI** (`sheet.tsx:63 Warning: Missing Description or aria-describedby`).
+6. **Clarification réelle (sans théorie)** sur l'emplacement de la base SQLite sur serveur mutualisé et l'embarquement des médias.
+
+### Actions Techniques Réalisées
+
+1. **Purification Totale du Branding & Sanctuarisation de la Signature Footer :**
+   - [`scripts/generer-actifs-marque.ts`](file:///c:/xampp/htdocs/waymen/scripts/generer-actifs-marque.ts) réécrit et exécuté : régénération pure de `public/favicon.svg`, `public/favicon.ico`, `icone-512.png`, `icone-192.png`, `apple-touch-icon.png`, `og-image.png`, `waymen-og-banner.webp`, `stacgate-archisys-badge.webp` sans aucune signature ArchiSys incrustée.
+   - Sceau d'architecture supprimé du bas de page de [`src/pages/admin/Dashboard.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/admin/Dashboard.tsx).
+   - Signature ArchiSys3.0 sanctuarisée uniquement dans le footer de [`src/components/Footer.tsx`](file:///c:/xampp/htdocs/waymen/src/components/Footer.tsx) avec insigne discret et mention valorisante.
+
+2. **Thème Light Natif au Socle CSS :**
+   - [`src/styles.css`](file:///c:/xampp/htdocs/waymen/src/styles.css) : `:root, .light` configuré nativement avec les tokens clairs (`oklch(0.99 0.003 260)`), et `.dark` porte les tokens sombres.
+   - [`index.html`](file:///c:/xampp/htdocs/waymen/index.html) : `<meta name="theme-color" content="#ffffff" />` et script bootstrap 0 ms configuré sur `"light"` par défaut.
+   - [`src/lib/theme.tsx`](file:///c:/xampp/htdocs/waymen/src/lib/theme.tsx) : `getFallbackTheme()` retourne `"light"`, état initial `"light"`.
+   - Paramétrages par défaut migrés sur `"light"` dans [`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/waymen/src/data-provider/site-settings.ts), [`src/lib/admin-store.tsx`](file:///c:/xampp/htdocs/waymen/src/lib/admin-store.tsx), [`src/components/admin/SetupWizard.tsx`](file:///c:/xampp/htdocs/waymen/src/components/admin/SetupWizard.tsx) et [`src/pages/admin/Settings.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/admin/Settings.tsx).
+
+3. **Expansion Streaming, Gaming & Cartes Cadeaux :**
+   - Réparation vectorielle de [`public/media/brands/cursor.svg`](file:///c:/xampp/htdocs/waymen/public/media/brands/cursor.svg) et `src/assets/brands/cursor.svg`.
+   - Création de 14 nouveaux SVG de marques officiels et 16 visuels WebP de services.
+   - Ajout de 3 nouvelles catégories universelles (`streaming-medias`, `gaming-consoles`, `cartes-cadeaux`) et 10 nouveaux produits injectés dans [`src/data/products.ts`](file:///c:/xampp/htdocs/waymen/src/data/products.ts), [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/waymen/scripts/extraire-donnees-front.ts) et la base SQLite locale.
+   - Trilinguisme (FR/EN/AR) complété à 100% (511 clés validées par `bun run verifier-i18n`).
+
+4. **Guards 404 Stricts & Gouvernance des Pages :**
+   - Guards `<NotFound />` conformes aux règles des Hooks React ajoutés dans [`src/pages/About.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/About.tsx), [`src/pages/Contact.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/Contact.tsx), [`src/pages/Blog.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/Blog.tsx), et [`src/pages/BlogArticle.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/BlogArticle.tsx).
+
+5. **Résorption des Warnings Radix UI :**
+   - [`src/components/ui/sheet.tsx`](file:///c:/xampp/htdocs/waymen/src/components/ui/sheet.tsx) : `aria-describedby` et `<SheetPrimitive.Description className="sr-only">` intégrés.
+
+6. **Validation CI Intégrale :**
+   - `bun run verifier-i18n` : 100% conforme.
+   - `bunx tsc --noEmit` : 0 erreur TypeScript.
+   - `bun run format` : 100% conforme Prettier.
+   - `bun run lint` : 0 erreur ESLint.
+   - `bun run build` : compilation Vite et packaging réussis (`katech-site-23112026-1017.zip`).
+   - `bun run paqueter:data` : archive de données générée (`katech-data-23112026-1018.zip`).
+
+---
+
+## [Phase 56] — Téléchargement des Vrais Logos Officiels SVG du Web (Simple Icons / Wikimedia), Élaboration Visuels HD Produits & Assainissement Console DEV
+
+- **Date :** 23/11/2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré & Validé**
+- **Plan Associé :** 📄 [`56_plan_logos_officiels_authentiques_visuels_hd_et_assainissement_console.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/56_plan_logos_officiels_authentiques_visuels_hd_et_assainissement_console.md)
+
+### Contexte & Objectifs de la Phase
+
+1. **Éradication des logos approximatifs :** Télécharger les **vrais logos SVG officiels originaux** depuis les dépôts officiels Simple Icons et Wikimedia Commons (Netflix, Spotify, YouTube, Disney+, PlayStation, Xbox, Steam, Apple, Google Play, Razer).
+2. **Visuels HD Produits :** Composer des cartes de services en haute fidélité (640x480) avec superposition vectorielle du vrai logo de marque et typographie percutante.
+3. **Assainissement Console :** Éradication de toutes les requêtes 404 au runtime et vérification d'une disponibilité 100% (HTTP 200) sur l'intégralité des 56 médias du site.
+4. **Validation CI Intégrale :** Zero-défaut sur `i18n`, `tsc`, `format`, `lint` et `build`.
+
+### Actions Techniques Réalisées
+
+- **Script de Téléchargement Automatisé Web :** Conception de [`scripts/telecharger-vrais-logos-web.ts`](file:///c:/xampp/htdocs/waymen/scripts/telecharger-vrais-logos-web.ts) récupérant directement les SVG officiels.
+- **Script de Cartes Produits HD :** Conception de [`scripts/generer-cartes-services-hd.ts`](file:///c:/xampp/htdocs/waymen/scripts/generer-cartes-services-hd.ts) générant les bannières HD WebP des nouveaux produits.
+- **Audit Runtime Réel :** 56 requêtes médias testées sur le serveur local 8080 : 100% de succès HTTP 200, 0 erreur 404.
+- **Validation CI :**
+  - `bun run verifier-i18n` : 100% conforme.
+  - `bunx tsc --noEmit` : 0 erreur TypeScript.
+  - `bun run format` : 100% conforme Prettier.
+  - `bun run lint` : 0 erreur ESLint.
+  - `bun run build` : archive [`katech-site-23112026-1046.zip`](file:///c:/xampp/htdocs/waymen/katech-site-23112026-1046.zip) générée avec succès.
+  - `bun run paqueter:data` : archive [`katech-data-23112026-1046.zip`](file:///c:/xampp/htdocs/waymen/katech-data-23112026-1046.zip) à jour.
+
+---
+
+## [Phase 57] — Résolution Définitive de l'Import Catalogue (Schémas SQL) & Éradication de la Synchronisation Inversée Client ➔ Serveur
+
+- **Date :** 23/11/2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré & Validé**
+- **Plan Associé :** 📄 [`57_plan_resolution_import_install_et_souverainete_serveur.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/57_plan_resolution_import_install_et_souverainete_serveur.md)
+
+### Contexte & Objectifs de la Phase
+
+1. **Éradication de l'Échec d'Import lors d'`install.php` :**  
+   Intégration formelle de la colonne `logo TEXT NULL` dans les trois fichiers de schéma SQL (`schema.sqlite.sql`, `schema.mysql.sql`, `schema.pgsql.sql`). Vérification avec `verifier-parite-schema.php` (24 tables, 197 colonnes, 100% identiques).
+2. **Souveraineté Serveur Absolue & Fin de la Synchronisation Inversée :**  
+   Désactivation du fallback `localStorage` pour les mutations en mode HTTP. En mode de production, la base SQLite est l'unique source de vérité.
+3. **Outillage Administrateur :**  
+   Ajout de la fonction `purgerCacheClientSiteSettings()` et du bouton d'action directe dans [`src/pages/admin/Developpeur.tsx`](file:///c:/xampp/htdocs/waymen/src/pages/admin/Developpeur.tsx) permettant de vider le cache local en 1 clic (0 résidu).
+
+### Actions Techniques Réalisées & Preuves de Recette
+
+- **Schémas SQL :** Colonne `logo` insérée dans `CREATE TABLE brands` pour SQLite, MySQL et PgSQL.
+- **Banc d'Essai d'Installation Réelle :** Exécution réussie sur base vierge ([`.agents/scratch/test_install_import.php`](file:///c:/xampp/htdocs/waymen/.agents/scratch/test_install_import.php)) :  
+  `ok: true`, 33 produits, 23 marques, 9 catégories importés avec 0 avertissement.
+- **Validation CI Complète :**
+  - `bun run verifier-i18n` : 100% conforme.
+  - `bunx tsc --noEmit` : 0 erreur.
+  - `bun run format` : 100% conforme.
+  - `bun run lint` : 0 erreur.
+  - `bun run build` : archive [`katech-site-23112026-1139.zip`](file:///c:/xampp/htdocs/waymen/katech-site-23112026-1139.zip) prête pour déploiement.
+  - `bun run paqueter:data` : archive [`katech-data-23112026-1139.zip`](file:///c:/xampp/htdocs/waymen/katech-data-23112026-1139.zip) synchronisée.
+
+---
+
+## [Phase 58] — Thème Light d'Usine Universel & Purge Complète des Préférences Thème
+
+- **Date :** 23/11/2026
+- **Directeur de Projet & Architecte Décideur :** ArchiSys3.0
+- **Tech Lead, Architecte & Consultant R&D :** AImi
+- **Statut :** 🟢 **Livré & Validé**
+- **Plan Associé :** 📄 [`58_plan_theme_light_usine_universel_et_purge_preferences.md`](file:///c:/xampp/htdocs/waymen/.agents/Implementations_Plans/58_plan_theme_light_usine_universel_et_purge_preferences.md)
+
+### Contexte & Objectifs de la Phase
+
+1. **Éradication du Thème Sombre d'Usine :**  
+   Passage de `defaultTheme: "light"` dans [`scripts/extraire-donnees-front.ts`](file:///c:/xampp/htdocs/waymen/scripts/extraire-donnees-front.ts), mise à jour d'[`api/tools/donnees-front.json`](file:///c:/xampp/htdocs/waymen/api/tools/donnees-front.json) et ré-import dans la base SQLite locale.
+2. **Purge Complète de la Clé Locale Navigateur :**  
+   Ajout de la suppression de `ka-theme` dans `purgerCacheClientSiteSettings()` ([`src/data-provider/site-settings.ts`](file:///c:/xampp/htdocs/waymen/src/data-provider/site-settings.ts)).
+3. **Packaging Frais :**  
+   Génération de [`katech-site-23112026-1153.zip`](file:///c:/xampp/htdocs/waymen/katech-site-23112026-1153.zip) et [`katech-data-23112026-1153.zip`](file:///c:/xampp/htdocs/waymen/katech-data-23112026-1153.zip).

@@ -37,22 +37,22 @@ declare global {
  * négociable selon DATA-PROVIDER.md §2.1.
  */
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  storeName: "StacGate Platform",
-  contactEmail: "",
-  contactPhone: "",
-  whatsapp: "",
-  address: "",
-  hours: "",
+  storeName: "WaYmen AI Studio",
+  contactEmail: "contact@waymen.dz",
+  contactPhone: "+213 550 00 00 00",
+  whatsapp: "213550000000",
+  address: "Alger, Algérie • Activations & Formations 58 Wilayas",
+  hours: "7j/7, 8h – 23h (Support Continu)",
   maintenance: false,
-  maintenanceMessage: "",
+  maintenanceMessage: "Nous revenons très vite ! La plateforme est en cours de mise à jour.",
   maintenanceTitle: "",
   maintenanceEstimatedReturn: "",
   maintenanceShowWhatsApp: false,
   emailNotifications: false,
-  showPromoBanner: false,
-  promoBannerText: "",
-  promoBannerLabel: "",
-  promoBannerHref: "",
+  showPromoBanner: true,
+  promoBannerText: "Activations expresses en moins de 15 minutes par Email & WhatsApp.",
+  promoBannerLabel: "Découvrir",
+  promoBannerHref: "/category/llm-assistants",
   lowStockThreshold: 5,
   outOfStockThreshold: 0,
   currencySymbol: "DA",
@@ -60,16 +60,16 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   currencyThousandSeparator: " ",
   languageSelectorEnabled: true,
   hideRatingWhenNoReviews: true,
-  logoUrl: "",
-  defaultTheme: "dark",
-  primaryColor: "",
-  secondaryColor: "",
-  accentColor: "",
+  logoUrl: "media/waymen-logo.webp",
+  defaultTheme: "light",
+  primaryColor: "#e6007a",
+  secondaryColor: "#00a3ff",
+  accentColor: "#8b5cf6",
   borderRadius: "soft",
   fontFamily: "system",
   buttonStyle: "subtle",
-  faviconUrl: "",
-  builderEnabled: true,
+  faviconUrl: "favicon.svg",
+  builderEnabled: false,
   onboardingCompleted: true,
 };
 
@@ -159,12 +159,26 @@ export function getInitialSiteSettings(): SiteSettings {
   if (typeof window !== "undefined") {
     if (window.__SITE_SETTINGS_BOOTSTRAP__) {
       settings = { ...settings, ...window.__SITE_SETTINGS_BOOTSTRAP__ };
-    } else {
+    } else if (!isHttpMode()) {
+      // En mode MOCK uniquement : le localStorage sert de magasin persistant.
+      // En mode HTTP : JAMAIS de lecture du localStorage pour les données par défaut,
+      // la base SQLite serveur est l'unique source de vérité souveraine.
       try {
         const saved = localStorage.getItem("katech_site_settings");
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed && typeof parsed === "object") {
+          if (
+            parsed &&
+            typeof parsed === "object" &&
+            (parsed.storeName === "StacGate Platform" ||
+              parsed.storeName === "KA Tech" ||
+              !parsed.storeName?.includes("WaYmen") ||
+              (parsed.logoUrl &&
+                (parsed.logoUrl.includes("combined") || parsed.logoUrl.includes("stacgate"))))
+          ) {
+            localStorage.removeItem("katech_site_settings");
+            localStorage.removeItem("katech_site_settings_name");
+          } else if (parsed && typeof parsed === "object") {
             settings = { ...settings, ...parsed };
           }
         }
@@ -174,6 +188,23 @@ export function getInitialSiteSettings(): SiteSettings {
     }
   }
   return settings;
+}
+
+/**
+ * Purge immédiatement tout le cache local du navigateur (localStorage)
+ * et recharge les réglages frais depuis le serveur distant.
+ */
+export function purgerCacheClientSiteSettings(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem("katech_site_settings");
+    localStorage.removeItem("katech_site_settings_name");
+    localStorage.removeItem("katech_admin_store");
+    localStorage.removeItem("katech_theme");
+    localStorage.removeItem("ka-theme");
+  } catch {
+    /* noop */
+  }
 }
 
 // Initialisation anticipée du cache mémoire pour useResource au chargement du module.

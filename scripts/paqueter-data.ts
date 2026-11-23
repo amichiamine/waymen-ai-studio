@@ -1,5 +1,5 @@
 /**
- * paqueter-data.ts — Assemble katech-data.zip : archive séparée des données.
+ * paqueter-data.ts — Assemble waymen-data.zip : archive séparée des données.
  *
  * =====================================================================
  * POURQUOI CE SCRIPT EXISTE
@@ -32,7 +32,7 @@ function obtenirNomArchiveHorodatee(): string {
   const aaaa = d.getFullYear();
   const hh = pad(d.getHours());
   const min = pad(d.getMinutes());
-  return `katech-data-${jj}${mm}${aaaa}-${hh}${min}.zip`;
+  return `waymen-data-${jj}${mm}${aaaa}-${hh}${min}.zip`;
 }
 
 function log(msg: string) {

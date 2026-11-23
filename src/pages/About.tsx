@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ShieldCheck, Truck, Headphones, Award, Star, Heart, AlertTriangle } from "lucide-react";
-import archisysBannerSrc from "@/assets/stacgate-archisys-banner.webp";
 import { useAboutValueList, useSiteSettings, useSiteContent } from "@/data-provider";
 import type { AboutValue } from "@/lib/admin-store";
 import { useI18n, useLocalize } from "@/lib/i18n";
 import { renderBlock } from "@/components/blocks";
+import NotFound from "@/pages/NotFound";
 
 const ICONS: Record<AboutValue["icon"], typeof ShieldCheck> = {
   shield: ShieldCheck,
@@ -26,7 +26,7 @@ export default function About() {
   const storeName =
     siteSettings.storeName && siteSettings.storeName.trim() !== ""
       ? siteSettings.storeName
-      : "StacGate Platform";
+      : "WaYmen AI Studio";
 
   const about = siteContent?.about;
 
@@ -72,11 +72,17 @@ export default function About() {
   const displayedValues = about?.values && about.values.length > 0 ? about.values : aboutValues;
   const loading = loadingValues && loadingContent;
 
-  const aboutCustomPage = useMemo(() => {
-    return (siteContent?.customPages || []).find(
-      (p) => p.slug.toLowerCase() === "about" && p.isPublished !== false,
-    );
+  const aboutCustomPageDef = useMemo(() => {
+    return (siteContent?.customPages || []).find((p) => p.slug.toLowerCase() === "about");
   }, [siteContent?.customPages]);
+
+  // Si la page À propos est explicitement dépubliée depuis le panel admin
+  if (aboutCustomPageDef && aboutCustomPageDef.isPublished === false) {
+    return <NotFound />;
+  }
+
+  const aboutCustomPage =
+    aboutCustomPageDef?.isPublished !== false ? aboutCustomPageDef : undefined;
 
   // Si la vue composable À propos est configurée, rendre ses blocs dynamiques
   if (
@@ -192,31 +198,6 @@ export default function About() {
           )}
         </>
       )}
-
-      {/* Sceau d'Architecture R&D & Conception */}
-      <section className="mb-14 overflow-hidden rounded-2xl border border-primary/20 bg-card/60 shadow-lg backdrop-blur-sm">
-        <div className="grid gap-6 lg:grid-cols-12 items-center p-6 lg:p-8">
-          <div className="lg:col-span-7 space-y-3 text-start">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <span>{t("about.archisys.badge")}</span>
-            </div>
-            <h3 className="text-xl lg:text-2xl font-bold tracking-tight text-foreground">
-              {t("about.archisys.title")}
-            </h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {t("about.archisys.desc", { auteur: "ArchiSys3.0" })}
-            </p>
-          </div>
-          <div className="lg:col-span-5 flex justify-center">
-            <img
-              src={archisysBannerSrc}
-              alt={t("about.archisys.alt")}
-              className="max-h-48 w-auto rounded-xl border border-border/80 object-cover shadow-md transition-transform hover:scale-[1.02]"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </section>
 
       <section className="rounded-2xl border border-border bg-card p-8 lg:p-12 text-center">
         <h2 className="text-2xl lg:text-3xl font-bold mb-3">{ctaTitle}</h2>

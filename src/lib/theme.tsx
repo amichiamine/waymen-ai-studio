@@ -17,17 +17,17 @@ function getFallbackTheme(): Theme {
       // repli silencieux
     }
   }
-  return "dark";
+  return "light";
 }
 
 export function applyTheme(theme: Theme) {
   const root = document.documentElement;
-  const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
-  const isLight = theme === "light" || (theme === "system" && prefersLight);
-  root.classList.toggle("light", isLight);
-  root.classList.toggle("dark", !isLight);
-  root.style.colorScheme = isLight ? "light" : "dark";
-  return isLight ? "light" : "dark";
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const isDark = theme === "dark" || (theme === "system" && prefersDark);
+  root.classList.toggle("dark", isDark);
+  root.classList.toggle("light", !isDark);
+  root.style.colorScheme = isDark ? "dark" : "light";
+  return isDark ? "dark" : "light";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -37,16 +37,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (stored) return stored;
       return getFallbackTheme();
     }
-    return "dark";
+    return "light";
   });
-  const [resolved, setResolved] = useState<"light" | "dark">("dark");
+  const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const fallback = getFallbackTheme();
     const stored = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? fallback;
     setThemeState(stored);
     setResolved(applyTheme(stored) as "light" | "dark");
-    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
       const cur = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? getFallbackTheme();
       if (cur === "system") setResolved(applyTheme("system") as "light" | "dark");

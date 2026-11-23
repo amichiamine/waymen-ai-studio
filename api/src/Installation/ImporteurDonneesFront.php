@@ -133,6 +133,7 @@ final class ImporteurDonneesFront
                 'name'        => (string) $m['name'],
                 'description' => isset($m['description']) ? (string) $m['description'] : null,
                 'country'     => isset($m['country']) ? (string) $m['country'] : null,
+                'logo'        => isset($m['logo']) ? (string) $m['logo'] : null,
                 'created_at'  => $maintenant,
                 'updated_at'  => $maintenant,
             ], ['id']);
